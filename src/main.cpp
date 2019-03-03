@@ -1,14 +1,14 @@
-#include <iostream>
-#include <chrono>
-#include <iomanip>
 
-#include "Bitboards.h"
 
-using namespace std;
+#include "UCIProtocolHandler.h"
 
 int main() {
 
-  Bitboards::init();
+  auto uci = new UCIProtocolHandler();
+
+  uci->start();
+  
+  delete(uci);
 
   return 0;
 }
