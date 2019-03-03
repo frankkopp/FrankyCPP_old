@@ -286,6 +286,11 @@
     <option name="localTasksCounter" value="2" />
     <servers />
   </component>
+  <component name="TestHistory">
+    <history-entry file="BitboardsTest_print - 2019.03.03 at 17h 11m 50s.xml">
+      <configuration name="BitboardsTest.print" configurationId="CMakeGoogleTestRunConfigurationType" />
+    </history-entry>
+  </component>
   <component name="TimeTrackingManager">
     <option name="totallyTimeSpent" value="5440000" />
   </component>
