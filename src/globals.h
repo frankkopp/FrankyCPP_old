@@ -23,6 +23,30 @@
  *
  */
 
+/*
+data types:
+Color
+Square
+Bitboard
+Move
+MoveType
+Piece
+PieceType
+
+Classes:
+Engine
+Position
+TT
+EvalCache
+Search
+Evaluation
+MoveGen
+
+UCIProtocolHandler
+UCIOption
+UCISearchMode
+ */
+
 #ifndef FRANKYCPP_GLOBALS_H
 #define FRANKYCPP_GLOBALS_H
 
