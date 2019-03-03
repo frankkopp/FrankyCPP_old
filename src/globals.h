@@ -100,13 +100,9 @@ inline T& operator/=(T& d, int i) { return d = T(int(d) / i); }
 //ENABLE_INCR_OPERATORS_ON(PieceType)
 //ENABLE_INCR_OPERATORS_ON(Piece)
 ENABLE_INCR_OPERATORS_ON(Color)
-
 ENABLE_INCR_OPERATORS_ON(Square)
-
 ENABLE_INCR_OPERATORS_ON(File)
-
 ENABLE_INCR_OPERATORS_ON(Rank)
-
 //ENABLE_BASE_OPERATORS_ON(Score)
 
 #undef ENABLE_FULL_OPERATORS_ON
@@ -114,10 +110,23 @@ ENABLE_INCR_OPERATORS_ON(Rank)
 #undef ENABLE_BASE_OPERATORS_ON
 
 /**
- * MACROS
+ * constant expressions
  */
+
 constexpr Square getSquare(File f, Rank r) {
   return Square((r << 3) + f);
+}
+
+constexpr File fileOf(Square s) {
+  return File(s & 7);
+}
+
+constexpr Rank rankOf(Square s) {
+  return Rank(s >> 3);
+}
+
+inline std::string squareLabel(Square sq) {
+  return std::string{ char('a' + fileOf(sq)), char('1' + rankOf(sq)) };
 }
 
 #endif //FRANKYCPP_GLOBALS_H

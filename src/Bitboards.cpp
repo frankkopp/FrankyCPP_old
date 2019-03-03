@@ -30,6 +30,9 @@
 
 Bitboard SquareBB[SQ_NONE];
 
+/**
+ * Prints a bitboard a an 8x8 matrix for output on a console
+ */
 const std::string
 Bitboards::print(Bitboard b) {
   std::string s = "+---+---+---+---+---+---+---+---+\n";
@@ -42,6 +45,10 @@ Bitboards::print(Bitboard b) {
   return s;
 }
 
+/**
+ * Prints a bitboard as a series of 0 and 1 grouped in 8 bits
+ * beginning with the LSB (0) on the left and the MSB (63) on the right
+ */
 const std::string
 Bitboards::printFlat(Bitboard b) {
   std::string s;
@@ -53,11 +60,16 @@ Bitboards::printFlat(Bitboard b) {
   return s;
 }
 
+/**
+ * Initializes various pre-computed bitboards
+ */
 const void
 Bitboards::init() {
 
-  for (Square s = SQ_A1; s <= SQ_H8; ++s)
-    SquareBB[s] = (1ULL << s);
+  // all squares as an array
+  for (Square s = SQ_A1; s <= SQ_H8; ++s) SquareBB[s] = (1ULL << s);
+
+
 
 }
 

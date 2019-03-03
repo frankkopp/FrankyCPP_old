@@ -31,5 +31,33 @@
 using testing::Eq;
 
 TEST(BitboardsTest, print) {
-  ASSERT_EQ(1, 1);
+
+  Bitboards::init();
+
+  std::cout << "\n";
+
+  std::cout << Bitboards::print(EMPTY_BB) << std::endl;
+  std::cout << Bitboards::printFlat(EMPTY_BB) << std::endl;
+  std::cout << Bitboards::print(ALL_BB) << std::endl;
+  std::cout << Bitboards::printFlat(ALL_BB) << std::endl;
+
+  for (Square i = SQ_A1; i <= SQ_H8; ++i) {
+    std::cout << squareLabel(i) << std::endl;
+    std::cout << Bitboards::print(SquareBB[i]) << std::endl;
+  }
+
+  std::cout << Bitboards::print(SquareBB[SQ_A1]) << std::endl;
+  std::cout << Bitboards::printFlat(SquareBB[SQ_A1]) << std::endl;
+  std::cout << Bitboards::print(SquareBB[SQ_H1]) << std::endl;
+  std::cout << Bitboards::printFlat(SquareBB[SQ_H1]) << std::endl;
+  std::cout << Bitboards::print(SquareBB[SQ_A8]) << std::endl;
+  std::cout << Bitboards::printFlat(SquareBB[SQ_A8]) << std::endl;
+  std::cout << Bitboards::print(SquareBB[SQ_H8]) << std::endl;
+  std::cout << Bitboards::printFlat(SquareBB[SQ_H8]) << std::endl;
+
+  std::cout << Bitboards::print(SquareBB[SQ_H8]) << std::endl;
+  std::cout << Bitboards::printFlat(SquareBB[SQ_H8]) << std::endl;
+
+  std::cout << Bitboards::print(ALL_BB) << std::endl;
+
 }
