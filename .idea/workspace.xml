@@ -17,24 +17,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4febe152-5c70-47fd-9338-9cb20e6462e6" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/test/Tests/test.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/lib/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/lib/googletest-master/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/lib/googletest-master/googlemock/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/lib/googletest-master/googlemock/scripts/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/lib/googletest-master/googlemock/scripts/generator/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/lib/googletest-master/googlemock/test/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/lib/googletest-master/googletest/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/lib/googletest-master/googletest/scripts/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/lib/googletest-master/googletest/test/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/lib/googletest-master/googletest/xcode/Scripts/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/lib/googletest-master/googletest/xcode/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/test/CMakeLists.txt" afterDir="false" />
-    </list>
+    <list default="true" id="4febe152-5c70-47fd-9338-9cb20e6462e6" name="Default Changelist" comment="Google Test setup" />
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -75,7 +58,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state>
+            <state relative-caret-position="171">
+              <caret line="9" column="55" lean-forward="true" selection-start-line="9" selection-start-column="55" selection-end-line="9" selection-end-column="55" />
               <folding>
                 <element signature="e#0#19#0" expanded="true" />
               </folding>
@@ -141,7 +125,7 @@
   <component name="ProjectFrameBounds">
     <option name="x" value="2" />
     <option name="width" value="3236" />
-    <option name="height" value="1403" />
+    <option name="height" value="1402" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -274,7 +258,7 @@
       <option name="presentableId" value="Default" />
       <updated>1551622505908</updated>
       <workItem from="1551622507077" duration="747000" />
-      <workItem from="1551624721939" duration="4693000" />
+      <workItem from="1551624721939" duration="5020000" />
     </task>
     <task id="LOCAL-00001" summary="Initial">
       <created>1551628568845</created>
@@ -292,19 +276,19 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="5440000" />
+    <option name="totallyTimeSpent" value="5767000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="0" width="1516" height="1224" extended-state="0" />
+    <frame x="2" y="0" width="2824" height="1223" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.26213592" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.13745454" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Messages" weight="0.32957748" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.32957748" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.3298872" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -325,7 +309,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Initial" />
-    <option name="LAST_COMMIT_MESSAGE" value="Initial" />
+    <MESSAGE value="Google Test setup" />
+    <option name="LAST_COMMIT_MESSAGE" value="Google Test setup" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/scratch.cpp">
@@ -424,7 +409,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state>
+        <state relative-caret-position="171">
+          <caret line="9" column="55" lean-forward="true" selection-start-line="9" selection-start-column="55" selection-end-line="9" selection-end-column="55" />
           <folding>
             <element signature="e#0#19#0" expanded="true" />
           </folding>
