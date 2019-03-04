@@ -30,11 +30,12 @@
 #include <mutex>
 #include <thread>
 #include <condition_variable>
+#include "basic_semaphore.h"
 
 class UCIProtocolHandler {
 
   std::thread myThread;
-  std::mutex myMutex;
+  semaphore mySemaphore;
 
 public:
   /** Constructor */
