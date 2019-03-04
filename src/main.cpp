@@ -6,9 +6,7 @@ int main() {
 
   auto uci = new UCIProtocolHandler();
 
-  uci->start();
+  uci->loop();
   
-  delete(uci);
-
   return 0;
 }

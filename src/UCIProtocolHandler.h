@@ -31,7 +31,6 @@
 
 class UCIProtocolHandler {
 
-  std::thread myThread;
   Semaphore mySemaphore;
 
 public:
@@ -40,10 +39,9 @@ public:
   virtual ~UCIProtocolHandler();
 
   /** Starts the handler loop in a new thread */
-  void start();
+  void loop();
 
 private:
-  void run();
   bool isRunning;
 };
 

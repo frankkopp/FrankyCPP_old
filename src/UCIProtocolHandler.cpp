@@ -24,30 +24,41 @@
  */
 
 #include <iostream>
+#include <sstream>
 
 #include "UCIProtocolHandler.h"
 
+using namespace std;
+
 UCIProtocolHandler::UCIProtocolHandler() {
-  std::cout << "Hello World!\n";
+  std::cout << "Hello UCI!\n";
 }
 
 UCIProtocolHandler::~UCIProtocolHandler() {
   std::cout << "Byebye!\n";
 }
 
-void UCIProtocolHandler::start() {
-  myThread = std::thread([this] { this->run(); });
-  mySemaphore.wait();
-}
-
-void UCIProtocolHandler::run() {
-  // do init
-
+void UCIProtocolHandler::loop() {
+  string cmd, token;
   isRunning = true;
-  mySemaphore.notify();
+  do {
 
-  // do work
+    // Block here waiting for input or EOF
+    if (!getline(cin, cmd)) cmd = "quit";
 
+    // create the stream object
+    istringstream inStream(cmd);
+
+    // clear possible previous entries
+    token.clear();
+
+    // read word from stream delimiter is whitespace
+    // to get line use inStream.str()
+    inStream >> skipws >> token;
+
+    cout << "RECEIVED: " << token << endl;
+
+  } while (token != "quit");
   isRunning = false;
 }
 
