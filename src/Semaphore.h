@@ -6,18 +6,31 @@
 #define FRANKYCPP_BASIC_SEMAPHORE_H
 
 #include <mutex>
+#include <condition_variable>
 
+/**
+ * A simple Semaphore implementation.
+ * https://stackoverflow.com/users/369872/david
+ *
+ * @tparam Mutex
+ * @tparam CondVar
+ */
 template <typename Mutex, typename CondVar>
 class basic_semaphore {
 public:
   using native_handle_type = typename CondVar::native_handle_type;
 
+  // prevent the implicit conversion of constructor parameter
+  // with explicit keyword
   explicit basic_semaphore(size_t count = 0);
+
+  // prevent these operations with =delete
   basic_semaphore(const basic_semaphore&) = delete;
   basic_semaphore(basic_semaphore&&) = delete;
   basic_semaphore& operator=(const basic_semaphore&) = delete;
   basic_semaphore& operator=(basic_semaphore&&) = delete;
 
+  // methods
   void notify();
   void wait();
   bool try_wait();
@@ -34,10 +47,22 @@ private:
   size_t  mCount;
 };
 
-using semaphore = basic_semaphore<std::mutex, std::condition_variable>;
+/**
+ * Simple name
+ */
+using Semaphore = basic_semaphore<std::mutex, std::condition_variable>;
 
+/**
+ * Tries to get a semaphore at returns false if none available
+ * @tparam Mutex
+ * @tparam CondVar
+ * @return
+ */
 template <typename Mutex, typename CondVar>
 bool basic_semaphore<Mutex, CondVar>::try_wait() {
+
+  // get the lock - will be release when exiting the block
+  // as it is set in the destructor of this class
   std::lock_guard<Mutex> lock{mMutex};
 
   if (mCount > 0) {
@@ -48,29 +73,59 @@ bool basic_semaphore<Mutex, CondVar>::try_wait() {
   return false;
 }
 
+/**
+ * Create a semaphore with count permissions.
+ * @tparam Mutex
+ * @tparam CondVar
+ * @param count
+ */
 template <typename Mutex, typename CondVar>
-basic_semaphore<Mutex, CondVar>::basic_semaphore(size_t count)
-  : mCount{count}
-{}
+basic_semaphore<Mutex, CondVar>::basic_semaphore(size_t count) : mCount{count} {}
 
+/**
+ * Release a semaphore for others to grab
+ */
 template <typename Mutex, typename CondVar>
 void basic_semaphore<Mutex, CondVar>::notify() {
+  // get the lock - will be release when exiting the block
+  // as it is set in the destructor of this class
   std::lock_guard<Mutex> lock{mMutex};
   ++mCount;
   mCv.notify_one();
 }
 
+/**
+ * Retrieves a semaphore and waits if non is available
+ * @tparam Mutex
+ * @tparam CondVar
+ */
 template <typename Mutex, typename CondVar>
 void basic_semaphore<Mutex, CondVar>::wait() {
+  // get the lock - will be release when exiting the block
+  // as it is set in the destructor of this class
   std::unique_lock<Mutex> lock{mMutex};
   mCv.wait(lock, [&]{ return mCount > 0; });
   --mCount;
 }
 
+/**
+ * Waits and retrieves for a semophore for a certain amount of time.
+ *
+ *
+ * @tparam Mutex
+ * @tparam CondVar
+ * @tparam Rep
+ * @tparam Period
+ * @param d
+ * @return
+ */
 template <typename Mutex, typename CondVar>
 template<class Rep, class Period>
 bool basic_semaphore<Mutex, CondVar>::wait_for(const std::chrono::duration<Rep, Period>& d) {
+  // get the lock - will be release when exiting the block
+  // as it is set in the destructor of this class
   std::unique_lock<Mutex> lock{mMutex};
+
   auto finished = mCv.wait_for(lock, d, [&]{ return mCount > 0; });
 
   if (finished)
@@ -79,6 +134,16 @@ bool basic_semaphore<Mutex, CondVar>::wait_for(const std::chrono::duration<Rep, 
   return finished;
 }
 
+/**
+ * Waits and retrieves for a semophore until a certain point in time.
+ *
+ * @tparam Mutex
+ * @tparam CondVar
+ * @tparam Clock
+ * @tparam Duration
+ * @param t
+ * @return
+ */
 template <typename Mutex, typename CondVar>
 template<class Clock, class Duration>
 bool basic_semaphore<Mutex, CondVar>::wait_until(const std::chrono::time_point<Clock, Duration>& t) {
@@ -91,8 +156,15 @@ bool basic_semaphore<Mutex, CondVar>::wait_until(const std::chrono::time_point<C
   return finished;
 }
 
+/**
+ *
+ * @tparam Mutex
+ * @tparam CondVar
+ * @return
+ */
 template <typename Mutex, typename CondVar>
 typename basic_semaphore<Mutex, CondVar>::native_handle_type basic_semaphore<Mutex, CondVar>::native_handle() {
   return mCv.native_handle();
 }
+
 #endif //FRANKYCPP_BASIC_SEMAPHORE_H

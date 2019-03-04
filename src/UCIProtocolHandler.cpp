@@ -29,7 +29,6 @@
 
 UCIProtocolHandler::UCIProtocolHandler() {
   std::cout << "Hello World!\n";
-  isRunning = false;
 }
 
 UCIProtocolHandler::~UCIProtocolHandler() {
@@ -37,30 +36,19 @@ UCIProtocolHandler::~UCIProtocolHandler() {
 }
 
 void UCIProtocolHandler::start() {
-  std::cout << "Start Thread!\n";
   myThread = std::thread([this] { this->run(); });
-  std::cout << "Wait for Thread init!\n";
   mySemaphore.wait();
-
-  std::cout << "Thread Started\n";
-
-  if (myThread.get_id() == std::this_thread::get_id()) std::cout << "start: NEW THREAD\n";
-  else std::cout << "start: OLD THREAD\n";
-
-  myThread.join();
-  std::cout << "Thread Ended\n";
-  isRunning = false;
 }
 
 void UCIProtocolHandler::run() {
-  std::cout << "New Thread: Started!\n";
-  std::this_thread::sleep_for(std::chrono::seconds(2));
-  std::cout << "New Thread: Init done!\n";
+  // do init
+
+  isRunning = true;
   mySemaphore.notify();
-  if (myThread.get_id() == std::this_thread::get_id()) std::cout << "run: NEW THREAD\n";
-  else std::cout << "run: OLD THREAD\n";
-  std::this_thread::sleep_for(std::chrono::seconds(2));
-  std::cout << "New Thread: Finished!\n";
+
+  // do work
+
+  isRunning = false;
 }
 
 

@@ -1,4 +1,4 @@
-set(core_SRCS main.cpp globals.h Bitboards.h Bitboards.cpp UCIProtocolHandler.cpp UCIProtocolHandler.h basic_semaphore.cpp basic_semaphore.h)
+set(core_SRCS main.cpp globals.h Bitboards.h Bitboards.cpp UCIProtocolHandler.cpp UCIProtocolHandler.h Semaphore.h)
 
 add_library(core ${core_SRCS})
 

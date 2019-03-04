@@ -26,16 +26,13 @@
 #ifndef FRANKYCPP_UCIPROTOCOLHANDLER_H
 #define FRANKYCPP_UCIPROTOCOLHANDLER_H
 
-#include <atomic>
-#include <mutex>
 #include <thread>
-#include <condition_variable>
-#include "basic_semaphore.h"
+#include "Semaphore.h"
 
 class UCIProtocolHandler {
 
   std::thread myThread;
-  semaphore mySemaphore;
+  Semaphore mySemaphore;
 
 public:
   /** Constructor */
@@ -48,7 +45,6 @@ public:
 private:
   void run();
   bool isRunning;
-
 };
 
 #endif //FRANKYCPP_UCIPROTOCOLHANDLER_H
