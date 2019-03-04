@@ -34,15 +34,15 @@ class UCIProtocolHandler {
   Semaphore mySemaphore;
 
 public:
+
   /** Constructor */
   UCIProtocolHandler();
+  /** Destructor */
   virtual ~UCIProtocolHandler();
 
   /** Starts the handler loop in a new thread */
   void loop();
 
-private:
-  bool isRunning;
 };
 
 #endif //FRANKYCPP_UCIPROTOCOLHANDLER_H

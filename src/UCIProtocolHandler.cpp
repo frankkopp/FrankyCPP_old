@@ -40,7 +40,6 @@ UCIProtocolHandler::~UCIProtocolHandler() {
 
 void UCIProtocolHandler::loop() {
   string cmd, token;
-  isRunning = true;
   do {
 
     // Block here waiting for input or EOF
@@ -59,7 +58,6 @@ void UCIProtocolHandler::loop() {
     cout << "RECEIVED: " << token << endl;
 
   } while (token != "quit");
-  isRunning = false;
 }
 
 
