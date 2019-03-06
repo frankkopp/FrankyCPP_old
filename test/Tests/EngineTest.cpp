@@ -30,6 +30,9 @@
 
 using testing::Eq;
 
+using namespace std;
+
 TEST(EngienTest, basic) {
   Engine engine;
+  cout << "\nEngine" << engine << endl;
 }

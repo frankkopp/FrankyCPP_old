@@ -45,9 +45,15 @@ namespace UCI {
   Option::Option(const char *name, const char *val, const char *def)
     : type(STRING), nameID(name), defaultValue(val), currentValue(def) {}
 
+  Option::Option(const Option &o)
+  : nameID(o.nameID), type(o.type), currentValue(o.currentValue), defaultValue(o.defaultValue),
+  minValue(o.minValue), maxValue(o.maxValue), varValue(o.varValue) {}
+
   ostream &operator<<(ostream &os, const Option &option) {
-    os << "Option = nameID: " << option.nameID << " type: " << option.type << " currentValue: " << option.currentValue
-       << " defaultValue: " << option.defaultValue << " minValue: " << option.minValue << " maxValue: "
+    os << "Option = nameID: " << option.nameID << " type: " << option.getTypeString()
+       << " currentValue: " << option.currentValue
+       << " defaultValue: " << option.defaultValue << " minValue: " << option.minValue
+       << " maxValue: "
        << option.maxValue << " varValue: " << option.varValue;
     return os;
   }

@@ -36,15 +36,8 @@ namespace UCI {
   /**
    * UCI Option can have these types
    */
-  enum OptionType {
-    CHECK, SPIN, COMBO, BUTTON, STRING
-  };
-
-  OptionType::operator std::string() const {
-
-    return currentValue;
-  }
-
+  enum OptionType { CHECK, SPIN, COMBO, BUTTON, STRING };
+  static const char* optionTypeStrings[] = {"check", "spin", "combo", "button", "string"};
 
   /**
    * UCI Option class
@@ -62,30 +55,47 @@ namespace UCI {
 
   public:
     explicit Option(const char *nameID);
+
     Option(const char *nameID, bool value);
+
     Option(const char *nameID, int def, int min, int max);
+
     Option(const char *nameID, const char *str);
+
     Option(const char *nameID, const char *var, const char *def);
+
+    Option(const Option &o);
+
     friend ostream &operator<<(ostream &os, const Option &option);
 
     const string &getNameID() const {
       return nameID;
     }
+
     OptionType getType() const {
       return type;
     }
+
+    std::string getTypeString() const {
+      return optionTypeStrings[type];
+    }
+
     const string &getCurrentValue() const {
       return currentValue;
     }
+
     const string &getDefaultValue() const {
       return defaultValue;
     }
+
     const string &getMinValue() const {
       return minValue;
     }
+
     const string &getMaxValue() const {
       return maxValue;
     }
+
     const string &getVarValue() const {
       return varValue;
     }

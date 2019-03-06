@@ -31,17 +31,19 @@ Engine::Engine() {
 }
 
 void Engine::initOptions() {
-  const UCI::Option &option = UCI::Option("Hash", 1024, 1, 8192);
-  cout << endl << option << endl;
-  //optionMap["Hash"] = option; // spin
-  //optionMap["Clear Hash"] = UCI::Option("Clear Hash"); // button
+
+  // @formatter:off
+  MAP("Hash",       UCI::Option("Hash", 1024, 1, 8192)); // spin
+  MAP("Clear Hash", UCI::Option("Clear Hash"));          // button
+  // @formatter:on
+
 }
 
 std::ostream &operator<<(std::ostream &os, const Engine &engine) {
 
   for (const auto &it : engine.optionMap) {
     UCI::Option o = it.second;
-    os << "\noption name " << it.first << " type " << o;
+    os << "\noption name " << it.first << " type " << o.getTypeString();
 
     if (o.getType() == UCI::STRING
         || o.getType() == UCI::CHECK
@@ -53,7 +55,6 @@ std::ostream &operator<<(std::ostream &os, const Engine &engine) {
          << " min " << o.getMinValue()
          << " max " << o.getMaxValue();
 
-    break;
   }
 
   return os;

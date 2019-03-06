@@ -69,7 +69,5 @@ Bitboards::init() {
   // all squares as an array
   for (Square s = SQ_A1; s <= SQ_H8; ++s) SquareBB[s] = (1ULL << s);
 
-
-
 }
 

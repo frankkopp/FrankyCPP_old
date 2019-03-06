@@ -30,6 +30,8 @@
 #include <ostream>
 #include "UCIOption.h"
 
+#define MAP(name, option) optionMap.insert(make_pair(name, option));
+
 class Engine {
 
   // a map for the engine's available options
