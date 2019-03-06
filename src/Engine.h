@@ -26,20 +26,21 @@
 #ifndef FRANKYCPP_ENGINE_H
 #define FRANKYCPP_ENGINE_H
 
-#include <list>
+#include <map>
+#include <ostream>
 #include "UCIOption.h"
 
 class Engine {
 
   // a map for the engine's available options
-  std::list<UCI::Option> optionList;
+  std::map<std::string, UCI::Option> optionMap;
 
 public:
   Engine();
+  friend std::ostream &operator<<(std::ostream &os, const Engine &engine);
 
 private:
   void initOptions();
-
 
 };
 

@@ -23,4 +23,13 @@
  *
  */
 
-#include "Semaphore.h"
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
+#include "../../src/Engine.h"
+
+using testing::Eq;
+
+TEST(EngienTest, basic) {
+  Engine engine;
+}

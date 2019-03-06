@@ -25,25 +25,31 @@
 
 #include "UCIOption.h"
 
+using namespace std;
+
 namespace UCI {
 
-  Option::Option(char *name)
-  : type(BUTTON), nameID(name) {}
+  Option::Option(const char *name)
+    : type(BUTTON), nameID(name) {}
 
-  Option::Option(char *name, bool value)
-  : type(CHECK), nameID(name)
-  { defaultValue = currentValue = value ? "true" : "false"; }
+  Option::Option(const char *name, bool value)
+    : type(CHECK), nameID(name) { defaultValue = currentValue = value ? "true" : "false"; }
 
-  Option::Option(char *name, int def, int min, int max)
-  : type(SPIN), nameID(name), minValue(std::to_string(min)), maxValue(std::to_string(max))
-  { defaultValue = currentValue = std::to_string(def); }
+  Option::Option(const char *name, int def, int min, int max)
+    : type(SPIN), nameID(name), minValue(std::to_string(min)),
+      maxValue(std::to_string(max)) { defaultValue = currentValue = std::to_string(def); }
 
-  Option::Option(char *name, char *str)
-  : type(STRING), nameID(name)
-  { defaultValue = currentValue = str; }
+  Option::Option(const char *name, const char *str)
+    : type(STRING), nameID(name) { defaultValue = currentValue = str; }
 
-  Option::Option(char *name, char *val, char *def)
-  : type(STRING), nameID(name), defaultValue(val), currentValue(def) {}
+  Option::Option(const char *name, const char *val, const char *def)
+    : type(STRING), nameID(name), defaultValue(val), currentValue(def) {}
 
+  ostream &operator<<(ostream &os, const Option &option) {
+    os << "Option = nameID: " << option.nameID << " type: " << option.type << " currentValue: " << option.currentValue
+       << " defaultValue: " << option.defaultValue << " minValue: " << option.minValue << " maxValue: "
+       << option.maxValue << " varValue: " << option.varValue;
+    return os;
+  }
 
 }

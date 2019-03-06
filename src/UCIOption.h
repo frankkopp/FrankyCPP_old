@@ -26,11 +26,12 @@
 #ifndef FRANKYCPP_UCIOPTION_H
 #define FRANKYCPP_UCIOPTION_H
 
+#include <iostream>
 #include <sstream>
 
-using namespace std;
-
 namespace UCI {
+
+  using namespace std;
 
   /**
    * UCI Option can have these types
@@ -38,6 +39,12 @@ namespace UCI {
   enum OptionType {
     CHECK, SPIN, COMBO, BUTTON, STRING
   };
+
+  OptionType::operator std::string() const {
+
+    return currentValue;
+  }
+
 
   /**
    * UCI Option class
@@ -54,15 +61,38 @@ namespace UCI {
     string varValue;
 
   public:
-    explicit Option(char* nameID);
-    Option(char* nameID, bool value);
-    Option(char* nameID, int def, int min, int max);
-    Option(char* nameID, char* str);
-    Option(char* nameID, char* var, char* def);
+    explicit Option(const char *nameID);
+    Option(const char *nameID, bool value);
+    Option(const char *nameID, int def, int min, int max);
+    Option(const char *nameID, const char *str);
+    Option(const char *nameID, const char *var, const char *def);
+    friend ostream &operator<<(ostream &os, const Option &option);
 
-  private:
+    const string &getNameID() const {
+      return nameID;
+    }
+    OptionType getType() const {
+      return type;
+    }
+    const string &getCurrentValue() const {
+      return currentValue;
+    }
+    const string &getDefaultValue() const {
+      return defaultValue;
+    }
+    const string &getMinValue() const {
+      return minValue;
+    }
+    const string &getMaxValue() const {
+      return maxValue;
+    }
+    const string &getVarValue() const {
+      return varValue;
+    }
 
   };
+
+  // print engine config
 
 }
 
