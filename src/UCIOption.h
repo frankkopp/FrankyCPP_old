@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2019 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,26 +23,47 @@
  *
  */
 
-#ifndef FRANKYCPP_UCIPROTOCOLHANDLER_H
-#define FRANKYCPP_UCIPROTOCOLHANDLER_H
+#ifndef FRANKYCPP_UCIOPTION_H
+#define FRANKYCPP_UCIOPTION_H
 
-#include <thread>
-#include "Semaphore.h"
+#include <sstream>
 
-class UCIProtocolHandler {
+using namespace std;
 
-  Semaphore mySemaphore;
+namespace UCI {
 
-public:
+  /**
+   * UCI Option can have these types
+   */
+  enum OptionType {
+    CHECK, SPIN, COMBO, BUTTON, STRING
+  };
 
-  /** Constructor */
-  UCIProtocolHandler();
-  /** Destructor */
-  virtual ~UCIProtocolHandler();
+  /**
+   * UCI Option class
+   */
+  class Option {
 
-  /** Starts the handler loop in a new thread */
-  void loop();
+    string nameID;
+    OptionType type;
+    string currentValue;
+    string defaultValue;
+    string minValue;
+    string maxValue;
 
-};
+    string varValue;
 
-#endif //FRANKYCPP_UCIPROTOCOLHANDLER_H
+  public:
+    explicit Option(char* nameID);
+    Option(char* nameID, bool value);
+    Option(char* nameID, int def, int min, int max);
+    Option(char* nameID, char* str);
+    Option(char* nameID, char* var, char* def);
+
+  private:
+
+  };
+
+}
+
+#endif //FRANKYCPP_UCIOPTION_H

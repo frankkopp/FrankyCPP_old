@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2019 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,42 +23,29 @@
  *
  */
 
-#include <iostream>
-#include <sstream>
+#ifndef FRANKYCPP_SEARCH_H
+#define FRANKYCPP_SEARCH_H
 
-#include "UCIProtocolHandler.h"
+#include <thread>
+#include <iostream>
+
+#include "Semaphore.h"
 
 using namespace std;
 
-UCIProtocolHandler::UCIProtocolHandler() {
-  std::cout << "Hello UCI!\n";
-}
+class Search {
 
-UCIProtocolHandler::~UCIProtocolHandler() {
-  std::cout << "Byebye!\n";
-}
+  Semaphore mySemaphore;
+  thread myThread;
 
-void UCIProtocolHandler::loop() {
-  string cmd, token;
-  do {
+public:
+  void start();
 
-    // Block here waiting for input or EOF
-    if (!getline(cin, cmd)) cmd = "quit";
-
-    // create the stream object
-    istringstream inStream(cmd);
-
-    // clear possible previous entries
-    token.clear();
-
-    // read word from stream delimiter is whitespace
-    // to get line use inStream.str()
-    inStream >> skipws >> token;
-
-    cout << "RECEIVED: " << token << endl;
-
-  } while (token != "quit");
-}
+private:
+  void run();
 
 
+};
 
+
+#endif //FRANKYCPP_SEARCH_H

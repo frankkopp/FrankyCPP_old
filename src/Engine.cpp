@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2019 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,12 @@
  *
  */
 
-#include "UCIHandler.h"
+#include "Engine.h"
 
-int main() {
+Engine::Engine() {
+  // TODO
+}
 
-  auto uci = new UCI::Handler();
-  uci->loop();
-  
-  return 0;
+void Engine::initOptions() {
+
 }

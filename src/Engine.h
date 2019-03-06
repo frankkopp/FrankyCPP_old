@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2019 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,24 @@
  *
  */
 
-#include "UCIHandler.h"
+#ifndef FRANKYCPP_ENGINE_H
+#define FRANKYCPP_ENGINE_H
 
-int main() {
+#include <list>
+#include "UCIOption.h"
 
-  auto uci = new UCI::Handler();
-  uci->loop();
-  
-  return 0;
-}
+class Engine {
+
+  // a map for the engine's available options
+  std::list<UCI::Option> optionList;
+
+public:
+  Engine();
+
+private:
+  void initOptions();
+
+
+};
+
+#endif //FRANKYCPP_ENGINE_H

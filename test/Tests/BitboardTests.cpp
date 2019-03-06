@@ -32,6 +32,8 @@ using testing::Eq;
 
 TEST(BitboardsTest, print) {
 
+  // TODO do some asserts to really test
+
   Bitboards::init();
 
   std::cout << "\n";

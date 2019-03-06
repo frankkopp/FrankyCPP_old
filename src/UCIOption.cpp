@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2019 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,27 @@
  *
  */
 
-#include "UCIHandler.h"
+#include "UCIOption.h"
 
-int main() {
+namespace UCI {
 
-  auto uci = new UCI::Handler();
-  uci->loop();
-  
-  return 0;
+  Option::Option(char *name)
+  : type(BUTTON), nameID(name) {}
+
+  Option::Option(char *name, bool value)
+  : type(CHECK), nameID(name)
+  { defaultValue = currentValue = value ? "true" : "false"; }
+
+  Option::Option(char *name, int def, int min, int max)
+  : type(SPIN), nameID(name), minValue(std::to_string(min)), maxValue(std::to_string(max))
+  { defaultValue = currentValue = std::to_string(def); }
+
+  Option::Option(char *name, char *str)
+  : type(STRING), nameID(name)
+  { defaultValue = currentValue = str; }
+
+  Option::Option(char *name, char *val, char *def)
+  : type(STRING), nameID(name), defaultValue(val), currentValue(def) {}
+
+
 }

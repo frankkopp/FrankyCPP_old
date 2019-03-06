@@ -23,12 +23,32 @@
  *
  */
 
-#include "UCIHandler.h"
+#ifndef FRANKYCPP_UCIPROTOCOLHANDLER_H
+#define FRANKYCPP_UCIPROTOCOLHANDLER_H
 
-int main() {
+#include <thread>
+#include <iostream>
+#include "Semaphore.h"
 
-  auto uci = new UCI::Handler();
-  uci->loop();
-  
-  return 0;
+using namespace std;
+
+namespace UCI {
+
+  class Handler {
+
+    Semaphore mySemaphore;
+
+  public:
+
+    /** Constructor */
+    Handler();
+    /** Destructor */
+    virtual ~Handler();
+
+    /** Starts the handler loop */
+    void loop();
+    void goCommand(istringstream &inStream);
+
+  };
 }
+#endif //FRANKYCPP_UCIPROTOCOLHANDLER_H

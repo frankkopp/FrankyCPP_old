@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2019 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,37 @@
  *
  */
 
-#include "UCIHandler.h"
+#include <iostream>
+#include "Search.h"
 
-int main() {
+using namespace std;
 
-  auto uci = new UCI::Handler();
-  uci->loop();
-  
-  return 0;
+void Search::start() {
+
+  cout << "Start Thread!\n";
+  thread myThread(&Search::run, this);
+  myThread.detach();
+
+  cout << "Wait for Thread init!\n";
+  mySemaphore.wait();
+
+  cout << "Thread Started - return to caller\n";
+}
+
+void Search::run() {
+  cout << "New Thread: Started!\n";
+
+  for (int i = 0; i < 3; ++i) {
+    cout << "Init SIM: " << i << endl;
+    this_thread::sleep_for(chrono::seconds(1));
+  }
+  cout << "New Thread: Init done!\n";
+  mySemaphore.notify();
+
+  cout << "New Thread: Start work...!\n";
+  for (int i = 0; i < 100; ++i) {
+    cout << "Search SIM: " << i << endl;
+    this_thread::sleep_for(std::chrono::seconds(1));
+  }
+  cout << "New Thread: Finished!\n";
 }

@@ -23,12 +23,50 @@
  *
  */
 
+#include <iostream>
+#include <sstream>
+
 #include "UCIHandler.h"
+#include "Search.h"
 
-int main() {
+using namespace std;
 
-  auto uci = new UCI::Handler();
-  uci->loop();
-  
-  return 0;
+namespace UCI {
+
+  Handler::Handler() = default;
+  Handler::~Handler() = default;
+
+  void Handler::loop() {
+    string cmd, token;
+    do {
+
+      cout << "WAIT FOR COMMAND:" << endl;
+
+      // Block here waiting for input or EOF
+      if (!getline(cin, cmd)) cmd = "quit";
+
+      // create the stream object
+      istringstream inStream(cmd);
+
+      // clear possible previous entries
+      token.clear();
+
+      // read word from stream delimiter is whitespace
+      // to get line use inStream.str()
+      inStream >> skipws >> token;
+      cout << "RECEIVED: " << token << endl;
+
+      if (token == "quit") break;
+      else if (token == "go") goCommand(inStream);
+
+      cout << "COMMAND PROCESSED: " << token << endl;
+
+    } while (token != "quit");
+  }
+
+  void Handler::goCommand(istringstream &inStream) {
+    Search search;
+    search.start();
+  }
+
 }

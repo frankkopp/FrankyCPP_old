@@ -42,14 +42,13 @@ Search
 Evaluation
 MoveGen
 
-UCIProtocolHandler
+UCIHandler
 UCIOption
 UCISearchMode
  */
 
 #ifndef FRANKYCPP_GLOBALS_H
 #define FRANKYCPP_GLOBALS_H
-
 
 #include <stdint.h>
 #include <assert.h>
