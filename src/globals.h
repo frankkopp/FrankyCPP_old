@@ -92,6 +92,45 @@ enum Rank : int {
   RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_NONE
 };
 
+/** Direction */
+enum Direction : int {
+  NORTH =  8,
+  EAST  =  1,
+  SOUTH = -NORTH,
+  WEST  = -EAST,
+
+  NORTH_EAST = NORTH + EAST,
+  SOUTH_EAST = SOUTH + EAST,
+  SOUTH_WEST = SOUTH + WEST,
+  NORTH_WEST = NORTH + WEST
+};
+
+/** PieceTypes */
+enum PieceType : int {
+  // non-sliding ---- sliding -----------
+    KING, PAWN, KNIGHT, BISHOP, ROOK, QUEEN, PIECETYPE_NONE
+};
+
+const static int pieceValue[] = {
+  2000, // king
+  100,  // pawn
+  320,  // knight
+  330,  // bishop
+  500,  // rook
+  900,  // queen
+  0     // notype
+};
+
+/** Pieces */
+enum Piece : int {
+  // 0x0 - 0x5
+    WHITE_KING = 0, WHITE_PAWN, WHITE_KNIGHT, WHITE_BISHOP, WHITE_ROOK, WHITE_QUEEN,
+  // 0x8 - 0XD
+    BLACK_KING = 8, BLACK_PAWN, BLACK_KNIGHT, BLACK_BISHOP, BLACK_ROOK, BLACK_QUEEN,
+  // 0x10
+    PIECE_NONE = 16
+};
+
 /**
  * OPERATORS
  */
@@ -118,14 +157,15 @@ inline T& operator/=(T& d, int i) { return d = T(int(d) / i); }
 
 //ENABLE_FULL_OPERATORS_ON(Value)
 //ENABLE_FULL_OPERATORS_ON(Depth)
-//ENABLE_FULL_OPERATORS_ON(Direction)
-//
-//ENABLE_INCR_OPERATORS_ON(PieceType)
-//ENABLE_INCR_OPERATORS_ON(Piece)
+ENABLE_FULL_OPERATORS_ON(Direction)
+
+ENABLE_INCR_OPERATORS_ON(PieceType)
+ENABLE_INCR_OPERATORS_ON(Piece)
 ENABLE_INCR_OPERATORS_ON(Color)
 ENABLE_INCR_OPERATORS_ON(Square)
 ENABLE_INCR_OPERATORS_ON(File)
 ENABLE_INCR_OPERATORS_ON(Rank)
+
 //ENABLE_BASE_OPERATORS_ON(Score)
 
 #undef ENABLE_FULL_OPERATORS_ON
@@ -135,21 +175,18 @@ ENABLE_INCR_OPERATORS_ON(Rank)
 /**
  * constant expressions
  */
-
-constexpr Square getSquare(File f, Rank r) {
-  return Square((r << 3) + f);
-}
-
-constexpr File fileOf(Square s) {
-  return File(s & 7);
-}
-
-constexpr Rank rankOf(Square s) {
-  return Rank(s >> 3);
-}
+constexpr bool isSquare(Square s) { return s >= SQ_A1 && s <= SQ_H8; }
+constexpr Square getSquare(File f, Rank r) { return Square((r << 3) + f); }
+constexpr File fileOf(Square s) { return File(s & 7); }
+constexpr File rankOf(Square s) { return File(s >> 3); }
+constexpr Piece makePiece(Color c, PieceType pt) { return Piece((c << 3) + pt); }
+constexpr Color colorOf(Piece p) { return Color(p >> 3); }
+constexpr PieceType typeOf(Piece p) { return PieceType(p & 7); }
 
 inline std::string squareLabel(Square sq) {
-  return std::string{ char('a' + fileOf(sq)), char('1' + rankOf(sq)) };
+  return std::string{char('a' + fileOf(sq)), char('1' + rankOf(sq))};
 }
+
+#include "Move.h"
 
 #endif //FRANKYCPP_GLOBALS_H
