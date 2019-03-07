@@ -1,2 +1,2 @@
 # FrankyCPP
-Learning C++ by migrating Franky Chess Engine to C++
+Re-Learning C++ by migrating Franky Chess Engine to C++
