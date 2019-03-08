@@ -51,7 +51,6 @@ TEST(GlobalsTest, filesAndRanks) {
   }
 }
 
-
 TEST(GlobalsTest, pieces) {
 
   // make piece
@@ -109,6 +108,12 @@ TEST(MoveTest, moves) {
   ASSERT_EQ(SQ_A8, toSquare(move));
   ASSERT_EQ(PROMOTION, typeOf(move));
   ASSERT_EQ(QUEEN, promotionType(move)); // not useful is not type PROMOTION
+
+  std::stringstream buffer1, buffer2;
+  buffer1 << "a7a8";
+  buffer2 << move;
+  ASSERT_EQ(buffer1.str(), buffer2.str());
+  ASSERT_EQ("a7a8 (PROMOTION)", print(move));
 }
 
 TEST(CastlingTest, castling) {

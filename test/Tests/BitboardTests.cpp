@@ -45,21 +45,92 @@ TEST(BitboardsTest, print) {
 
   for (Square i = SQ_A1; i <= SQ_H8; ++i) {
     std::cout << squareLabel(i) << std::endl;
-    std::cout << Bitboards::print(SquareBB[i]) << std::endl;
+    std::cout << Bitboards::print(squareBB[i]) << std::endl;
   }
 
-  std::cout << Bitboards::print(SquareBB[SQ_A1]) << std::endl;
-  std::cout << Bitboards::printFlat(SquareBB[SQ_A1]) << std::endl;
-  std::cout << Bitboards::print(SquareBB[SQ_H1]) << std::endl;
-  std::cout << Bitboards::printFlat(SquareBB[SQ_H1]) << std::endl;
-  std::cout << Bitboards::print(SquareBB[SQ_A8]) << std::endl;
-  std::cout << Bitboards::printFlat(SquareBB[SQ_A8]) << std::endl;
-  std::cout << Bitboards::print(SquareBB[SQ_H8]) << std::endl;
-  std::cout << Bitboards::printFlat(SquareBB[SQ_H8]) << std::endl;
+  std::cout << Bitboards::print(squareBB[SQ_A1]) << std::endl;
+  std::cout << Bitboards::printFlat(squareBB[SQ_A1]) << std::endl;
+  std::cout << Bitboards::print(squareBB[SQ_H1]) << std::endl;
+  std::cout << Bitboards::printFlat(squareBB[SQ_H1]) << std::endl;
+  std::cout << Bitboards::print(squareBB[SQ_A8]) << std::endl;
+  std::cout << Bitboards::printFlat(squareBB[SQ_A8]) << std::endl;
+  std::cout << Bitboards::print(squareBB[SQ_H8]) << std::endl;
+  std::cout << Bitboards::printFlat(squareBB[SQ_H8]) << std::endl;
 
-  std::cout << Bitboards::print(SquareBB[SQ_H8]) << std::endl;
-  std::cout << Bitboards::printFlat(SquareBB[SQ_H8]) << std::endl;
+  std::cout << Bitboards::print(squareBB[SQ_H8]) << std::endl;
+  std::cout << Bitboards::printFlat(squareBB[SQ_H8]) << std::endl;
 
   std::cout << Bitboards::print(ALL_BB) << std::endl;
+}
 
+
+TEST(BitboardsTest, BitboardSquareTest) {
+  Bitboards::init();
+  
+  ASSERT_EQ(squareBB[SQ_E4], ALL_BB & SQ_E4);
+  ASSERT_EQ(squareBB[SQ_A1], ALL_BB & SQ_A1);
+  ASSERT_EQ(squareBB[SQ_H8], ALL_BB & SQ_H8);
+  ASSERT_EQ(squareBB[SQ_A8], ALL_BB & SQ_A8);
+  ASSERT_NE(squareBB[SQ_A8], ALL_BB & SQ_A1);
+}
+
+TEST(BitboardsTest, SquareDistanceTest) {
+  Bitboards::init();
+
+  ASSERT_EQ(6, distance(FILE_A, FILE_G));
+  ASSERT_EQ(7, distance(RANK_1, RANK_8));
+
+  ASSERT_EQ(7, distance(SQ_A1, SQ_H1));
+  ASSERT_EQ(7, distance(SQ_A1, SQ_H8));
+  ASSERT_EQ(2, distance(SQ_A1, SQ_A3));
+  ASSERT_EQ(4, distance(SQ_A1, SQ_E1));
+  ASSERT_EQ(7, distance(SQ_A1, SQ_G8));
+}
+
+
+TEST(BitboardsTest, shiftTest) {
+  Bitboards::init();
+
+  Bitboard shifted = Bitboards::shift(EAST, FileABB);
+  ASSERT_EQ(FileBBB, shifted);
+
+  shifted = Bitboards::shift(WEST, FileABB);
+  ASSERT_EQ(EMPTY_BB, shifted);
+
+  shifted = Bitboards::shift(NORTH, Rank1BB);
+  ASSERT_EQ(Rank2BB, shifted);
+
+  shifted = Bitboards::shift(SOUTH, Rank8BB);
+  ASSERT_EQ(Rank7BB, shifted);
+
+  shifted = Bitboards::shift(NORTH, Rank8BB);
+  ASSERT_EQ(EMPTY_BB, shifted);
+
+  shifted = Bitboards::shift(NORTH_EAST, squareBB[SQ_E4]);
+  ASSERT_EQ(squareBB[SQ_F5], shifted);
+
+  shifted = Bitboards::shift(SOUTH_EAST, squareBB[SQ_E4]);
+  ASSERT_EQ(squareBB[SQ_F3], shifted);
+
+  shifted = Bitboards::shift(SOUTH_WEST, squareBB[SQ_E4]);
+  ASSERT_EQ(squareBB[SQ_D3], shifted);
+
+  shifted = Bitboards::shift(NORTH_WEST, squareBB[SQ_E4]);
+  ASSERT_EQ(squareBB[SQ_D5], shifted);
+}
+
+
+TEST(BitboardsTest, Diagonals) {
+  Bitboards::init();
+
+  ASSERT_EQ(DiagUpA1, squareDiagUp[SQ_A1]);
+  ASSERT_EQ(DiagUpA1, squareDiagUp[SQ_C3]);
+  ASSERT_EQ(DiagUpA1, squareDiagUp[SQ_G7]);
+  ASSERT_EQ(DiagUpA1, squareDiagUp[SQ_H8]);
+
+  ASSERT_EQ(DiagDownH1, squareDiagDown[SQ_A8]);
+  ASSERT_EQ(DiagDownH1, squareDiagDown[SQ_C6]);
+  ASSERT_EQ(DiagDownH1, squareDiagDown[SQ_G2]);
+  ASSERT_EQ(DiagDownH1, squareDiagDown[SQ_H1]);
+  
 }

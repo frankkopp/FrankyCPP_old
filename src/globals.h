@@ -23,33 +23,34 @@
  *
  */
 
-/*
-data types:
-Color
-Square
-Bitboard
-Move
-MoveType
-Piece
-PieceType
+/**
+Data Types defined here
+  Color
+  Square
+  Bitboard
+  Move
+  MoveType
+  Piece
+  PieceType
 
-Classes:
-Engine
-Position
-TT
-EvalCache
-Search
-Evaluation
-MoveGen
+Classes to be defined as C++ classes:
+  Engine
+  Position
+  TT
+  EvalCache
+  Search
+  Evaluation
+  MoveGen
 
-UCIHandler
-UCIOption
-UCISearchMode
+  UCIHandler
+  UCIOption
+  UCISearchMode
  */
 
 #ifndef FRANKYCPP_GLOBALS_H
 #define FRANKYCPP_GLOBALS_H
 
+#include <string>
 #include <stdint.h>
 #include <assert.h>
 
@@ -57,15 +58,24 @@ UCISearchMode
 constexpr int MAX_MOVES = 256;
 constexpr int MAX_PLY = 128;
 
-// Color type
+///////////////////////////////////
+//// COLOR
+
+/** COLOR */
 enum Color {
   WHITE, BLACK, NOCOLOR
 };
 
 constexpr Color operator~(Color c) { return Color(c ^ BLACK); };
 
+///////////////////////////////////
+//// BITBOARD
+
 /** Bitboard */
 typedef uint64_t Bitboard;
+
+///////////////////////////////////
+//// SQUARES / FILES / RANKS
 
 /** Squares */
 // @formatter:off
@@ -82,15 +92,37 @@ enum Square : int {
 };
 // @formatter:on
 
+constexpr bool isSquare(Square s) { return s >= SQ_A1 && s <= SQ_H8; }
+
 /** Files */
 enum File : int {
   FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H, FILE_NONE
 };
 
+constexpr File fileOf(Square s) { return File(s & 7); }
+
 /** Ranks */
 enum Rank : int {
   RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_NONE
 };
+
+constexpr Rank rankOf(Square s) { return Rank(s >> 3); }
+
+constexpr Square getSquare(File f, Rank r) { return Square((r << 3) + f); }
+
+inline std::string squareLabel(Square sq) {
+  return std::string{char('a' + fileOf(sq)), char('1' + rankOf(sq))};
+}
+
+inline int distance(File f1, File f2) { return abs(f2-f1); }
+inline int distance(Rank r1, Rank r2) { return abs(r2-r1); }
+
+extern int8_t squareDistance[SQ_NONE][SQ_NONE];
+inline int distance(Square s1, Square s2) { return squareDistance[s1][s2]; }
+
+
+///////////////////////////////////
+//// DIRECTION
 
 /** Direction */
 enum Direction : int {
@@ -105,12 +137,16 @@ enum Direction : int {
   NORTH_WEST = NORTH + WEST
 };
 
+///////////////////////////////////
+//// PIECES
+
 /** PieceTypes */
 enum PieceType : int {
   // non-sliding ---- sliding -----------
     KING, PAWN, KNIGHT, BISHOP, ROOK, QUEEN, PIECETYPE_NONE
 };
 
+/** PieceType values */
 const static int pieceValue[] = {
   2000, // king
   100,  // pawn
@@ -130,6 +166,10 @@ enum Piece : int {
   // 0x10
     PIECE_NONE = 16
 };
+
+constexpr Piece makePiece(Color c, PieceType pt) { return Piece((c << 3) + pt); }
+constexpr Color colorOf(Piece p) { return Color(p >> 3); }
+constexpr PieceType typeOf(Piece p) { return PieceType(p & 7); }
 
 /**
  * OPERATORS
@@ -172,21 +212,135 @@ ENABLE_INCR_OPERATORS_ON(Rank)
 #undef ENABLE_INCR_OPERATORS_ON
 #undef ENABLE_BASE_OPERATORS_ON
 
-/**
- * constant expressions
- */
-constexpr bool isSquare(Square s) { return s >= SQ_A1 && s <= SQ_H8; }
-constexpr Square getSquare(File f, Rank r) { return Square((r << 3) + f); }
-constexpr File fileOf(Square s) { return File(s & 7); }
-constexpr File rankOf(Square s) { return File(s >> 3); }
-constexpr Piece makePiece(Color c, PieceType pt) { return Piece((c << 3) + pt); }
-constexpr Color colorOf(Piece p) { return Color(p >> 3); }
-constexpr PieceType typeOf(Piece p) { return PieceType(p & 7); }
+///////////////////////////////////
+//// MOVE
 
-inline std::string squareLabel(Square sq) {
-  return std::string{char('a' + fileOf(sq)), char('1' + rankOf(sq))};
+/* @formatter:off
+BITMAP 16-bit
+0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1
+0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+--------------------------------
+1 1 1 1 1 1                     to
+            1 1 1 1 1 1         from
+                        1 1     promotion piece type (pt-2 > 0-3)
+                            1 1 move type
+*/ // @formatter:on
+
+static const int FROM_SHIFT = 6;
+static const int PROM_TYPE_SHIFT = 12;
+static const int TYPE_SHIFT = 14;
+static const int MOVE_MASK = 0x3F;
+static const int MOVES_MASK = 0xFFF;
+static const int MOVE_TYPE_MASK = 3;
+static const int PROM_TYPE_MASK = 3;
+
+/** A move is basically a 16-bit int */
+enum Move : int {
+  NOMOVE
+};
+
+/** MoveType */
+enum MoveType {
+  NORMAL,
+  PROMOTION = 1 << TYPE_SHIFT,
+  ENPASSANT = 2 << TYPE_SHIFT,
+  CASTLING = 3 << TYPE_SHIFT
+};
+
+template<MoveType T>
+constexpr Move make(Square from, Square to, PieceType pt = KNIGHT) {
+  return Move(T + ((pt - KNIGHT) << PROM_TYPE_SHIFT) + (from << FROM_SHIFT) + to);
 }
 
-#include "Move.h"
+constexpr Move makeMove(Square from, Square to) { return Move((from << FROM_SHIFT) + to); }
+constexpr Square fromSquare(Move m) { return Square((m >> FROM_SHIFT) & MOVE_MASK); }
+constexpr Square toSquare(Move m) { return Square(m & MOVE_MASK); }
+constexpr bool isMove(Move m) { return fromSquare(m) != toSquare(m); }
+constexpr int fromTo(Move m) { return m & MOVES_MASK; }
+constexpr MoveType typeOf(Move m) { return MoveType(m & (MOVE_TYPE_MASK << TYPE_SHIFT)); }
+// promotion type only makes sense if it actually is a promotion otherwise it must be ignored
+constexpr PieceType promotionType(Move m) {
+  return PieceType(((m >> PROM_TYPE_SHIFT) & PROM_TYPE_MASK) + KNIGHT);
+}
+
+inline std::ostream &operator<<(std::ostream &os, const Move &move) {
+  os << squareLabel(fromSquare(move)) << squareLabel(toSquare(move));
+  return os;
+}
+
+inline std::string print(const Move &move) {
+  std::string tp;
+  switch (typeOf(move)) {
+    case NORMAL:
+      tp = "NORMAL";
+      break;
+    case PROMOTION:
+      tp = "PROMOTION";
+      break;
+    case ENPASSANT:
+      tp = "ENPASSANT";
+      break;
+    case CASTLING:
+      tp = "CASTLING";
+      break;
+  }
+  return squareLabel(fromSquare(move)) + squareLabel(toSquare(move))
+         + " (" + tp + ")";;
+}
+
+///////////////////////////////////
+//// CASTLING
+
+/** CastlingSide */
+enum CastlingSide : int {
+  KING_SIDE, QUEEN_SIDE, NO_SIDE
+};
+
+/** CastlingRight */
+enum CastlingRight : int {
+  NO_CASTLING,
+  WHITE_OO,
+  WHITE_OOO = WHITE_OO << 1,
+  BLACK_OO = WHITE_OO << 2,
+  BLACK_OOO = WHITE_OO << 3,
+
+  WHITE_CASTLING = WHITE_OO | WHITE_OOO,
+  BLACK_CASTLING = BLACK_OO | BLACK_OOO,
+  ANY_CASTLING = WHITE_CASTLING | BLACK_CASTLING,
+
+  CASTLING_RIGHT_NB = 16
+};
+
+constexpr CastlingRight operator|(Color c, CastlingSide s) {
+  return CastlingRight(WHITE_OO << ((s == QUEEN_SIDE) + 2 * c));
+}
+
+constexpr CastlingRight operator-(CastlingRight cr1, CastlingRight cr2) {
+  assert(cr1 & cr2);
+  return CastlingRight(cr1 ^ cr2);
+}
+
+constexpr CastlingRight &operator-=(CastlingRight &cr1, CastlingRight cr2) {
+  assert(cr1 & cr2);
+  return cr1 = CastlingRight(cr1 ^ cr2);
+}
+
+constexpr CastlingRight operator+(CastlingRight cr1, CastlingRight cr2) {
+  assert(!(cr1 & cr2));
+  return CastlingRight(cr1 | cr2);
+}
+
+constexpr CastlingRight &operator+=(CastlingRight &cr1, CastlingRight cr2) {
+  assert(!(cr1 & cr2));
+  return cr1 = CastlingRight(cr1 | cr2);
+}
+
+constexpr bool operator==(CastlingRight cr1, CastlingRight cr2) {
+  return cr1 & cr2;
+}
+
+constexpr bool operator!=(CastlingRight cr1, CastlingRight cr2) {
+  return !(cr1 & cr2);
+}
 
 #endif //FRANKYCPP_GLOBALS_H

@@ -1,4 +1,4 @@
-set(core_SRCS main.cpp globals.h Bitboards.h Bitboards.cpp UCIHandler.cpp UCIHandler.h Semaphore.h Search.cpp Search.h UCIOption.cpp UCIOption.h Engine.cpp Engine.h Move.h)
+set(core_SRCS main.cpp globals.h Bitboards.h Bitboards.cpp UCIHandler.cpp UCIHandler.h Semaphore.h Search.cpp Search.h UCIOption.cpp UCIOption.h Engine.cpp Engine.h)
 
 add_library(core ${core_SRCS})
 
