@@ -51,19 +51,27 @@ Classes to be defined as C++ classes:
 #define FRANKYCPP_GLOBALS_H
 
 #include <string>
-#include <stdint.h>
-#include <assert.h>
+#include <cstdint>
+#include <cassert>
+
+#define NEWLINE std::cout << std::endl
 
 // Global constants
-constexpr int MAX_MOVES = 256;
-constexpr int MAX_PLY = 128;
+static const int MAX_MOVES = 256;
+static const int MAX_PLY = 128;
+
+static const char *START_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+/** 64 bit Key for zobrist etc. */
+typedef uint64_t Key;
 
 ///////////////////////////////////
 //// COLOR
 
 /** COLOR */
 enum Color {
-  WHITE, BLACK, NOCOLOR
+  WHITE, BLACK, NOCOLOR,
+  COLOR_LENGTH = 2
 };
 
 constexpr Color operator~(Color c) { return Color(c ^ BLACK); };
@@ -88,7 +96,8 @@ enum Square : int {
   SQ_A6, SQ_B6, SQ_C6, SQ_D6, SQ_E6, SQ_F6, SQ_G6, SQ_H6,
   SQ_A7, SQ_B7, SQ_C7, SQ_D7, SQ_E7, SQ_F7, SQ_G7, SQ_H7,
   SQ_A8, SQ_B8, SQ_C8, SQ_D8, SQ_E8, SQ_F8, SQ_G8, SQ_H8,
-  SQ_NONE
+  SQ_NONE,
+  SQ_LENGTH = 64
 };
 // @formatter:on
 
@@ -96,14 +105,16 @@ constexpr bool isSquare(Square s) { return s >= SQ_A1 && s <= SQ_H8; }
 
 /** Files */
 enum File : int {
-  FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H, FILE_NONE
+  FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H, FILE_NONE,
+  FILE_LENGTH = 9
 };
 
 constexpr File fileOf(Square s) { return File(s & 7); }
 
 /** Ranks */
 enum Rank : int {
-  RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_NONE
+  RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_NONE,
+  RANK_LENGTH = 9
 };
 
 constexpr Rank rankOf(Square s) { return Rank(s >> 3); }
@@ -114,8 +125,8 @@ inline std::string squareLabel(Square sq) {
   return std::string{char('a' + fileOf(sq)), char('1' + rankOf(sq))};
 }
 
-inline int distance(File f1, File f2) { return abs(f2-f1); }
-inline int distance(Rank r1, Rank r2) { return abs(r2-r1); }
+inline int distance(File f1, File f2) { return abs(f2 - f1); }
+inline int distance(Rank r1, Rank r2) { return abs(r2 - r1); }
 
 extern int8_t squareDistance[SQ_NONE][SQ_NONE];
 inline int distance(Square s1, Square s2) { return squareDistance[s1][s2]; }
@@ -126,10 +137,10 @@ inline int distance(Square s1, Square s2) { return squareDistance[s1][s2]; }
 
 /** Direction */
 enum Direction : int {
-  NORTH =  8,
-  EAST  =  1,
+  NORTH = 8,
+  EAST = 1,
   SOUTH = -NORTH,
-  WEST  = -EAST,
+  WEST = -EAST,
 
   NORTH_EAST = NORTH + EAST,
   SOUTH_EAST = SOUTH + EAST,
@@ -142,8 +153,8 @@ enum Direction : int {
 
 /** PieceTypes */
 enum PieceType : int {
-  // non-sliding ---- sliding -----------
-    KING, PAWN, KNIGHT, BISHOP, ROOK, QUEEN, PIECETYPE_NONE
+  KING, PAWN, KNIGHT, BISHOP, ROOK, QUEEN, PIECETYPE_NONE, PT_LENGTH = 7
+  // non sliding ---  sliding -----------
 };
 
 /** PieceType values */
@@ -159,58 +170,16 @@ const static int pieceValue[] = {
 
 /** Pieces */
 enum Piece : int {
-  // 0x0 - 0x5
-    WHITE_KING = 0, WHITE_PAWN, WHITE_KNIGHT, WHITE_BISHOP, WHITE_ROOK, WHITE_QUEEN,
-  // 0x8 - 0XD
-    BLACK_KING = 8, BLACK_PAWN, BLACK_KNIGHT, BLACK_BISHOP, BLACK_ROOK, BLACK_QUEEN,
-  // 0x10
-    PIECE_NONE = 16
+  WHITE_KING = 0, WHITE_PAWN, WHITE_KNIGHT, WHITE_BISHOP, WHITE_ROOK, WHITE_QUEEN, // 0x0 - 0x5
+  BLACK_KING = 8, BLACK_PAWN, BLACK_KNIGHT, BLACK_BISHOP, BLACK_ROOK, BLACK_QUEEN, // 0x8 - 0XD
+  PIECE_NONE = 16, // 0x10
+  PIECE_LENGTH = 16
 };
+static const std::string pieceToChar = "KPNBRQ  kpnbrq   ";
 
 constexpr Piece makePiece(Color c, PieceType pt) { return Piece((c << 3) + pt); }
 constexpr Color colorOf(Piece p) { return Color(p >> 3); }
 constexpr PieceType typeOf(Piece p) { return PieceType(p & 7); }
-
-/**
- * OPERATORS
- */
-#define ENABLE_BASE_OPERATORS_ON(T)                                \
-constexpr T operator+(T d1, T d2) { return T(int(d1) + int(d2)); } \
-constexpr T operator-(T d1, T d2) { return T(int(d1) - int(d2)); } \
-constexpr T operator-(T d) { return T(-int(d)); }                  \
-inline T& operator+=(T& d1, T d2) { return d1 = d1 + d2; }         \
-inline T& operator-=(T& d1, T d2) { return d1 = d1 - d2; }
-
-#define ENABLE_INCR_OPERATORS_ON(T)                                \
-inline T& operator++(T& d) { return d = T(int(d) + 1); }           \
-inline T& operator--(T& d) { return d = T(int(d) - 1); }
-
-#define ENABLE_FULL_OPERATORS_ON(T)                                \
-ENABLE_BASE_OPERATORS_ON(T)                                        \
-ENABLE_INCR_OPERATORS_ON(T)                                        \
-constexpr T operator*(int i, T d) { return T(i * int(d)); }        \
-constexpr T operator*(T d, int i) { return T(int(d) * i); }        \
-constexpr T operator/(T d, int i) { return T(int(d) / i); }        \
-constexpr int operator/(T d1, T d2) { return int(d1) / int(d2); }  \
-inline T& operator*=(T& d, int i) { return d = T(int(d) * i); }    \
-inline T& operator/=(T& d, int i) { return d = T(int(d) / i); }
-
-//ENABLE_FULL_OPERATORS_ON(Value)
-//ENABLE_FULL_OPERATORS_ON(Depth)
-ENABLE_FULL_OPERATORS_ON(Direction)
-
-ENABLE_INCR_OPERATORS_ON(PieceType)
-ENABLE_INCR_OPERATORS_ON(Piece)
-ENABLE_INCR_OPERATORS_ON(Color)
-ENABLE_INCR_OPERATORS_ON(Square)
-ENABLE_INCR_OPERATORS_ON(File)
-ENABLE_INCR_OPERATORS_ON(Rank)
-
-//ENABLE_BASE_OPERATORS_ON(Score)
-
-#undef ENABLE_FULL_OPERATORS_ON
-#undef ENABLE_INCR_OPERATORS_ON
-#undef ENABLE_BASE_OPERATORS_ON
 
 ///////////////////////////////////
 //// MOVE
@@ -297,50 +266,101 @@ enum CastlingSide : int {
 };
 
 /** CastlingRight */
-enum CastlingRight : int {
-  NO_CASTLING,
-  WHITE_OO,
-  WHITE_OOO = WHITE_OO << 1,
-  BLACK_OO = WHITE_OO << 2,
-  BLACK_OOO = WHITE_OO << 3,
+enum CastlingRights : int {
+  // @formatter:off
+  NO_CASTLING = 0,                                // 0000
 
-  WHITE_CASTLING = WHITE_OO | WHITE_OOO,
-  BLACK_CASTLING = BLACK_OO | BLACK_OOO,
-  ANY_CASTLING = WHITE_CASTLING | BLACK_CASTLING,
+  WHITE_OO,                                       // 0001
+  WHITE_OOO = WHITE_OO << 1,                      // 0010
+  WHITE_CASTLING = WHITE_OO | WHITE_OOO,          // 0011
 
-  CASTLING_RIGHT_NB = 16
+  BLACK_OO = WHITE_OO << 2,                       // 0100
+  BLACK_OOO = WHITE_OO << 3,                      // 1000
+  BLACK_CASTLING = BLACK_OO | BLACK_OOO,          // 1100
+
+  ANY_CASTLING = WHITE_CASTLING | BLACK_CASTLING, // 1111
+  CR_LENGTH = 16
+  // @formatter:on
 };
 
-constexpr CastlingRight operator|(Color c, CastlingSide s) {
-  return CastlingRight(WHITE_OO << ((s == QUEEN_SIDE) + 2 * c));
+constexpr CastlingRights operator|(Color c, CastlingSide s) {
+  return CastlingRights(WHITE_OO << ((s == QUEEN_SIDE) + 2 * c));
 }
 
-constexpr CastlingRight operator-(CastlingRight cr1, CastlingRight cr2) {
+constexpr CastlingRights operator-(CastlingRights cr1, CastlingRights cr2) {
   assert(cr1 & cr2);
-  return CastlingRight(cr1 ^ cr2);
+  return CastlingRights(cr1 ^ cr2);
 }
 
-constexpr CastlingRight &operator-=(CastlingRight &cr1, CastlingRight cr2) {
+constexpr CastlingRights &operator-=(CastlingRights &cr1, CastlingRights cr2) {
   assert(cr1 & cr2);
-  return cr1 = CastlingRight(cr1 ^ cr2);
+  return cr1 = CastlingRights(cr1 ^ cr2);
 }
 
-constexpr CastlingRight operator+(CastlingRight cr1, CastlingRight cr2) {
+constexpr CastlingRights operator+(CastlingRights cr1, CastlingRights cr2) {
   assert(!(cr1 & cr2));
-  return CastlingRight(cr1 | cr2);
+  return CastlingRights(cr1 | cr2);
 }
 
-constexpr CastlingRight &operator+=(CastlingRight &cr1, CastlingRight cr2) {
+constexpr CastlingRights &operator+=(CastlingRights &cr1, CastlingRights cr2) {
   assert(!(cr1 & cr2));
-  return cr1 = CastlingRight(cr1 | cr2);
+  return cr1 = CastlingRights(cr1 | cr2);
 }
 
-constexpr bool operator==(CastlingRight cr1, CastlingRight cr2) {
+constexpr bool operator==(CastlingRights cr1, CastlingRights cr2) {
   return cr1 & cr2;
 }
 
-constexpr bool operator!=(CastlingRight cr1, CastlingRight cr2) {
+constexpr bool operator!=(CastlingRights cr1, CastlingRights cr2) {
   return !(cr1 & cr2);
 }
+
+/**
+ * OPERATORS
+ */
+#define ENABLE_BASE_OPERATORS_ON(T)                                \
+constexpr T operator+(T d1, T d2) { return T(int(d1) + int(d2)); } \
+constexpr T operator-(T d1, T d2) { return T(int(d1) - int(d2)); } \
+constexpr T operator-(T d) { return T(-int(d)); }                  \
+inline T& operator+=(T& d1, T d2) { return d1 = d1 + d2; }         \
+inline T& operator-=(T& d1, T d2) { return d1 = d1 - d2; }
+
+#define ENABLE_INCR_OPERATORS_ON(T)                      \
+inline T& operator++(T& d) { return d = T(int(d) + 1); } \
+inline T& operator--(T& d) { return d = T(int(d) - 1); }
+
+#define ENABLE_FULL_OPERATORS_ON(T)                                \
+ENABLE_BASE_OPERATORS_ON(T)                                        \
+ENABLE_INCR_OPERATORS_ON(T)                                        \
+constexpr T operator*(int i, T d) { return T(i * int(d)); }        \
+constexpr T operator*(T d, int i) { return T(int(d) * i); }        \
+constexpr T operator/(T d, int i) { return T(int(d) / i); }        \
+constexpr int operator/(T d1, T d2) { return int(d1) / int(d2); }  \
+inline T& operator*=(T& d, int i) { return d = T(int(d) * i); }    \
+inline T& operator/=(T& d, int i) { return d = T(int(d) / i); }
+
+//ENABLE_FULL_OPERATORS_ON(Value)
+//ENABLE_FULL_OPERATORS_ON(Depth)
+ENABLE_FULL_OPERATORS_ON(Direction)
+
+ENABLE_INCR_OPERATORS_ON(PieceType)
+ENABLE_INCR_OPERATORS_ON(Piece)
+ENABLE_INCR_OPERATORS_ON(Color)
+ENABLE_INCR_OPERATORS_ON(Square)
+ENABLE_INCR_OPERATORS_ON(File)
+ENABLE_INCR_OPERATORS_ON(Rank)
+ENABLE_INCR_OPERATORS_ON(CastlingRights)
+
+//ENABLE_BASE_OPERATORS_ON(Score)
+
+#undef ENABLE_FULL_OPERATORS_ON
+#undef ENABLE_INCR_OPERATORS_ON
+#undef ENABLE_BASE_OPERATORS_ON
+
+/// Additional operators to add a Direction to a Square
+constexpr Square operator+(Square s, Direction d) { return Square(int(s) + int(d)); }
+constexpr Square operator-(Square s, Direction d) { return Square(int(s) - int(d)); }
+inline Square &operator+=(Square &s, Direction d) { return s = s + d; }
+inline Square &operator-=(Square &s, Direction d) { return s = s - d; }
 
 #endif //FRANKYCPP_GLOBALS_H

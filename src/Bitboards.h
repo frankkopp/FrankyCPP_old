@@ -154,5 +154,31 @@ inline Bitboard fileBB(Square s) {
   return fileBB(fileOf(s));
 }
 
+/// popcount() counts the number of non-zero bits in a bitboard
+inline int popcount(Bitboard b) {
+  extern uint8_t PopCnt16[1 << 16];
+  union { Bitboard bb; uint16_t u[4]; } v = { b };
+  return PopCnt16[v.u[0]] + PopCnt16[v.u[1]] + PopCnt16[v.u[2]] + PopCnt16[v.u[3]];
+}
+
+/// lsb() and msb() return the least/most significant bit in a non-zero bitboard
+inline Square lsb(Bitboard b) {
+  assert(b);
+  return Square(__builtin_ctzll(b));
+}
+
+/// lsb() and msb() return the least/most significant bit in a non-zero bitboard
+inline Square msb(Bitboard b) {
+  assert(b);
+  return Square(63 ^ __builtin_clzll(b));
+}
+
+/// pop_lsb() finds and clears the least significant bit in a non-zero bitboard
+ inline Square pop_lsb(Bitboard* b) {
+  const Square s = lsb(*b);
+  *b &= *b - 1;
+  return s;
+}
+
 
 #endif //FRANKYCPP_BITBOARDS_H

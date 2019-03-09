@@ -27,6 +27,7 @@
 #include <gmock/gmock.h>
 
 #include "../../src/globals.h"
+#include "../../src/Bitboards.h"
 
 using testing::Eq;
 
@@ -120,7 +121,7 @@ TEST(CastlingTest, castling) {
   ASSERT_EQ(0b1000, BLACK | QUEEN_SIDE);
   ASSERT_EQ(BLACK_OOO, BLACK | QUEEN_SIDE);
 
-  CastlingRight cr = ANY_CASTLING;
+  CastlingRights cr = ANY_CASTLING;
   ASSERT_EQ(0b1110, cr - WHITE_OO);
   ASSERT_EQ(0b1101, cr - WHITE_OOO);
   ASSERT_EQ(0b1011, cr - BLACK_OO);
@@ -144,4 +145,11 @@ TEST(CastlingTest, castling) {
   cr -= BLACK | KING_SIDE;
   ASSERT_TRUE(cr != BLACK_OO);
   ASSERT_FALSE(cr == BLACK_OO);
+}
+
+TEST(CastlingTest, Iteration) {
+  std::cout << std::endl;
+  for (CastlingRights cr = NO_CASTLING; cr <= ANY_CASTLING; ++cr) {
+    std::cout << "Castling: " << cr << " " << Bitboards::printFlat(cr) << std::endl;
+  }
 }

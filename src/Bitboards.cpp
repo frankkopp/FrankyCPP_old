@@ -28,6 +28,7 @@
 #include "globals.h"
 #include "Bitboards.h"
 
+uint8_t PopCnt16[1 << 16];
 Bitboard squareBB[SQ_NONE];
 Bitboard squareDiagUp[SQ_NONE];
 Bitboard squareDiagDown[SQ_NONE];
@@ -64,10 +65,22 @@ namespace Bitboards {
     return s;
   }
 
+
+/// popcount16() counts the non-zero bits using SWAR-Popcount algorithm
+  unsigned popcount16(unsigned u) {
+    u -= (u >> 1) & 0x5555U;
+    u = ((u >> 2) & 0x3333U) + (u & 0x3333U);
+    u = ((u >> 4) + u) & 0x0F0FU;
+    return (u * 0x0101U) >> 8;
+  }
+
 /**
  * Initializes various pre-computed bitboards
  */
   const void init() {
+
+    for (unsigned i = 0; i < (1 << 16); ++i)
+      PopCnt16[i] = (uint8_t) popcount16(i);
 
     // all squares
     for (Square sq = SQ_A1; sq <= SQ_H8; ++sq) {
@@ -76,7 +89,7 @@ namespace Bitboards {
       squareBB[sq] = (1ULL << sq);
 
       // square diagonals
-      if      (DiagUpA8 & sq) squareDiagUp[sq] = DiagUpA8;
+      if (DiagUpA8 & sq) squareDiagUp[sq] = DiagUpA8;
       else if (DiagUpA7 & sq) squareDiagUp[sq] = DiagUpA7;
       else if (DiagUpA6 & sq) squareDiagUp[sq] = DiagUpA6;
       else if (DiagUpA5 & sq) squareDiagUp[sq] = DiagUpA5;
@@ -91,7 +104,7 @@ namespace Bitboards {
       else if (DiagUpF1 & sq) squareDiagUp[sq] = DiagUpF1;
       else if (DiagUpG1 & sq) squareDiagUp[sq] = DiagUpG1;
       else if (DiagUpH1 & sq) squareDiagUp[sq] = DiagUpH1;
-      if      (DiagDownH8 & sq) squareDiagDown[sq] = DiagDownH8;
+      if (DiagDownH8 & sq) squareDiagDown[sq] = DiagDownH8;
       else if (DiagDownH7 & sq) squareDiagDown[sq] = DiagDownH7;
       else if (DiagDownH6 & sq) squareDiagDown[sq] = DiagDownH6;
       else if (DiagDownH5 & sq) squareDiagDown[sq] = DiagDownH5;
@@ -117,12 +130,11 @@ namespace Bitboards {
       }
     }
 
-    
-
   }
 
   const Bitboard shift(Direction d, Bitboard b) {
-    // move the nits a clear the left our right file after the shift to erase bit jumping over
+    // move the bits and clear the left our right file
+    // after the shift to erase bit jumping over
     switch (d) {
       case NORTH:
         return (b << 8);
@@ -141,8 +153,7 @@ namespace Bitboards {
       case NORTH_WEST:
         return (b << 7);
     }
+    assert(false);
     return b;
   }
-
 }
-

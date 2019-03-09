@@ -8,7 +8,7 @@ add_subdirectory(lib/googletest-master)
 include_directories(lib/googletest-master/googletest/include)
 include_directories(lib/googletest-master/googlemock/include)
 
-add_executable(FrankyTest main.cpp Tests/BitboardTests.cpp Tests/TimeingTests.cpp Tests/SemaphoreTest.cpp Tests/EngineTest.cpp Tests/GlobalsTest.cpp)
+add_executable(FrankyTest main.cpp Tests/BitboardTest.cpp Tests/TimeingTests.cpp Tests/SemaphoreTest.cpp Tests/EngineTest.cpp Tests/GlobalsTest.cpp Tests/PositionTest.cpp)
 
 target_link_libraries(FrankyTest gtest gtest_main)
 target_link_libraries(FrankyTest core)
