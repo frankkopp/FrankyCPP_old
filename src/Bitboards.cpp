@@ -28,12 +28,12 @@
 #include "globals.h"
 #include "Bitboards.h"
 
-uint8_t PopCnt16[1 << 16];
 Bitboard squareBB[SQ_NONE];
 Bitboard squareDiagUp[SQ_NONE];
 Bitboard squareDiagDown[SQ_NONE];
 
 int8_t squareDistance[SQ_NONE][SQ_NONE];
+uint8_t PopCnt16[1 << 16];
 
 namespace Bitboards {
 

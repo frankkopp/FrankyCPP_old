@@ -25,58 +25,80 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <vector>
 #include <chrono>
+#include <ostream>
+#include <cstdarg>
 
 #include "../../src/Bitboards.h"
 
-struct space_out : std::numpunct<char> {
-  char do_thousands_sep() const override { return '.'; } // separate with spaces
-  std::string do_grouping() const override { return "\03"; } // groups of 1 digit
+using namespace std;
+
+
+struct myLoc : std::numpunct<char> {
+  char do_decimal_point() const override { return ','; }
+  char do_thousands_sep() const override { return '.'; }
+  std::string do_grouping() const override { return "\03"; }
 };
 
-void test1();
-void test2();
+locale loc(cout.getloc(), new myLoc);
 
-TEST(TimingTests, ArrayVsExp) {
+void testTiming(ostringstream &os, int rounds, int iterations, int repetitions,
+                const vector<void (*)()> &tests);
 
-  std::locale loc(std::cout.getloc(), new space_out);
-  std::cout.imbue(loc);
-  std::cout << "\n";
+TEST(TimingTests, popcount) {
+  NEWLINE;
+  ostringstream os;
 
-  int ITERATIONS = 1000000;
+  //// TESTS START
+  Bitboards::init();
+  auto f1 = []() { int i = popcount(DiagUpA1); };
+  auto f2 = []() { int i = popcount2(DiagUpA1); };
+  vector<void (*)()> tests;
+  tests.push_back(f1);
+  tests.push_back(f2);
+  //// TESTS END
 
-  auto start = std::chrono::high_resolution_clock::now();
-  for (int j = 0; j < ITERATIONS; ++j) {
-    test1();
-  }
-  auto finish = std::chrono::high_resolution_clock::now();
+  testTiming(os, 5, 50, 1'000'000, tests);
 
-  std::cout << "Test 1: "
-            << std::setprecision(2)
-            << std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count()
-            << " ns\n";
-
-  start = std::chrono::high_resolution_clock::now();
-  for (int j = 0; j < ITERATIONS; ++j) {
-    test2();
-  }
-  finish = std::chrono::high_resolution_clock::now();
-
-  std::cout << "Test 2: "
-            << std::setprecision(2)
-            << std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count()
-            << " ns\n";
-
+  cout << os.str();
 }
 
-void test1() {
-  for (Square i = SQ_A1; i <= SQ_H8; ++i) {
-    std::string s = squareLabel(i);
+void
+testTiming(ostringstream &os, int rounds, int iterations, int repetitions,
+           const vector<void (*)()> &tests) {
+
+  cout.imbue(loc);
+  os.imbue(loc);
+  os << setprecision(9);
+
+  os << "Starting timing test: rounds=" << rounds << " iterations=" << iterations << " repetitions="
+     << repetitions << endl;
+  os << "======================================================================" << endl;
+
+  // rounds
+  for (int round = 1; round <= rounds; ++round) {
+    cout << "Round " << round << " of " << rounds << " timing tests." << endl;
+    // tests
+    int testNr = 1;
+    for (auto f : tests) {
+      // iterations
+      unsigned long long sum = 0ULL;
+      int i = 0;
+      while (i++ < iterations) {
+        // repetitions
+        auto start = std::chrono::high_resolution_clock::now();
+        for (int j = 0; j < repetitions; ++j) f();
+        auto finish = std::chrono::high_resolution_clock::now();
+        sum += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
+      }
+      auto avg = ((double) sum / iterations);
+      os << "Round " << setw(2) << round << " Test " << setw(2) << testNr << ": " << setw(12) << avg
+         << " ns" << " (" << setw(12) << (avg/1e9) << " sec)" << endl;
+    }
+    os << endl;
   }
 }
 
-void test2() {
-  for (Square i = SQ_A1; i <= SQ_H8; ++i) {
 
-  }
-}
+

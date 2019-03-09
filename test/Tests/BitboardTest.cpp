@@ -132,5 +132,19 @@ TEST(BitboardsTest, Diagonals) {
   ASSERT_EQ(DiagDownH1, squareDiagDown[SQ_C6]);
   ASSERT_EQ(DiagDownH1, squareDiagDown[SQ_G2]);
   ASSERT_EQ(DiagDownH1, squareDiagDown[SQ_H1]);
-  
+}
+
+
+TEST(BitboardsTest, bitScans) {
+  Bitboards::init();
+
+  ASSERT_EQ(1, popcount(squareBB[SQ_D3]));
+  ASSERT_EQ(2, popcount(squareBB[SQ_D3] | squareBB[SQ_H2]));
+  ASSERT_EQ(8, popcount(DiagUpA1));
+
+  ASSERT_EQ(19, lsb(squareBB[SQ_D3]));
+  ASSERT_EQ(19, msb(squareBB[SQ_D3]));
+
+
+
 }
