@@ -29,10 +29,26 @@
 #include "globals.h"
 
 namespace Bitboards {
-  const void init();
-  const std::string print(Bitboard b);
-  const std::string printFlat(Bitboard b);
-  const Bitboard shift(Direction d, Bitboard b);
+  void init();
+
+  std::string print(Bitboard b);
+  std::string printFlat(Bitboard b);
+
+  Bitboard shift(Direction d, Bitboard b);
+  Bitboard rotateR90(Bitboard b);
+  Bitboard rotateL90(Bitboard b);
+  Bitboard rotateR45(Bitboard b);
+  Bitboard rotateL45(Bitboard b);
+  Bitboard rotate(Bitboard b, const int rotMap[SQ_LENGTH]);
+
+  Bitboard getMovesRank(Square sq, Bitboard content);
+  Bitboard getMovesFile(Square square, Bitboard content);
+  Bitboard getMovesFileR(Square square, Bitboard rotated);
+  Bitboard getMovesDiagUp(Square square, Bitboard content);
+  Bitboard getMovesDiagUpR(Square sq, Bitboard rotated);
+  Bitboard getMovesDiagDown(Square square, Bitboard content);
+  Bitboard getMovesDiagDownR(Square square, Bitboard rotated);
+
 }
 
 constexpr Bitboard EMPTY_BB = Bitboard(0);
@@ -56,6 +72,139 @@ constexpr Bitboard Rank5BB = Rank1BB << (8 * 4);
 constexpr Bitboard Rank6BB = Rank1BB << (8 * 5);
 constexpr Bitboard Rank7BB = Rank1BB << (8 * 6);
 constexpr Bitboard Rank8BB = Rank1BB << (8 * 7);
+
+// pre-computed in Bitboards::init()
+extern Bitboard squareBB[SQ_LENGTH];
+extern Bitboard squareDiagUpBB[SQ_LENGTH];
+extern Bitboard squareDiagDownBB[SQ_LENGTH];
+extern Bitboard movesRank[SQ_LENGTH][256];
+extern Bitboard movesFile[SQ_LENGTH][256];
+extern Bitboard movesDiagUp[SQ_LENGTH][256];
+extern Bitboard movesDiagDown[SQ_LENGTH][256];
+extern Bitboard pawnAttacks[COLOR_LENGTH][SQ_LENGTH];
+extern Bitboard pawnMoves[COLOR_LENGTH][SQ_LENGTH];
+extern Square indexMapR90[SQ_LENGTH];
+extern Square indexMapL90[SQ_LENGTH];
+extern Square indexMapR45[SQ_LENGTH];
+extern Square indexMapL45[SQ_LENGTH];
+
+// @formatter:off
+
+constexpr int rotateMapR90[SQ_LENGTH] = {
+  7, 15, 23, 31, 39, 47, 55, 63,
+  6, 14, 22, 30, 38, 46, 54, 62,
+  5, 13, 21, 29, 37, 45, 53, 61,
+  4, 12, 20, 28, 36, 44, 52, 60,
+  3, 11, 19, 27, 35, 43, 51, 59,
+  2, 10, 18, 26, 34, 42, 50, 58,
+  1, 9, 17, 25, 33, 41, 49, 57,
+  0, 8, 16, 24, 32, 40, 48, 56
+};
+
+constexpr int rotateMapL90[SQ_LENGTH] = {
+  56,	48,	40,	32,	24,	16,	8	, 0,
+  57,	49,	41,	33,	25,	17,	9	, 1,
+  58,	50,	42,	34,	26,	18,	10,	2,
+  59,	51,	43,	35,	27,	19,	11,	3,
+  60,	52,	44,	36,	28,	20,	12,	4,
+  61,	53,	45,	37,	29,	21,	13,	5,
+  62,	54,	46,	38,	30,	22,	14,	6,
+  63,	55,	47,	39,	31,	23,	15,	7
+};
+
+constexpr int rotateMapR45[SQ_LENGTH] = {
+   7,
+   6,	15,
+   5,	14,	23,
+   4,	13,	22,	31,
+   3,	12,	21,	30,	39,
+   2,	11,	20,	29,	38,	47,
+   1,	10,	19,	28,	37,	46,	55,
+   0,	 9,	18,	27,	36,	45,	54,	63,
+   8,	17,	26,	35,	44,	53,	62,
+  16,	25,	34,	43,	52,	61,
+  24,	33,	42,	51,	60,
+  32,	41,	50,	59,
+  40,	49,	58,
+  48,	57,
+  56
+};
+
+constexpr int rotateMapL45[SQ_LENGTH] = {
+   0,
+   8,	 1,
+  16,	 9,	 2,
+  24,	17,	10,	 3,
+  32,	25,	18,	11,	 4,
+  40,	33,	26,	19,	12,	 5,
+  48,	41,	34,	27,	20,	13,	 6,
+  56,	49,	42,	35,	28,	21,	14,	7,
+  57,	50,	43,	36,	29,	22,	15,
+  58,	51,	44,	37,	30,	23,
+  59,	52,	45,	38,	31,
+  60,	53,	46,	39,
+  61,	54,	47,
+  62,	55,
+  63
+};
+
+inline Square rotateSquareR90(Square sq) { return indexMapR90[sq]; }
+inline Square rotateSquareL90(Square sq) { return indexMapL90[sq]; }
+inline Square rotateSquareR45 (Square sq) { return indexMapR45[sq]; }
+inline Square rotateSquareL45(Square sq) { return indexMapL45[sq]; }
+
+constexpr int lengthDiagUp[SQ_LENGTH] = {
+  8, 7, 6, 5, 4, 3, 2, 1,
+  7, 8, 7, 6, 5, 4, 3, 2,
+  6, 7, 8, 7, 6, 5, 4, 3,
+  5, 6, 7, 8, 7, 6, 5, 4,
+  4, 5, 6, 7, 8, 7, 6, 5,
+  3, 4, 5, 6, 7, 8, 7, 6,
+  2, 3, 4, 5, 6, 7, 8, 7,
+  1, 2, 3, 4, 5, 6, 7, 8
+};
+constexpr Bitboard lengthDiagUpMask(Square sq) {
+  return (ONE_BB << lengthDiagUp[sq]) - 1;
+}
+
+constexpr int lengthDiagDown[SQ_LENGTH] = {
+  1, 2, 3, 4, 5, 6, 7, 8,
+  2, 3, 4, 5, 6, 7, 8, 7,
+  3, 4, 5, 6, 7, 8, 7, 6,
+  4, 5, 6, 7, 8, 7, 6, 5,
+  5, 6, 7, 8, 7, 6, 5, 4,
+  6, 7, 8, 7, 6, 5, 4, 3,
+  7, 8, 7, 6, 5, 4, 3, 2,
+  8, 7, 6, 5, 4, 3, 2, 1
+};
+
+constexpr Bitboard lengthDiagDownMask(Square sq) {
+  return (ONE_BB << lengthDiagDown[sq]) - 1;
+}
+
+// TODO test could be wrong
+constexpr int shiftsDiagUp[SQ_LENGTH] = {
+  28, 21, 15, 10,  6,  3,  1,  0,
+  36, 28, 21, 15, 10,  6,  3,  1,
+  43, 36, 28, 21, 15, 10,  6,  3,
+  49, 43, 36, 28, 21, 15, 10,  6,
+  54, 49, 43, 36, 28, 21, 15, 10,
+  58, 54, 49, 43, 36, 28, 21, 15,
+  61, 58, 54, 49, 43, 36, 28, 21,
+  63, 61, 58, 54, 49, 43, 36, 28
+};
+
+// TODO test could be wrong
+constexpr int shiftsDiagDown[SQ_LENGTH] = {
+   0,  1,  3,  6, 10, 15, 21, 28,
+   1,  3,  6, 10, 15, 21, 28, 36,
+   3,  6, 10, 15, 21, 28, 36, 43,
+   6, 10, 15, 21, 28, 36, 43, 49,
+  10, 15, 21, 28, 36, 43, 49, 54,
+  15, 21, 28, 36, 43, 49, 54, 58,
+  21, 28, 36, 43, 49, 54, 58, 61,
+  28, 36, 43, 49, 54, 58, 61, 63
+};
 
 constexpr Bitboard DiagUpA1 = 0b\
 10000000\
@@ -104,10 +253,8 @@ constexpr Bitboard DiagDownD1 = (DiagDownE1 >> 1) & ~FileHBB;
 constexpr Bitboard DiagDownC1 = (DiagDownD1 >> 1) & ~FileHBB;
 constexpr Bitboard DiagDownB1 = (DiagDownC1 >> 1) & ~FileHBB;
 constexpr Bitboard DiagDownA1 = (DiagDownB1 >> 1) & ~FileHBB;
+// @formatter:on
 
-extern Bitboard squareBB[SQ_LENGTH];
-extern Bitboard squareDiagUp[SQ_LENGTH];
-extern Bitboard squareDiagDown[SQ_LENGTH];
 
 //// Operators for testing of Bitboards and Squares
 
@@ -156,35 +303,39 @@ inline Bitboard fileBB(Square s) {
 
 /// popcount() counts the number of non-zero bits in a bitboard
 inline int popcount(Bitboard b) {
+  // pre-computed table of population counter for 16-bit
   extern uint8_t PopCnt16[1 << 16];
-  union { Bitboard bb; uint16_t u[4]; } v = { b };
+  // nice trick to address 16-bit groups in a 64-bit int
+  // @formatter:off
+  union { Bitboard bb; uint16_t u[4]; } v = {b};
+  // @formatter:on
+  // adding all 16-bit population counters referenced in the 64-bit union
   return PopCnt16[v.u[0]] + PopCnt16[v.u[1]] + PopCnt16[v.u[2]] + PopCnt16[v.u[3]];
-}
-
-inline int popcount2(Bitboard b) {
-#if defined(__GNUC__)
-  return __builtin_popcountll(b);
-#else
-  extern uint8_t PopCnt16[1 << 16];
-  union { Bitboard bb; uint16_t u[4]; } v = { b };
-  return PopCnt16[v.u[0]] + PopCnt16[v.u[1]] + PopCnt16[v.u[2]] + PopCnt16[v.u[3]];
-#endif
 }
 
 /// lsb() and msb() return the least/most significant bit in a non-zero bitboard
 inline Square lsb(Bitboard b) {
   assert(b);
+#if defined(__GNUC__)  // GCC, Clang, ICC
   return Square(__builtin_ctzll(b));
+#else  // Compiler is not GCC
+#error "Compiler not yet supported."
+#endif
 }
 
 /// lsb() and msb() return the least/most significant bit in a non-zero bitboard
 inline Square msb(Bitboard b) {
   assert(b);
+#if defined(__GNUC__)  // GCC, Clang, ICC
   return Square(63 ^ __builtin_clzll(b));
+#else  // Compiler is not GCC
+#error "Compiler not yet supported."
+#endif
 }
 
 /// pop_lsb() finds and clears the least significant bit in a non-zero bitboard
- inline Square pop_lsb(Bitboard* b) {
+inline Square popLSB(Bitboard *b) {
+  assert (*b);
   const Square s = lsb(*b);
   *b &= *b - 1;
   return s;

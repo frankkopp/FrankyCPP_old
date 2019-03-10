@@ -120,17 +120,14 @@ enum Rank : int {
 constexpr Rank rankOf(Square s) { return Rank(s >> 3); }
 
 constexpr Square getSquare(File f, Rank r) { return Square((r << 3) + f); }
-
 inline std::string squareLabel(Square sq) {
   return std::string{char('a' + fileOf(sq)), char('1' + rankOf(sq))};
 }
 
+extern int squareDistance[SQ_NONE][SQ_NONE];
 inline int distance(File f1, File f2) { return abs(f2 - f1); }
 inline int distance(Rank r1, Rank r2) { return abs(r2 - r1); }
-
-extern int8_t squareDistance[SQ_NONE][SQ_NONE];
 inline int distance(Square s1, Square s2) { return squareDistance[s1][s2]; }
-
 
 ///////////////////////////////////
 //// DIRECTION
@@ -147,6 +144,13 @@ enum Direction : int {
   SOUTH_WEST = SOUTH + WEST,
   NORTH_WEST = NORTH + WEST
 };
+
+
+/// Additional operators to add a Direction to a Square
+constexpr Square operator+(Square s, Direction d) { return Square(int(s) + int(d)); }
+constexpr Square operator-(Square s, Direction d) { return Square(int(s) - int(d)); }
+inline Square &operator+=(Square &s, Direction d) { return s = s + d; }
+inline Square &operator-=(Square &s, Direction d) { return s = s - d; }
 
 ///////////////////////////////////
 //// PIECES
@@ -356,11 +360,5 @@ ENABLE_INCR_OPERATORS_ON(CastlingRights)
 #undef ENABLE_FULL_OPERATORS_ON
 #undef ENABLE_INCR_OPERATORS_ON
 #undef ENABLE_BASE_OPERATORS_ON
-
-/// Additional operators to add a Direction to a Square
-constexpr Square operator+(Square s, Direction d) { return Square(int(s) + int(d)); }
-constexpr Square operator-(Square s, Direction d) { return Square(int(s) - int(d)); }
-inline Square &operator+=(Square &s, Direction d) { return s = s + d; }
-inline Square &operator-=(Square &s, Direction d) { return s = s - d; }
 
 #endif //FRANKYCPP_GLOBALS_H

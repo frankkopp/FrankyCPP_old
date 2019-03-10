@@ -373,6 +373,10 @@ Bitboard Position::getOccupiedBB(Color c) const {
   return occupiedBB[c];
 }
 
+Bitboard Position::getOccupiedBB() const {
+  return occupiedBB[WHITE] | occupiedBB[BLACK];
+}
+
 int Position::getMaterial(Color c) const {
   return material[c];
 }

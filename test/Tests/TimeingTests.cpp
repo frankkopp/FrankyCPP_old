@@ -34,7 +34,6 @@
 
 using namespace std;
 
-
 struct myLoc : std::numpunct<char> {
   char do_decimal_point() const override { return ','; }
   char do_thousands_sep() const override { return '.'; }
@@ -53,13 +52,13 @@ TEST(TimingTests, popcount) {
   //// TESTS START
   Bitboards::init();
   auto f1 = []() { int i = popcount(DiagUpA1); };
-  auto f2 = []() { int i = popcount2(DiagUpA1); };
+  auto f2 = []() { int i = popcount(DiagUpA1); };
   vector<void (*)()> tests;
   tests.push_back(f1);
   tests.push_back(f2);
   //// TESTS END
 
-  testTiming(os, 5, 50, 1'000'000, tests);
+  testTiming(os, 5, 50, 10'000'000, tests);
 
   cout << os.str();
 }
@@ -72,6 +71,7 @@ testTiming(ostringstream &os, int rounds, int iterations, int repetitions,
   os.imbue(loc);
   os << setprecision(9);
 
+  os << endl;
   os << "Starting timing test: rounds=" << rounds << " iterations=" << iterations << " repetitions="
      << repetitions << endl;
   os << "======================================================================" << endl;
@@ -93,7 +93,7 @@ testTiming(ostringstream &os, int rounds, int iterations, int repetitions,
         sum += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
       }
       auto avg = ((double) sum / iterations);
-      os << "Round " << setw(2) << round << " Test " << setw(2) << testNr << ": " << setw(12) << avg
+      os << "Round " << setw(2) << round << " Test " << setw(2) << testNr++ << ": " << setw(12) << avg
          << " ns" << " (" << setw(12) << (avg/1e9) << " sec)" << endl;
     }
     os << endl;

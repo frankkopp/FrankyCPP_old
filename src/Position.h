@@ -150,6 +150,7 @@ public:
   Square getEnPassantSquare() const;
   Bitboard getPieceBB(Color c, PieceType pt) const;
   Bitboard getOccupiedBB(Color c) const;
+  Bitboard getOccupiedBB() const;
   int getMaterial(Color c) const;
 
 private:
