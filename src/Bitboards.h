@@ -71,7 +71,7 @@ namespace Bitboards {
   constexpr Bitboard Rank7BB = Rank1BB << (8 * 6);
   constexpr Bitboard Rank8BB = Rank1BB << (8 * 7);
 
-// pre-computed in Bitboards::init()
+  // pre-computed in Bitboards::init()
   extern Bitboard squareBB[SQ_LENGTH];
   extern Bitboard squareDiagUpBB[SQ_LENGTH];
   extern Bitboard squareDiagDownBB[SQ_LENGTH];
@@ -79,12 +79,36 @@ namespace Bitboards {
   extern Bitboard movesFile[SQ_LENGTH][256];
   extern Bitboard movesDiagUp[SQ_LENGTH][256];
   extern Bitboard movesDiagDown[SQ_LENGTH][256];
-  extern Bitboard pawnAttacks[COLOR_LENGTH][SQ_LENGTH];
-  extern Bitboard pawnMoves[COLOR_LENGTH][SQ_LENGTH];
   extern Square indexMapR90[SQ_LENGTH];
   extern Square indexMapL90[SQ_LENGTH];
   extern Square indexMapR45[SQ_LENGTH];
   extern Square indexMapL45[SQ_LENGTH];
+
+  extern Bitboard pawnAttacks[COLOR_LENGTH][SQ_LENGTH];
+  extern Bitboard pawnMoves[COLOR_LENGTH][SQ_LENGTH];
+  extern Bitboard pseudoAttacks[PT_LENGTH][SQ_LENGTH];
+
+  extern Bitboard filesWestMask[SQ_LENGTH];
+  extern Bitboard filesEastMask[SQ_LENGTH];
+  extern Bitboard fileWestMask[SQ_LENGTH];
+  extern Bitboard fileEastMask[SQ_LENGTH];
+  extern Bitboard ranksNorthMask[SQ_LENGTH];
+  extern Bitboard ranksSouthMask[SQ_LENGTH];
+
+  extern Bitboard rays[OR_LENGTH][SQ_LENGTH];
+
+  extern Bitboard passedPawnMask[COLOR_LENGTH][SQ_LENGTH];
+
+  extern Bitboard whiteSquaresBB;
+  extern Bitboard blackSquaresBB;
+
+  extern Bitboard intermediateBB[SQ_LENGTH][SQ_LENGTH];
+
+  extern int squareDistance[SQ_NONE][SQ_NONE];
+  inline int distance(File f1, File f2) { return abs(f2 - f1); }
+  inline int distance(Rank r1, Rank r2) { return abs(r2 - r1); }
+  inline int distance(Square s1, Square s2) { return squareDistance[s1][s2]; }
+  extern int centerDistance[SQ_LENGTH];
 
 // @formatter:off
 
@@ -253,7 +277,11 @@ namespace Bitboards {
   constexpr Bitboard DiagDownA1 = (DiagDownB1 >> 1) & ~FileHBB;
 // @formatter:on
 
-//// Get bitboards for ranks or files
+  //// Get bitboards for ranks or files
+
+  inline Bitboard rankBB(int r) {
+    return Rank1BB << (8 * r);
+  }
 
   inline Bitboard rankBB(Rank r) {
     return Rank1BB << (8 * r);
@@ -261,6 +289,10 @@ namespace Bitboards {
 
   inline Bitboard rankBB(Square s) {
     return rankBB(rankOf(s));
+  }
+
+  inline Bitboard fileBB(int f) {
+    return FileABB << f;
   }
 
   inline Bitboard fileBB(File f) {
@@ -271,7 +303,7 @@ namespace Bitboards {
     return fileBB(fileOf(s));
   }
 
-/// popcount() counts the number of non-zero bits in a bitboard
+  /// popcount() counts the number of non-zero bits in a bitboard
   inline int popcount(Bitboard b) {
     // pre-computed table of population counter for 16-bit
     extern uint8_t PopCnt16[1 << 16];

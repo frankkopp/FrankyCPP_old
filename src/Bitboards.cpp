@@ -31,8 +31,6 @@
 
 using namespace std;
 
-int squareDistance[SQ_NONE][SQ_NONE];
-
 namespace Bitboards {
 
   Bitboard squareBB[SQ_LENGTH];
@@ -46,11 +44,31 @@ namespace Bitboards {
 
   Bitboard pawnAttacks[COLOR_LENGTH][SQ_LENGTH];
   Bitboard pawnMoves[COLOR_LENGTH][SQ_LENGTH];
+  Bitboard pseudoAttacks[PT_LENGTH][SQ_LENGTH];
 
   Square indexMapR90[SQ_LENGTH];
   Square indexMapL90[SQ_LENGTH];
   Square indexMapR45[SQ_LENGTH];
   Square indexMapL45[SQ_LENGTH];
+
+  Bitboard filesWestMask[SQ_LENGTH];
+  Bitboard filesEastMask[SQ_LENGTH];
+  Bitboard fileWestMask[SQ_LENGTH];
+  Bitboard fileEastMask[SQ_LENGTH];
+  Bitboard ranksNorthMask[SQ_LENGTH];
+  Bitboard ranksSouthMask[SQ_LENGTH];
+
+  Bitboard rays[OR_LENGTH][SQ_LENGTH];
+
+  Bitboard passedPawnMask[COLOR_LENGTH][SQ_LENGTH];
+
+  Bitboard whiteSquaresBB;
+  Bitboard blackSquaresBB;
+
+  Bitboard intermediateBB[SQ_LENGTH][SQ_LENGTH];
+
+  int squareDistance[SQ_NONE][SQ_NONE];
+  int centerDistance[SQ_LENGTH];
 
   uint8_t PopCnt16[1 << 16];
 
@@ -193,11 +211,22 @@ namespace Bitboards {
     // distance between squares
     for (Square sq1 = SQ_A1; sq1 <= SQ_H8; ++sq1) {
       for (Square sq2 = SQ_A1; sq2 <= SQ_H8; ++sq2) {
-        if (sq1 != sq2)
+        if (sq1 != sq2) {
           squareDistance[sq1][sq2] = (int8_t) max(distance(fileOf(sq1), fileOf(sq2)),
                                                   distance(rankOf(sq1), rankOf(sq2)));
+        }
       }
     }
+
+    // Reverse index to quickly calculate the index of a square in the rotated board
+    for (Square square1 = SQ_A1; square1 < SQ_LENGTH; ++square1) {
+      indexMapR90[rotateMapR90[square1]] = square1;
+      indexMapL90[rotateMapL90[square1]] = square1;
+      indexMapR45[rotateMapR45[square1]] = square1;
+      indexMapL45[rotateMapL45[square1]] = square1;
+    }
+
+    /// Pre-compute attacks and moves on a an empty board (pseudo attacks)
 
     // All sliding attacks with blockers - horizontal
     // Shamefully copied from Beowulf :)
@@ -301,20 +330,13 @@ namespace Bitboards {
       }
     }
 
-    // pawn moves and attacks
+    // TODO TEST ALL BELOw
+
+    // pawn moves
     for (Square square = SQ_A1; square <= SQ_H8; ++square) {
       File file = fileOf(square);
       Rank rank = rankOf(square);
 
-      // pawn attacks
-      if (file > FILE_A) {
-        if (square > SQ_H1) pawnAttacks[WHITE][square] |= (ONE_BB << square + NORTH_WEST);
-        if (square < SQ_A8) pawnAttacks[BLACK][square] |= (1L << square + SOUTH_WEST);
-      }
-      if (file < FILE_H) {
-        if (square > SQ_H1) pawnAttacks[WHITE][square] |= (1L << square + NORTH_EAST);
-        if (square < SQ_A8) pawnAttacks[BLACK][square] |= (1L << square + SOUTH_EAST);
-      }
       // pawn moves
       if (square > SQ_H1) pawnMoves[WHITE][square] |= (1L << square + NORTH);
       if (square < SQ_A8) pawnMoves[BLACK][square] |= (1L << square + SOUTH);
@@ -323,12 +345,138 @@ namespace Bitboards {
       if (rank == RANK_7) pawnMoves[BLACK][square] |= (1L << square + SOUTH + SOUTH);
     }
 
-    // Reverse index to quickly calculate the index of a square in the rotated board
-    for (Square square1 = SQ_A1; square1 < SQ_LENGTH; ++square1) {
-      indexMapR90[rotateMapR90[square1]] = square1;
-      indexMapL90[rotateMapL90[square1]] = square1;
-      indexMapR45[rotateMapR45[square1]] = square1;
-      indexMapL45[rotateMapL45[square1]] = square1;
+    // @formatter:off
+    int steps[][5] = { {},
+                       { NORTH_WEST, NORTH_EAST }, // pawn
+                       { WEST+NORTH_WEST,          // knight
+                         EAST+NORTH_EAST,
+                         NORTH+NORTH_WEST,
+                         NORTH+NORTH_EAST },
+                       {}, {}, {},
+                       { NORTH_WEST, NORTH, NORTH_EAST, EAST } // king
+    };
+    // @formatter:on
+
+    // knight and king attacks
+    for (Color c = WHITE; c <= BLACK; ++c) {
+      for (PieceType pt : {PAWN, KNIGHT, KING}) {
+        for (Square s = SQ_A1; s <= SQ_H8; ++s) {
+          for (int i = 0; steps[pt][i]; ++i) {
+            Square to = s + Direction(c == WHITE ? steps[pt][i] : -steps[pt][i]);
+            if (isSquare(to) && distance(s, to) < 3) {
+              if (pt == PAWN) pawnAttacks[c][s] |= to;
+              else pseudoAttacks[pt][s] |= to;
+            }
+          }
+        }
+      }
+    }
+
+    // bishop, rook, queen pseudo attacks
+    for (Square square = SQ_A1; square <= SQ_H8; ++square) {
+      pseudoAttacks[BISHOP][square] |= movesDiagUp[square][0];
+      pseudoAttacks[BISHOP][square] |= movesDiagDown[square][0];
+      pseudoAttacks[ROOK][square] |= movesFile[square][0];
+      pseudoAttacks[ROOK][square] |= movesRank[square][0];
+      pseudoAttacks[QUEEN][square] |= pseudoAttacks[BISHOP][square] | pseudoAttacks[ROOK][square];
+    }
+
+    // masks for files and ranks left, right, up and down from square
+    for (Square square = SQ_A1; square <= SQ_H8; ++square) {
+      int f = fileOf(square);
+      int r = rankOf(square);
+
+      for (int j = 0; j <= 7; j++) {
+        // file masks
+        if (j > 0 && j <= f) filesWestMask[square] |= fileBB(j);
+        if (j < 7 && 7 - j > f) filesEastMask[square] |= fileBB(8 - j);
+        // rank masks
+        if (j < 7 && 7 - j > r) ranksNorthMask[square] |= rankBB(8 - j);
+        if (j > 0 && j <= r) ranksSouthMask[square] |= rankBB(j);
+      }
+      if (f > 0) fileWestMask[square] = fileBB(f);
+      if (f < 7) fileEastMask[square] = fileBB(f + 2);
+    }
+
+    // rays
+    for (Square square = SQ_A1; square < SQ_LENGTH; ++square) {
+      rays[N][square] = pseudoAttacks[ROOK][square] & ranksNorthMask[square];
+      rays[E][square] = pseudoAttacks[ROOK][square] & filesEastMask[square];
+      rays[S][square] = pseudoAttacks[ROOK][square] & ranksSouthMask[square];
+      rays[W][square] = pseudoAttacks[ROOK][square] & filesWestMask[square];
+      rays[NW][square] =
+        pseudoAttacks[BISHOP][square] & filesWestMask[square] & ranksNorthMask[square];
+      rays[NE][square] =
+        pseudoAttacks[BISHOP][square] & filesEastMask[square] & ranksNorthMask[square];
+      rays[SE][square] =
+        pseudoAttacks[BISHOP][square] & filesEastMask[square] & ranksSouthMask[square];
+      rays[SW][square] =
+        pseudoAttacks[BISHOP][square] & filesWestMask[square] & ranksSouthMask[square];
+    }
+
+    // mask for passed pawns
+    // Pawn front line - all squares north of the square for white, south for black
+    for (Square square = SQ_A1; square <= SQ_H8; ++square) {
+      int f = fileOf(square);
+      int r = rankOf(square);
+
+      // white pawn - ignore that pawns can'*t be on all squares
+      passedPawnMask[WHITE][square] |= rays[N][square];
+      if (f > 0 && r < 7) passedPawnMask[WHITE][square] |= rays[N][square + W];
+      if (f < 7 && r < 7) passedPawnMask[WHITE][square] |= rays[N][square + E];
+      // black pawn - ignore that pawns can'*t be on all squares
+      passedPawnMask[BLACK][square] |= rays[S][square];
+      if (f > 0 && r > 0) passedPawnMask[BLACK][square] |= rays[S][square + W];
+      if (f < 7 && r > 0) passedPawnMask[BLACK][square] |= rays[S][square + E];
+    }
+
+    // masks for each square color (good for bishops vs bishops or pawns)
+    Bitboard tmpW = EMPTY_BB;
+    Bitboard tmpB = EMPTY_BB;
+    for (Square square = SQ_A1; square <= SQ_H8; ++square) {
+      int f = fileOf(square);
+      int r = rankOf(square);
+
+      if ((f + r) % 2 == 0) tmpB |= 1L << square;
+      else tmpW |= 1L << square;
+    }
+    whiteSquaresBB = tmpW;
+    blackSquaresBB = tmpB;
+
+    // mask for intermediate squares in between two squares
+    for (Square from = SQ_A1; from <= SQ_H8; ++from) {
+      for (Square to = SQ_A1; to <= SQ_H8; ++to) {
+        for (int d = 0; d < 7; d++) {
+          Bitboard toBB = squareBB[to];
+
+          if ((rays[d][from] & toBB) != 0) {
+            intermediateBB[from][to] |= rays[d][from] & ~rays[d][to] & ~toBB;
+          }
+        }
+      }
+    }
+
+    // distances to center squares by quadrant
+    for (Square square = SQ_A1; square <= SQ_H8; ++square) {
+      int fi = fileOf(square);
+      int ri = rankOf(square);
+
+      // left upper quadrant
+      if ((squareBB[square] & ranksNorthMask[27] & filesWestMask[36]) != 0) {
+        centerDistance[square] = distance(square, SQ_D5);
+      }
+        // right upper quadrant
+      else if ((squareBB[square] & ranksNorthMask[28] & filesEastMask[35]) != 0) {
+        centerDistance[square] = distance(square, SQ_E5);
+      }
+        // left lower quadrant
+      else if ((squareBB[square] & ranksSouthMask[35] & filesWestMask[28]) != 0) {
+        centerDistance[square] = distance(square, SQ_D4);
+      }
+        // right lower quadrant
+      else if ((squareBB[square] & ranksSouthMask[36] & filesEastMask[27]) != 0) {
+        centerDistance[square] = distance(square, SQ_E4);
+      }
     }
 
   }

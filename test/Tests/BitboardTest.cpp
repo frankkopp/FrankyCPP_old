@@ -731,3 +731,5 @@ TEST(BitboardsTest, indexRotation) {
   ASSERT_EQ(39, rotateSquareL45(SQ_E5));
   ASSERT_EQ(63, rotateSquareL45(SQ_H8));
 }
+
+// TODO Bitboards Tests

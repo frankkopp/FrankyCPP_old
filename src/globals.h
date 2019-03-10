@@ -124,11 +124,6 @@ inline std::string squareLabel(Square sq) {
   return std::string{char('a' + fileOf(sq)), char('1' + rankOf(sq))};
 }
 
-extern int squareDistance[SQ_NONE][SQ_NONE];
-inline int distance(File f1, File f2) { return abs(f2 - f1); }
-inline int distance(Rank r1, Rank r2) { return abs(r2 - r1); }
-inline int distance(Square s1, Square s2) { return squareDistance[s1][s2]; }
-
 ///////////////////////////////////
 //// DIRECTION
 
@@ -144,6 +139,13 @@ enum Direction : int {
   SOUTH_WEST = SOUTH + WEST,
   NORTH_WEST = NORTH + WEST
 };
+
+/** Orientation */
+enum Orientation : int {
+  NW, N, NE, E, SE, S, SW, W,
+  OR_LENGTH
+};
+
 
 
 /// Additional operators to add a Direction to a Square
