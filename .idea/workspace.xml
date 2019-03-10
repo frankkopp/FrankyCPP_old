@@ -22,13 +22,7 @@
   <component name="ChangeListManager">
     <list default="true" id="4febe152-5c70-47fd-9338-9cb20e6462e6" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Bitboards.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Bitboards.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Bitboards.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Bitboards.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Position.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Position.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Position.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Position.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/globals.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/globals.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/Tests/GlobalsTest.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/test/Tests/GlobalsTest.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/Tests/PositionTest.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/test/Tests/PositionTest.cpp" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -64,7 +58,7 @@
               <file pinned="false" current-in-tab="true">
                 <entry file="file://$PROJECT_DIR$/src/globals.h">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state relative-caret-position="374">
+                    <state relative-caret-position="2714">
                       <caret line="229" column="34" lean-forward="true" selection-start-line="229" selection-start-column="34" selection-end-line="229" selection-end-column="34" />
                       <folding>
                         <element signature="e#0#1135#0" />
@@ -330,8 +324,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/src/Position.cpp">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="676">
-                  <caret line="201" column="2" selection-start-line="201" selection-start-column="2" selection-end-line="201" selection-end-column="2" />
+                <state relative-caret-position="790">
+                  <caret line="207" column="68" lean-forward="true" selection-start-line="207" selection-start-column="68" selection-end-line="207" selection-end-column="68" />
                   <folding>
                     <element signature="e#1137#1156#0" expanded="true" />
                   </folding>
@@ -636,7 +630,7 @@
       <workItem from="1551681102021" duration="30071000" />
       <workItem from="1551888542846" duration="3593000" />
       <workItem from="1551892813737" duration="1750000" />
-      <workItem from="1551895427269" duration="173533000" />
+      <workItem from="1551895427269" duration="173653000" />
     </task>
     <task id="LOCAL-00001" summary="Initial">
       <created>1551628568845</created>
@@ -757,7 +751,14 @@
       <option name="project" value="LOCAL" />
       <updated>1552237363299</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="Poistion doMove WIP">
+      <created>1552260993031</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1552260993031</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -793,7 +794,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="228394000" />
+    <option name="totallyTimeSpent" value="228514000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-6" y="0" width="2866" height="1223" extended-state="0" />
@@ -844,7 +845,8 @@
     <MESSAGE value="MOved Bitboards related stuff to namespace Bitboards" />
     <MESSAGE value="Additional bitboards" />
     <MESSAGE value="Additional bitboards and Value&#10;Added Position internal counters" />
-    <option name="LAST_COMMIT_MESSAGE" value="Additional bitboards and Value&#10;Added Position internal counters" />
+    <MESSAGE value="Poistion doMove WIP" />
+    <option name="LAST_COMMIT_MESSAGE" value="Poistion doMove WIP" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1257,7 +1259,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/globals.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="374">
+        <state relative-caret-position="2714">
           <caret line="229" column="34" lean-forward="true" selection-start-line="229" selection-start-column="34" selection-end-line="229" selection-end-column="34" />
           <folding>
             <element signature="e#0#1135#0" />
@@ -1269,8 +1271,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/Position.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="676">
-          <caret line="201" column="2" selection-start-line="201" selection-start-column="2" selection-end-line="201" selection-end-column="2" />
+        <state relative-caret-position="790">
+          <caret line="207" column="68" lean-forward="true" selection-start-line="207" selection-start-column="68" selection-end-line="207" selection-end-column="68" />
           <folding>
             <element signature="e#1137#1156#0" expanded="true" />
           </folding>

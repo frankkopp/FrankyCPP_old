@@ -187,18 +187,19 @@ void Position::doMove(Move move) {
       halfMoveClock = 0; // reset half move clock because of pawn move
       break;
 
-    case CASTLING:
-      // TODO CASTLING
-      break;
-
-    case ENPASSANT:
+    case ENPASSANT: {
       assert(enPassantSquare != SQ_NONE);
       Square capSq(toSq + pawnDir[~myColor]);
-      assert(board[capSq] == Piece((~myColor*8) + 1));
+      assert(board[capSq] == Piece((~myColor * 8) + 1));
       removePiece(capSq);
       movePiece(fromSq, toSq);
       clearEnPassant();
       halfMoveClock = 0; // reset half move clock because of pawn move
+      break;
+    }
+    
+    case CASTLING:
+      // TODO CASTLING
       break;
   }
 
