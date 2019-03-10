@@ -118,7 +118,6 @@ enum Rank : int {
 };
 
 constexpr Rank rankOf(Square s) { return Rank(s >> 3); }
-
 constexpr Square getSquare(File f, Rank r) { return Square((r << 3) + f); }
 inline std::string squareLabel(Square sq) {
   return std::string{char('a' + fileOf(sq)), char('1' + rankOf(sq))};
@@ -139,6 +138,8 @@ enum Direction : int {
   SOUTH_WEST = SOUTH + WEST,
   NORTH_WEST = NORTH + WEST
 };
+
+const static Direction pawnDir[COLOR_LENGTH] = { NORTH, SOUTH };
 
 /** Orientation */
 enum Orientation : int {
@@ -232,11 +233,12 @@ enum MoveType {
 };
 
 template<MoveType T>
-constexpr Move make(Square from, Square to, PieceType pt = KNIGHT) {
+constexpr Move createMove(Square from, Square to, PieceType pt = KNIGHT) {
+  assert(T == PROMOTION || pt == KNIGHT);
+  assert(pt == KNIGHT || pt == QUEEN || pt == ROOK || pt == BISHOP);
   return Move(T + ((pt - KNIGHT) << PROM_TYPE_SHIFT) + (from << FROM_SHIFT) + to);
 }
-
-constexpr Move makeMove(Square from, Square to) { return Move((from << FROM_SHIFT) + to); }
+constexpr Move createMove(Square from, Square to) { return Move((from << FROM_SHIFT) + to); }
 constexpr Square fromSquare(Move m) { return Square((m >> FROM_SHIFT) & MOVE_MASK); }
 constexpr Square toSquare(Move m) { return Square(m & MOVE_MASK); }
 constexpr bool isMove(Move m) { return fromSquare(m) != toSquare(m); }
@@ -322,10 +324,6 @@ constexpr CastlingRights &operator+=(CastlingRights &cr1, CastlingRights cr2) {
   return cr1 = CastlingRights(cr1 | cr2);
 }
 
-constexpr bool operator==(CastlingRights cr1, CastlingRights cr2) {
-  return cr1 & cr2;
-}
-
 constexpr bool operator!=(CastlingRights cr1, CastlingRights cr2) {
   return !(cr1 & cr2);
 }
@@ -372,7 +370,7 @@ ENABLE_INCR_OPERATORS_ON(CastlingRights)
 #undef ENABLE_INCR_OPERATORS_ON
 #undef ENABLE_BASE_OPERATORS_ON
 
-constexpr const char* const boolStr(bool b) { return b ? "true" : "false"; };
-constexpr const char* const boolStr(int b) { return b ? "true" : "false"; };
+constexpr const char *const boolStr(bool b) { return b ? "true" : "false"; };
+constexpr const char *const boolStr(int b) { return b ? "true" : "false"; };
 
 #endif //FRANKYCPP_GLOBALS_H

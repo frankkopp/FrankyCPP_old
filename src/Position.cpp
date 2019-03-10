@@ -30,6 +30,7 @@
 #include "Bitboards.h"
 
 using namespace std;
+using namespace Bitboards;
 
 Key Zobrist::pieces[PIECE_LENGTH][SQ_LENGTH];
 Key Zobrist::castlingRights[CR_LENGTH];
@@ -119,7 +120,108 @@ Position::Position(const Position &op) {
 ////////////////////////////////////////////////
 ///// PUBLIC
 
+void Position::doMove(Move move) {
+  assert(isMove(move));
+  assert(isSquare(fromSquare(move)));
+  assert(isSquare(toSquare(move)));
+  assert(board[fromSquare(move)] != PIECE_NONE);
 
+  const MoveType moveType = typeOf(move);
+
+  const Square fromSq = fromSquare(move);
+  const Piece fromPC = board[fromSq];
+  const PieceType fromPT = typeOf(fromPC);
+
+  const Square toSq = toSquare(move);
+  const Piece targetPC = board[toSq];
+  const PieceType targetPT = typeOf(targetPC);
+
+  const Color myColor = colorOf(fromPC);
+  const PieceType promotionPT = promotionType(move);
+
+  // save state of board for undo
+  moveHistory[historyCounter] = move;
+  castlingRights_History[historyCounter] = castlingRights;
+  enPassantSquare_History[historyCounter] = enPassantSquare;
+  halfMoveClockHistory[historyCounter] = halfMoveClock;
+  zobristKey_History[historyCounter] = zobristKey;
+  hasCheckFlagHistory[historyCounter] = hasCheck;
+  hasMateFlagHistory[historyCounter] = hasMate;
+  historyCounter++;
+
+  // reset check and mate flag
+  hasCheck = FLAG_TBD;
+  hasMate = FLAG_TBD;
+
+  // do move
+  switch (moveType) {
+
+    case NORMAL:
+      if (castlingRights && (CastlingMask & fromSq || CastlingMask & toSq)) {
+        invalidateCastlingRights(fromSq, toSq);
+      }
+      clearEnPassant();
+      if (targetPC != PIECE_NONE) { // capture
+        removePiece(toSq);
+        halfMoveClock = 0; // reset half move clock because of capture
+      } else if (fromPT == PAWN) {
+        halfMoveClock = 0; // reset half move clock because of pawn move
+        if (distance(fromSq, toSq) == 2) { // pawn double - set en passant
+          // set new en passant target field - always one "behind" the toSquare
+          enPassantSquare = toSq + pawnDir[~myColor];
+          zobristKey = zobristKey ^ Zobrist::enPassantFile[fileOf(enPassantSquare)]; // in
+        }
+      } else halfMoveClock++;
+      movePiece(fromSq, toSq);
+      break;
+
+    case PROMOTION:
+      assert(rankOf(toSq) == (myColor == WHITE ? RANK_8 : RANK_1));
+      if (targetPC != PIECE_NONE) removePiece(toSq); // capture
+      if (castlingRights && (CastlingMask & fromSq || CastlingMask & toSq)) {
+        invalidateCastlingRights(fromSq, toSq);
+      }
+      removePiece(fromSq);
+      putPiece(makePiece(myColor, promotionPT), toSq);
+      clearEnPassant();
+      halfMoveClock = 0; // reset half move clock because of pawn move
+      break;
+
+    case CASTLING:
+      // TODO CASTLING
+      break;
+
+    case ENPASSANT:
+      assert(enPassantSquare != SQ_NONE);
+      Square capSq(toSq + pawnDir[~myColor]);
+      assert(board[capSq] == Piece((~myColor*8) + 1));
+      removePiece(capSq);
+      movePiece(fromSq, toSq);
+      clearEnPassant();
+      halfMoveClock = 0; // reset half move clock because of pawn move
+      break;
+  }
+
+  // update halfMoveNumber
+  nextHalfMoveNumber++;
+
+  // change color (active player)
+  nextPlayer = ~nextPlayer;
+  zobristKey = this->zobristKey ^ Zobrist::nextPlayer;
+
+}
+
+void Position::undoMove() {
+
+}
+
+void Position::doNullMove() {
+
+}
+
+void Position::undoNullMove() {
+
+}
 
 ////////////////////////////////////////////////
 ///// TO STRING
@@ -128,9 +230,10 @@ std::string Position::str() const {
   ostringstream output;
   output << printBoard();
   output << printFen() << endl;
-  output << (hasCheck == 1 ? "Has check!" : "No check");
-  if (hasCheck == 1 && hasMate == 1) output << "Has check mate!" << endl;
-  else output << endl;
+  output << "Check: "
+         << (hasCheck == FLAG_TBD ? "N/A" : hasCheck == FLAG_TRUE ? "Check" : "No check");
+  output << " Check Mate: "
+         << (hasMate == FLAG_TBD ? "N/A" : hasMate == FLAG_TRUE ? "Mate" : "No mate") << endl;
   output << "Gamephase: " << gamePhase << endl;
   output << "Material: white=" << material[WHITE] << " black=" << material[BLACK] << endl;
   output << "PosValue MG: white=" << psqMGValue[WHITE] << " black=" << psqMGValue[BLACK] << endl;
@@ -263,6 +366,49 @@ inline Piece Position::removePiece(Square square) {
   return old;
 }
 
+void Position::invalidateCastlingRights(Square fromSq, Square toSq) {
+  // TODO invalidateCastlingRights(fromSquare, toSquare);
+  // TODO optimize
+  // check for castling rights invalidation
+  if (castlingRights == WHITE_CASTLING && (fromSq == SQ_E1 || toSq == SQ_E1)) {
+    zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
+    castlingRights -= WHITE_CASTLING;
+    zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
+  }
+  if (fromSq == SQ_E8 || toSq == SQ_E8) {
+    zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
+    castlingRights -= BLACK_CASTLING;
+    zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
+  }
+  if (fromSq == SQ_A1 || toSq == SQ_A1) {
+    zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
+    castlingRights -= WHITE_OOO;
+    zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
+  }
+  if (fromSq == SQ_A8 || toSq == SQ_A8) {
+    zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
+    castlingRights -= BLACK_OOO;
+    zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
+  }
+  if (fromSq == SQ_H1 || toSq == SQ_H1) {
+    zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
+    castlingRights -= WHITE_OO;
+    zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
+  }
+  if (fromSq == SQ_H8 || toSq == SQ_H8) {
+    zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
+    castlingRights -= BLACK_OO;
+    zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
+  }
+}
+
+inline void Position::clearEnPassant() {
+  if (enPassantSquare != SQ_NONE) {
+    zobristKey = zobristKey ^ Zobrist::enPassantFile[fileOf(enPassantSquare)]; // out
+    enPassantSquare = SQ_NONE;
+  }
+}
+
 void Position::initializeBoard() {
 
   std::fill_n(&board[0], sizeof(board), PIECE_NONE);
@@ -332,7 +478,11 @@ void Position::setupBoard(const char *fen) {
 
   // castling rights
   while ((ss >> token) && !isspace(token)) {
-    if (token == '-') break;
+    if (token == '-') {
+      // skip space
+      if (!(ss >> token)) return; // end of line
+      break;
+    }
     else if (token == 'K') castlingRights += WHITE_OO;
     else if (token == 'Q') castlingRights += WHITE_OOO;
     else if (token == 'k') castlingRights += BLACK_OO;
@@ -366,6 +516,8 @@ void Position::setupBoard(const char *fen) {
   nextHalfMoveNumber = 2 * nextHalfMoveNumber - (nextPlayer == WHITE);
 
 }
+
+
 
 
 

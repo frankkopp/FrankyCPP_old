@@ -173,7 +173,7 @@ namespace Bitboards {
     for (Square sq = SQ_A1; sq <= SQ_H8; ++sq) {
 
       // square bitboard
-      squareBB[sq] = (1ULL << sq);
+      squareBB[sq] = (ONE_BB << sq);
 
       // square diagonals
       if (DiagUpA8 & sq) squareDiagUpBB[sq] = DiagUpA8;

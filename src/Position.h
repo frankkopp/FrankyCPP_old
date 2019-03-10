@@ -151,9 +151,9 @@ public:
   std::string printBoard() const;
   std::string printFen() const;
 
-  void makeMove(Move move);
+  void doMove(Move move);
   void undoMove();
-  void makeNullMove();
+  void doNullMove();
   void undoNullMove();
 
   ////////////////////////////////////////////////
@@ -175,6 +175,8 @@ private:
   void movePiece(Square from, Square to);
   void putPiece(Piece piece, Square square);
   Piece removePiece(Square square);
+  void invalidateCastlingRights(Square from, Square to);
+  void clearEnPassant();
 };
 
 #endif //FRANKYCPP_POSITION_H

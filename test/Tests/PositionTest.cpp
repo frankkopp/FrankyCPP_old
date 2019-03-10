@@ -92,8 +92,9 @@ TEST(PositionTest, Setup) {
   Position::init();
   Values::init();
   NEWLINE;
-  Position position;
+  string fen;
 
+  Position position;
   ASSERT_EQ(WHITE, position.getNextPlayer());
   ASSERT_EQ(BLACK, ~position.getNextPlayer());
   ASSERT_EQ(position.getMaterial(WHITE), position.getMaterial(BLACK));
@@ -106,7 +107,7 @@ TEST(PositionTest, Setup) {
   ASSERT_EQ(WHITE_KNIGHT, position.getPiece(SQ_B1));
   ASSERT_EQ(BLACK_KNIGHT, position.getPiece(SQ_B8));
 
-  string fen("r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3 10 113");
+  fen = string("r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3 10 113");
   position = Position(fen.c_str());
   ASSERT_EQ(fen, position.printFen());
   ASSERT_EQ(SQ_E3, position.getEnPassantSquare());
@@ -120,6 +121,12 @@ TEST(PositionTest, Setup) {
   ASSERT_EQ(BLACK_KING, position.getPiece(SQ_E8));
   ASSERT_EQ(WHITE_ROOK, position.getPiece(SQ_G3));
   ASSERT_EQ(BLACK_QUEEN, position.getPiece(SQ_C6));
+
+  fen = string("r1bqkb1r/pppp1ppp/2n2n2/3Pp3/8/8/PPP1PPPP/RNBQKBNR w - e6 0 1");
+  position = Position(fen.c_str());
+  ASSERT_EQ(fen, position.printFen());
+  ASSERT_EQ(SQ_E6, position.getEnPassantSquare());
+  ASSERT_EQ(WHITE, position.getNextPlayer());
 }
 
 TEST(PositionTest, Output) {
@@ -205,6 +212,72 @@ TEST(PositionTest, PosValue) {
   ASSERT_EQ(0, position.getMgPosValue(BLACK));
   ASSERT_EQ(-10, position.getEgPosValue(WHITE));
   ASSERT_EQ(-10, position.getEgPosValue(BLACK));
+}
 
+TEST(PositionTest, doMoveNormal) {
+  Bitboards::init();
+  Position::init();
+  Values::init();
+  NEWLINE;
 
+  Position position;
+  cout << position.str() << endl;
+
+  position.doMove(createMove<NORMAL>(SQ_E2, SQ_E4));
+  cout << position.str() << endl;
+  ASSERT_EQ(SQ_E3, position.getEnPassantSquare());
+  ASSERT_EQ("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1", position.printFen());
+
+  position.doMove(createMove<NORMAL>(SQ_D7, SQ_D5));
+  cout << position.str() << endl;
+  ASSERT_EQ(SQ_D6, position.getEnPassantSquare());
+  ASSERT_EQ("rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 2", position.printFen());
+
+  position.doMove(createMove<NORMAL>(SQ_E4, SQ_D5));
+  cout << position.str() << endl;
+  ASSERT_EQ(SQ_NONE, position.getEnPassantSquare());
+  ASSERT_EQ(BLACK, position.getNextPlayer());
+  ASSERT_EQ(5900, position.getMaterial(BLACK));
+  ASSERT_EQ("rnbqkbnr/ppp1pppp/8/3P4/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2", position.printFen());
+}
+
+TEST(PositionTest, doMovePromotion) {
+  Bitboards::init();
+  Position::init();
+  Values::init();
+  NEWLINE;
+
+  Position position("6k1/P7/8/8/8/8/8/3K4 w - - 0 1");
+  cout << position.str() << endl;
+  position.doMove(createMove<PROMOTION>(SQ_A7, SQ_A8, QUEEN));
+  cout << position.str() << endl;
+
+  ASSERT_EQ(BLACK, position.getNextPlayer());
+  ASSERT_EQ(2900, position.getMaterial(WHITE));
+  ASSERT_EQ("Q5k1/8/8/8/8/8/8/3K4 b  - 0 1", position.printFen());
+}
+
+TEST(PositionTest, doMoveEnPassantCapture) {
+  Bitboards::init();
+  Position::init();
+  Values::init();
+  NEWLINE;
+
+  Position position("rnbqkbnr/ppp1pppp/8/8/3pP3/2N2N2/PPPP1PPP/R1BQKB1R b KQkq e3 0 3");
+  cout << position.str() << endl;
+  position.doMove(createMove<ENPASSANT>(SQ_D4, SQ_E3));
+  cout << position.str() << endl;
+
+  ASSERT_EQ(WHITE, position.getNextPlayer());
+  ASSERT_EQ(5900, position.getMaterial(WHITE));
+  ASSERT_EQ("rnbqkbnr/ppp1pppp/8/8/8/2N1pN2/PPPP1PPP/R1BQKB1R w KQkq - 0 4", position.printFen());
+
+  position = Position("r1bqkb1r/pppp1ppp/2n2n2/3Pp3/8/8/PPP1PPPP/RNBQKBNR w - e6 0 1");
+  cout << position.str() << endl;
+  position.doMove(createMove<ENPASSANT>(SQ_D5, SQ_E6));
+  cout << position.str() << endl;
+
+  ASSERT_EQ(BLACK, position.getNextPlayer());
+  ASSERT_EQ(5900, position.getMaterial(WHITE));
+  ASSERT_EQ("rnbqkbnr/ppp1pppp/8/8/8/2N1pN2/PPPP1PPP/R1BQKB1R w KQkq - 0 4", position.printFen());
 }

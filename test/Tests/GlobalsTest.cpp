@@ -29,16 +29,17 @@
 #include "../../src/globals.h"
 #include "../../src/Bitboards.h"
 
+using namespace std;
 using testing::Eq;
 
 TEST(GlobalsTest, labels) {
   // all squares and label of squares
-  std::string actual;
+  string actual;
   for (int i = 0; i < SQ_NONE; ++i) {
     ASSERT_TRUE(isSquare(Square(i)));
     actual += squareLabel(Square(i));
   }
-  std::string expected = "a1b1c1d1e1f1g1h1a2b2c2d2e2f2g2h2a3b3c3d3e3f3g3h3a4b4c4"
+  string expected = "a1b1c1d1e1f1g1h1a2b2c2d2e2f2g2h2a3b3c3d3e3f3g3h3a4b4c4"
                          "d4e4f4g4h4a5b5c5d5e5f5g5h5a6b6c6d6e6f6g6h6a7b7c7d7e7f7"
                          "g7h7a8b8c8d8e8f8g8h8";
   ASSERT_EQ(expected, actual);
@@ -46,7 +47,7 @@ TEST(GlobalsTest, labels) {
 
 TEST(GlobalsTest, filesAndRanks) {
   // all squares and label of squares
-  std::string actual;
+  string actual;
   for (int i = 0; i < SQ_NONE; ++i) {
     ASSERT_EQ(Square(i), getSquare(File(fileOf(Square(i))), Rank(rankOf(Square(i)))));
   }
@@ -96,21 +97,21 @@ TEST(GlobalsTest, operators) {
 }
 
 TEST(MoveTest, moves) {
-  Move move = make<NORMAL>(SQ_A1, SQ_H1);
+  Move move = createMove<NORMAL>(SQ_A1, SQ_H1);
   ASSERT_TRUE(isMove(move));
   ASSERT_EQ(SQ_A1, fromSquare(move));
   ASSERT_EQ(SQ_H1, toSquare(move));
   ASSERT_EQ(NORMAL, typeOf(move));
   ASSERT_EQ(KNIGHT, promotionType(move)); // not useful is not type PROMOTION
 
-  move = make<PROMOTION>(SQ_A7, SQ_A8, QUEEN);
+  move = createMove<PROMOTION>(SQ_A7, SQ_A8, QUEEN);
   ASSERT_TRUE(isMove(move));
   ASSERT_EQ(SQ_A7, fromSquare(move));
   ASSERT_EQ(SQ_A8, toSquare(move));
   ASSERT_EQ(PROMOTION, typeOf(move));
   ASSERT_EQ(QUEEN, promotionType(move)); // not useful is not type PROMOTION
 
-  std::stringstream buffer1, buffer2;
+  stringstream buffer1, buffer2;
   buffer1 << "a7a8";
   buffer2 << move;
   ASSERT_EQ(buffer1.str(), buffer2.str());
@@ -148,8 +149,8 @@ TEST(CastlingTest, castling) {
 }
 
 TEST(CastlingTest, Iteration) {
-  std::cout << std::endl;
+  cout << endl;
   for (CastlingRights cr = NO_CASTLING; cr <= ANY_CASTLING; ++cr) {
-    std::cout << "Castling: " << cr << " " << Bitboards::printFlat(cr) << std::endl;
+    cout << "Castling: " << cr << " " << Bitboards::printFlat(cr) << endl;
   }
 }

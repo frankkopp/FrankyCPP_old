@@ -71,6 +71,13 @@ namespace Bitboards {
   constexpr Bitboard Rank7BB = Rank1BB << (8 * 6);
   constexpr Bitboard Rank8BB = Rank1BB << (8 * 7);
 
+  constexpr Bitboard CastlingMask = (ONE_BB << SQ_E1)
+                                      | (ONE_BB << SQ_A1)
+                                      | (ONE_BB << SQ_H1)
+                                      | (ONE_BB << SQ_E8)
+                                      | (ONE_BB << SQ_A8)
+                                      | (ONE_BB << SQ_H8);
+
   // pre-computed in Bitboards::init()
   extern Bitboard squareBB[SQ_LENGTH];
   extern Bitboard squareDiagUpBB[SQ_LENGTH];
