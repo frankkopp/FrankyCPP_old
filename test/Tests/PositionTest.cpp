@@ -90,13 +90,36 @@ TEST(PositionTest, ZobristTest) {
 TEST(PositionTest, Setup) {
   Bitboards::init();
   Position::init();
+  Values::init();
   NEWLINE;
   Position position;
 
   ASSERT_EQ(WHITE, position.getNextPlayer());
   ASSERT_EQ(BLACK, ~position.getNextPlayer());
   ASSERT_EQ(position.getMaterial(WHITE), position.getMaterial(BLACK));
+  ASSERT_EQ(24, position.getGamePhase());
+  ASSERT_EQ(position.getMgPosValue(WHITE),position.getMgPosValue(BLACK));
+  ASSERT_EQ(-225,position.getMgPosValue(WHITE));
+  ASSERT_EQ(-225,position.getMgPosValue(BLACK));
+  ASSERT_EQ(WHITE_KING, position.getPiece(SQ_E1));
+  ASSERT_EQ(BLACK_KING, position.getPiece(SQ_E8));
+  ASSERT_EQ(WHITE_KNIGHT, position.getPiece(SQ_B1));
+  ASSERT_EQ(BLACK_KNIGHT, position.getPiece(SQ_B8));
 
+  string fen("r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3 10 113");
+  position = Position(fen.c_str());
+  ASSERT_EQ(fen, position.printFen());
+  ASSERT_EQ(SQ_E3, position.getEnPassantSquare());
+  ASSERT_EQ(BLACK, position.getNextPlayer());
+  ASSERT_EQ(3400, position.getMaterial(WHITE));
+  ASSERT_EQ(6940, position.getMaterial(BLACK));
+  ASSERT_EQ(22, position.getGamePhase());
+  ASSERT_EQ(90,position.getMgPosValue(WHITE));
+  ASSERT_EQ(7,position.getMgPosValue(BLACK));
+  ASSERT_EQ(WHITE_KING, position.getPiece(SQ_G1));
+  ASSERT_EQ(BLACK_KING, position.getPiece(SQ_E8));
+  ASSERT_EQ(WHITE_ROOK, position.getPiece(SQ_G3));
+  ASSERT_EQ(BLACK_QUEEN, position.getPiece(SQ_C6));
 }
 
 TEST(PositionTest, Output) {
@@ -142,7 +165,6 @@ TEST(PositionTest, Output) {
   fen = string("rnbqkbnr/1ppppppp/8/p7/Q1P5/8/PP1PPPPP/RNB1KBNR b KQkq - 1 2");
   position = Position(fen.c_str());
   ASSERT_EQ(fen, position.printFen());
-  
 }
 
 TEST(PositionTest, Copy) {
@@ -150,12 +172,39 @@ TEST(PositionTest, Copy) {
   Position::init();
   NEWLINE;
 
-  Position position;
+  string fen("r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3 10 113");
+  Position position(fen.c_str());
   Position copy(position);
   ASSERT_EQ(position.getZobristKey(), copy.getZobristKey());
   ASSERT_EQ(position.printFen(), copy.printFen());
   ASSERT_EQ(position.printBoard(), copy.printBoard());
   ASSERT_EQ(position.getOccupiedBB(WHITE), copy.getOccupiedBB(WHITE));
   ASSERT_EQ(position.getOccupiedBB(BLACK), copy.getOccupiedBB(BLACK));
+  ASSERT_EQ(SQ_E3, copy.getEnPassantSquare());
+  ASSERT_EQ(BLACK, copy.getNextPlayer());
+}
+
+TEST(PositionTest, PosValue) {
+  Bitboards::init();
+  Position::init();
+  Values::init();
+  NEWLINE;
+
+  Position position("8/8/8/8/8/8/8/8 w - - 0 1");
+  //  cout << position.str() << endl;
+
+  position.putPiece(WHITE_KING, SQ_E1);
+  position.putPiece(BLACK_KING, SQ_E8);
+  position.putPiece(WHITE_KNIGHT, SQ_E4);
+  position.putPiece(BLACK_KNIGHT, SQ_D5);
+  // cout << position.str() << endl;
+  ASSERT_EQ(2, position.getGamePhase());
+  ASSERT_EQ(2320, position.getMaterial(WHITE));
+  ASSERT_EQ(2320, position.getMaterial(BLACK));
+  ASSERT_EQ(0, position.getMgPosValue(WHITE));
+  ASSERT_EQ(0, position.getMgPosValue(BLACK));
+  ASSERT_EQ(-10, position.getEgPosValue(WHITE));
+  ASSERT_EQ(-10, position.getEgPosValue(BLACK));
+
 
 }

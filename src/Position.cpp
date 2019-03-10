@@ -59,7 +59,7 @@ void Position::init() {
 }
 
 ////////////////////////////////////////////////
-///// PUBLIC
+///// CONSTRUCTORS
 
 /** Default constructor creates a board with standard start setup */
 Position::Position() : Position(START_POSITION_FEN) {};
@@ -96,6 +96,8 @@ Position::Position(const Position &op) {
     this->occupiedBBL45[c] = op.occupiedBBL45[c];
 
     this->material[c] = op.material[c];
+    this->psqMGValue[c] = op.psqMGValue[c];
+    this->psqEGValue[c] = op.psqEGValue[c];
   }
   // necessary history b/o move repetition
   this->historyCounter = op.historyCounter;
@@ -114,18 +116,29 @@ Position::Position(const Position &op) {
 
 }
 
-std::string Position::str() {
+////////////////////////////////////////////////
+///// PUBLIC
+
+
+
+////////////////////////////////////////////////
+///// TO STRING
+
+std::string Position::str() const {
   ostringstream output;
   output << printBoard();
   output << printFen() << endl;
   output << (hasCheck == 1 ? "Has check!" : "No check");
   if (hasCheck == 1 && hasMate == 1) output << "Has check mate!" << endl;
   else output << endl;
+  output << "Gamephase: " << gamePhase << endl;
   output << "Material: white=" << material[WHITE] << " black=" << material[BLACK] << endl;
+  output << "PosValue MG: white=" << psqMGValue[WHITE] << " black=" << psqMGValue[BLACK] << endl;
+  output << "PosValue EG: white=" << psqEGValue[WHITE] << " black=" << psqEGValue[BLACK] << endl;
   return output.str();
 }
 
-std::string Position::printBoard() {
+std::string Position::printBoard() const {
   ostringstream output;
   output << "  +---+---+---+---+---+---+---+---+" << endl;
   for (Rank r = RANK_8; r >= RANK_1; --r) {
@@ -146,7 +159,7 @@ std::string Position::printBoard() {
   return output.str();
 }
 
-std::string Position::printFen() {
+std::string Position::printFen() const {
   ostringstream fen;
 
   // pieces
@@ -206,11 +219,11 @@ std::ostream &operator<<(std::ostream &os, Position &position) {
 ////////////////////////////////////////////////
 ///// PRIVATE
 
-void Position::movePiece(Square from, Square to) {
+inline void Position::movePiece(Square from, Square to) {
   putPiece(removePiece(from), to);
 }
 
-void Position::putPiece(Piece piece, Square square) {
+inline void Position::putPiece(Piece piece, Square square) {
   // piece list and zobrist
   assert (board[square] == PIECE_NONE);
   board[square] = piece;
@@ -222,12 +235,14 @@ void Position::putPiece(Piece piece, Square square) {
   piecesBB[colorOf(piece)][typeOf(piece)] |= square;
   // material
   material[colorOf(piece)] += pieceValue[typeOf(piece)];
-  // TODO position value
+  // position value
+  psqMGValue[colorOf(piece)] += Values::midGamePosValue[piece][square];
+  psqEGValue[colorOf(piece)] += Values::endGamePosValue[piece][square];
   // game phase
-  // TODO game phase
+  gamePhase += gamePhaseValue[typeOf(piece)];
 }
 
-Piece Position::removePiece(Square square) {
+inline Piece Position::removePiece(Square square) {
   // piece list
   assert (board[square] != PIECE_NONE);
   Piece old = board[square];
@@ -240,9 +255,11 @@ Piece Position::removePiece(Square square) {
   piecesBB[colorOf(old)][typeOf(old)] ^= square;
   // material
   material[colorOf(old)] -= pieceValue[typeOf(old)];
-  // TODO position value
+  // position value
+  psqMGValue[colorOf(old)] -= Values::midGamePosValue[old][square];
+  psqEGValue[colorOf(old)] -= Values::endGamePosValue[old][square];
   // game phase
-  // TODO game phase
+  gamePhase -= gamePhaseValue[typeOf(old)];
   return old;
 }
 
@@ -271,7 +288,7 @@ void Position::initializeBoard() {
     material[color] = 0;
   }
 
-  gamePhase = GAME_PHASE_MAX;
+  gamePhase = 0;
 }
 
 void Position::setupBoard(const char *fen) {
@@ -350,36 +367,6 @@ void Position::setupBoard(const char *fen) {
 
 }
 
-////////////////////////////////////////////////
-///// GETTER / SETTER
-
-Key Position::getZobristKey() const {
-  return zobristKey;
-}
-
-Color Position::getNextPlayer() const {
-  return nextPlayer;
-}
-
-Square Position::getEnPassantSquare() const {
-  return enPassantSquare;
-}
-
-Bitboard Position::getPieceBB(Color c, PieceType pt) const {
-  return piecesBB[c][pt];
-}
-
-Bitboard Position::getOccupiedBB(Color c) const {
-  return occupiedBB[c];
-}
-
-Bitboard Position::getOccupiedBB() const {
-  return occupiedBB[WHITE] | occupiedBB[BLACK];
-}
-
-int Position::getMaterial(Color c) const {
-  return material[c];
-}
 
 
 

@@ -23,6 +23,7 @@
  *
  */
 
+#include "globals.h"
 #include "UCIOption.h"
 
 using namespace std;
@@ -33,21 +34,21 @@ namespace UCI {
     : type(BUTTON), nameID(name) {}
 
   Option::Option(const char *name, bool value)
-    : type(CHECK), nameID(name) { defaultValue = currentValue = value ? "true" : "false"; }
+    : type(CHECK), nameID(name), defaultValue(boolStr(value)), currentValue(boolStr(value)) {}
 
   Option::Option(const char *name, int def, int min, int max)
-    : type(SPIN), nameID(name), minValue(std::to_string(min)),
-      maxValue(std::to_string(max)) { defaultValue = currentValue = std::to_string(def); }
+    : type(SPIN), nameID(name), minValue(to_string(min)), defaultValue(to_string(def)),
+      currentValue(to_string(def)) {}
 
   Option::Option(const char *name, const char *str)
-    : type(STRING), nameID(name) { defaultValue = currentValue = str; }
+    : type(STRING), nameID(name), defaultValue(str), currentValue(str) {}
 
   Option::Option(const char *name, const char *val, const char *def)
     : type(STRING), nameID(name), defaultValue(val), currentValue(def) {}
 
   Option::Option(const Option &o)
-  : nameID(o.nameID), type(o.type), currentValue(o.currentValue), defaultValue(o.defaultValue),
-  minValue(o.minValue), maxValue(o.maxValue), varValue(o.varValue) {}
+    : nameID(o.nameID), type(o.type), currentValue(o.currentValue), defaultValue(o.defaultValue),
+      minValue(o.minValue), maxValue(o.maxValue), varValue(o.varValue) {}
 
   ostream &operator<<(ostream &os, const Option &option) {
     os << "Option = nameID: " << option.nameID << " type: " << option.getTypeString()

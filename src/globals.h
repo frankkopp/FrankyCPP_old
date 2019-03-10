@@ -146,8 +146,6 @@ enum Orientation : int {
   OR_LENGTH
 };
 
-
-
 /// Additional operators to add a Direction to a Square
 constexpr Square operator+(Square s, Direction d) { return Square(int(s) + int(d)); }
 constexpr Square operator-(Square s, Direction d) { return Square(int(s) - int(d)); }
@@ -172,6 +170,17 @@ const static int pieceValue[] = {
   500,  // rook
   900,  // queen
   0     // notype
+};
+
+/** Game phase values */
+const static int gamePhaseValue[] = {
+  0, // king
+  0,  // pawn
+  1,  // knight
+  1,  // bishop
+  2,  // rook
+  4,  // queen
+  0   // notype
 };
 
 /** Pieces */
@@ -362,5 +371,8 @@ ENABLE_INCR_OPERATORS_ON(CastlingRights)
 #undef ENABLE_FULL_OPERATORS_ON
 #undef ENABLE_INCR_OPERATORS_ON
 #undef ENABLE_BASE_OPERATORS_ON
+
+constexpr const char* const boolStr(bool b) { return b ? "true" : "false"; };
+constexpr const char* const boolStr(int b) { return b ? "true" : "false"; };
 
 #endif //FRANKYCPP_GLOBALS_H

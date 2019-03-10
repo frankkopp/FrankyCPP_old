@@ -44,61 +44,34 @@ namespace UCI {
    */
   class Option {
 
-    string nameID;
-    OptionType type;
-    string currentValue;
-    string defaultValue;
-    string minValue;
-    string maxValue;
+    const string nameID;
+    const OptionType type;
+    const string defaultValue;
+    const string minValue;
+    const string maxValue;
+    const string varValue;
 
-    string varValue;
+    string currentValue;
 
   public:
     explicit Option(const char *nameID);
-
     Option(const char *nameID, bool value);
-
     Option(const char *nameID, int def, int min, int max);
-
     Option(const char *nameID, const char *str);
-
     Option(const char *nameID, const char *var, const char *def);
-
     Option(const Option &o);
 
     friend ostream &operator<<(ostream &os, const Option &option);
 
-    const string &getNameID() const {
-      return nameID;
-    }
-
-    OptionType getType() const {
-      return type;
-    }
-
-    std::string getTypeString() const {
-      return optionTypeStrings[type];
-    }
-
-    const string &getCurrentValue() const {
-      return currentValue;
-    }
-
-    const string &getDefaultValue() const {
-      return defaultValue;
-    }
-
-    const string &getMinValue() const {
-      return minValue;
-    }
-
-    const string &getMaxValue() const {
-      return maxValue;
-    }
-
-    const string &getVarValue() const {
-      return varValue;
-    }
+    const string &getNameID() const { return nameID; }
+    const OptionType getType() const { return type; }
+    const std::string getTypeString() const { return optionTypeStrings[type]; }
+    const string &getDefaultValue() const { return defaultValue; }
+    const string &getMinValue() const { return minValue; }
+    const string &getMaxValue() const { return maxValue; }
+    const string &getVarValue() const { return varValue; }
+    string getCurrentValue() const { return currentValue; }
+    string setCurrentValue(string value)  { currentValue = value; }
 
   };
 

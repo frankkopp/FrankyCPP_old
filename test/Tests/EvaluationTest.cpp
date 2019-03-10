@@ -23,32 +23,32 @@
  *
  */
 
-#ifndef FRANKYCPP_UCIPROTOCOLHANDLER_H
-#define FRANKYCPP_UCIPROTOCOLHANDLER_H
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+#include <ostream>
+#include <string>
 
-#include <thread>
-#include <iostream>
-#include "Semaphore.h"
+#include "../../src/globals.h"
+#include "../../src/Values.h"
 
 using namespace std;
+using namespace Values;
+using testing::Eq;
 
-namespace UCI {
+TEST(EvaluationTest, posValue) {
+  NEWLINE;
+  Values::init();
 
-  class Handler {
+  ASSERT_EQ(-30, midGamePosValue[WHITE_PAWN][SQ_D2]);
+  ASSERT_EQ(-30, midGamePosValue[BLACK_PAWN][SQ_E7]);
 
-    const Semaphore mySemaphore;
+  ASSERT_EQ(-50, midGamePosValue[WHITE_KNIGHT][SQ_A8]);
+  ASSERT_EQ(-50, midGamePosValue[BLACK_KNIGHT][SQ_H1]);
 
-  public:
+  ASSERT_EQ(5, endGamePosValue[WHITE_QUEEN][SQ_E4]);
+  ASSERT_EQ(5, endGamePosValue[BLACK_QUEEN][SQ_D5]);
 
-    /** Constructor */
-    Handler();
-    /** Destructor */
-    virtual ~Handler();
+  ASSERT_EQ(50, midGamePosValue[WHITE_KING][SQ_G1]);
+  ASSERT_EQ(50, midGamePosValue[BLACK_KING][SQ_G8]);
 
-    /** Starts the handler loop */
-    void loop();
-    void goCommand(istringstream &inStream);
-
-  };
 }
-#endif //FRANKYCPP_UCIPROTOCOLHANDLER_H

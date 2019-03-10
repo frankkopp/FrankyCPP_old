@@ -271,22 +271,18 @@ namespace Bitboards {
     for (Square square = SQ_A1; square <= SQ_H8; ++square) {
       File file = fileOf(square);
       Rank rank = rankOf(square);
-
       /* Get the far left hand square on this diagonal */
       Square diagstart = (Square) (square - 9 * (min((int) file, (int) rank)));
       File dsfile = fileOf(diagstart);
       int dl = lengthDiagUp[square];
-
       /* Loop through all possible occupations of this diagonal line */
       for (int sq = 0; sq < (1 << dl); sq++) {
         Bitboard mask = 0, mask2 = 0;
-
         /* Calculate possible target squares */
         for (int b1 = (file - dsfile) - 1; b1 >= 0; b1--) {
           mask += (ONE_BB << b1);
           if ((sq & (1 << b1)) != 0) break;
         }
-
         for (int b2 = (file - dsfile) + 1; b2 < dl; b2++) {
           mask += (ONE_BB << b2);
           if ((sq & (1 << b2)) != 0) break;
@@ -302,41 +298,32 @@ namespace Bitboards {
     for (Square square = SQ_A1; square <= SQ_H8; ++square) {
       File file = fileOf(square);
       Rank rank = rankOf(square);
-
       /* Get the far left hand square on this diagonal */
       Square diagstart = (Square) (7 * (min((int) file, (int) (7 - rank))) + square);
       File dsfile = fileOf(diagstart);
       int dl = lengthDiagDown[square];
-
       /* Loop through all possible occupations of this diagonal line */
       for (int j = 0; j < (1 << dl); j++) {
         Bitboard mask = 0, mask2 = 0;
-
         /* Calculate possible target squares */
         for (int x = (file - dsfile) - 1; x >= 0; x--) {
           mask += (ONE_BB << x);
           if ((j & (1 << x)) != 0) break;
         }
-
         for (int x = (file - dsfile) + 1; x < dl; x++) {
           mask += (ONE_BB << x);
           if ((j & (1 << x)) != 0) break;
         }
-
         /* Rotate the target line back onto the required diagonal */
         for (int x = 0; x < dl; x++) mask2 += (((mask >> x) & 1) << (diagstart - (7 * x)));
-
         movesDiagDown[square][j] = mask2;
       }
     }
-
-    // TODO TEST ALL BELOw
 
     // pawn moves
     for (Square square = SQ_A1; square <= SQ_H8; ++square) {
       File file = fileOf(square);
       Rank rank = rankOf(square);
-
       // pawn moves
       if (square > SQ_H1) pawnMoves[WHITE][square] |= (1L << square + NORTH);
       if (square < SQ_A8) pawnMoves[BLACK][square] |= (1L << square + SOUTH);
@@ -346,20 +333,18 @@ namespace Bitboards {
     }
 
     // @formatter:off
-    int steps[][5] = { {},
+    // steps for kings, pawns, knight for WHITE - negate to get BLACK
+    int steps[][5] = { { NORTH_WEST, NORTH, NORTH_EAST, EAST }, // king
                        { NORTH_WEST, NORTH_EAST }, // pawn
                        { WEST+NORTH_WEST,          // knight
                          EAST+NORTH_EAST,
                          NORTH+NORTH_WEST,
-                         NORTH+NORTH_EAST },
-                       {}, {}, {},
-                       { NORTH_WEST, NORTH, NORTH_EAST, EAST } // king
-    };
+                         NORTH+NORTH_EAST }};
     // @formatter:on
 
     // knight and king attacks
     for (Color c = WHITE; c <= BLACK; ++c) {
-      for (PieceType pt : {PAWN, KNIGHT, KING}) {
+      for (PieceType pt : { KING, PAWN, KNIGHT}) {
         for (Square s = SQ_A1; s <= SQ_H8; ++s) {
           for (int i = 0; steps[pt][i]; ++i) {
             Square to = s + Direction(c == WHITE ? steps[pt][i] : -steps[pt][i]);
@@ -385,14 +370,13 @@ namespace Bitboards {
     for (Square square = SQ_A1; square <= SQ_H8; ++square) {
       int f = fileOf(square);
       int r = rankOf(square);
-
       for (int j = 0; j <= 7; j++) {
         // file masks
-        if (j > 0 && j <= f) filesWestMask[square] |= fileBB(j);
-        if (j < 7 && 7 - j > f) filesEastMask[square] |= fileBB(8 - j);
+        if (j < f) filesWestMask[square] |= fileBB(j);
+        if (7 - j > f) filesEastMask[square] |= fileBB(7 - j);
         // rank masks
-        if (j < 7 && 7 - j > r) ranksNorthMask[square] |= rankBB(8 - j);
-        if (j > 0 && j <= r) ranksSouthMask[square] |= rankBB(j);
+        if (7 - j > r) ranksNorthMask[square] |= rankBB(7 - j);
+        if (j < r) ranksSouthMask[square] |= rankBB(j);
       }
       if (f > 0) fileWestMask[square] = fileBB(f);
       if (f < 7) fileEastMask[square] = fileBB(f + 2);
@@ -419,7 +403,6 @@ namespace Bitboards {
     for (Square square = SQ_A1; square <= SQ_H8; ++square) {
       int f = fileOf(square);
       int r = rankOf(square);
-
       // white pawn - ignore that pawns can'*t be on all squares
       passedPawnMask[WHITE][square] |= rays[N][square];
       if (f > 0 && r < 7) passedPawnMask[WHITE][square] |= rays[N][square + W];
@@ -430,25 +413,11 @@ namespace Bitboards {
       if (f < 7 && r > 0) passedPawnMask[BLACK][square] |= rays[S][square + E];
     }
 
-    // masks for each square color (good for bishops vs bishops or pawns)
-    Bitboard tmpW = EMPTY_BB;
-    Bitboard tmpB = EMPTY_BB;
-    for (Square square = SQ_A1; square <= SQ_H8; ++square) {
-      int f = fileOf(square);
-      int r = rankOf(square);
-
-      if ((f + r) % 2 == 0) tmpB |= 1L << square;
-      else tmpW |= 1L << square;
-    }
-    whiteSquaresBB = tmpW;
-    blackSquaresBB = tmpB;
-
     // mask for intermediate squares in between two squares
     for (Square from = SQ_A1; from <= SQ_H8; ++from) {
       for (Square to = SQ_A1; to <= SQ_H8; ++to) {
         for (int d = 0; d < 7; d++) {
           Bitboard toBB = squareBB[to];
-
           if ((rays[d][from] & toBB) != 0) {
             intermediateBB[from][to] |= rays[d][from] & ~rays[d][to] & ~toBB;
           }
@@ -456,11 +425,22 @@ namespace Bitboards {
       }
     }
 
+    // masks for each square color (good for bishops vs bishops or pawns)
+    Bitboard tmpW = EMPTY_BB;
+    Bitboard tmpB = EMPTY_BB;
+    for (Square square = SQ_A1; square <= SQ_H8; ++square) {
+      int f = fileOf(square);
+      int r = rankOf(square);
+      if ((f + r) % 2 == 0) tmpB |= 1L << square;
+      else tmpW |= 1L << square;
+    }
+    whiteSquaresBB = tmpW;
+    blackSquaresBB = tmpB;
+
     // distances to center squares by quadrant
     for (Square square = SQ_A1; square <= SQ_H8; ++square) {
-      int fi = fileOf(square);
-      int ri = rankOf(square);
-
+      int f = fileOf(square);
+      int r = rankOf(square);
       // left upper quadrant
       if ((squareBB[square] & ranksNorthMask[27] & filesWestMask[36]) != 0) {
         centerDistance[square] = distance(square, SQ_D5);
@@ -478,7 +458,6 @@ namespace Bitboards {
         centerDistance[square] = distance(square, SQ_E4);
       }
     }
-
   }
 
   /**

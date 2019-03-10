@@ -29,6 +29,8 @@
 #include <cstdint>
 #include "globals.h"
 #include "Random.h"
+#include "Values.h"
+#include "../test/lib/googletest-master/googletest/include/gtest/gtest_prod.h"
 
 namespace Zobrist {
   // zobrist key for pieces - piece, board
@@ -122,6 +124,10 @@ private:
   // Material value will always be up to date
   int material[COLOR_LENGTH];
 
+  // Positional value will always be up to date
+  int psqMGValue[COLOR_LENGTH];
+  int psqEGValue[COLOR_LENGTH];
+
   // Game phase value
   int gamePhase;
 
@@ -141,23 +147,34 @@ private:
 public:
   friend std::ostream &operator<<(std::ostream &os, Position &position);
 
-  std::string str();
-  std::string printBoard();
-  std::string printFen();
+  std::string str() const;
+  std::string printBoard() const;
+  std::string printFen() const;
 
-  Key getZobristKey() const;
-  Color getNextPlayer() const;
-  Square getEnPassantSquare() const;
-  Bitboard getPieceBB(Color c, PieceType pt) const;
-  Bitboard getOccupiedBB(Color c) const;
-  Bitboard getOccupiedBB() const;
-  int getMaterial(Color c) const;
+  void makeMove(Move move);
+  void undoMove();
+  void makeNullMove();
+  void undoNullMove();
+
+  ////////////////////////////////////////////////
+  ///// GETTER / SETTER
+  inline Piece getPiece(Square square) const { return board[square]; }
+  inline Key getZobristKey() const { return zobristKey; }
+  inline Color getNextPlayer() const { return nextPlayer; }
+  inline Square getEnPassantSquare() const { return enPassantSquare; }
+  inline Bitboard getPieceBB(Color c, PieceType pt) const { return piecesBB[c][pt]; }
+  inline Bitboard getOccupiedBB(Color c) const { return occupiedBB[c]; }
+  inline Bitboard getOccupiedBB() const { return occupiedBB[WHITE] | occupiedBB[BLACK]; }
+  inline int getMaterial(Color c) const { return material[c]; }
+  inline int getMgPosValue(Color c) const { return psqMGValue[c]; }
+  inline int getEgPosValue(Color c) const { return psqEGValue[c]; }
+  inline int getGamePhase() const { return gamePhase; }
 
 private:
-  inline void movePiece(Square from, Square to);
-  inline void putPiece(Piece piece, Square square);
-  inline Piece removePiece(Square square);
+  FRIEND_TEST(PositionTest, PosValue);
+  void movePiece(Square from, Square to);
+  void putPiece(Piece piece, Square square);
+  Piece removePiece(Square square);
 };
-
 
 #endif //FRANKYCPP_POSITION_H
