@@ -30,6 +30,7 @@
 #include "../../src/Position.h"
 
 using namespace std;
+using namespace Bitboards;
 using testing::Eq;
 
 //TEST(BitboardsTest, print) {

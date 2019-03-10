@@ -33,6 +33,7 @@
 #include "../../src/Bitboards.h"
 
 using namespace std;
+using namespace Bitboards;
 
 struct myLoc : std::numpunct<char> {
   char do_decimal_point() const override { return ','; }

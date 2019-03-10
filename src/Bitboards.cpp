@@ -29,29 +29,30 @@
 #include "globals.h"
 #include "Bitboards.h"
 
-Bitboard squareBB[SQ_LENGTH];
-Bitboard squareDiagUpBB[SQ_LENGTH];
-Bitboard squareDiagDownBB[SQ_LENGTH];
-
-Bitboard movesRank[SQ_LENGTH][256];
-Bitboard movesFile[SQ_LENGTH][256];
-Bitboard movesDiagUp[SQ_LENGTH][256];
-Bitboard movesDiagDown[SQ_LENGTH][256];
-
-Bitboard pawnAttacks[COLOR_LENGTH][SQ_LENGTH];
-Bitboard pawnMoves[COLOR_LENGTH][SQ_LENGTH];
+using namespace std;
 
 int squareDistance[SQ_NONE][SQ_NONE];
 
-Square indexMapR90[SQ_LENGTH];
-Square indexMapL90[SQ_LENGTH];
-Square indexMapR45[SQ_LENGTH];
-Square indexMapL45[SQ_LENGTH];
-
-uint8_t PopCnt16[1 << 16];
-using namespace std;
-
 namespace Bitboards {
+
+  Bitboard squareBB[SQ_LENGTH];
+  Bitboard squareDiagUpBB[SQ_LENGTH];
+  Bitboard squareDiagDownBB[SQ_LENGTH];
+
+  Bitboard movesRank[SQ_LENGTH][256];
+  Bitboard movesFile[SQ_LENGTH][256];
+  Bitboard movesDiagUp[SQ_LENGTH][256];
+  Bitboard movesDiagDown[SQ_LENGTH][256];
+
+  Bitboard pawnAttacks[COLOR_LENGTH][SQ_LENGTH];
+  Bitboard pawnMoves[COLOR_LENGTH][SQ_LENGTH];
+
+  Square indexMapR90[SQ_LENGTH];
+  Square indexMapL90[SQ_LENGTH];
+  Square indexMapR45[SQ_LENGTH];
+  Square indexMapL45[SQ_LENGTH];
+
+  uint8_t PopCnt16[1 << 16];
 
   /**
    * Prints a bitboard a an 8x8 matrix for output on a console

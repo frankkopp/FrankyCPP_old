@@ -262,12 +262,12 @@ void Position::initializeBoard() {
   nextPlayer = WHITE;
 
   for (Color color = WHITE; color <= BLACK; ++color) { // foreach color
-    occupiedBB[color] = EMPTY_BB;
-    occupiedBBR90[color] = EMPTY_BB;
-    occupiedBBL90[color] = EMPTY_BB;
-    occupiedBBR45[color] = EMPTY_BB;
-    occupiedBBL45[color] = EMPTY_BB;
-    std::fill_n(&piecesBB[color][0], sizeof(piecesBB[color]), EMPTY_BB);
+    occupiedBB[color] = Bitboards::EMPTY_BB;
+    occupiedBBR90[color] = Bitboards::EMPTY_BB;
+    occupiedBBL90[color] = Bitboards::EMPTY_BB;
+    occupiedBBR45[color] = Bitboards::EMPTY_BB;
+    occupiedBBL45[color] = Bitboards::EMPTY_BB;
+    std::fill_n(&piecesBB[color][0], sizeof(piecesBB[color]), Bitboards::EMPTY_BB);
     material[color] = 0;
   }
 
