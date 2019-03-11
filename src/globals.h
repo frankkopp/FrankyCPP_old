@@ -254,7 +254,7 @@ inline std::ostream &operator<<(std::ostream &os, const Move &move) {
   return os;
 }
 
-inline std::string print(const Move &move) {
+inline std::string printMove(const Move &move) {
   std::string tp;
   switch (typeOf(move)) {
     case NORMAL:
@@ -322,6 +322,10 @@ constexpr CastlingRights operator+(CastlingRights cr1, CastlingRights cr2) {
 constexpr CastlingRights &operator+=(CastlingRights &cr1, CastlingRights cr2) {
   assert(!(cr1 & cr2));
   return cr1 = CastlingRights(cr1 | cr2);
+}
+
+constexpr bool operator==(CastlingRights cr1, CastlingRights cr2) {
+  return (cr1 & cr2) || (cr1 == 0 && cr2 == 0);
 }
 
 constexpr bool operator!=(CastlingRights cr1, CastlingRights cr2) {

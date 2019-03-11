@@ -115,7 +115,7 @@ TEST(MoveTest, moves) {
   buffer1 << "a7a8";
   buffer2 << move;
   ASSERT_EQ(buffer1.str(), buffer2.str());
-  ASSERT_EQ("a7a8 (PROMOTION)", print(move));
+  ASSERT_EQ("a7a8 (PROMOTION)", printMove(move));
 }
 
 TEST(CastlingTest, castling) {
@@ -129,10 +129,30 @@ TEST(CastlingTest, castling) {
   ASSERT_EQ(0b0111, cr - BLACK_OOO);
 
   cr = NO_CASTLING;
-  ASSERT_EQ(0b0001, cr + WHITE_OO);
-  ASSERT_EQ(0b0010, cr + WHITE_OOO);
-  ASSERT_EQ(0b0100, cr + BLACK_OO);
-  ASSERT_EQ(0b1000, cr + BLACK_OOO);
+  ASSERT_TRUE(cr == NO_CASTLING);
+
+  cr += WHITE_OO;
+  ASSERT_EQ(0b0001, cr);
+  ASSERT_TRUE(cr == WHITE_OO);
+  ASSERT_TRUE(cr != WHITE_OOO);
+  ASSERT_TRUE(cr != NO_CASTLING);
+  ASSERT_TRUE(cr != BLACK_OO);
+  ASSERT_TRUE(cr != BLACK_OOO);
+  ASSERT_TRUE(cr != BLACK_CASTLING);
+
+  cr += WHITE_OOO;
+  ASSERT_EQ(0b0011, cr);
+  ASSERT_TRUE(cr == WHITE_OO);
+  ASSERT_TRUE(cr == WHITE_OOO);
+  ASSERT_TRUE(cr == WHITE_CASTLING);
+  ASSERT_TRUE(cr != NO_CASTLING);
+  ASSERT_TRUE(cr != BLACK_OO);
+  ASSERT_TRUE(cr != BLACK_OOO);
+  ASSERT_TRUE(cr != BLACK_CASTLING);
+
+  cr += BLACK_OO;
+  ASSERT_EQ(0b0111, cr);
+  ASSERT_EQ(0b1111, cr + BLACK_OOO);
 
   cr = ANY_CASTLING;
   cr -= WHITE | QUEEN_SIDE;

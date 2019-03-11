@@ -23,6 +23,9 @@
     <list default="true" id="4febe152-5c70-47fd-9338-9cb20e6462e6" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Position.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Position.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/globals.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/globals.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/Tests/GlobalsTest.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/test/Tests/GlobalsTest.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/Tests/PositionTest.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/test/Tests/PositionTest.cpp" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -52,14 +55,14 @@
   <component name="FileEditorManager">
     <splitter split-orientation="horizontal" split-proportion="0.5041237">
       <split-first>
-        <splitter split-orientation="vertical" split-proportion="0.50414747">
+        <splitter split-orientation="vertical" split-proportion="0.46820277">
           <split-first>
             <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-              <file pinned="false" current-in-tab="true">
+              <file pinned="false" current-in-tab="false">
                 <entry file="file://$PROJECT_DIR$/src/globals.h">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state relative-caret-position="2714">
-                      <caret line="229" column="34" lean-forward="true" selection-start-line="229" selection-start-column="34" selection-end-line="229" selection-end-column="34" />
+                    <state relative-caret-position="554">
+                      <caret line="304" column="70" lean-forward="true" selection-start-line="303" selection-start-column="65" selection-end-line="304" selection-end-column="1" />
                       <folding>
                         <element signature="e#0#1135#0" />
                         <element signature="e#1443#1460#0" expanded="true" />
@@ -145,11 +148,11 @@
                   </provider>
                 </entry>
               </file>
-              <file pinned="false" current-in-tab="false">
+              <file pinned="false" current-in-tab="true">
                 <entry file="file://$PROJECT_DIR$/src/Position.h">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state relative-caret-position="287">
-                      <caret line="178" selection-start-line="178" selection-end-line="178" />
+                    <state relative-caret-position="330">
+                      <caret line="177" column="21" selection-start-line="177" selection-start-column="21" selection-end-line="177" selection-end-column="21" />
                       <folding>
                         <element signature="e#0#1135#0" />
                         <element signature="e#1196#1214#0" expanded="true" />
@@ -165,8 +168,8 @@
               <file pinned="false" current-in-tab="false">
                 <entry file="file://$PROJECT_DIR$/test/Tests/GlobalsTest.cpp">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state relative-caret-position="455">
-                      <caret line="113" column="32" selection-start-line="113" selection-start-column="32" selection-end-line="113" selection-end-column="32" />
+                    <state relative-caret-position="130">
+                      <caret line="153" column="47" lean-forward="true" selection-start-line="153" selection-start-column="47" selection-end-line="153" selection-end-column="47" />
                       <folding>
                         <element signature="e#0#1135#0" />
                         <element signature="e#1137#1161#0" expanded="true" />
@@ -217,8 +220,8 @@
               <file pinned="false" current-in-tab="true">
                 <entry file="file://$PROJECT_DIR$/test/Tests/PositionTest.cpp">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state relative-caret-position="-2471">
-                      <caret line="122" column="51" selection-start-line="122" selection-start-column="51" selection-end-line="122" selection-end-column="51" />
+                    <state relative-caret-position="406">
+                      <caret line="345" column="75" lean-forward="true" selection-start-line="345" selection-start-column="75" selection-end-line="345" selection-end-column="75" />
                       <folding>
                         <element signature="e#0#1135#0" />
                         <element signature="e#1137#1161#0" expanded="true" />
@@ -324,8 +327,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/src/Position.cpp">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="790">
-                  <caret line="207" column="68" lean-forward="true" selection-start-line="207" selection-start-column="68" selection-end-line="207" selection-end-column="68" />
+                <state relative-caret-position="997">
+                  <caret line="279" column="7" selection-start-line="279" selection-start-column="7" selection-end-line="279" selection-end-column="7" />
                   <folding>
                     <element signature="e#1137#1156#0" expanded="true" />
                   </folding>
@@ -367,6 +370,8 @@
       <find>sq];</find>
       <find>//</find>
       <find>std::</find>
+      <find>board[</find>
+      <find>board\[(.*)\]</find>
     </findStrings>
     <replaceStrings>
       <replace>optionMap</replace>
@@ -383,6 +388,7 @@
       <replace>static constexpr int</replace>
       <replace>63-sq];</replace>
       <replace>//</replace>
+      <replace>getPiece($1)</replace>
     </replaceStrings>
     <dirStrings>
       <dir>C:\Users\Frank\Dropbox\Private\Projekte\_GITHUB\FrankyCpp\src</dir>
@@ -439,9 +445,9 @@
         <option value="$PROJECT_DIR$/src/UCIHandler.h" />
         <option value="$PROJECT_DIR$/src/Bitboards.cpp" />
         <option value="$PROJECT_DIR$/src/Bitboards.h" />
+        <option value="$PROJECT_DIR$/src/globals.h" />
         <option value="$PROJECT_DIR$/test/Tests/GlobalsTest.cpp" />
         <option value="$PROJECT_DIR$/src/Position.h" />
-        <option value="$PROJECT_DIR$/src/globals.h" />
         <option value="$PROJECT_DIR$/test/Tests/PositionTest.cpp" />
         <option value="$PROJECT_DIR$/src/Position.cpp" />
       </list>
@@ -451,7 +457,7 @@
   <component name="ProjectFrameBounds">
     <option name="x" value="-7" />
     <option name="width" value="3284" />
-    <option name="height" value="1402" />
+    <option name="height" value="1404" />
   </component>
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="2" id="Add" />
@@ -522,32 +528,32 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Google Test.PositionTest.Setup">
+  <component name="RunManager" selected="Google Test.PositionTest.doMoveCastling">
+    <configuration name="All in PositionTest.cpp" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" PASS_PARENT_ENVS_2="true" PROJECT_NAME="FrankyCPP" TARGET_NAME="FrankyTest" RUN_TARGET_PROJECT_NAME="FrankyCPP" RUN_TARGET_NAME="FrankyTest" TEST_PATTERN="all-tests(file://$PROJECT_DIR$/test/Tests/PositionTest.cpp)" TEST_MODE="PATTERN">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="CastlingTest.castling" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" PASS_PARENT_ENVS_2="true" PROJECT_NAME="FrankyCPP" TARGET_NAME="FrankyTest" RUN_TARGET_PROJECT_NAME="FrankyCPP" RUN_TARGET_NAME="FrankyTest" TEST_CLASS="CastlingTest" TEST_METHOD="castling" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="PositionTest.Setup" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" PASS_PARENT_ENVS_2="true" PROJECT_NAME="FrankyCPP" TARGET_NAME="FrankyTest" RUN_TARGET_PROJECT_NAME="FrankyCPP" RUN_TARGET_NAME="FrankyTest" TEST_CLASS="PositionTest" TEST_METHOD="Setup" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="PositionTest.doMove" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" PASS_PARENT_ENVS_2="true" PROJECT_NAME="FrankyCPP" TARGET_NAME="FrankyTest" RUN_TARGET_PROJECT_NAME="FrankyCPP" RUN_TARGET_NAME="FrankyTest" TEST_CLASS="PositionTest" TEST_METHOD="doMove" TEST_MODE="SUITE_TEST">
+    <configuration name="PositionTest.doMoveCastling" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" PASS_PARENT_ENVS_2="true" PROJECT_NAME="FrankyCPP" TARGET_NAME="FrankyTest" RUN_TARGET_PROJECT_NAME="FrankyCPP" RUN_TARGET_NAME="FrankyTest" TEST_CLASS="PositionTest" TEST_METHOD="doMoveCastling" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
     <configuration name="PositionTest.doMoveEnPassantCapture" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" PASS_PARENT_ENVS_2="true" PROJECT_NAME="FrankyCPP" TARGET_NAME="FrankyTest" RUN_TARGET_PROJECT_NAME="FrankyCPP" RUN_TARGET_NAME="FrankyTest" TEST_CLASS="PositionTest" TEST_METHOD="doMoveEnPassantCapture" TEST_MODE="SUITE_TEST">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-        <option name="BeforeTestRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="PositionTest.doMoveNormal" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" PASS_PARENT_ENVS_2="true" PROJECT_NAME="FrankyCPP" TARGET_NAME="FrankyTest" RUN_TARGET_PROJECT_NAME="FrankyCPP" RUN_TARGET_NAME="FrankyTest" TEST_CLASS="PositionTest" TEST_METHOD="doMoveNormal" TEST_MODE="SUITE_TEST">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-        <option name="BeforeTestRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="PositionTest.doMovePromotion" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" PASS_PARENT_ENVS_2="true" PROJECT_NAME="FrankyCPP" TARGET_NAME="FrankyTest" RUN_TARGET_PROJECT_NAME="FrankyCPP" RUN_TARGET_NAME="FrankyTest" TEST_CLASS="PositionTest" TEST_METHOD="doMovePromotion" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
@@ -596,19 +602,19 @@
       <item itemvalue="Application.gmock_main" />
       <item itemvalue="Application.gtest" />
       <item itemvalue="Application.gtest_main" />
-      <item itemvalue="Google Test.PositionTest.doMove" />
-      <item itemvalue="Google Test.PositionTest.doMoveNormal" />
-      <item itemvalue="Google Test.PositionTest.doMovePromotion" />
       <item itemvalue="Google Test.PositionTest.doMoveEnPassantCapture" />
       <item itemvalue="Google Test.PositionTest.Setup" />
+      <item itemvalue="Google Test.CastlingTest.castling" />
+      <item itemvalue="Google Test.All in PositionTest.cpp" />
+      <item itemvalue="Google Test.PositionTest.doMoveCastling" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Google Test.PositionTest.Setup" />
+        <item itemvalue="Google Test.PositionTest.doMoveCastling" />
+        <item itemvalue="Google Test.All in PositionTest.cpp" />
         <item itemvalue="Google Test.PositionTest.doMoveEnPassantCapture" />
-        <item itemvalue="Google Test.PositionTest.doMoveNormal" />
-        <item itemvalue="Google Test.PositionTest.doMovePromotion" />
-        <item itemvalue="Google Test.PositionTest.doMove" />
+        <item itemvalue="Google Test.CastlingTest.castling" />
+        <item itemvalue="Google Test.PositionTest.Setup" />
       </list>
     </recent_temporary>
   </component>
@@ -630,7 +636,7 @@
       <workItem from="1551681102021" duration="30071000" />
       <workItem from="1551888542846" duration="3593000" />
       <workItem from="1551892813737" duration="1750000" />
-      <workItem from="1551895427269" duration="173653000" />
+      <workItem from="1551895427269" duration="181635000" />
     </task>
     <task id="LOCAL-00001" summary="Initial">
       <created>1551628568845</created>
@@ -758,50 +764,57 @@
       <option name="project" value="LOCAL" />
       <updated>1552260993031</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="Fixed switch">
+      <created>1552261253994</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1552261253994</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="PositionTest_Setup - 2019.03.11 at 00h 17m 40s.xml">
-      <configuration name="PositionTest.Setup" configurationId="CMakeGoogleTestRunConfigurationType" />
+    <history-entry file="PositionTest_doMoveCastling - 2019.03.12 at 00h 28m 22s.xml">
+      <configuration name="PositionTest.doMoveCastling" configurationId="CMakeGoogleTestRunConfigurationType" />
     </history-entry>
-    <history-entry file="PositionTest_Setup - 2019.03.11 at 00h 18m 39s.xml">
-      <configuration name="PositionTest.Setup" configurationId="CMakeGoogleTestRunConfigurationType" />
+    <history-entry file="PositionTest_doMoveCastling - 2019.03.12 at 00h 30m 06s.xml">
+      <configuration name="PositionTest.doMoveCastling" configurationId="CMakeGoogleTestRunConfigurationType" />
     </history-entry>
-    <history-entry file="PositionTest_Setup - 2019.03.11 at 00h 18m 55s.xml">
-      <configuration name="PositionTest.Setup" configurationId="CMakeGoogleTestRunConfigurationType" />
+    <history-entry file="PositionTest_doMoveCastling - 2019.03.12 at 00h 30m 51s.xml">
+      <configuration name="PositionTest.doMoveCastling" configurationId="CMakeGoogleTestRunConfigurationType" />
     </history-entry>
-    <history-entry file="PositionTest_Setup - 2019.03.11 at 00h 20m 56s.xml">
-      <configuration name="PositionTest.Setup" configurationId="CMakeGoogleTestRunConfigurationType" />
+    <history-entry file="PositionTest_doMoveCastling - 2019.03.12 at 00h 31m 49s.xml">
+      <configuration name="PositionTest.doMoveCastling" configurationId="CMakeGoogleTestRunConfigurationType" />
     </history-entry>
-    <history-entry file="PositionTest_Setup - 2019.03.11 at 00h 23m 42s.xml">
-      <configuration name="PositionTest.Setup" configurationId="CMakeGoogleTestRunConfigurationType" />
+    <history-entry file="PositionTest_doMoveCastling - 2019.03.12 at 00h 34m 42s.xml">
+      <configuration name="PositionTest.doMoveCastling" configurationId="CMakeGoogleTestRunConfigurationType" />
     </history-entry>
-    <history-entry file="PositionTest_Setup - 2019.03.11 at 00h 24m 41s.xml">
-      <configuration name="PositionTest.Setup" configurationId="CMakeGoogleTestRunConfigurationType" />
+    <history-entry file="PositionTest_doMoveCastling - 2019.03.12 at 00h 36m 31s.xml">
+      <configuration name="PositionTest.doMoveCastling" configurationId="CMakeGoogleTestRunConfigurationType" />
     </history-entry>
-    <history-entry file="PositionTest_Setup - 2019.03.11 at 00h 24m 49s.xml">
-      <configuration name="PositionTest.Setup" configurationId="CMakeGoogleTestRunConfigurationType" />
+    <history-entry file="PositionTest_doMoveCastling - 2019.03.12 at 00h 38m 53s.xml">
+      <configuration name="PositionTest.doMoveCastling" configurationId="CMakeGoogleTestRunConfigurationType" />
     </history-entry>
-    <history-entry file="PositionTest_Setup - 2019.03.11 at 00h 27m 35s.xml">
-      <configuration name="PositionTest.Setup" configurationId="CMakeGoogleTestRunConfigurationType" />
+    <history-entry file="PositionTest_doMoveCastling - 2019.03.12 at 00h 40m 03s.xml">
+      <configuration name="PositionTest.doMoveCastling" configurationId="CMakeGoogleTestRunConfigurationType" />
     </history-entry>
-    <history-entry file="PositionTest_Setup - 2019.03.11 at 00h 27m 51s.xml">
-      <configuration name="PositionTest.Setup" configurationId="CMakeGoogleTestRunConfigurationType" />
+    <history-entry file="PositionTest_doMoveCastling - 2019.03.12 at 00h 41m 56s.xml">
+      <configuration name="PositionTest.doMoveCastling" configurationId="CMakeGoogleTestRunConfigurationType" />
     </history-entry>
-    <history-entry file="PositionTest_Setup - 2019.03.11 at 00h 33m 01s.xml">
-      <configuration name="PositionTest.Setup" configurationId="CMakeGoogleTestRunConfigurationType" />
+    <history-entry file="PositionTest_doMoveCastling - 2019.03.12 at 00h 43m 16s.xml">
+      <configuration name="PositionTest.doMoveCastling" configurationId="CMakeGoogleTestRunConfigurationType" />
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="228514000" />
+    <option name="totallyTimeSpent" value="236496000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-6" y="0" width="2866" height="1223" extended-state="0" />
+    <frame x="-6" y="0" width="2866" height="1225" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.4921659" visible="true" weight="0.088088445" />
-      <window_info id="Structure" order="1" sideWeight="0.5078341" side_tool="true" visible="true" weight="0.088088445" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49218032" visible="true" weight="0.088088445" />
+      <window_info id="Structure" order="1" sideWeight="0.5078197" side_tool="true" visible="true" weight="0.088088445" />
       <window_info id="Favorites" order="2" side_tool="true" weight="0.06847361" />
       <window_info anchor="bottom" id="Inspection Results" weight="0.3299539" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -812,21 +825,31 @@
       <window_info anchor="bottom" id="Database Changes" order="5" />
       <window_info anchor="bottom" id="Terminal" order="6" />
       <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" weight="0.32903227" />
-      <window_info anchor="bottom" id="Version Control" order="8" weight="0.32934684" />
+      <window_info anchor="bottom" id="Version Control" order="8" weight="0.32903227" />
       <window_info anchor="bottom" id="CMake" order="9" weight="0.32903227" />
       <window_info anchor="bottom" id="CPU Profiler" order="10" weight="0.32959327" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" auto_hide="true" id="Database" internal_type="SLIDING" order="3" type="SLIDING" weight="0.32972583" />
-      <window_info anchor="right" id="Run" order="4" sideWeight="0.59354836" visible="true" weight="0.21718973" />
+      <window_info active="true" anchor="right" id="Run" order="4" sideWeight="0.79116833" visible="true" weight="0.21611983" />
       <window_info anchor="right" id="Key Promoter X" order="5" />
       <window_info anchor="right" id="Debug" order="6" sideWeight="0.49308756" weight="0.2489301" />
-      <window_info active="true" anchor="right" id="Messages" order="7" sideWeight="0.4064516" side_tool="true" visible="true" weight="0.21718973" />
+      <window_info anchor="right" id="Messages" order="7" sideWeight="0.20883165" side_tool="true" visible="true" weight="0.21611983" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
+  </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ORDER">
+      <list>
+        <option value="0" />
+        <option value="2" />
+        <option value="3" />
+        <option value="1" />
+      </list>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
@@ -846,7 +869,8 @@
     <MESSAGE value="Additional bitboards" />
     <MESSAGE value="Additional bitboards and Value&#10;Added Position internal counters" />
     <MESSAGE value="Poistion doMove WIP" />
-    <option name="LAST_COMMIT_MESSAGE" value="Poistion doMove WIP" />
+    <MESSAGE value="Fixed switch" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed switch" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1224,10 +1248,22 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/globals.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="554">
+          <caret line="304" column="70" lean-forward="true" selection-start-line="303" selection-start-column="65" selection-end-line="304" selection-end-column="1" />
+          <folding>
+            <element signature="e#0#1135#0" />
+            <element signature="e#1443#1460#0" expanded="true" />
+            <element signature="e#5658#5670#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/test/Tests/GlobalsTest.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="455">
-          <caret line="113" column="32" selection-start-line="113" selection-start-column="32" selection-end-line="113" selection-end-column="32" />
+        <state relative-caret-position="130">
+          <caret line="153" column="47" lean-forward="true" selection-start-line="153" selection-start-column="47" selection-end-line="153" selection-end-column="47" />
           <folding>
             <element signature="e#0#1135#0" />
             <element signature="e#1137#1161#0" expanded="true" />
@@ -1237,8 +1273,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/Position.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="287">
-          <caret line="178" selection-start-line="178" selection-end-line="178" />
+        <state relative-caret-position="330">
+          <caret line="177" column="21" selection-start-line="177" selection-start-column="21" selection-end-line="177" selection-end-column="21" />
           <folding>
             <element signature="e#0#1135#0" />
             <element signature="e#1196#1214#0" expanded="true" />
@@ -1248,8 +1284,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/test/Tests/PositionTest.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-2471">
-          <caret line="122" column="51" selection-start-line="122" selection-start-column="51" selection-end-line="122" selection-end-column="51" />
+        <state relative-caret-position="406">
+          <caret line="345" column="75" lean-forward="true" selection-start-line="345" selection-start-column="75" selection-end-line="345" selection-end-column="75" />
           <folding>
             <element signature="e#0#1135#0" />
             <element signature="e#1137#1161#0" expanded="true" />
@@ -1257,22 +1293,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/globals.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2714">
-          <caret line="229" column="34" lean-forward="true" selection-start-line="229" selection-start-column="34" selection-end-line="229" selection-end-column="34" />
-          <folding>
-            <element signature="e#0#1135#0" />
-            <element signature="e#1443#1460#0" expanded="true" />
-            <element signature="e#5658#5670#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/Position.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="790">
-          <caret line="207" column="68" lean-forward="true" selection-start-line="207" selection-start-column="68" selection-end-line="207" selection-end-column="68" />
+        <state relative-caret-position="997">
+          <caret line="279" column="7" selection-start-line="279" selection-start-column="7" selection-end-line="279" selection-end-column="7" />
           <folding>
             <element signature="e#1137#1156#0" expanded="true" />
           </folding>

@@ -124,19 +124,20 @@ void Position::doMove(Move move) {
   assert(isMove(move));
   assert(isSquare(fromSquare(move)));
   assert(isSquare(toSquare(move)));
-  assert(board[fromSquare(move)] != PIECE_NONE);
+  assert(getPiece(fromSquare(move)) != PIECE_NONE);
 
   const MoveType moveType = typeOf(move);
 
   const Square fromSq = fromSquare(move);
-  const Piece fromPC = board[fromSq];
+  const Piece fromPC = getPiece(fromSq);
   const PieceType fromPT = typeOf(fromPC);
+  const Color myColor = colorOf(fromPC);
+  assert (myColor == nextPlayer);
 
   const Square toSq = toSquare(move);
-  const Piece targetPC = board[toSq];
+  const Piece targetPC = getPiece(toSq);
   const PieceType targetPT = typeOf(targetPC);
 
-  const Color myColor = colorOf(fromPC);
   const PieceType promotionPT = promotionType(move);
 
   // save state of board for undo
@@ -176,6 +177,7 @@ void Position::doMove(Move move) {
       break;
 
     case PROMOTION:
+      assert(fromPC == makePiece(myColor, PAWN));
       assert(rankOf(toSq) == (myColor == WHITE ? RANK_8 : RANK_1));
       if (targetPC != PIECE_NONE) removePiece(toSq); // capture
       if (castlingRights && (CastlingMask & fromSq || CastlingMask & toSq)) {
@@ -188,18 +190,73 @@ void Position::doMove(Move move) {
       break;
 
     case ENPASSANT: {
+      assert(fromPC == makePiece(myColor, PAWN));
       assert(enPassantSquare != SQ_NONE);
       Square capSq(toSq + pawnDir[~myColor]);
-      assert(board[capSq] == Piece((~myColor * 8) + 1));
+      assert(getPiece(capSq) == Piece((~myColor * 8) + 1));
       removePiece(capSq);
       movePiece(fromSq, toSq);
       clearEnPassant();
       halfMoveClock = 0; // reset half move clock because of pawn move
       break;
     }
-    
+
     case CASTLING:
-      // TODO CASTLING
+      assert(fromPC == makePiece(myColor, KING));
+      switch (toSq) {
+        case SQ_G1:
+          assert (castlingRights == WHITE_OO);
+          assert (fromSq == SQ_E1);
+          assert (getPiece(SQ_E1) == WHITE_KING);
+          assert (getPiece(SQ_H1) == WHITE_ROOK);
+          assert (!(getOccupiedBB() & intermediateBB[SQ_E1][SQ_H1]));
+          movePiece(fromSq, toSq); // King
+          movePiece(SQ_H1, SQ_F1); // Rook
+          zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
+          castlingRights -= WHITE_CASTLING;
+          zobristKey ^= Zobrist::castlingRights[castlingRights]; // in;
+          break;
+        case SQ_C1:
+          assert (castlingRights == WHITE_OOO);
+          assert (fromSq == SQ_E1);
+          assert (getPiece(SQ_E1) == WHITE_KING);
+          assert (getPiece(SQ_A1) == WHITE_ROOK);
+          assert (!(getOccupiedBB() & intermediateBB[SQ_E1][SQ_A1]));
+          movePiece(fromSq, toSq); // King
+          movePiece(SQ_A1, SQ_D1); // Rook
+          zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
+          castlingRights -= WHITE_CASTLING;
+          zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
+          break;
+        case SQ_G8:
+          assert (castlingRights == BLACK_OO);
+          assert (fromSq == SQ_E8);
+          assert (getPiece(SQ_E8) == BLACK_KING);
+          assert (getPiece(SQ_H8) == BLACK_ROOK);
+          assert (!(getOccupiedBB() & intermediateBB[SQ_E8][SQ_H8]));
+          movePiece(fromSq, toSq); // King
+          movePiece(SQ_H8, SQ_F8); // Rook
+          zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
+          castlingRights -= BLACK_CASTLING;
+          zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
+          break;
+        case SQ_C8:
+          assert (castlingRights == BLACK_OOO);
+          assert (fromSq == SQ_E8);
+          assert (getPiece(SQ_E8) == BLACK_KING);
+          assert (getPiece(SQ_A8) == BLACK_ROOK);
+          assert (!(getOccupiedBB() & intermediateBB[SQ_E8][SQ_A8]));
+          movePiece(fromSq, toSq); // King
+          movePiece(SQ_A8, SQ_D8); // Rook
+          zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
+          castlingRights -= BLACK_CASTLING;
+          zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
+          break;
+        default:
+          throw std::invalid_argument("Invalid castle move!");
+      }
+      clearEnPassant();
+      halfMoveClock++;
       break;
   }
 
@@ -209,19 +266,18 @@ void Position::doMove(Move move) {
   // change color (active player)
   nextPlayer = ~nextPlayer;
   zobristKey = this->zobristKey ^ Zobrist::nextPlayer;
-
 }
 
 void Position::undoMove() {
-
+// TODO
 }
 
 void Position::doNullMove() {
-
+// TODO
 }
 
 void Position::undoNullMove() {
-
+// TODO
 }
 
 ////////////////////////////////////////////////
@@ -248,7 +304,7 @@ std::string Position::printBoard() const {
   for (Rank r = RANK_8; r >= RANK_1; --r) {
     output << (r + 1) << " |";
     for (File f = FILE_A; f <= FILE_H; ++f) {
-      Piece pc = board[getSquare(f, r)];
+      Piece pc = getPiece(getSquare(f, r));
       if (pc == PIECE_NONE) output << "   |";
       else output << " " << pieceToChar[pc] << " |";
     }
@@ -270,7 +326,7 @@ std::string Position::printFen() const {
   for (Rank r = RANK_8; r >= RANK_1; --r) {
     int emptySquares = 0;
     for (File f = FILE_A; f <= FILE_H; ++f) {
-      Piece pc = board[getSquare(f, r)];
+      Piece pc = getPiece(getSquare(f, r));
 
       if (pc == PIECE_NONE) emptySquares++;
       else {
@@ -329,7 +385,7 @@ inline void Position::movePiece(Square from, Square to) {
 
 inline void Position::putPiece(Piece piece, Square square) {
   // piece list and zobrist
-  assert (board[square] == PIECE_NONE);
+  assert (getPiece(square) == PIECE_NONE);
   board[square] = piece;
   zobristKey ^= Zobrist::pieces[piece][square];
   // bitboards
@@ -348,8 +404,8 @@ inline void Position::putPiece(Piece piece, Square square) {
 
 inline Piece Position::removePiece(Square square) {
   // piece list
-  assert (board[square] != PIECE_NONE);
-  Piece old = board[square];
+  assert (getPiece(square) != PIECE_NONE);
+  Piece old = getPiece(square);
   board[square] = PIECE_NONE;
   zobristKey ^= Zobrist::pieces[old][square];
   // bitboards
@@ -368,38 +424,40 @@ inline Piece Position::removePiece(Square square) {
 }
 
 void Position::invalidateCastlingRights(Square fromSq, Square toSq) {
-  // TODO invalidateCastlingRights(fromSquare, toSquare);
-  // TODO optimize
   // check for castling rights invalidation
-  if (castlingRights == WHITE_CASTLING && (fromSq == SQ_E1 || toSq == SQ_E1)) {
-    zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
-    castlingRights -= WHITE_CASTLING;
-    zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
+  if (castlingRights == WHITE_CASTLING) {
+    if (fromSq == SQ_E1 || toSq == SQ_E1) {
+      zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
+      castlingRights -= WHITE_CASTLING;
+      zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
+    }
+    if (fromSq == SQ_A1 || toSq == SQ_A1) {
+      zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
+      castlingRights -= WHITE_OOO;
+      zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
+    }
+    if (fromSq == SQ_H1 || toSq == SQ_H1) {
+      zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
+      castlingRights -= WHITE_OO;
+      zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
+    }
   }
-  if (fromSq == SQ_E8 || toSq == SQ_E8) {
-    zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
-    castlingRights -= BLACK_CASTLING;
-    zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
-  }
-  if (fromSq == SQ_A1 || toSq == SQ_A1) {
-    zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
-    castlingRights -= WHITE_OOO;
-    zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
-  }
-  if (fromSq == SQ_A8 || toSq == SQ_A8) {
-    zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
-    castlingRights -= BLACK_OOO;
-    zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
-  }
-  if (fromSq == SQ_H1 || toSq == SQ_H1) {
-    zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
-    castlingRights -= WHITE_OO;
-    zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
-  }
-  if (fromSq == SQ_H8 || toSq == SQ_H8) {
-    zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
-    castlingRights -= BLACK_OO;
-    zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
+  if (castlingRights == BLACK_CASTLING) {
+    if (fromSq == SQ_E8 || toSq == SQ_E8) {
+      zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
+      castlingRights -= BLACK_CASTLING;
+      zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
+    }
+    if (fromSq == SQ_A8 || toSq == SQ_A8) {
+      zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
+      castlingRights -= BLACK_OOO;
+      zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
+    }
+    if (fromSq == SQ_H8 || toSq == SQ_H8) {
+      zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
+      castlingRights -= BLACK_OO;
+      zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
+    }
   }
 }
 
@@ -483,8 +541,7 @@ void Position::setupBoard(const char *fen) {
       // skip space
       if (!(ss >> token)) return; // end of line
       break;
-    }
-    else if (token == 'K') castlingRights += WHITE_OO;
+    } else if (token == 'K') castlingRights += WHITE_OO;
     else if (token == 'Q') castlingRights += WHITE_OOO;
     else if (token == 'k') castlingRights += BLACK_OO;
     else if (token == 'q') castlingRights += BLACK_OOO;
