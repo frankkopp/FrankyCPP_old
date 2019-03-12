@@ -106,7 +106,9 @@ private:
 
   // We can recreate the board through the last move - no need for history of board itself
   // with this we can also capture 3-fold repetition
-  int moveHistory[MAX_HISTORY];
+  Move moveHistory[MAX_HISTORY];
+  Piece fromPieceHIstory[MAX_HISTORY];
+  Piece capturedPieceHIstory[MAX_HISTORY];
 
   // half move number - the actual half move number to determine the full move number
   int nextHalfMoveNumber = 1;

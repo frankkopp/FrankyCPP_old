@@ -25,12 +25,11 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <vector>
 #include <chrono>
-#include <ostream>
 #include <cstdarg>
 
 #include "../../src/Bitboards.h"
+#include "../../src/Position.h"
 
 using namespace std;
 using namespace Bitboards;
@@ -60,6 +59,53 @@ TEST(TimingTests, popcount) {
   //// TESTS END
 
   testTiming(os, 5, 50, 10'000'000, tests);
+
+  cout << os.str();
+}
+
+Position position;
+
+TEST(TimingTests, doMoveUndoMove) {
+  NEWLINE;
+  ostringstream os;
+
+  //// TESTS START
+  Bitboards::init();
+  Position::init();
+
+  position = Position("r3k2r/1ppqbppp/2n2n2/1B2p1B1/3p2b1/2NP1N2/1PPQPPPP/R3K2R w KQkq - 0 1");
+  const Move move1 = createMove(SQ_E2, SQ_E4);
+  const Move move2 = createMove(SQ_D4, SQ_E3);
+  const Move move3 = createMove(SQ_D2, SQ_E3);
+  const Move move4 = createMove(SQ_E8, SQ_C8);
+  const Move move5 = createMove(SQ_E1, SQ_G1);
+
+  auto f1 = []() {
+    //    string fen = position.printFen();
+    //    cout << position.printBoard() << endl;
+    position.doMove(move1);
+    position.doMove(move2);
+    position.doMove(move3);
+    position.doMove(move4);
+    position.doMove(move5);
+    position.undoMove();
+    position.undoMove();
+    position.undoMove();
+    position.undoMove();
+    position.undoMove();
+    // ASSERT_EQ(fen, position.printFen());
+  };
+
+  auto f2 = []() {
+    //
+  };
+
+  vector<void (*)()> tests;
+  tests.push_back(f1);
+  //  tests.push_back(f2);
+  //// TESTS END
+
+  testTiming(os, 5, 10, 2'000'000, tests);
 
   cout << os.str();
 }
@@ -94,10 +140,11 @@ testTiming(ostringstream &os, int rounds, int iterations, int repetitions,
         sum += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
       }
       auto avg = ((double) sum / iterations);
-      os << "Round " << setw(2) << round << " Test " << setw(2) << testNr++ << ": " << setw(12) << avg
-         << " ns" << " (" << setw(12) << (avg/1e9) << " sec)" << endl;
+      os << "Round " << setw(2) << round << " Test " << setw(2) << testNr++ << ": " << setw(12)
+         << avg
+         << " ns" << " (" << setw(12) << (avg / 1e9) << " sec)" << endl;
     }
-    os << endl;
+    // os << endl;
   }
 }
 

@@ -142,6 +142,8 @@ void Position::doMove(Move move) {
 
   // save state of board for undo
   moveHistory[historyCounter] = move;
+  fromPieceHIstory[historyCounter] = fromPC;
+  capturedPieceHIstory[historyCounter] = targetPC;
   castlingRights_History[historyCounter] = castlingRights;
   enPassantSquare_History[historyCounter] = enPassantSquare;
   halfMoveClockHistory[historyCounter] = halfMoveClock;
@@ -269,7 +271,69 @@ void Position::doMove(Move move) {
 }
 
 void Position::undoMove() {
-// TODO
+  assert(historyCounter > 0);
+
+  // Restore state part 1
+  historyCounter--;
+  nextHalfMoveNumber--;
+  nextPlayer = ~nextPlayer;
+  const Move move = moveHistory[historyCounter];
+
+  // undo piece move / restore board
+  switch (typeOf(move)) {
+
+    case NORMAL:
+      movePiece(toSquare(move), fromSquare(move));
+      if (capturedPieceHIstory[historyCounter] != PIECE_NONE) putPiece(
+          capturedPieceHIstory[historyCounter], toSquare(move));
+      break;
+
+    case PROMOTION:
+      removePiece(toSquare(move));
+      putPiece(makePiece(nextPlayer, PAWN), fromSquare(move));
+      if (capturedPieceHIstory[historyCounter] != PIECE_NONE) putPiece(
+          capturedPieceHIstory[historyCounter], toSquare(move));
+      break;
+
+    case ENPASSANT:
+      // ignore Zobrist Key as it will be restored via history
+      movePiece(toSquare(move), fromSquare(move));
+      putPiece(makePiece(~nextPlayer, PAWN), toSquare(move) + pawnDir[~nextPlayer]);
+      break;
+
+    case CASTLING:
+      // ignore Zobrist Key as it will be restored via history
+      // castling rights are restored via history
+      switch (toSquare(move)) {
+        case SQ_G1:
+          movePiece(toSquare(move), fromSquare(move)); // King
+          movePiece(SQ_F1, SQ_H1); // Rook
+          break;
+        case SQ_C1:
+          movePiece(toSquare(move), fromSquare(move)); // King
+          movePiece(SQ_D1, SQ_A1); // Rook
+          break;
+        case SQ_G8:
+          movePiece(toSquare(move), fromSquare(move)); // King
+          movePiece(SQ_F8, SQ_H8); // Rook
+          break;
+        case SQ_C8:
+          movePiece(toSquare(move), fromSquare(move)); // King
+          movePiece(SQ_D8, SQ_A8); // Rook
+          break;
+        default:
+          throw std::invalid_argument("Invalid castle move!");
+      }
+      break;
+  }
+
+  // restore state part 2
+  castlingRights = castlingRights_History[historyCounter];
+  enPassantSquare = enPassantSquare_History[historyCounter];
+  halfMoveClock = halfMoveClockHistory[historyCounter];
+  zobristKey = zobristKey_History[historyCounter];
+  hasCheck = hasCheckFlagHistory[historyCounter];
+  hasMate = hasMateFlagHistory[historyCounter];
 }
 
 void Position::doNullMove() {
@@ -384,15 +448,15 @@ inline void Position::movePiece(Square from, Square to) {
 }
 
 inline void Position::putPiece(Piece piece, Square square) {
-  // piece list and zobrist
-  assert (getPiece(square) == PIECE_NONE);
-  board[square] = piece;
-  zobristKey ^= Zobrist::pieces[piece][square];
   // bitboards
   assert ((occupiedBB[colorOf(piece)] & square) == 0);
   occupiedBB[colorOf(piece)] |= square;
   assert ((piecesBB[colorOf(piece)][typeOf(piece)] & square) == 0);
   piecesBB[colorOf(piece)][typeOf(piece)] |= square;
+  // piece list and zobrist
+  assert (getPiece(square) == PIECE_NONE);
+  board[square] = piece;
+  zobristKey ^= Zobrist::pieces[piece][square];
   // material
   material[colorOf(piece)] += pieceValue[typeOf(piece)];
   // position value
@@ -403,16 +467,19 @@ inline void Position::putPiece(Piece piece, Square square) {
 }
 
 inline Piece Position::removePiece(Square square) {
-  // piece list
-  assert (getPiece(square) != PIECE_NONE);
   Piece old = getPiece(square);
-  board[square] = PIECE_NONE;
-  zobristKey ^= Zobrist::pieces[old][square];
+  //  cout << Bitboards::print(occupiedBB[colorOf(old)]) << endl;
+  //  cout << Bitboards::print(occupiedBB[colorOf(old)] & square) << endl;
+
   // bitboards
   assert (occupiedBB[colorOf(old)] & square);
   occupiedBB[colorOf(old)] ^= square;
   assert (piecesBB[colorOf(old)][typeOf(old)] & square);
   piecesBB[colorOf(old)][typeOf(old)] ^= square;
+  // piece list
+  assert (getPiece(square) != PIECE_NONE);
+  board[square] = PIECE_NONE;
+  zobristKey ^= Zobrist::pieces[old][square];
   // material
   material[colorOf(old)] -= pieceValue[typeOf(old)];
   // position value

@@ -22,10 +22,12 @@
   <component name="ChangeListManager">
     <list default="true" id="4febe152-5c70-47fd-9338-9cb20e6462e6" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bitboards.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/Bitboards.xlsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Position.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Position.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Position.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Position.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/globals.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/globals.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/Tests/GlobalsTest.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/test/Tests/GlobalsTest.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/Tests/PositionTest.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/test/Tests/PositionTest.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/Tests/TimeingTests.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/test/Tests/TimeingTests.cpp" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -55,14 +57,14 @@
   <component name="FileEditorManager">
     <splitter split-orientation="horizontal" split-proportion="0.5041237">
       <split-first>
-        <splitter split-orientation="vertical" split-proportion="0.46820277">
+        <splitter split-orientation="vertical" split-proportion="0.4020239">
           <split-first>
             <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-              <file pinned="false" current-in-tab="false">
+              <file pinned="false" current-in-tab="true">
                 <entry file="file://$PROJECT_DIR$/src/globals.h">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state relative-caret-position="554">
-                      <caret line="304" column="70" lean-forward="true" selection-start-line="303" selection-start-column="65" selection-end-line="304" selection-end-column="1" />
+                    <state relative-caret-position="279">
+                      <caret line="49" selection-start-line="49" selection-end-line="49" />
                       <folding>
                         <element signature="e#0#1135#0" />
                         <element signature="e#1443#1460#0" expanded="true" />
@@ -139,7 +141,7 @@
               <file pinned="false" current-in-tab="false">
                 <entry file="file://$PROJECT_DIR$/src/Values.h">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state relative-caret-position="-1502">
+                    <state relative-caret-position="-674">
                       <caret line="69" column="23" selection-start-line="69" selection-start-column="21" selection-end-line="69" selection-end-column="23" />
                       <folding>
                         <element signature="e#0#1135#0" />
@@ -148,11 +150,11 @@
                   </provider>
                 </entry>
               </file>
-              <file pinned="false" current-in-tab="true">
+              <file pinned="false" current-in-tab="false">
                 <entry file="file://$PROJECT_DIR$/src/Position.h">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state relative-caret-position="330">
-                      <caret line="177" column="21" selection-start-line="177" selection-start-column="21" selection-end-line="177" selection-end-column="21" />
+                    <state relative-caret-position="144">
+                      <caret line="122" column="39" selection-start-line="122" selection-start-column="39" selection-end-line="122" selection-end-column="39" />
                       <folding>
                         <element signature="e#0#1135#0" />
                         <element signature="e#1196#1214#0" expanded="true" />
@@ -169,7 +171,7 @@
                 <entry file="file://$PROJECT_DIR$/test/Tests/GlobalsTest.cpp">
                   <provider selected="true" editor-type-id="text-editor">
                     <state relative-caret-position="130">
-                      <caret line="153" column="47" lean-forward="true" selection-start-line="153" selection-start-column="47" selection-end-line="153" selection-end-column="47" />
+                      <caret line="153" column="24" selection-start-line="153" selection-start-column="24" selection-end-line="153" selection-end-column="24" />
                       <folding>
                         <element signature="e#0#1135#0" />
                         <element signature="e#1137#1161#0" expanded="true" />
@@ -217,11 +219,11 @@
                   </provider>
                 </entry>
               </file>
-              <file pinned="false" current-in-tab="true">
+              <file pinned="false" current-in-tab="false">
                 <entry file="file://$PROJECT_DIR$/test/Tests/PositionTest.cpp">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state relative-caret-position="406">
-                      <caret line="345" column="75" lean-forward="true" selection-start-line="345" selection-start-column="75" selection-end-line="345" selection-end-column="75" />
+                    <state relative-caret-position="146">
+                      <caret line="323" selection-start-line="323" selection-end-line="325" selection-end-column="17" />
                       <folding>
                         <element signature="e#0#1135#0" />
                         <element signature="e#1137#1161#0" expanded="true" />
@@ -230,11 +232,11 @@
                   </provider>
                 </entry>
               </file>
-              <file pinned="false" current-in-tab="false">
+              <file pinned="false" current-in-tab="true">
                 <entry file="file://$PROJECT_DIR$/test/Tests/TimeingTests.cpp">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state relative-caret-position="-24">
-                      <caret line="35" column="25" selection-start-line="35" selection-start-column="25" selection-end-line="35" selection-end-column="25" />
+                    <state relative-caret-position="839">
+                      <caret line="107" column="25" selection-start-line="107" selection-start-column="25" selection-end-line="107" selection-end-column="25" />
                       <folding>
                         <element signature="e#0#1135#0" />
                         <element signature="e#1137#1161#0" expanded="true" />
@@ -324,16 +326,31 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/Position.cpp">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="997">
-                  <caret line="279" column="7" selection-start-line="279" selection-start-column="7" selection-end-line="279" selection-end-column="7" />
+                <state relative-caret-position="1240">
+                  <caret line="279" column="48" selection-start-line="279" selection-start-column="48" selection-end-line="279" selection-end-column="48" />
                   <folding>
+                    <element signature="e#0#1135#0" />
                     <element signature="e#1137#1156#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="171">
+                  <caret line="9" selection-start-line="9" selection-end-line="9" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/src/CMakeLists.txt">
+              <provider selected="true" editor-type-id="text-editor" />
             </entry>
           </file>
         </leaf>
@@ -372,6 +389,11 @@
       <find>std::</find>
       <find>board[</find>
       <find>board\[(.*)\]</find>
+      <find>cout &lt;&lt;</find>
+      <find>std::cout &lt;&lt;</find>
+      <find>//  //</find>
+      <find>NEWLINE</find>
+      <find>assert (</find>
     </findStrings>
     <replaceStrings>
       <replace>optionMap</replace>
@@ -389,6 +411,10 @@
       <replace>63-sq];</replace>
       <replace>//</replace>
       <replace>getPiece($1)</replace>
+      <replace>// cout &lt;&lt;</replace>
+      <replace>// cout &lt;&lt;</replace>
+      <replace>// NEWLINE</replace>
+      <replace>//</replace>
     </replaceStrings>
     <dirStrings>
       <dir>C:\Users\Frank\Dropbox\Private\Projekte\_GITHUB\FrankyCpp\src</dir>
@@ -433,7 +459,6 @@
         <option value="$PROJECT_DIR$/src/Move.h" />
         <option value="$PROJECT_DIR$/test/Tests/BitboardTests.cpp" />
         <option value="$PROJECT_DIR$/src/Random.h" />
-        <option value="$PROJECT_DIR$/test/Tests/TimeingTests.cpp" />
         <option value="$PROJECT_DIR$/test/Tests/BitboardTest.cpp" />
         <option value="$PROJECT_DIR$/src/Evaluation.cpp" />
         <option value="$PROJECT_DIR$/src/Evaluation.h" />
@@ -445,11 +470,12 @@
         <option value="$PROJECT_DIR$/src/UCIHandler.h" />
         <option value="$PROJECT_DIR$/src/Bitboards.cpp" />
         <option value="$PROJECT_DIR$/src/Bitboards.h" />
-        <option value="$PROJECT_DIR$/src/globals.h" />
         <option value="$PROJECT_DIR$/test/Tests/GlobalsTest.cpp" />
         <option value="$PROJECT_DIR$/src/Position.h" />
         <option value="$PROJECT_DIR$/test/Tests/PositionTest.cpp" />
+        <option value="$PROJECT_DIR$/test/Tests/TimeingTests.cpp" />
         <option value="$PROJECT_DIR$/src/Position.cpp" />
+        <option value="$PROJECT_DIR$/src/globals.h" />
       </list>
     </option>
   </component>
@@ -479,17 +505,6 @@
               <item name="FrankyCPP" type="b2602c69:ProjectViewProjectNode" />
               <item name="FrankyCpp" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="FrankyCPP" type="b2602c69:ProjectViewProjectNode" />
-              <item name="FrankyCpp" type="462c0819:PsiDirectoryNode" />
-              <item name="test" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="FrankyCPP" type="b2602c69:ProjectViewProjectNode" />
-              <item name="FrankyCpp" type="462c0819:PsiDirectoryNode" />
-              <item name="test" type="462c0819:PsiDirectoryNode" />
-              <item name="Tests" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -528,20 +543,8 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Google Test.PositionTest.doMoveCastling">
+  <component name="RunManager" selected="Google Test.TimingTests.doMoveUndoMove">
     <configuration name="All in PositionTest.cpp" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" PASS_PARENT_ENVS_2="true" PROJECT_NAME="FrankyCPP" TARGET_NAME="FrankyTest" RUN_TARGET_PROJECT_NAME="FrankyCPP" RUN_TARGET_NAME="FrankyTest" TEST_PATTERN="all-tests(file://$PROJECT_DIR$/test/Tests/PositionTest.cpp)" TEST_MODE="PATTERN">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-        <option name="BeforeTestRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="CastlingTest.castling" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" PASS_PARENT_ENVS_2="true" PROJECT_NAME="FrankyCPP" TARGET_NAME="FrankyTest" RUN_TARGET_PROJECT_NAME="FrankyCPP" RUN_TARGET_NAME="FrankyTest" TEST_CLASS="CastlingTest" TEST_METHOD="castling" TEST_MODE="SUITE_TEST">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-        <option name="BeforeTestRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="PositionTest.Setup" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" PASS_PARENT_ENVS_2="true" PROJECT_NAME="FrankyCPP" TARGET_NAME="FrankyTest" RUN_TARGET_PROJECT_NAME="FrankyCPP" RUN_TARGET_NAME="FrankyTest" TEST_CLASS="PositionTest" TEST_METHOD="Setup" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
@@ -553,7 +556,19 @@
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="PositionTest.doMoveEnPassantCapture" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" PASS_PARENT_ENVS_2="true" PROJECT_NAME="FrankyCPP" TARGET_NAME="FrankyTest" RUN_TARGET_PROJECT_NAME="FrankyCPP" RUN_TARGET_NAME="FrankyTest" TEST_CLASS="PositionTest" TEST_METHOD="doMoveEnPassantCapture" TEST_MODE="SUITE_TEST">
+    <configuration name="PositionTest.doUndoMoveEnPassantCapture" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" PASS_PARENT_ENVS_2="true" PROJECT_NAME="FrankyCPP" TARGET_NAME="FrankyTest" RUN_TARGET_PROJECT_NAME="FrankyCPP" RUN_TARGET_NAME="FrankyTest" TEST_CLASS="PositionTest" TEST_METHOD="doUndoMoveEnPassantCapture" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="PositionTest.doUndoMovePromotion" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" PASS_PARENT_ENVS_2="true" PROJECT_NAME="FrankyCPP" TARGET_NAME="FrankyTest" RUN_TARGET_PROJECT_NAME="FrankyCPP" RUN_TARGET_NAME="FrankyTest" TEST_CLASS="PositionTest" TEST_METHOD="doUndoMovePromotion" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TimingTests.doMoveUndoMove" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" PASS_PARENT_ENVS_2="true" PROJECT_NAME="FrankyCPP" TARGET_NAME="FrankyTest" RUN_TARGET_PROJECT_NAME="FrankyCPP" RUN_TARGET_NAME="FrankyTest" TEST_CLASS="TimingTests" TEST_METHOD="doMoveUndoMove" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
@@ -602,19 +617,19 @@
       <item itemvalue="Application.gmock_main" />
       <item itemvalue="Application.gtest" />
       <item itemvalue="Application.gtest_main" />
-      <item itemvalue="Google Test.PositionTest.doMoveEnPassantCapture" />
-      <item itemvalue="Google Test.PositionTest.Setup" />
-      <item itemvalue="Google Test.CastlingTest.castling" />
-      <item itemvalue="Google Test.All in PositionTest.cpp" />
       <item itemvalue="Google Test.PositionTest.doMoveCastling" />
+      <item itemvalue="Google Test.PositionTest.doUndoMovePromotion" />
+      <item itemvalue="Google Test.PositionTest.doUndoMoveEnPassantCapture" />
+      <item itemvalue="Google Test.All in PositionTest.cpp" />
+      <item itemvalue="Google Test.TimingTests.doMoveUndoMove" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Google Test.PositionTest.doMoveCastling" />
+        <item itemvalue="Google Test.TimingTests.doMoveUndoMove" />
         <item itemvalue="Google Test.All in PositionTest.cpp" />
-        <item itemvalue="Google Test.PositionTest.doMoveEnPassantCapture" />
-        <item itemvalue="Google Test.CastlingTest.castling" />
-        <item itemvalue="Google Test.PositionTest.Setup" />
+        <item itemvalue="Google Test.PositionTest.doMoveCastling" />
+        <item itemvalue="Google Test.PositionTest.doUndoMoveEnPassantCapture" />
+        <item itemvalue="Google Test.PositionTest.doUndoMovePromotion" />
       </list>
     </recent_temporary>
   </component>
@@ -636,7 +651,7 @@
       <workItem from="1551681102021" duration="30071000" />
       <workItem from="1551888542846" duration="3593000" />
       <workItem from="1551892813737" duration="1750000" />
-      <workItem from="1551895427269" duration="181635000" />
+      <workItem from="1551895427269" duration="200277000" />
     </task>
     <task id="LOCAL-00001" summary="Initial">
       <created>1551628568845</created>
@@ -771,49 +786,56 @@
       <option name="project" value="LOCAL" />
       <updated>1552261253994</updated>
     </task>
-    <option name="localTasksCounter" value="20" />
+    <task id="LOCAL-00020" summary="Implemented doMove">
+      <created>1552347918684</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1552347918684</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="PositionTest_doMoveCastling - 2019.03.12 at 00h 28m 22s.xml">
-      <configuration name="PositionTest.doMoveCastling" configurationId="CMakeGoogleTestRunConfigurationType" />
+    <history-entry file="TimingTests_doMoveUndoMove - 2019.03.12 at 22h 57m 24s.xml">
+      <configuration name="TimingTests.doMoveUndoMove" configurationId="CMakeGoogleTestRunConfigurationType" />
     </history-entry>
-    <history-entry file="PositionTest_doMoveCastling - 2019.03.12 at 00h 30m 06s.xml">
-      <configuration name="PositionTest.doMoveCastling" configurationId="CMakeGoogleTestRunConfigurationType" />
+    <history-entry file="TimingTests_doMoveUndoMove - 2019.03.12 at 23h 00m 00s.xml">
+      <configuration name="TimingTests.doMoveUndoMove" configurationId="CMakeGoogleTestRunConfigurationType" />
     </history-entry>
-    <history-entry file="PositionTest_doMoveCastling - 2019.03.12 at 00h 30m 51s.xml">
-      <configuration name="PositionTest.doMoveCastling" configurationId="CMakeGoogleTestRunConfigurationType" />
+    <history-entry file="TimingTests_doMoveUndoMove - 2019.03.12 at 23h 02m 34s.xml">
+      <configuration name="TimingTests.doMoveUndoMove" configurationId="CMakeGoogleTestRunConfigurationType" />
     </history-entry>
-    <history-entry file="PositionTest_doMoveCastling - 2019.03.12 at 00h 31m 49s.xml">
-      <configuration name="PositionTest.doMoveCastling" configurationId="CMakeGoogleTestRunConfigurationType" />
+    <history-entry file="TimingTests_doMoveUndoMove - 2019.03.12 at 23h 08m 49s.xml">
+      <configuration name="TimingTests.doMoveUndoMove" configurationId="CMakeGoogleTestRunConfigurationType" />
     </history-entry>
-    <history-entry file="PositionTest_doMoveCastling - 2019.03.12 at 00h 34m 42s.xml">
-      <configuration name="PositionTest.doMoveCastling" configurationId="CMakeGoogleTestRunConfigurationType" />
+    <history-entry file="TimingTests_doMoveUndoMove - 2019.03.12 at 23h 12m 48s.xml">
+      <configuration name="TimingTests.doMoveUndoMove" configurationId="CMakeGoogleTestRunConfigurationType" />
     </history-entry>
-    <history-entry file="PositionTest_doMoveCastling - 2019.03.12 at 00h 36m 31s.xml">
-      <configuration name="PositionTest.doMoveCastling" configurationId="CMakeGoogleTestRunConfigurationType" />
+    <history-entry file="TimingTests_doMoveUndoMove - 2019.03.12 at 23h 14m 50s.xml">
+      <configuration name="TimingTests.doMoveUndoMove" configurationId="CMakeGoogleTestRunConfigurationType" />
     </history-entry>
-    <history-entry file="PositionTest_doMoveCastling - 2019.03.12 at 00h 38m 53s.xml">
-      <configuration name="PositionTest.doMoveCastling" configurationId="CMakeGoogleTestRunConfigurationType" />
+    <history-entry file="TimingTests_doMoveUndoMove - 2019.03.12 at 23h 19m 52s.xml">
+      <configuration name="TimingTests.doMoveUndoMove" configurationId="CMakeGoogleTestRunConfigurationType" />
     </history-entry>
-    <history-entry file="PositionTest_doMoveCastling - 2019.03.12 at 00h 40m 03s.xml">
-      <configuration name="PositionTest.doMoveCastling" configurationId="CMakeGoogleTestRunConfigurationType" />
+    <history-entry file="TimingTests_doMoveUndoMove - 2019.03.12 at 23h 22m 54s.xml">
+      <configuration name="TimingTests.doMoveUndoMove" configurationId="CMakeGoogleTestRunConfigurationType" />
     </history-entry>
-    <history-entry file="PositionTest_doMoveCastling - 2019.03.12 at 00h 41m 56s.xml">
-      <configuration name="PositionTest.doMoveCastling" configurationId="CMakeGoogleTestRunConfigurationType" />
+    <history-entry file="TimingTests_doMoveUndoMove - 2019.03.12 at 23h 25m 36s.xml">
+      <configuration name="TimingTests.doMoveUndoMove" configurationId="CMakeGoogleTestRunConfigurationType" />
     </history-entry>
-    <history-entry file="PositionTest_doMoveCastling - 2019.03.12 at 00h 43m 16s.xml">
-      <configuration name="PositionTest.doMoveCastling" configurationId="CMakeGoogleTestRunConfigurationType" />
+    <history-entry file="TimingTests_doMoveUndoMove - 2019.03.12 at 23h 37m 53s.xml">
+      <configuration name="TimingTests.doMoveUndoMove" configurationId="CMakeGoogleTestRunConfigurationType" />
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="236496000" />
+    <option name="totallyTimeSpent" value="255138000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-6" y="0" width="2866" height="1225" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49218032" visible="true" weight="0.088088445" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.49218032" visible="true" weight="0.088088445" />
       <window_info id="Structure" order="1" sideWeight="0.5078197" side_tool="true" visible="true" weight="0.088088445" />
       <window_info id="Favorites" order="2" side_tool="true" weight="0.06847361" />
       <window_info anchor="bottom" id="Inspection Results" weight="0.3299539" />
@@ -832,10 +854,10 @@
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" auto_hide="true" id="Database" internal_type="SLIDING" order="3" type="SLIDING" weight="0.32972583" />
-      <window_info active="true" anchor="right" id="Run" order="4" sideWeight="0.79116833" visible="true" weight="0.21611983" />
+      <window_info anchor="right" id="Run" order="4" sideWeight="0.78932846" visible="true" weight="0.21611983" />
       <window_info anchor="right" id="Key Promoter X" order="5" />
-      <window_info anchor="right" id="Debug" order="6" sideWeight="0.49308756" weight="0.2489301" />
-      <window_info anchor="right" id="Messages" order="7" sideWeight="0.20883165" side_tool="true" visible="true" weight="0.21611983" />
+      <window_info anchor="right" id="Debug" order="6" sideWeight="0.8150874" weight="0.2489301" />
+      <window_info anchor="right" id="Messages" order="7" sideWeight="0.21067157" side_tool="true" visible="true" weight="0.21611983" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -870,7 +892,8 @@
     <MESSAGE value="Additional bitboards and Value&#10;Added Position internal counters" />
     <MESSAGE value="Poistion doMove WIP" />
     <MESSAGE value="Fixed switch" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed switch" />
+    <MESSAGE value="Implemented doMove" />
+    <option name="LAST_COMMIT_MESSAGE" value="Implemented doMove" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -889,11 +912,17 @@
       <configuration name="CMakeGoogleTestRunConfigurationType">
         <watch expression="enPassantSquare" />
         <watch expression="castlingRights" />
+        <watch expression="this-&gt;printBoard()" language="ObjectiveC" />
       </configuration>
     </watches-manager>
   </component>
   <component name="debuggerHistoryManager">
     <expressions id="watch">
+      <expression>
+        <expression-string>this-&gt;printBoard()</expression-string>
+        <language-id>ObjectiveC</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
       <expression>
         <expression-string>fen.str()</expression-string>
         <language-id>ObjectiveC</language-id>
@@ -901,6 +930,11 @@
       </expression>
     </expressions>
     <expressions id="evaluateExpression">
+      <expression>
+        <expression-string>this-&gt;printBoard()</expression-string>
+        <language-id>ObjectiveC</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
       <expression>
         <expression-string>Direction(2)</expression-string>
         <language-id>ObjectiveC</language-id>
@@ -943,20 +977,6 @@
       </provider>
     </entry>
     <entry file="file:///Library/Developer/CommandLineTools/usr/include/c++/v1/istream" />
-    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="162">
-          <caret line="9" lean-forward="true" selection-start-line="9" selection-end-line="9" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/CMakeLists.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="216">
-          <caret line="12" column="1" selection-start-line="12" selection-start-column="1" selection-end-line="12" selection-end-column="1" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file:///Library/Developer/CommandLineTools/usr/include/c++/v1/string" />
     <entry file="file://$PROJECT_DIR$/src/Search.cpp">
       <provider selected="true" editor-type-id="text-editor">
@@ -1182,16 +1202,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/Values.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1502">
-          <caret line="69" column="23" selection-start-line="69" selection-start-column="21" selection-end-line="69" selection-end-column="23" />
-          <folding>
-            <element signature="e#0#1135#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/UCIHandler.cpp">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="228">
@@ -1237,10 +1247,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/Tests/TimeingTests.cpp">
+    <entry file="file://$PROJECT_DIR$/test/Tests/GlobalsTest.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-24">
-          <caret line="35" column="25" selection-start-line="35" selection-start-column="25" selection-end-line="35" selection-end-column="25" />
+        <state relative-caret-position="130">
+          <caret line="153" column="24" selection-start-line="153" selection-start-column="24" selection-end-line="153" selection-end-column="24" />
           <folding>
             <element signature="e#0#1135#0" />
             <element signature="e#1137#1161#0" expanded="true" />
@@ -1248,10 +1258,42 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/test/Tests/PositionTest.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="146">
+          <caret line="323" selection-start-line="323" selection-end-line="325" selection-end-column="17" />
+          <folding>
+            <element signature="e#0#1135#0" />
+            <element signature="e#1137#1161#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Values.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-674">
+          <caret line="69" column="23" selection-start-line="69" selection-start-column="21" selection-end-line="69" selection-end-column="23" />
+          <folding>
+            <element signature="e#0#1135#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Position.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="144">
+          <caret line="122" column="39" selection-start-line="122" selection-start-column="39" selection-end-line="122" selection-end-column="39" />
+          <folding>
+            <element signature="e#0#1135#0" />
+            <element signature="e#1196#1214#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/globals.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="554">
-          <caret line="304" column="70" lean-forward="true" selection-start-line="303" selection-start-column="65" selection-end-line="304" selection-end-column="1" />
+        <state relative-caret-position="279">
+          <caret line="49" selection-start-line="49" selection-end-line="49" />
           <folding>
             <element signature="e#0#1135#0" />
             <element signature="e#1443#1460#0" expanded="true" />
@@ -1260,32 +1302,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/Tests/GlobalsTest.cpp">
+    <entry file="file://$PROJECT_DIR$/test/Tests/TimeingTests.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="130">
-          <caret line="153" column="47" lean-forward="true" selection-start-line="153" selection-start-column="47" selection-end-line="153" selection-end-column="47" />
-          <folding>
-            <element signature="e#0#1135#0" />
-            <element signature="e#1137#1161#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/Position.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="330">
-          <caret line="177" column="21" selection-start-line="177" selection-start-column="21" selection-end-line="177" selection-end-column="21" />
-          <folding>
-            <element signature="e#0#1135#0" />
-            <element signature="e#1196#1214#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/Tests/PositionTest.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="406">
-          <caret line="345" column="75" lean-forward="true" selection-start-line="345" selection-start-column="75" selection-end-line="345" selection-end-column="75" />
+        <state relative-caret-position="839">
+          <caret line="107" column="25" selection-start-line="107" selection-start-column="25" selection-end-line="107" selection-end-column="25" />
           <folding>
             <element signature="e#0#1135#0" />
             <element signature="e#1137#1161#0" expanded="true" />
@@ -1295,13 +1315,24 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/Position.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="997">
-          <caret line="279" column="7" selection-start-line="279" selection-start-column="7" selection-end-line="279" selection-end-column="7" />
+        <state relative-caret-position="1240">
+          <caret line="279" column="48" selection-start-line="279" selection-start-column="48" selection-end-line="279" selection-end-column="48" />
           <folding>
+            <element signature="e#0#1135#0" />
             <element signature="e#1137#1156#0" expanded="true" />
           </folding>
         </state>
       </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="171">
+          <caret line="9" selection-start-line="9" selection-end-line="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
   </component>
   <component name="masterDetails">
