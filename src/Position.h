@@ -173,7 +173,7 @@ public:
   inline int getGamePhase() const { return gamePhase; }
 
 private:
-  FRIEND_TEST(PositionTest, PosValue);
+//  FRIEND_TEST(PositionTest, PosValue);
   void movePiece(Square from, Square to);
   void putPiece(Piece piece, Square square);
   Piece removePiece(Square square);
