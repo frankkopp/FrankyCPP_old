@@ -21,19 +21,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4febe152-5c70-47fd-9338-9cb20e6462e6" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Bitboards.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Bitboards.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Position.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Position.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Position.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Position.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/UCIOption.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/UCIOption.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/UCIOption.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/UCIOption.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/globals.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/globals.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/Tests/PositionTest.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/test/Tests/PositionTest.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/Tests/SemaphoreTest.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/test/Tests/SemaphoreTest.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/test/main.cpp" afterDir="false" />
-    </list>
+    <list default="true" id="4febe152-5c70-47fd-9338-9cb20e6462e6" name="Default Changelist" comment="" />
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <ignored path="$PROJECT_DIR$/cmake-build-release/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -98,8 +86,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/Position.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="519">
-              <caret line="174" column="67" lean-forward="true" selection-start-line="174" selection-start-column="67" selection-end-line="174" selection-end-column="67" />
+            <state relative-caret-position="515">
+              <caret line="171" column="175" lean-forward="true" selection-start-line="171" selection-start-column="175" selection-end-line="171" selection-end-column="175" />
               <folding>
                 <element signature="e#0#1135#0" />
                 <element signature="e#1196#1214#0" expanded="true" />
@@ -269,36 +257,7 @@
     <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
     </navigator>
-    <panes>
-      <pane id="Scope" />
-      <pane id="ProjectPane">
-        <subPane>
-          <expand>
-            <path>
-              <item name="FrankyCPP" type="b2602c69:ProjectViewProjectNode" />
-              <item name="FrankyCPP" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="FrankyCPP" type="b2602c69:ProjectViewProjectNode" />
-              <item name="FrankyCPP" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="FrankyCPP" type="b2602c69:ProjectViewProjectNode" />
-              <item name="FrankyCPP" type="462c0819:PsiDirectoryNode" />
-              <item name="test" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="FrankyCPP" type="b2602c69:ProjectViewProjectNode" />
-              <item name="FrankyCPP" type="462c0819:PsiDirectoryNode" />
-              <item name="test" type="462c0819:PsiDirectoryNode" />
-              <item name="Tests" type="462c0819:PsiDirectoryNode" />
-            </path>
-          </expand>
-          <select />
-        </subPane>
-      </pane>
-    </panes>
+    <panes />
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
@@ -444,7 +403,7 @@
       <workItem from="1552468178893" duration="2063000" />
       <workItem from="1552512902199" duration="1184000" />
       <workItem from="1552515319002" duration="1699000" />
-      <workItem from="1552550015067" duration="558000" />
+      <workItem from="1552550015067" duration="614000" />
     </task>
     <task id="LOCAL-00001" summary="Initial">
       <created>1551628568845</created>
@@ -588,7 +547,14 @@
       <updated>1552515318285</updated>
       <workItem from="1552515312869" duration="6000" />
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="Implemented nullMove, undoNullMove&#10;CleanUp and corrected some code b/o compiler warnings">
+      <created>1552571446831</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1552571446831</updated>
+    </task>
+    <option name="localTasksCounter" value="22" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -624,11 +590,10 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="262391000" />
+    <option name="totallyTimeSpent" value="262447000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="2560" height="1363" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" sideWeight="0.48948106" weight="0.18659942" />
       <window_info id="Structure" order="1" sideWeight="0.5105189" side_tool="true" weight="0.090252705" />
@@ -650,7 +615,7 @@
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" auto_hide="true" id="Database" internal_type="SLIDING" order="3" type="SLIDING" weight="0.32972583" />
-      <window_info anchor="right" id="Run" order="4" sideWeight="0.78860295" visible="true" weight="0.22727273" />
+      <window_info anchor="right" id="Run" order="4" sideWeight="0.78860295" weight="0.22727273" />
       <window_info anchor="right" id="Key Promoter X" order="5" weight="0.3299639" />
       <window_info anchor="right" id="Debug" order="6" sideWeight="0.8150874" weight="0.41930836" />
     </layout>
@@ -713,7 +678,8 @@
     <MESSAGE value="Poistion doMove WIP" />
     <MESSAGE value="Fixed switch" />
     <MESSAGE value="Implemented doMove" />
-    <option name="LAST_COMMIT_MESSAGE" value="Implemented doMove" />
+    <MESSAGE value="Implemented nullMove, undoNullMove&#10;CleanUp and corrected some code b/o compiler warnings" />
+    <option name="LAST_COMMIT_MESSAGE" value="Implemented nullMove, undoNullMove&#10;CleanUp and corrected some code b/o compiler warnings" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1093,8 +1059,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/Position.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="519">
-          <caret line="174" column="67" lean-forward="true" selection-start-line="174" selection-start-column="67" selection-end-line="174" selection-end-column="67" />
+        <state relative-caret-position="515">
+          <caret line="171" column="175" lean-forward="true" selection-start-line="171" selection-start-column="175" selection-end-line="171" selection-end-column="175" />
           <folding>
             <element signature="e#0#1135#0" />
             <element signature="e#1196#1214#0" expanded="true" />
