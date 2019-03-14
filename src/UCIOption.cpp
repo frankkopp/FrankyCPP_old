@@ -31,24 +31,22 @@ using namespace std;
 namespace UCI {
 
   Option::Option(const char *name)
-    : type(BUTTON), nameID(name) {}
+    : nameID(name), type(BUTTON) {}
 
   Option::Option(const char *name, bool value)
-    : type(CHECK), nameID(name), defaultValue(boolStr(value)), currentValue(boolStr(value)) {}
+    : nameID(name), type(CHECK), defaultValue(boolStr(value)), currentValue(boolStr(value)) {}
 
   Option::Option(const char *name, int def, int min, int max)
-    : type(SPIN), nameID(name), minValue(to_string(min)), defaultValue(to_string(def)),
-      currentValue(to_string(def)) {}
+    : nameID(name), type(SPIN), defaultValue(to_string(def)), minValue(to_string(min)),
+      maxValue(to_string(max)), currentValue(to_string(def)) {}
 
   Option::Option(const char *name, const char *str)
-    : type(STRING), nameID(name), defaultValue(str), currentValue(str) {}
+    : nameID(name), type(STRING), defaultValue(str), currentValue(str) {}
 
   Option::Option(const char *name, const char *val, const char *def)
-    : type(STRING), nameID(name), defaultValue(val), currentValue(def) {}
+    : nameID(name), type(STRING), defaultValue(val), currentValue(def) {}
 
-  Option::Option(const Option &o)
-    : nameID(o.nameID), type(o.type), currentValue(o.currentValue), defaultValue(o.defaultValue),
-      minValue(o.minValue), maxValue(o.maxValue), varValue(o.varValue) {}
+  Option::Option(const Option &o) = default;
 
   ostream &operator<<(ostream &os, const Option &option) {
     os << "Option = nameID: " << option.nameID << " type: " << option.getTypeString()

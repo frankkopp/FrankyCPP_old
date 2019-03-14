@@ -376,7 +376,7 @@ ENABLE_INCR_OPERATORS_ON(CastlingRights)
 #undef ENABLE_INCR_OPERATORS_ON
 #undef ENABLE_BASE_OPERATORS_ON
 
-constexpr const char *const boolStr(bool b) { return b ? "true" : "false"; };
-constexpr const char *const boolStr(int b) { return b ? "true" : "false"; };
+constexpr const char *boolStr(bool b) { return b ? "true" : "false"; };
+constexpr const char *boolStr(int b) { return b ? "true" : "false"; };
 
 #endif //FRANKYCPP_GLOBALS_H

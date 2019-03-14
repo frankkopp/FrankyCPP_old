@@ -136,7 +136,6 @@ void Position::doMove(Move move) {
 
   const Square toSq = toSquare(move);
   const Piece targetPC = getPiece(toSq);
-  const PieceType targetPT = typeOf(targetPC);
 
   const PieceType promotionPT = promotionType(move);
 
@@ -334,14 +333,6 @@ void Position::undoMove() {
   zobristKey = zobristKey_History[historyCounter];
   hasCheck = hasCheckFlagHistory[historyCounter];
   hasMate = hasMateFlagHistory[historyCounter];
-}
-
-void Position::doNullMove() {
-// TODO
-}
-
-void Position::undoNullMove() {
-// TODO
 }
 
 ////////////////////////////////////////////////

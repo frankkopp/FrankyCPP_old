@@ -192,26 +192,26 @@ TEST(PositionTest, Copy) {
 }
 
 TEST(PositionTest, PosValue) {
-//  Bitboards::init();
-//  Position::init();
-//  Values::init();
-//  // NEWLINE  ;
-//
-//  Position position("8/8/8/8/8/8/8/8 w - - 0 1");
-//  //  cout << position.str() << endl;
-//
-//  position.putPiece(WHITE_KING, SQ_E1);
-//  position.putPiece(BLACK_KING, SQ_E8);
-//  position.putPiece(WHITE_KNIGHT, SQ_E4);
-//  position.putPiece(BLACK_KNIGHT, SQ_D5);
-//  // cout << position.str() << endl;
-//  ASSERT_EQ(2, position.getGamePhase());
-//  ASSERT_EQ(2320, position.getMaterial(WHITE));
-//  ASSERT_EQ(2320, position.getMaterial(BLACK));
-//  ASSERT_EQ(0, position.getMgPosValue(WHITE));
-//  ASSERT_EQ(0, position.getMgPosValue(BLACK));
-//  ASSERT_EQ(-10, position.getEgPosValue(WHITE));
-//  ASSERT_EQ(-10, position.getEgPosValue(BLACK));
+  Bitboards::init();
+  Position::init();
+  Values::init();
+  // NEWLINE  ;
+
+  Position position("8/8/8/8/8/8/8/8 w - - 0 1");
+  //  cout << position.str() << endl;
+
+  position.putPiece(WHITE_KING, SQ_E1);
+  position.putPiece(BLACK_KING, SQ_E8);
+  position.putPiece(WHITE_KNIGHT, SQ_E4);
+  position.putPiece(BLACK_KNIGHT, SQ_D5);
+  // cout << position.str() << endl;
+  ASSERT_EQ(2, position.getGamePhase());
+  ASSERT_EQ(2320, position.getMaterial(WHITE));
+  ASSERT_EQ(2320, position.getMaterial(BLACK));
+  ASSERT_EQ(0, position.getMgPosValue(WHITE));
+  ASSERT_EQ(0, position.getMgPosValue(BLACK));
+  ASSERT_EQ(-10, position.getEgPosValue(WHITE));
+  ASSERT_EQ(-10, position.getEgPosValue(BLACK));
 }
 
 TEST(PositionTest, doUndoMoveNormal) {
@@ -428,5 +428,27 @@ TEST(PositionTest, doMoveCastling) {
   // undo move
   position.undoMove();
   ASSERT_EQ("r3k2r/1ppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/1PPQ1PPP/R3K2R b KQkq - 0 1",
+            position.printFen());
+}
+
+
+TEST(PositionTest, doNullMove) {
+  Bitboards::init();
+  Position::init();
+  Values::init();
+  NEWLINE;
+
+  // do move
+  Position position("rnbqkbnr/ppp1pppp/8/8/3pP3/2N2N2/PPPP1PPP/R1BQKB1R b KQkq e3");
+  cout << position.str() << endl;
+
+  position.doNullMove();
+  cout << position.str() << endl;
+  ASSERT_EQ("rnbqkbnr/ppp1pppp/8/8/3pP3/2N2N2/PPPP1PPP/R1BQKB1R w KQkq - 0 1",
+            position.printFen());
+
+  position.undoNullMove();
+  cout << position.str() << endl;
+  ASSERT_EQ("rnbqkbnr/ppp1pppp/8/8/3pP3/2N2N2/PPPP1PPP/R1BQKB1R b KQkq e3 0 1",
             position.printFen());
 }

@@ -28,7 +28,7 @@ TEST(SemaphoreTest, basic) {
   ASSERT_EQ(NONE, myState);
 
   std::cout << "Start Thread!\n";
-  std::thread myThread = std::thread([this] { run(); });
+  std::thread myThread = std::thread([] { run(); });
   std::this_thread::sleep_for(std::chrono::milliseconds(200));
   ASSERT_EQ(NEW, myState);
 

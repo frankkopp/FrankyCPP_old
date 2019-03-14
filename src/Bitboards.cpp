@@ -322,14 +322,12 @@ namespace Bitboards {
 
     // pawn moves
     for (Square square = SQ_A1; square <= SQ_H8; ++square) {
-      File file = fileOf(square);
-      Rank rank = rankOf(square);
       // pawn moves
       if (square > SQ_H1) pawnMoves[WHITE][square] |= (1L << square + NORTH);
       if (square < SQ_A8) pawnMoves[BLACK][square] |= (1L << square + SOUTH);
       // pawn double moves
-      if (rank == RANK_2) pawnMoves[WHITE][square] |= (1L << square + NORTH + NORTH);
-      if (rank == RANK_7) pawnMoves[BLACK][square] |= (1L << square + SOUTH + SOUTH);
+      if (rankOf(square) == RANK_2) pawnMoves[WHITE][square] |= (1L << square + NORTH + NORTH);
+      if (rankOf(square) == RANK_7) pawnMoves[BLACK][square] |= (1L << square + SOUTH + SOUTH);
     }
 
     // @formatter:off
@@ -439,8 +437,6 @@ namespace Bitboards {
 
     // distances to center squares by quadrant
     for (Square square = SQ_A1; square <= SQ_H8; ++square) {
-      int f = fileOf(square);
-      int r = rankOf(square);
       // left upper quadrant
       if ((squareBB[square] & ranksNorthMask[27] & filesWestMask[36]) != 0) {
         centerDistance[square] = distance(square, SQ_D5);

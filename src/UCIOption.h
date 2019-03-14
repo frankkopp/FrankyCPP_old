@@ -64,14 +64,14 @@ namespace UCI {
     friend ostream &operator<<(ostream &os, const Option &option);
 
     const string &getNameID() const { return nameID; }
-    const OptionType getType() const { return type; }
+    const OptionType &getType() const { return type; }
     const std::string getTypeString() const { return optionTypeStrings[type]; }
     const string &getDefaultValue() const { return defaultValue; }
     const string &getMinValue() const { return minValue; }
     const string &getMaxValue() const { return maxValue; }
     const string &getVarValue() const { return varValue; }
     string getCurrentValue() const { return currentValue; }
-    string setCurrentValue(string value)  { currentValue = value; }
+    void  setCurrentValue(string value)  { currentValue = value; }
 
   };
 

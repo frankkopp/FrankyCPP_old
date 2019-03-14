@@ -155,8 +155,48 @@ public:
 
   void doMove(Move move);
   void undoMove();
-  void doNullMove();
-  void undoNullMove();
+
+  inline void doNullMove() {
+    // save state of board for undo
+    moveHistory[historyCounter] = NOMOVE;
+    fromPieceHIstory[historyCounter] = PIECE_NONE;
+    capturedPieceHIstory[historyCounter] = PIECE_NONE;
+    castlingRights_History[historyCounter] = castlingRights;
+    enPassantSquare_History[historyCounter] = enPassantSquare;
+    halfMoveClockHistory[historyCounter] = halfMoveClock;
+    zobristKey_History[historyCounter] = zobristKey;
+    hasCheckFlagHistory[historyCounter] = hasCheck;
+    hasMateFlagHistory[historyCounter] = hasMate;
+    historyCounter++;
+
+    // reset check and mate flag
+    hasCheck = FLAG_TBD;
+    hasMate = FLAG_TBD;
+
+    // clear en passant
+    clearEnPassant();
+
+    // update halfMoveNumber
+    nextHalfMoveNumber++;
+
+    // change color (active player)
+    nextPlayer = ~nextPlayer;
+    zobristKey = this->zobristKey ^ Zobrist::nextPlayer;
+  }
+
+  inline void undoNullMove() {
+    // Restore state part 1
+    historyCounter--;
+    nextHalfMoveNumber--;
+    nextPlayer = ~nextPlayer;
+    castlingRights = castlingRights_History[historyCounter];
+    enPassantSquare = enPassantSquare_History[historyCounter];
+    halfMoveClock = halfMoveClockHistory[historyCounter];
+    zobristKey = zobristKey_History[historyCounter];
+    hasCheck = hasCheckFlagHistory[historyCounter];
+    hasMate = hasMateFlagHistory[historyCounter];
+  }
+
 
   ////////////////////////////////////////////////
   ///// GETTER / SETTER
@@ -173,7 +213,7 @@ public:
   inline int getGamePhase() const { return gamePhase; }
 
 private:
-//  FRIEND_TEST(PositionTest, PosValue);
+  FRIEND_TEST(PositionTest, PosValue);
   void movePiece(Square from, Square to);
   void putPiece(Piece piece, Square square);
   Piece removePiece(Square square);
