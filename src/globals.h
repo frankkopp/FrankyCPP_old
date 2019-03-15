@@ -47,7 +47,7 @@ Classes to be defined as C++ classes:
   UCISearchMode
  */
 
-#define NDEBUG
+// #define NDEBUG
 
 #ifndef FRANKYCPP_GLOBALS_H
 #define FRANKYCPP_GLOBALS_H

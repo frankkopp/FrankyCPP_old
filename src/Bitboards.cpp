@@ -323,11 +323,11 @@ namespace Bitboards {
     // pawn moves
     for (Square square = SQ_A1; square <= SQ_H8; ++square) {
       // pawn moves
-      if (square > SQ_H1) pawnMoves[WHITE][square] |= (1L << square + NORTH);
-      if (square < SQ_A8) pawnMoves[BLACK][square] |= (1L << square + SOUTH);
+      if (square > SQ_H1) pawnMoves[WHITE][square] |= ONE_BB << (square + NORTH);
+      if (square < SQ_A8) pawnMoves[BLACK][square] |= ONE_BB << (square + SOUTH);
       // pawn double moves
-      if (rankOf(square) == RANK_2) pawnMoves[WHITE][square] |= (1L << square + NORTH + NORTH);
-      if (rankOf(square) == RANK_7) pawnMoves[BLACK][square] |= (1L << square + SOUTH + SOUTH);
+      if (rankOf(square) == RANK_2) pawnMoves[WHITE][square] |= ONE_BB << (square + NORTH + NORTH);
+      if (rankOf(square) == RANK_7) pawnMoves[BLACK][square] |= ONE_BB << (square + SOUTH + SOUTH);
     }
 
     // @formatter:off

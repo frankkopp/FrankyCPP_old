@@ -214,6 +214,47 @@ TEST(PositionTest, PosValue) {
   ASSERT_EQ(-10, position.getEgPosValue(BLACK));
 }
 
+
+TEST(PositionTest, Bitboards) {
+  Bitboards::init();
+  Position::init();
+//  NEWLINE;
+
+  string fen("r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3 10 113");
+  Position position(fen.c_str());
+
+  Bitboard bb, expected;
+
+  bb = position.getPieceBB(WHITE, KING);
+//  cout << Bitboards::print(bb);
+  ASSERT_EQ(Bitboards::squareBB[SQ_G1], bb);
+
+  bb = position.getPieceBB(BLACK, KING);
+//  cout << Bitboards::print(bb);
+  ASSERT_EQ(Bitboards::squareBB[SQ_E8], bb);
+
+  bb = position.getPieceBB(WHITE, ROOK);
+//  cout << Bitboards::print(bb);
+  expected = Bitboards::squareBB[SQ_B1] | Bitboards::squareBB[SQ_G3];
+  ASSERT_EQ(expected, bb);
+
+  bb = position.getPieceBB(BLACK, ROOK);
+//  cout << Bitboards::print(bb);
+  expected = Bitboards::squareBB[SQ_A8] | Bitboards::squareBB[SQ_H8];
+  ASSERT_EQ(expected, bb);
+
+  bb = position.getPieceBB(WHITE, PAWN);
+//  cout << Bitboards::print(bb);
+  expected = Bitboards::squareBB[SQ_E4] | Bitboards::squareBB[SQ_F2] | Bitboards::squareBB[SQ_G2] |
+             Bitboards::squareBB[SQ_H2];
+  ASSERT_EQ(expected, bb);
+
+  bb = position.getPieceBB(BLACK, KNIGHT);
+//  cout << Bitboards::print(bb);
+  expected = Bitboards::squareBB[SQ_D7] | Bitboards::squareBB[SQ_G6];
+  ASSERT_EQ(expected, bb);
+}
+
 TEST(PositionTest, doUndoMoveNormal) {
   Bitboards::init();
   Position::init();
@@ -302,7 +343,8 @@ TEST(PositionTest, doUndoMoveEnPassantCapture) {
   position.undoMove();
   ASSERT_EQ(BLACK, position.getNextPlayer());
   ASSERT_EQ(6000, position.getMaterial(WHITE));
-  ASSERT_EQ("rnbqkbnr/ppp1pppp/8/8/3pP3/2N2N2/PPPP1PPP/R1BQKB1R b KQkq e3 0 3", position.printFen());
+  ASSERT_EQ("rnbqkbnr/ppp1pppp/8/8/3pP3/2N2N2/PPPP1PPP/R1BQKB1R b KQkq e3 0 3",
+            position.printFen());
 
   // do move
   position = Position("r1bqkb1r/pppp1ppp/2n2n2/3Pp3/8/8/PPP1PPPP/RNBQKBNR w KQkq e6 0 1");
@@ -317,7 +359,8 @@ TEST(PositionTest, doUndoMoveEnPassantCapture) {
   position.undoMove();
   ASSERT_EQ(WHITE, position.getNextPlayer());
   ASSERT_EQ(6000, position.getMaterial(WHITE));
-  ASSERT_EQ("r1bqkb1r/pppp1ppp/2n2n2/3Pp3/8/8/PPP1PPPP/RNBQKBNR w KQkq e6 0 1", position.printFen());
+  ASSERT_EQ("r1bqkb1r/pppp1ppp/2n2n2/3Pp3/8/8/PPP1PPPP/RNBQKBNR w KQkq e6 0 1",
+            position.printFen());
 }
 
 TEST(PositionTest, doMoveCastling) {
