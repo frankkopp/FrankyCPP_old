@@ -74,6 +74,13 @@ public:
   explicit Position(const char *fen);
 
   /**
+   * Creates a standard board position and initializes it with a fen position
+   *
+   * @param fen
+   */
+  explicit Position(std::string fen);
+
+  /**
    * Copy constructor - creates a copy of the given Position
    *
    * @param op
@@ -175,7 +182,7 @@ public:
    * @return true if during the previous 50 moves no pawn has been moved and no capture has been
    * made
    */
-  bool check50MovesRule();
+  bool check50MovesRule() { return halfMoveClock >= 100; };
 
   /**
   * Repetition of a position:.

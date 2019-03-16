@@ -474,7 +474,6 @@ TEST(PositionTest, doMoveCastling) {
             position.printFen());
 }
 
-
 TEST(PositionTest, doNullMove) {
   Bitboards::init();
   Position::init();
@@ -494,4 +493,108 @@ TEST(PositionTest, doNullMove) {
   cout << position.str() << endl;
   ASSERT_EQ("rnbqkbnr/ppp1pppp/8/8/3pP3/2N2N2/PPPP1PPP/R1BQKB1R b KQkq e3 0 1",
             position.printFen());
+}
+
+TEST(PositionTest, repetitionSimple) {
+  Position::init();
+  Bitboards::init();
+  // NEWLINE;
+
+  Position position;
+
+  position.doMove(createMove(SQ_E2, SQ_E4));
+  position.doMove(createMove(SQ_E7, SQ_E5));
+
+  // cout << "Repetitions: " << position.countRepetitions() << endl;
+  ASSERT_EQ(0, position.countRepetitions());
+
+  // Simple repetition
+  // takes 3 loops to get to repetition
+  for (int i = 0; i <= 2; i++) {
+    position.doMove(createMove(SQ_G1, SQ_F3));
+    position.doMove(createMove(SQ_B8, SQ_C6));
+    position.doMove(createMove(SQ_F3, SQ_G1));
+    position.doMove(createMove(SQ_C6, SQ_B8));
+    //cout << "Repetitions: " << position.countRepetitions() << endl;
+  }
+
+  // cout << "3-Repetitions: " << position.countRepetitions() << endl;
+  ASSERT_EQ(2, position.countRepetitions());
+  ASSERT_TRUE(position.checkRepetitions(2));
+}
+
+TEST(PositionTest, repetitionAdvanced) {
+  Position::init();
+  Bitboards::init();
+  NEWLINE;
+
+  Position position("6k1/p3q2p/1n1Q2pB/8/5P2/6P1/PP5P/3R2K1 b - -");
+
+  position.doMove(createMove(SQ_E7, SQ_E3));
+  position.doMove(createMove(SQ_G1, SQ_G2));
+
+  cout << "Repetitions: " << position.countRepetitions() << endl;
+  ASSERT_EQ(0, position.countRepetitions());
+
+  // takes 2 loops to get to repetition
+  for (int i = 0; i < 2; i++) {
+    position.doMove(createMove(SQ_E3, SQ_E2));
+    position.doMove(createMove(SQ_G2, SQ_G1));
+    position.doMove(createMove(SQ_E2, SQ_E3));
+    position.doMove(createMove(SQ_G1, SQ_G2));
+    cout << "Repetitions: " << position.countRepetitions() << endl;
+  }
+
+  cout << "3-Repetitions: " << position.countRepetitions() << endl;
+  ASSERT_EQ(2, position.countRepetitions());
+  ASSERT_TRUE(position.checkRepetitions(2));
+}
+
+TEST(PositionTest, insufficientMaterial) {
+  Position::init();
+  Bitboards::init();
+  NEWLINE;
+
+  string fen;
+  Position position;
+
+  // KK
+  fen = "8/3k4/8/8/8/8/4K3/8 w - -";
+  position = Position(fen);
+  ASSERT_TRUE(position.checkInsufficientMaterial());
+
+  // KQK
+  fen = "8/3k4/8/8/8/8/4KQ2/8 w - -";
+  position = Position(fen);
+  ASSERT_FALSE(position.checkInsufficientMaterial());
+
+  // KNK
+  fen = "8/3k4/8/8/8/8/4KN2/8 w - -";
+  position = Position(fen);
+  ASSERT_TRUE(position.checkInsufficientMaterial());
+
+  // KNNK
+  fen = "8/3k4/8/8/8/8/4KNN1/8 w - -";
+  position = Position(fen);
+  ASSERT_TRUE(position.checkInsufficientMaterial());
+
+  // KKN
+  fen = "8/2nk4/8/8/8/8/4K3/8 w - -";
+  position = Position(fen);
+  ASSERT_TRUE(position.checkInsufficientMaterial());
+
+  // KNNK
+  fen = "8/1nnk4/8/8/8/8/4K3/8 w - -";
+  position = Position(fen);
+  ASSERT_TRUE(position.checkInsufficientMaterial());
+
+  // KBKB - B same field color
+  fen = "8/3k1b2/8/8/8/8/4K1B1/8 w - -";
+  position = Position(fen);
+  ASSERT_TRUE(position.checkInsufficientMaterial());
+
+  // KBKB - B different field color
+  fen = "8/3k2b1/8/8/8/8/4K1B1/8 w - -";
+  position = Position(fen);
+  ASSERT_FALSE(position.checkInsufficientMaterial());
 }

@@ -66,6 +66,11 @@ void Position::init() {
 Position::Position() : Position(START_POSITION_FEN) {};
 
 /** Creates a board with setup from the given fen */
+Position::Position(std::string fen) {
+  setupBoard(fen.c_str());
+}
+
+/** Creates a board with setup from the given fen */
 Position::Position(const char *fen) {
   setupBoard(fen);
 }
@@ -283,14 +288,16 @@ void Position::undoMove() {
 
     case NORMAL:
       movePiece(toSquare(move), fromSquare(move));
-      if (capturedPieceHistory[historyCounter] != PIECE_NONE) putPiece(
+      if (capturedPieceHistory[historyCounter] != PIECE_NONE)
+        putPiece(
           capturedPieceHistory[historyCounter], toSquare(move));
       break;
 
     case PROMOTION:
       removePiece(toSquare(move));
       putPiece(makePiece(nextPlayer, PAWN), fromSquare(move));
-      if (capturedPieceHistory[historyCounter] != PIECE_NONE) putPiece(
+      if (capturedPieceHistory[historyCounter] != PIECE_NONE)
+        putPiece(
           capturedPieceHistory[historyCounter], toSquare(move));
       break;
 
@@ -379,6 +386,98 @@ void Position::undoNullMove() {
   hasMateFlag = hasMateFlagHistory[historyCounter];
 }
 
+bool Position::checkRepetitions(int reps) {
+  /*
+   [0]     3185849660387886977 << 1st
+   [1]     447745478729458041
+   [2]     3230145143131659788
+   [3]     491763876012767476
+   [4]     3185849660387886977 << 2nd
+   [5]     447745478729458041
+   [6]     3230145143131659788
+   [7]     491763876012767476  <<< history
+   [8]     3185849660387886977 <<< 3rd REPETITION from current zobrist
+    */
+  int counter = 0;
+  int i = historyCounter - 2;
+  int lastHalfMove = halfMoveClock;
+  while (i >= 0) {
+    // every time the half move clock gets reset (non reversible position) there
+    // can't be any more repetition of positions before this position
+    if (halfMoveClockHistory[i] >= lastHalfMove) break;
+    else lastHalfMove = halfMoveClockHistory[i];
+    if (zobristKey == zobristKey_History[i]) counter++;
+    if (counter >= reps) return true;
+    i -= 2;
+  }
+  return false;
+}
+
+int Position::countRepetitions() {
+  int counter = 0;
+  int i = historyCounter - 2;
+  int lastHalfMove = halfMoveClock;
+  while (i >= 0) {
+    // every time the half move clock gets reset (non reversible position) there
+    // can't be any more repetition of positions before this position
+    if (halfMoveClockHistory[i] >= lastHalfMove) break;
+    else lastHalfMove = halfMoveClockHistory[i];
+    if (zobristKey == zobristKey_History[i]) counter++;
+    i -= 2;
+  }
+  return counter;
+}
+
+bool Position::checkInsufficientMaterial() {
+  // TODO optimze??
+  
+  /*
+    * both sides have a bare king
+    * one side has a king and a minor piece against a bare king
+    * one side has two knights against the bare king
+    * both sides have a king and a bishop, the bishops being the same color
+    */
+  if (popcount(piecesBB[WHITE][PAWN]) == 0 && popcount(piecesBB[BLACK][PAWN]) == 0
+      && popcount(piecesBB[WHITE][ROOK]) == 0 && popcount(piecesBB[BLACK][ROOK]) == 0
+      && popcount(piecesBB[WHITE][QUEEN]) == 0 && popcount(piecesBB[BLACK][QUEEN]) == 0) {
+
+    // white king bare KK*
+    if (popcount(piecesBB[WHITE][KNIGHT]) == 0 && popcount(piecesBB[WHITE][BISHOP]) == 0) {
+
+      // both kings bare KK, KKN, KKNN
+      if (popcount(piecesBB[BLACK][KNIGHT]) <= 2 && popcount(piecesBB[BLACK][BISHOP]) == 0) {
+        return true;
+      }
+
+      // KKB
+      return popcount(piecesBB[BLACK][KNIGHT]) == 0 && popcount(piecesBB[BLACK][BISHOP]) == 1;
+
+    }
+      // only black king bare K*K
+    else if (popcount(piecesBB[BLACK][KNIGHT]) == 0 && popcount(piecesBB[BLACK][BISHOP]) == 0) {
+
+      // both kings bare KK, KNK, KNNK
+      if (popcount(piecesBB[WHITE][KNIGHT]) <= 2 && popcount(piecesBB[WHITE][BISHOP]) == 0) {
+        return true;
+      }
+
+      // KBK
+      return popcount(piecesBB[BLACK][KNIGHT]) == 0 && popcount(piecesBB[BLACK][BISHOP]) == 1;
+    }
+
+      // KBKB - B same field color
+    else if (popcount(piecesBB[BLACK][KNIGHT]) == 0 && popcount(piecesBB[BLACK][BISHOP]) == 1
+             && popcount(piecesBB[WHITE][KNIGHT]) == 0 && popcount(piecesBB[WHITE][BISHOP]) == 1) {
+
+      // bishops on the same square color
+      return (
+        ((whiteSquaresBB & piecesBB[WHITE][BISHOP]) && (whiteSquaresBB & piecesBB[BLACK][BISHOP]))
+        ||
+        ((blackSquaresBB & piecesBB[WHITE][BISHOP]) && (blackSquaresBB & piecesBB[BLACK][BISHOP])));
+    }
+    return false;
+  }
+}
 
 ////////////////////////////////////////////////
 ///// TO STRING
@@ -390,7 +489,8 @@ std::string Position::str() const {
   output << "Check: "
          << (hasCheckFlag == FLAG_TBD ? "N/A" : hasCheckFlag == FLAG_TRUE ? "Check" : "No check");
   output << " Check Mate: "
-         << (hasMateFlag == FLAG_TBD ? "N/A" : hasMateFlag == FLAG_TRUE ? "Mate" : "No mate") << endl;
+         << (hasMateFlag == FLAG_TBD ? "N/A" : hasMateFlag == FLAG_TRUE ? "Mate" : "No mate")
+         << endl;
   output << "Gamephase: " << gamePhase << endl;
   output << "Material: white=" << material[WHITE] << " black=" << material[BLACK] << endl;
   output << "PosValue MG: white=" << psqMGValue[WHITE] << " black=" << psqMGValue[BLACK] << endl;
@@ -570,7 +670,6 @@ void Position::clearEnPassant() {
     enPassantSquare = SQ_NONE;
   }
 }
-
 void Position::initializeBoard() {
 
   std::fill_n(&board[0], sizeof(board), PIECE_NONE);
@@ -676,6 +775,8 @@ void Position::setupBoard(const char *fen) {
   nextHalfMoveNumber = 2 * nextHalfMoveNumber - (nextPlayer == WHITE);
 
 }
+
+
 
 
 
