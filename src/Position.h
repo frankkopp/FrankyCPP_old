@@ -139,6 +139,10 @@ public:
   void undoNullMove();
 
   /**
+   * This determines if the current position has a check against the next player.
+   * The result is cached so that several calls to this for the same position have
+   * no extra performance hit.
+   *
    * @return true if current position has check for next player
    */
   bool hasCheck();
@@ -217,7 +221,7 @@ public:
   *
   * @return int representing a move
   */
-  int getLastMove();
+  Move getLastMove() { return historyCounter > 0 ? moveHistory[historyCounter-1] : NOMOVE; };
 
 
   ////////////////////////////////////////////////
@@ -230,9 +234,13 @@ public:
   Bitboard getPieceBB(Color c, PieceType pt) const { return piecesBB[c][pt]; }
   Bitboard getOccupiedBB() const { return occupiedBB[WHITE] | occupiedBB[BLACK]; }
   Bitboard getOccupiedBB(Color c) const { return occupiedBB[c]; }
+  Bitboard getOccupiedBBR90() const { return occupiedBBR90[WHITE] | occupiedBBR90[BLACK]; }
   Bitboard getOccupiedBBR90(Color c) const { return occupiedBBR90[c]; }
+  Bitboard getOccupiedBBL90() const { return occupiedBBL90[WHITE] | occupiedBBL90[BLACK]; }
   Bitboard getOccupiedBBL90(Color c) const { return occupiedBBL90[c]; }
+  Bitboard getOccupiedBBR45() const { return occupiedBBR45[WHITE] | occupiedBBR45[BLACK]; }
   Bitboard getOccupiedBBR45(Color c) const { return occupiedBBR45[c]; }
+  Bitboard getOccupiedBBL45() const { return occupiedBBL45[WHITE] | occupiedBBL45[BLACK]; }
   Bitboard getOccupiedBBL45(Color c) const { return occupiedBBL45[c]; }
 
   int getMaterial(Color c) const { return material[c]; }

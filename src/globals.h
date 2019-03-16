@@ -55,6 +55,10 @@ Classes to be defined as C++ classes:
 #include <string>
 #include <cstdint>
 #include <cassert>
+#include <iostream>
+#include <sstream>
+
+using namespace std;
 
 #define NEWLINE std::cout << std::endl
 
@@ -141,7 +145,7 @@ enum Direction : int {
   NORTH_WEST = NORTH + WEST
 };
 
-const static Direction pawnDir[COLOR_LENGTH] = { NORTH, SOUTH };
+const static Direction pawnDir[COLOR_LENGTH] = {NORTH, SOUTH};
 
 /** Orientation */
 enum Orientation : int {
@@ -234,16 +238,70 @@ enum MoveType {
   CASTLING = 3 << TYPE_SHIFT
 };
 
+constexpr Move createMove(Square from, Square to) { return Move((from << FROM_SHIFT) + to); }
+
 template<MoveType T>
 constexpr Move createMove(Square from, Square to, PieceType pt = KNIGHT) {
   assert(T == PROMOTION || pt == KNIGHT);
   assert(pt == KNIGHT || pt == QUEEN || pt == ROOK || pt == BISHOP);
   return Move(T + ((pt - KNIGHT) << PROM_TYPE_SHIFT) + (from << FROM_SHIFT) + to);
 }
-constexpr Move createMove(Square from, Square to) { return Move((from << FROM_SHIFT) + to); }
-constexpr Square fromSquare(Move m) { return Square((m >> FROM_SHIFT) & MOVE_MASK); }
-constexpr Square toSquare(Move m) { return Square(m & MOVE_MASK); }
-constexpr bool isMove(Move m) { return fromSquare(m) != toSquare(m); }
+
+template<MoveType T = NORMAL>
+Move createMove(const char *move) {
+  std::istringstream iss(move);
+  iss >> std::noskipws;
+  unsigned char token;
+  Square from, to;
+
+  // from
+  if (iss >> token) {
+    if (token >= 'a' && token <= 'h') {
+      File f = File(token - 'a');
+      if (!(iss >> token)) return NOMOVE; // malformed - ignore the rest
+      if ((token >= '1' && token <= '8')) {
+        Rank r = Rank(token - '1');
+        from = getSquare(f, r);
+      } else return NOMOVE; // malformed - ignore the rest
+    } else return NOMOVE; // malformed - ignore the rest
+  } else return NOMOVE; // malformed - ignore the rest
+
+  // to
+  if (iss >> token) {
+    if (token >= 'a' && token <= 'h') {
+      File f = File(token - 'a');
+      if (!(iss >> token)) return NOMOVE; // malformed - ignore the rest
+      if ((token >= '1' && token <= '8')) {
+        Rank r = Rank(token - '1');
+        to = getSquare(f, r);
+      } else return NOMOVE; // malformed - ignore the rest
+    } else return NOMOVE; // malformed - ignore the rest
+  } else return NOMOVE; // malformed - ignore the rest
+
+  // promotion
+  if (T == PROMOTION) {
+    if (iss >> token) {
+      switch (token) {
+        case 'n':
+          return createMove<T>(from, to, KNIGHT);
+        case 'b':
+          return createMove<T>(from, to, BISHOP);
+        case 'r':
+          return createMove<T>(from, to, ROOK);
+        case 'q':
+          return createMove<T>(from, to, QUEEN);
+        default:
+          break;
+      }
+    } else return NOMOVE; // malformed - ignore the rest
+  }
+
+  return createMove<T>(from, to);
+}
+
+constexpr Square getFromSquare(Move m) { return Square((m >> FROM_SHIFT) & MOVE_MASK); }
+constexpr Square getToSquare(Move m) { return Square(m & MOVE_MASK); }
+constexpr bool isMove(Move m) { return getFromSquare(m) != getToSquare(m); }
 constexpr int fromTo(Move m) { return m & MOVES_MASK; }
 constexpr MoveType typeOf(Move m) { return MoveType(m & (MOVE_TYPE_MASK << TYPE_SHIFT)); }
 // promotion type only makes sense if it actually is a promotion otherwise it must be ignored
@@ -252,7 +310,7 @@ constexpr PieceType promotionType(Move m) {
 }
 
 inline std::ostream &operator<<(std::ostream &os, const Move &move) {
-  os << squareLabel(fromSquare(move)) << squareLabel(toSquare(move));
+  os << squareLabel(getFromSquare(move)) << squareLabel(getToSquare(move));
   return os;
 }
 
@@ -272,7 +330,7 @@ inline std::string printMove(const Move &move) {
       tp = "CASTLING";
       break;
   }
-  return squareLabel(fromSquare(move)) + squareLabel(toSquare(move))
+  return squareLabel(getFromSquare(move)) + squareLabel(getToSquare(move))
          + " (" + tp + ")";;
 }
 

@@ -65,6 +65,9 @@ TEST(TimingTests, popcount) {
 
 Position position;
 
+/**
+ * Test the absolute speed of doMove, undoMove
+ */
 TEST(TimingTests, doMoveUndoMove) {
   NEWLINE;
   ostringstream os;
@@ -106,6 +109,33 @@ TEST(TimingTests, doMoveUndoMove) {
   //// TESTS END
 
   testTiming(os, 5, 10, 2'000'000, tests);
+
+  cout << os.str();
+}
+
+/**
+ * Test difference for getMoves with pre rotated bb vs. on-the-fly rotated bb
+ * Round  5 Test  1:  451.076.050 ns (  0,45107605 sec)
+ * Round  5 Test  2:   17.723.886 ns ( 0,017723886 sec)
+ */
+TEST(TimingTests, rotation) {
+  NEWLINE;
+  ostringstream os;
+
+  //// TESTS START
+  Bitboards::init();
+  Position::init();
+
+  position = Position("r3k2r/1ppqbppp/2n2n2/1B2p1B1/3p2b1/2NP1N2/1PPQPPPP/R3K2R w KQkq - 0 1");
+
+  auto f1 = []() { Bitboards::getMovesDiagUp(SQ_D2, position.getOccupiedBB()); };
+  auto f2 = []() { Bitboards::getMovesDiagUpR(SQ_D2, position.getOccupiedBBR45()); };
+  vector<void (*)()> tests;
+  tests.push_back(f1);
+  tests.push_back(f2);
+  //// TESTS END
+
+  testTiming(os, 5, 50, 10'000'000, tests);
 
   cout << os.str();
 }

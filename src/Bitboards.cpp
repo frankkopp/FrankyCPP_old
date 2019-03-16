@@ -414,9 +414,9 @@ namespace Bitboards {
     // mask for intermediate squares in between two squares
     for (Square from = SQ_A1; from <= SQ_H8; ++from) {
       for (Square to = SQ_A1; to <= SQ_H8; ++to) {
-        for (int d = 0; d < 7; d++) {
+        for (int d = 0; d < 8; d++) {
           Bitboard toBB = squareBB[to];
-          if ((rays[d][from] & toBB) != 0) {
+          if (rays[d][from] & toBB) {
             intermediateBB[from][to] |= rays[d][from] & ~rays[d][to] & ~toBB;
           }
         }

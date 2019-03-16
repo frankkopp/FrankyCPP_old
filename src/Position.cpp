@@ -127,19 +127,19 @@ Position::Position(const Position &op) {
 
 void Position::doMove(Move move) {
   assert(isMove(move));
-  assert(isSquare(fromSquare(move)));
-  assert(isSquare(toSquare(move)));
-  assert(getPiece(fromSquare(move)) != PIECE_NONE);
+  assert(isSquare(getFromSquare(move)));
+  assert(isSquare(getToSquare(move)));
+  assert(getPiece(getFromSquare(move)) != PIECE_NONE);
 
   const MoveType moveType = typeOf(move);
 
-  const Square fromSq = fromSquare(move);
+  const Square fromSq = getFromSquare(move);
   const Piece fromPC = getPiece(fromSq);
   const PieceType fromPT = typeOf(fromPC);
   const Color myColor = colorOf(fromPC);
   assert (myColor == nextPlayer);
 
-  const Square toSq = toSquare(move);
+  const Square toSq = getToSquare(move);
   const Piece targetPC = getPiece(toSq);
 
   const PieceType promotionPT = promotionType(move);
@@ -287,44 +287,44 @@ void Position::undoMove() {
   switch (typeOf(move)) {
 
     case NORMAL:
-      movePiece(toSquare(move), fromSquare(move));
+      movePiece(getToSquare(move), getFromSquare(move));
       if (capturedPieceHistory[historyCounter] != PIECE_NONE)
         putPiece(
-          capturedPieceHistory[historyCounter], toSquare(move));
+          capturedPieceHistory[historyCounter], getToSquare(move));
       break;
 
     case PROMOTION:
-      removePiece(toSquare(move));
-      putPiece(makePiece(nextPlayer, PAWN), fromSquare(move));
+      removePiece(getToSquare(move));
+      putPiece(makePiece(nextPlayer, PAWN), getFromSquare(move));
       if (capturedPieceHistory[historyCounter] != PIECE_NONE)
         putPiece(
-          capturedPieceHistory[historyCounter], toSquare(move));
+          capturedPieceHistory[historyCounter], getToSquare(move));
       break;
 
     case ENPASSANT:
       // ignore Zobrist Key as it will be restored via history
-      movePiece(toSquare(move), fromSquare(move));
-      putPiece(makePiece(~nextPlayer, PAWN), toSquare(move) + pawnDir[~nextPlayer]);
+      movePiece(getToSquare(move), getFromSquare(move));
+      putPiece(makePiece(~nextPlayer, PAWN), getToSquare(move) + pawnDir[~nextPlayer]);
       break;
 
     case CASTLING:
       // ignore Zobrist Key as it will be restored via history
       // castling rights are restored via history
-      switch (toSquare(move)) {
+      switch (getToSquare(move)) {
         case SQ_G1:
-          movePiece(toSquare(move), fromSquare(move)); // King
+          movePiece(getToSquare(move), getFromSquare(move)); // King
           movePiece(SQ_F1, SQ_H1); // Rook
           break;
         case SQ_C1:
-          movePiece(toSquare(move), fromSquare(move)); // King
+          movePiece(getToSquare(move), getFromSquare(move)); // King
           movePiece(SQ_D1, SQ_A1); // Rook
           break;
         case SQ_G8:
-          movePiece(toSquare(move), fromSquare(move)); // King
+          movePiece(getToSquare(move), getFromSquare(move)); // King
           movePiece(SQ_F8, SQ_H8); // Rook
           break;
         case SQ_C8:
-          movePiece(toSquare(move), fromSquare(move)); // King
+          movePiece(getToSquare(move), getFromSquare(move)); // King
           movePiece(SQ_D8, SQ_A8); // Rook
           break;
         default:
@@ -386,6 +386,96 @@ void Position::undoNullMove() {
   hasMateFlag = hasMateFlagHistory[historyCounter];
 }
 
+bool Position::isAttacked(Square attackedSquare, Color attackerColor) {
+  assert(attackedSquare != SQ_NONE);
+  assert(attackerColor != NOCOLOR);
+
+  // check pawns
+  if (Bitboards::pawnAttacks[~attackerColor][attackedSquare] & piecesBB[attackerColor][PAWN])
+    return true;
+
+  // check knights
+  if (Bitboards::pseudoAttacks[KNIGHT][attackedSquare] & piecesBB[attackerColor][KNIGHT])
+    return true;
+
+  // check king
+  if ((Bitboards::pseudoAttacks[KING][attackedSquare] & piecesBB[attackerColor][KING]))
+    return true;
+
+
+  // TODO use already rotated occupied bitboards
+
+  // Sliding
+  // rooks and queens
+
+  if (((Bitboards::pseudoAttacks[ROOK][attackedSquare] & piecesBB[attackerColor][ROOK])
+       || ((Bitboards::pseudoAttacks[QUEEN][attackedSquare] & piecesBB[attackerColor][QUEEN])))
+
+      && ((Bitboards::getMovesRank(attackedSquare, getOccupiedBB())
+           | Bitboards::getMovesFileR(attackedSquare, getOccupiedBBL90())) &
+          (piecesBB[attackerColor][ROOK] | piecesBB[attackerColor][QUEEN])))
+    return true;
+
+  // bishop and queens
+  if (((Bitboards::pseudoAttacks[BISHOP][attackedSquare] & piecesBB[attackerColor][BISHOP])
+       || ((Bitboards::pseudoAttacks[QUEEN][attackedSquare] & piecesBB[attackerColor][QUEEN])))
+
+       && ((Bitboards::getMovesDiagUpR(attackedSquare, getOccupiedBBR45())
+        | Bitboards::getMovesDiagDownR(attackedSquare, getOccupiedBBL45()))
+       & (piecesBB[attackerColor][BISHOP] | piecesBB[attackerColor][QUEEN])))
+    return true;
+
+  // check en passant
+  if (enPassantSquare != SQ_NONE) {
+    // white is attacker
+    if (attackerColor == WHITE
+        // black is target
+        && getPiece(enPassantSquare + SOUTH) == BLACK_PAWN
+        // this is indeed the en passant attacked square
+        && enPassantSquare + SOUTH == attackedSquare) {
+      // left
+      Square sq = attackedSquare + WEST;
+      if (distance(attackedSquare, sq) == 1 && getPiece(sq) == WHITE_PAWN) return true;
+      // right
+      sq = attackedSquare + EAST;
+      return distance(attackedSquare, sq) == 1  && getPiece(sq) == WHITE_PAWN;
+    }
+      // black is attacker (assume not noColor)
+    else if (attackerColor == BLACK
+             // white is target
+             && getPiece(enPassantSquare + NORTH) == WHITE_PAWN
+             // this is indeed the en passant attacked square
+             && enPassantSquare + NORTH == attackedSquare) {
+      // attack from left
+      Square sq = attackedSquare + WEST;
+      if (distance(attackedSquare, sq) == 1 && getPiece(sq) == BLACK_PAWN) return true;
+      // right
+      sq = attackedSquare + EAST;
+      return distance(attackedSquare, sq) == 1  && getPiece(sq) == BLACK_PAWN;
+    }
+  }
+  return false;
+}
+
+bool Position::hasCheck() {
+  if (hasCheckFlag != FLAG_TBD) return (hasCheckFlag == FLAG_TRUE);
+  const bool check = isAttacked(lsb(piecesBB[nextPlayer][KING]), nextPlayer);
+  hasCheckFlag = check ? FLAG_TRUE : FLAG_FALSE;
+  return check;
+}
+
+bool Position::hasCheckMate() {
+  if (!hasCheck()) return false;
+  if (hasMateFlag != FLAG_TBD) return (hasMateFlag == FLAG_TRUE);
+  // TODO: missing move gen
+  //  if (!mateCheckMG.hasLegalMove(this)) {
+  //    hasMateFlag = FLAG_TRUE;
+  //    return true;
+  //  }
+  hasMateFlag = FLAG_FALSE;
+  return false;
+}
+
 bool Position::checkRepetitions(int reps) {
   /*
    [0]     3185849660387886977 << 1st
@@ -430,7 +520,7 @@ int Position::countRepetitions() {
 
 bool Position::checkInsufficientMaterial() {
   // TODO optimze??
-  
+
   /*
     * both sides have a bare king
     * one side has a king and a minor piece against a bare king
@@ -477,6 +567,191 @@ bool Position::checkInsufficientMaterial() {
     }
     return false;
   }
+}
+
+bool Position::givesCheck(Move move) {
+
+  // opponents king square
+  const Bitboard kingBB = piecesBB[~nextPlayer][KING];
+  const Square kingSquare = lsb(kingBB);
+  // fromSquare
+  const Square fromSquare = getFromSquare(move);
+  // target square
+  Square toSquare = getToSquare(move);
+  // the moving piece
+  Piece fromPc = getPiece(fromSquare);
+  PieceType fromPt = typeOf(fromPc);
+  // the square captured by en passant capture
+  Square epTargetSquare = SQ_NONE;
+
+  // promotion moves - use new piece type
+  const MoveType moveType = typeOf(move);
+  if (moveType == PROMOTION) {
+    fromPt = promotionType(move);
+  }
+  // Castling
+  else if (moveType == CASTLING) {
+    // set the target square to the rook square and
+    // piece type to ROOK. King can't give check
+    // also no revealed check possible in castling
+    fromPt = ROOK;
+    switch (toSquare) {
+      case SQ_G1: // white king side castle
+        toSquare = SQ_F1;
+        break;
+      case SQ_C1: // white queen side castle
+        toSquare = SQ_D1;
+        break;
+      case SQ_G8: // black king side castle
+        toSquare = SQ_F8;
+        break;
+      case SQ_C8: // black queen side castle
+        toSquare = SQ_D8;
+        break;
+      default:
+        break;
+    }
+  }
+  // en passant
+  else if (moveType == ENPASSANT) {
+    epTargetSquare = toSquare + pawnDir[~colorOf(fromPc)];
+  }
+
+  // queen can be rook or bishop
+  if (fromPt == QUEEN) {
+    // if queen on same rank or same file then she acts like rook
+    // otherwise like bishop
+    if (rankOf(toSquare) == rankOf(kingSquare) || fileOf(toSquare) == fileOf(kingSquare)) {
+      fromPt = ROOK;
+    } else {
+      fromPt = BISHOP;
+    }
+  }
+
+  // get all pieces to check occupied intermediate squares
+  Bitboard allOccupiedBitboard = getOccupiedBB();
+  Bitboard intermediate, boardAfterMove;
+
+  // #########################################################################
+  // Direct checks
+  // #########################################################################
+  switch (fromPt) {
+
+    case PAWN:
+      // normal pawn direct chess include en passant captures
+      if (Bitboards::pawnAttacks[colorOf(fromPc)][toSquare] & kingSquare) return true;
+      else break;
+
+    case KNIGHT:
+      if (Bitboards::pseudoAttacks[KNIGHT][toSquare] & kingSquare) return true;
+      else break;
+
+    case ROOK:
+      // is attack even possible
+      if (Bitboards::pseudoAttacks[ROOK][toSquare] & kingSquare == 0) break;
+      // squares in between attacker and king
+      intermediate = Bitboards::intermediateBB[toSquare][kingSquare];
+      // adapt board by moving the piece on the bitboard
+      assert(allOccupiedBitboard & fromSquare);
+      boardAfterMove = allOccupiedBitboard ^ fromSquare;
+      boardAfterMove |= toSquare;
+      // if squares in between are not occupied then it is a check
+      if ((intermediate & boardAfterMove) == 0) return true;
+      break;
+
+    case BISHOP:
+      // is attack even possible
+      if ((Bitboards::pseudoAttacks[BISHOP][toSquare] & kingSquare) == 0) break;
+      // squares in between attacker and king
+      intermediate = Bitboards::intermediateBB[toSquare][kingSquare];
+      // adapt board by moving the piece on the bitboard
+      assert (allOccupiedBitboard & fromSquare);
+      boardAfterMove = allOccupiedBitboard ^ fromSquare;
+      boardAfterMove |= toSquare;
+      // if squares in between are not occupied then it is a check
+      if ((intermediate & boardAfterMove) == 0) return true;
+      break;
+
+    default:
+      break;
+  }
+
+  // #########################################################################
+  // Revealed checks
+  // #########################################################################
+
+  // we only need to check for rook, bishop and queens
+  // knight and pawn attacks can't be revealed
+  // exception is en passant where the captured piece can reveal check
+  // check all directions and slide until invalid
+  const bool isEnPassant = (moveType == ENPASSANT);
+
+  // rooks
+  // Check if there are any rooks on possible attack squares
+  Bitboard rooks = piecesBB[colorOf(fromPc)][ROOK];
+  if (Bitboards::pseudoAttacks[ROOK][kingSquare] & rooks) {
+    // iterate over all pieces
+    while (rooks) {
+      const Square sq = popLSB(&rooks);
+      // if the square is not reachable from the piece's square we can skip this
+      if ((Bitboards::pseudoAttacks[ROOK][sq] & kingSquare) == 0) continue;
+      // if there are no occupied squares between the piece square and the
+      // target square we have a check
+      intermediate = Bitboards::intermediateBB[sq][kingSquare];
+      // adapt board by moving the piece on the bitboard
+      assert (allOccupiedBitboard & fromSquare);
+      boardAfterMove = allOccupiedBitboard ^ fromSquare;
+      boardAfterMove |= toSquare;
+      if (isEnPassant) boardAfterMove ^= epTargetSquare;
+      // if squares in between are not occupied then it is a check
+      if ((intermediate & boardAfterMove) == 0) return true;
+    }
+  }
+
+  // Check if there are any bishops on possible attack squares
+  Bitboard bishops = piecesBB[colorOf(fromPc)][BISHOP];
+  if ((Bitboards::pseudoAttacks[BISHOP][kingSquare] & bishops)) {
+    // iterate over all pieces
+    while (bishops) {
+      const Square sq = popLSB(&bishops);
+      // if the square is not reachable from the piece's square we can skip this
+      if ((Bitboards::pseudoAttacks[BISHOP][sq] & kingSquare) == 0) continue;
+      // if there are no occupied squares between the piece square and the
+      // target square we have a check
+      intermediate = Bitboards::intermediateBB[sq][kingSquare];
+      // adapt board by moving the piece on the bitboard
+      assert (allOccupiedBitboard & fromSquare);
+      boardAfterMove = allOccupiedBitboard ^ fromSquare;
+      boardAfterMove |= toSquare;
+      if (isEnPassant) boardAfterMove ^= epTargetSquare;
+      // if squares in between are not occupied then it is a check
+      if ((intermediate & boardAfterMove) == 0) return true;
+    }
+  }
+
+  // Check if there are any bishops on possible attack squares
+  Bitboard queens = piecesBB[colorOf(fromPc)][QUEEN];
+  if ((Bitboards::pseudoAttacks[QUEEN][kingSquare] & queens)) {
+    // iterate over all pieces
+    while (queens) {
+      const Square sq = popLSB(&queens);
+      // if the square is not reachable from the piece's square we can skip this
+      if ((Bitboards::pseudoAttacks[QUEEN][sq] & kingSquare) == 0) continue;
+      // if there are no occupied squares between the piece square and the
+      // target square we have a check
+      intermediate = Bitboards::intermediateBB[sq][kingSquare];
+      // adapt board by moving the piece on the bitboard
+      assert (allOccupiedBitboard & fromSquare);
+      boardAfterMove = allOccupiedBitboard ^ fromSquare;
+      boardAfterMove |= toSquare;
+      if (isEnPassant) boardAfterMove ^= epTargetSquare;
+      // if squares in between are not occupied then it is a check
+      if ((intermediate & boardAfterMove) == 0) return true;
+    }
+  }
+
+  // we did not find a check
+  return false;
 }
 
 ////////////////////////////////////////////////
@@ -585,10 +860,17 @@ void Position::movePiece(Square from, Square to) {
 
 void Position::putPiece(Piece piece, Square square) {
   // bitboards
-  assert ((occupiedBB[colorOf(piece)] & square) == 0);
-  occupiedBB[colorOf(piece)] |= square;
   assert ((piecesBB[colorOf(piece)][typeOf(piece)] & square) == 0);
   piecesBB[colorOf(piece)][typeOf(piece)] |= square;
+  assert ((occupiedBB[colorOf(piece)] & square) == 0);
+  occupiedBB[colorOf(piece)] |= square;
+  // pre-rotated bb
+  // TODO: expensive - ~30% hit
+  occupiedBBR90[colorOf(piece)] |= rotateSquareR90(square);
+  occupiedBBL90[colorOf(piece)] |= rotateSquareL90(square);
+  occupiedBBR45[colorOf(piece)] |= rotateSquareR45(square);
+  occupiedBBL45[colorOf(piece)] |= rotateSquareL45(square);
+
   // piece list and zobrist
   assert (getPiece(square) == PIECE_NONE);
   board[square] = piece;
@@ -603,15 +885,20 @@ void Position::putPiece(Piece piece, Square square) {
 }
 
 Piece Position::removePiece(Square square) {
-  Piece old = getPiece(square);
-  //  cout << Bitboards::print(occupiedBB[colorOf(old)]) << endl;
-  //  cout << Bitboards::print(occupiedBB[colorOf(old)] & square) << endl;
+  const Piece old = getPiece(square);
 
   // bitboards
-  assert (occupiedBB[colorOf(old)] & square);
-  occupiedBB[colorOf(old)] ^= square;
   assert (piecesBB[colorOf(old)][typeOf(old)] & square);
   piecesBB[colorOf(old)][typeOf(old)] ^= square;
+  assert (occupiedBB[colorOf(old)] & square);
+  occupiedBB[colorOf(old)] ^= square;
+  // pre-rotated bb
+  // TODO: expensive - ~30% hit
+  occupiedBBR90[colorOf(old)] ^= rotateSquareR90(square);
+  occupiedBBL90[colorOf(old)] ^= rotateSquareL90(square);
+  occupiedBBR45[colorOf(old)] ^= rotateSquareR45(square);
+  occupiedBBL45[colorOf(old)] ^= rotateSquareL45(square);
+
   // piece list
   assert (getPiece(square) != PIECE_NONE);
   board[square] = PIECE_NONE;
@@ -670,6 +957,7 @@ void Position::clearEnPassant() {
     enPassantSquare = SQ_NONE;
   }
 }
+
 void Position::initializeBoard() {
 
   std::fill_n(&board[0], sizeof(board), PIECE_NONE);
@@ -697,6 +985,7 @@ void Position::initializeBoard() {
 
   gamePhase = 0;
 }
+
 void Position::setupBoard(const char *fen) {
   initializeBoard();
 
@@ -704,11 +993,11 @@ void Position::setupBoard(const char *fen) {
   unsigned long idx;
   Square currentSquare = SQ_A8;
 
-  std::istringstream ss(fen);
-  ss >> std::noskipws;
+  std::istringstream iss(fen);
+  iss >> std::noskipws;
 
   // pieces
-  while ((ss >> token) && !isspace(token)) {
+  while ((iss >> token) && !isspace(token)) {
     if (isdigit(token)) currentSquare += (token - '0') * EAST;
     else if (token == '/') currentSquare += 2 * SOUTH;
     else if ((idx = pieceToChar.find(token)) != string::npos) {
@@ -725,7 +1014,7 @@ void Position::setupBoard(const char *fen) {
   nextHalfMoveNumber = 1;
 
   // next player
-  if (ss >> token) {
+  if (iss >> token) {
     if (!(token == 'w' || token == 'b')) return; // malformed - ignore the rest
     if (token == 'b') {
       nextPlayer = BLACK;
@@ -734,13 +1023,13 @@ void Position::setupBoard(const char *fen) {
   } else return; // end of line
 
   // skip space
-  if (!(ss >> token)) return; // end of line
+  if (!(iss >> token)) return; // end of line
 
   // castling rights
-  while ((ss >> token) && !isspace(token)) {
+  while ((iss >> token) && !isspace(token)) {
     if (token == '-') {
       // skip space
-      if (!(ss >> token)) return; // end of line
+      if (!(iss >> token)) return; // end of line
       break;
     } else if (token == 'K') castlingRights += WHITE_OO;
     else if (token == 'Q') castlingRights += WHITE_OOO;
@@ -750,11 +1039,11 @@ void Position::setupBoard(const char *fen) {
   zobristKey ^= Zobrist::castlingRights[castlingRights];
 
   // en passant
-  if (ss >> token) {
+  if (iss >> token) {
     if (token != '-') {
       if (token >= 'a' && token <= 'h') {
         File f = File(token - 'a');
-        if (!(ss >> token)) return; // malformed - ignore the rest
+        if (!(iss >> token)) return; // malformed - ignore the rest
         if ((token >= '1' && token <= '8')) {
           Rank r = Rank(token - '1');
           enPassantSquare = getSquare(f, r);
@@ -765,16 +1054,18 @@ void Position::setupBoard(const char *fen) {
   } else return; // end of line
 
   // skip space
-  if (!(ss >> token)) return; // end of line
+  if (!(iss >> token)) return; // end of line
 
   // half move clock (50 moves rules)
-  ss >> skipws >> halfMoveClock;
+  iss >> skipws >> halfMoveClock;
 
   // game move number - to be converted into half move number (ply)
-  ss >> skipws >> nextHalfMoveNumber;
+  iss >> skipws >> nextHalfMoveNumber;
   nextHalfMoveNumber = 2 * nextHalfMoveNumber - (nextPlayer == WHITE);
 
 }
+
+
 
 
 

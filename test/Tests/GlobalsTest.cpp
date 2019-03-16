@@ -99,15 +99,15 @@ TEST(GlobalsTest, operators) {
 TEST(MoveTest, moves) {
   Move move = createMove<NORMAL>(SQ_A1, SQ_H1);
   ASSERT_TRUE(isMove(move));
-  ASSERT_EQ(SQ_A1, fromSquare(move));
-  ASSERT_EQ(SQ_H1, toSquare(move));
+  ASSERT_EQ(SQ_A1, getFromSquare(move));
+  ASSERT_EQ(SQ_H1, getToSquare(move));
   ASSERT_EQ(NORMAL, typeOf(move));
   ASSERT_EQ(KNIGHT, promotionType(move)); // not useful is not type PROMOTION
 
   move = createMove<PROMOTION>(SQ_A7, SQ_A8, QUEEN);
   ASSERT_TRUE(isMove(move));
-  ASSERT_EQ(SQ_A7, fromSquare(move));
-  ASSERT_EQ(SQ_A8, toSquare(move));
+  ASSERT_EQ(SQ_A7, getFromSquare(move));
+  ASSERT_EQ(SQ_A8, getToSquare(move));
   ASSERT_EQ(PROMOTION, typeOf(move));
   ASSERT_EQ(QUEEN, promotionType(move)); // not useful is not type PROMOTION
 

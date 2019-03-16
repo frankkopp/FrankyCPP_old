@@ -598,3 +598,237 @@ TEST(PositionTest, insufficientMaterial) {
   position = Position(fen);
   ASSERT_FALSE(position.checkInsufficientMaterial());
 }
+
+TEST(PositionTest, rotatedBB) {
+  Position::init();
+  Bitboards::init();
+  NEWLINE;
+
+  string fen;
+  Position position;
+
+  fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3";
+  position = Position(fen);
+
+  ASSERT_EQ(Bitboards::rotateR90(position.getOccupiedBB()), position.getOccupiedBBR90());
+  ASSERT_EQ(Bitboards::rotateL90(position.getOccupiedBB()), position.getOccupiedBBL90());
+  ASSERT_EQ(Bitboards::rotateR45(position.getOccupiedBB()), position.getOccupiedBBR45());
+  ASSERT_EQ(Bitboards::rotateL45(position.getOccupiedBB()), position.getOccupiedBBL45());
+
+}
+
+TEST(PositionTest, isAttacked) {
+  Position::init();
+  Bitboards::init();
+  NEWLINE;
+
+  string fen;
+  Position position;
+
+  fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3";
+  position = Position(fen);
+
+  // pawns
+  ASSERT_TRUE(position.isAttacked(SQ_G3, WHITE));
+  ASSERT_TRUE(position.isAttacked(SQ_E3, WHITE));
+  ASSERT_TRUE(position.isAttacked(SQ_B1, BLACK));
+  ASSERT_TRUE(position.isAttacked(SQ_E4, BLACK));
+  ASSERT_TRUE(position.isAttacked(SQ_E3, BLACK));
+
+  // knight
+  ASSERT_TRUE (position.isAttacked(SQ_E5, BLACK));
+  ASSERT_TRUE (position.isAttacked(SQ_F4, BLACK));
+  ASSERT_FALSE(position.isAttacked(SQ_G1, BLACK));
+
+  // sliding
+  ASSERT_TRUE(position.isAttacked(SQ_G6, WHITE));
+  ASSERT_TRUE(position.isAttacked(SQ_A5, BLACK));
+
+  fen = "rnbqkbnr/1ppppppp/8/p7/Q1P5/8/PP1PPPPP/RNB1KBNR b KQkq - 1 2";
+  position = Position(fen);
+
+  // king
+  ASSERT_TRUE (position.isAttacked(SQ_D1, WHITE));
+  ASSERT_FALSE(position.isAttacked(SQ_E1, BLACK));
+
+  // rook
+  ASSERT_TRUE (position.isAttacked(SQ_A5, BLACK));
+  ASSERT_FALSE(position.isAttacked(SQ_A4, BLACK));
+
+  // queen
+  ASSERT_FALSE(position.isAttacked(SQ_E8, WHITE));
+  ASSERT_TRUE (position.isAttacked(SQ_D7, WHITE));
+  ASSERT_FALSE(position.isAttacked(SQ_E8, WHITE));
+
+  // bug tests
+  fen = "r1bqk1nr/pppp1ppp/2nb4/1B2B3/3pP3/8/PPP2PPP/RN1QK1NR b KQkq -";
+  position = Position(fen);
+  ASSERT_FALSE(position.isAttacked(SQ_E8, WHITE));
+  ASSERT_FALSE(position.isAttacked(SQ_E1, BLACK));
+
+  fen = "rnbqkbnr/ppp1pppp/8/1B6/3Pp3/8/PPP2PPP/RNBQK1NR b KQkq -";
+  position = Position(fen);
+  ASSERT_TRUE (position.isAttacked(SQ_E8, WHITE));
+  ASSERT_FALSE(position.isAttacked(SQ_E1, BLACK));
+
+}
+
+TEST(PositionTest, giveCheck) {
+  Position::init();
+  Bitboards::init();
+  NEWLINE;
+
+  string fen;
+  Position position;
+  Move move;
+
+  fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3";
+  position = Position(fen);
+
+  // DIRECT CHECKS
+
+  // Pawns
+  position = Position("4r3/1pn3k1/4p1b1/p1Pp1P1r/3P2NR/1P3B2/3K2P1/4R3 w - -");
+  move = createMove("f5f6");
+  ASSERT_TRUE(position.givesCheck(move));
+
+  position = Position("5k2/4pp2/1N2n1p1/r3P2p/P5PP/2rR1K2/P7/3R4 b - -");
+  move = createMove("h5g4");
+  ASSERT_TRUE(position.givesCheck(move));
+
+  // Knights
+  position = Position("5k2/4pp2/1N2n1p1/r3P2p/P5PP/2rR1K2/P7/3R4 w - -");
+  move = createMove("b6d7");
+  ASSERT_TRUE(position.givesCheck(move));
+
+  position = Position("5k2/4pp2/1N2n1p1/r3P2p/P5PP/2rR1K2/P7/3R4 b - -");
+  move = createMove("e6d4");
+  ASSERT_TRUE(position.givesCheck(move));
+
+  // Rooks
+  position = Position("5k2/4pp2/1N2n1pp/r3P3/P5PP/2rR4/P3K3/3R4 w - -");
+  move = createMove("d3d8");
+  ASSERT_TRUE(position.givesCheck(move));
+
+  position = Position("5k2/4pp2/1N2n1pp/r3P3/P5PP/2rR4/P3K3/3R4 b - -");
+  move = createMove("c3c2");
+  ASSERT_TRUE(position.givesCheck(move));
+
+  // blocked opponent piece - no check
+  position = Position("5k2/4pp2/1N2n1pp/r3P3/P5PP/2rR4/P2RK3/8 b - -");
+  move = createMove("c3c2");
+  ASSERT_FALSE(position.givesCheck(move));
+
+  // blocked own piece - no check
+  position = Position("5k2/4pp2/1N2n1pp/r3P3/P5PP/2rR4/P2nK3/3R4 b - -");
+  move = createMove("c3c2");
+  ASSERT_FALSE(position.givesCheck(move));
+
+  // Bishop
+  position = Position("6k1/3q2b1/p1rrnpp1/P3p3/2B1P3/1p1R3Q/1P4PP/1B1R3K w - -");
+  move = createMove("c4e6");
+  ASSERT_TRUE(position.givesCheck(move));
+
+  // Queen
+  position = Position("5k2/4pp2/1N2n1pp/r3P3/P5PP/2qR4/P3K3/3R4 b - -");
+  move = createMove("c3c2");
+  ASSERT_TRUE(position.givesCheck(move));
+
+  position = Position("6k1/3q2b1/p1rrnpp1/P3p3/2B1P3/1p1R3Q/1P4PP/1B1R3K w - -");
+  move = createMove("h3e6");
+  ASSERT_TRUE(position.givesCheck(move));
+
+  position = Position("6k1/p3q2p/1n1Q2pB/8/5P2/6P1/PP5P/3R2K1 b - -");
+  move = createMove("e7e3");
+  ASSERT_TRUE(position.givesCheck(move));
+
+  // no check
+  position = Position("6k1/p3q2p/1n1Q2pB/8/5P2/6P1/PP5P/3R2K1 b - -");
+  move = createMove("e7e4");
+  ASSERT_FALSE(position.givesCheck(move));
+
+  // promotion
+  position = Position("1k3r2/1p1bP3/2p2p1Q/Ppb5/4Rp1P/2q2N1P/5PB1/6K1 w - -");
+  move = createMove<PROMOTION>("e7f8q");
+  ASSERT_TRUE(position.givesCheck(move));
+
+  position = Position("1r3r2/1p1bP2k/2p2n2/p1Pp4/P2N1PpP/1R2p3/1P2P1BP/3R2K1 w - -");
+  move = createMove<PROMOTION>("e7f8n");
+  ASSERT_TRUE(position.givesCheck(move));
+
+  // Castling checks
+  position = Position("r4k1r/8/8/8/8/8/8/R3K2R w KQ -");
+  move = createMove<CASTLING>("e1g1");
+  ASSERT_TRUE(position.givesCheck(move));
+
+  position = Position("r2k3r/8/8/8/8/8/8/R3K2R w KQ -");
+  move = createMove<CASTLING>("e1c1");
+  ASSERT_TRUE(position.givesCheck(move));
+
+  position = Position("r3k2r/8/8/8/8/8/8/R4K1R b kq -");
+  move = createMove<CASTLING>("e8g8");
+  ASSERT_TRUE(position.givesCheck(move));
+
+  position = Position("r3k2r/8/8/8/8/8/8/R2K3R b kq -");
+  move = createMove<CASTLING>("e8c8");
+  ASSERT_TRUE(position.givesCheck(move));
+
+  position = Position("r6r/8/8/8/8/8/8/2k1K2R w K -");
+  move = createMove<CASTLING>("e1g1");
+  ASSERT_TRUE(position.givesCheck(move));
+
+  // en passant checks
+  position = Position("8/3r1pk1/p1R2p2/1p5p/r2Pp3/PRP3P1/4KP1P/8 b - d3");
+  move = createMove<ENPASSANT>("e4d3");
+  ASSERT_TRUE(position.givesCheck(move));
+
+  // REVEALED CHECKS
+  position = Position("6k1/8/3P1bp1/2BNp3/8/1Q3P1q/7r/1K2R3 w - -");
+  move = createMove("d5e7");
+  ASSERT_TRUE(position.givesCheck(move));
+
+  position = Position("6k1/8/3P1bp1/2BNp3/8/1Q3P1q/7r/1K2R3 w - -");
+  move = createMove("d5c7");
+  ASSERT_TRUE(position.givesCheck(move));
+
+  position = Position("6k1/8/3P1bp1/2BNp3/8/1B3P1q/7r/1K2R3 w - -");
+  move = createMove("d5c7");
+  ASSERT_TRUE(position.givesCheck(move));
+
+  position = Position("6k1/8/3P1bp1/2BNp3/8/1Q3P1q/7r/1K2R3 w - -");
+  move = createMove("d5e7");
+  ASSERT_TRUE(position.givesCheck(move));
+
+  position = Position("1Q1N2k1/8/3P1bp1/2B1p3/8/5P1q/7r/1K2R3 w - -");
+  move = createMove("d8e6");
+  ASSERT_TRUE(position.givesCheck(move));
+
+  position = Position("1R1N2k1/8/3P1bp1/2B1p3/8/5P1q/7r/1K2R3 w - -");
+  move = createMove("d8e6");
+  ASSERT_TRUE(position.givesCheck(move));
+
+  // revealed by en passant capture
+  position = Position("8/b2r1pk1/p1R2p2/1p5p/r2Pp3/PRP3P1/5K1P/8 b - d3");
+  move = createMove<ENPASSANT>("e4d3");
+  ASSERT_TRUE(position.givesCheck(move));
+
+  // test where we had bugs
+  position = Position("2r1r3/pb1n1kpn/1p1qp3/6p1/2PP4/8/P2Q1PPP/3R1RK1 w - -");
+  move = createMove("f2f4");
+  ASSERT_FALSE(position.givesCheck(move));
+  position = Position("2r1r1k1/pb3pp1/1p1qpn2/4n1p1/2PP4/6KP/P2Q1PP1/3RR3 b - -");
+  move = createMove("e5d3");
+  ASSERT_TRUE(position.givesCheck(move));
+  position = Position("R6R/3Q4/1Q4Q1/4Q3/2Q4Q/Q1NNQQ2/1p6/qk3KB1 b - -");
+  move = createMove("b1c2");
+  ASSERT_TRUE(position.givesCheck(move));
+  position = Position("8/8/8/8/8/5K2/R7/7k w - -");
+  move = createMove("a2h2");
+  ASSERT_TRUE(position.givesCheck(move));
+  position = Position("r1bqkb1r/ppp1pppp/2n2n2/1B1P4/8/8/PPPP1PPP/RNBQK1NR w KQkq -");
+  move = createMove("d5c6");
+  ASSERT_FALSE(position.givesCheck(move));
+  position = Position("rnbq1bnr/pppkpppp/8/3p4/3P4/3Q4/PPP1PPPP/RNB1KBNR w KQ -");
+  move = createMove("d3h7");
+  ASSERT_FALSE(position.givesCheck(move));
+}
