@@ -36,11 +36,11 @@ Data Types defined here
 Classes to be defined as C++ classes:
   Engine
   Position
+  MoveGen
   TT
   EvalCache
   Search
   Evaluation
-  MoveGen
 
   UCIHandler
   UCIOption
@@ -237,9 +237,10 @@ enum MoveType {
   ENPASSANT = 2 << TYPE_SHIFT,
   CASTLING = 3 << TYPE_SHIFT
 };
-
+/** Creates a move of type NORMAL */
 constexpr Move createMove(Square from, Square to) { return Move((from << FROM_SHIFT) + to); }
 
+/** Creates a move of type T with optional promotion type */
 template<MoveType T>
 constexpr Move createMove(Square from, Square to, PieceType pt = KNIGHT) {
   assert(T == PROMOTION || pt == KNIGHT);
@@ -247,6 +248,7 @@ constexpr Move createMove(Square from, Square to, PieceType pt = KNIGHT) {
   return Move(T + ((pt - KNIGHT) << PROM_TYPE_SHIFT) + (from << FROM_SHIFT) + to);
 }
 
+/** Creates a move of type T from an UCI string */
 template<MoveType T = NORMAL>
 Move createMove(const char *move) {
   std::istringstream iss(move);
@@ -316,11 +318,28 @@ inline std::ostream &operator<<(std::ostream &os, const Move &move) {
 
 inline std::string printMove(const Move &move) {
   std::string tp;
+  std::string promPt;
   switch (typeOf(move)) {
     case NORMAL:
       tp = "NORMAL";
       break;
     case PROMOTION:
+      switch (promotionType(move)) {
+        case KNIGHT:
+          promPt = 'n';
+          break;
+        case BISHOP:
+          promPt = 'b';
+          break;
+        case ROOK:
+          promPt = 'r';
+          break;
+        case QUEEN:
+          promPt = 'q';
+          break;
+        default:
+          break;
+      }
       tp = "PROMOTION";
       break;
     case ENPASSANT:
@@ -330,7 +349,7 @@ inline std::string printMove(const Move &move) {
       tp = "CASTLING";
       break;
   }
-  return squareLabel(getFromSquare(move)) + squareLabel(getToSquare(move))
+  return squareLabel(getFromSquare(move)) + squareLabel(getToSquare(move)) + promPt
          + " (" + tp + ")";;
 }
 

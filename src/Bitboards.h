@@ -78,6 +78,8 @@ namespace Bitboards {
                                       | (ONE_BB << SQ_A8)
                                       | (ONE_BB << SQ_H8);
 
+  constexpr Bitboard promotionRank[COLOR_LENGTH] = { Rank8BB, Rank1BB };
+
   // pre-computed in Bitboards::init()
   extern Bitboard squareBB[SQ_LENGTH];
   extern Bitboard squareDiagUpBB[SQ_LENGTH];
