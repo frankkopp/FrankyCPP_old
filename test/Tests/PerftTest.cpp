@@ -48,7 +48,7 @@ TEST(PerftTest, stdPerft) {
   cout << "==============================" << endl;
 
   // @formatter:off
-  const unsigned long long results[10][6] = {
+  const u_int64_t results[10][6] = {
     //N                 Nodes            Captures              EP             Checks              Mates
     { 0,                 1ULL,               0ULL,           0ULL,              0ULL,              0ULL },
     { 1,                20ULL,               0ULL,           0ULL,              0ULL,              0ULL },
