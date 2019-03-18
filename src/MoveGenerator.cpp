@@ -37,7 +37,7 @@ MoveGenerator::MoveGenerator() = default;
 ////////////////////////////////////////////////
 ///// PUBLIC
 
-vector<Move> MoveGenerator::generatePseudoLegalMoves(GenMode genMode, const Position *position) {
+vector<Move> MoveGenerator::generatePseudoLegalMoves(GenMode genMode, Position *position) {
   vector<Move> moves;
   generatePawnMoves(genMode, position, &moves);
   generateCastling(genMode, position, &moves);
@@ -247,14 +247,15 @@ MoveGenerator::generateMoves(GenMode genMode, const Position *position, vector<M
 }
 
 void
-MoveGenerator::generateCastling(GenMode genMode, const Position *position, vector<Move> *moves) {
+MoveGenerator::generateCastling(GenMode genMode, Position *position, vector<Move> *moves) {
   const Color nextPlayer = position->getNextPlayer();
   const Bitboard occupiedBB = position->getOccupiedBB();
 
   // castling - pseudo castling - we will not check if we are in check after the move
-  // or if we have passed an attacked square with the king
+  // or if we have passed an attacked square with the king or if the king has been in check
 
   if ((genMode & GENNONCAP) && position->getCastlingRights()) {
+
     const CastlingRights cr = position->getCastlingRights();
     if (nextPlayer == WHITE) { // white
       if (cr == WHITE_OO) {

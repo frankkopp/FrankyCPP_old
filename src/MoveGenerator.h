@@ -49,13 +49,13 @@ public:
 
   /**
    * Generates pseudo moves for the next player. Does not check if king is left in check or
-   * passes an attacked square when castling.
+   * passes an attacked square when castling or has been in check before castling.
    *
    * @param genMode
    * @param position
    * @param moves - generated moves will be added to this list
    */
-  vector<Move> generatePseudoLegalMoves(GenMode genMode, const Position *position);
+  vector<Move> generatePseudoLegalMoves(GenMode genMode, Position *position);
 
   /**
   * Generates legal moves for the next player.
@@ -106,7 +106,7 @@ private:
    * @param position
    * @param moves - generated moves will be added to this list
    */
-  void generateCastling(GenMode genMode, const Position *position, vector<Move> *moves);
+  void generateCastling(GenMode genMode, Position *position, vector<Move> *moves);
 
 };
 

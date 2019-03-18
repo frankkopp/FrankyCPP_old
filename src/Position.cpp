@@ -462,15 +462,19 @@ bool Position::isLegalMove(Move move) {
   if (typeOf(move) == CASTLING) {
     switch (getToSquare(move)) {
       case SQ_G1:
+        if (isAttacked(SQ_E1, ~nextPlayer)) return false;
         if (isAttacked(SQ_F1, ~nextPlayer)) return false;
         break;
       case SQ_C1:
+        if (isAttacked(SQ_E1, ~nextPlayer)) return false;
         if (isAttacked(SQ_D1, ~nextPlayer)) return false;
         break;
       case SQ_G8:
+        if (isAttacked(SQ_E8, ~nextPlayer)) return false;
         if (isAttacked(SQ_F8, ~nextPlayer)) return false;
         break;
       case SQ_C8:
+        if (isAttacked(SQ_E8, ~nextPlayer)) return false;
         if (isAttacked(SQ_D8, ~nextPlayer)) return false;
         break;
       default:
@@ -496,16 +500,20 @@ bool Position::isLegalPosition() {
       // king is not allowed to pass a square which is attacked by opponent
       switch (getToSquare(lastMove)) {
         case SQ_G1:
-          if (isAttacked(SQ_F1, ~nextPlayer)) return false;
+          if (isAttacked(SQ_E1, nextPlayer)) return false;
+          if (isAttacked(SQ_F1, nextPlayer)) return false;
           break;
         case SQ_C1:
-          if (isAttacked(SQ_D1, ~nextPlayer)) return false;
+          if (isAttacked(SQ_E1, nextPlayer)) return false;
+          if (isAttacked(SQ_D1, nextPlayer)) return false;
           break;
         case SQ_G8:
-          if (isAttacked(SQ_F8, ~nextPlayer)) return false;
+          if (isAttacked(SQ_E8, nextPlayer)) return false;
+          if (isAttacked(SQ_F8, nextPlayer)) return false;
           break;
         case SQ_C8:
-          if (isAttacked(SQ_D8, ~nextPlayer)) return false;
+          if (isAttacked(SQ_E8, nextPlayer)) return false;
+          if (isAttacked(SQ_D8, nextPlayer)) return false;
           break;
         default:
           break;
@@ -707,30 +715,30 @@ bool Position::givesCheck(Move move) {
 
     case ROOK:
       // is attack even possible
-      if (Bitboards::pseudoAttacks[ROOK][toSquare] & kingSquare == 0) break;
-      // squares in between attacker and king
-      intermediate = Bitboards::intermediateBB[toSquare][kingSquare];
-      // adapt board by moving the piece on the bitboard
-      assert(allOccupiedBitboard & fromSquare);
-      boardAfterMove = allOccupiedBitboard ^ fromSquare;
-      boardAfterMove |= toSquare;
-      // if squares in between are not occupied then it is a check
-      if ((intermediate & boardAfterMove) == 0) return true;
+      if (Bitboards::pseudoAttacks[ROOK][toSquare] & kingSquare) {
+        // squares in between attacker and king
+        intermediate = Bitboards::intermediateBB[toSquare][kingSquare];
+        // adapt board by moving the piece on the bitboard
+        assert(allOccupiedBitboard & fromSquare);
+        boardAfterMove = allOccupiedBitboard ^ fromSquare;
+        boardAfterMove |= toSquare;
+        // if squares in between are not occupied then it is a check
+        if ((intermediate & boardAfterMove) == 0) return true;
+      }
       break;
-
     case BISHOP:
       // is attack even possible
-      if ((Bitboards::pseudoAttacks[BISHOP][toSquare] & kingSquare) == 0) break;
-      // squares in between attacker and king
-      intermediate = Bitboards::intermediateBB[toSquare][kingSquare];
-      // adapt board by moving the piece on the bitboard
-      assert (allOccupiedBitboard & fromSquare);
-      boardAfterMove = allOccupiedBitboard ^ fromSquare;
-      boardAfterMove |= toSquare;
-      // if squares in between are not occupied then it is a check
-      if ((intermediate & boardAfterMove) == 0) return true;
+      if (Bitboards::pseudoAttacks[BISHOP][toSquare] & kingSquare) {
+        // squares in between attacker and king
+        intermediate = Bitboards::intermediateBB[toSquare][kingSquare];
+        // adapt board by moving the piece on the bitboard
+        assert (allOccupiedBitboard & fromSquare);
+        boardAfterMove = allOccupiedBitboard ^ fromSquare;
+        boardAfterMove |= toSquare;
+        // if squares in between are not occupied then it is a check
+        if ((intermediate & boardAfterMove) == 0) return true;
+      }
       break;
-
     default:
       break;
   }

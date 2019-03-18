@@ -143,7 +143,7 @@ TEST(PositionTest, Output) {
   expected << "  +---+---+---+---+---+---+---+---+\n"
               "8 | r | n | b | q | k | b | n | r |\n"
               "  +---+---+---+---+---+---+---+---+\n"
-              "7 | p | p | p | p | p | p | p | p |\n"
+              "7 | * | * | * | * | * | * | * | * |\n"
               "  +---+---+---+---+---+---+---+---+\n"
               "6 |   |   |   |   |   |   |   |   |\n"
               "  +---+---+---+---+---+---+---+---+\n"
@@ -153,7 +153,7 @@ TEST(PositionTest, Output) {
               "  +---+---+---+---+---+---+---+---+\n"
               "3 |   |   |   |   |   |   |   |   |\n"
               "  +---+---+---+---+---+---+---+---+\n"
-              "2 | P | P | P | P | P | P | P | P |\n"
+              "2 | O | O | O | O | O | O | O | O |\n"
               "  +---+---+---+---+---+---+---+---+\n"
               "1 | R | N | B | Q | K | B | N | R |\n"
               "  +---+---+---+---+---+---+---+---+\n"
@@ -856,12 +856,18 @@ TEST(PositionTest, isLegalMove) {
 
   string fen;
   Position position;
-  Move move;
 
-  fen = "r3k2r/1ppn3p/2q1qNn1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3";
+  // no o-o castling
+  fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3";
   position = Position(fen);
   ASSERT_FALSE(position.isLegalMove(createMove<CASTLING>(SQ_E8, SQ_G8)));
   ASSERT_TRUE(position.isLegalMove(createMove<CASTLING>(SQ_E8, SQ_C8)));
+
+  // in check - no castling at all
+  fen = "r3k2r/1ppn3p/2q1qNn1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3";
+  position = Position(fen);
+  ASSERT_FALSE(position.isLegalMove(createMove<CASTLING>(SQ_E8, SQ_G8)));
+  ASSERT_FALSE(position.isLegalMove(createMove<CASTLING>(SQ_E8, SQ_C8)));
 
 }
 
@@ -872,9 +878,9 @@ TEST(PositionTest, isLegalPosition) {
 
   string fen;
   Position position;
-  Move move;
 
-  fen = "r3k2r/1ppn3p/2q1qNn1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3";
+  // no o-o castling
+  fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3";
   position = Position(fen);
 
   position.doMove(createMove<CASTLING>(SQ_E8, SQ_G8));
@@ -884,6 +890,18 @@ TEST(PositionTest, isLegalPosition) {
   position.doMove(createMove<CASTLING>(SQ_E8, SQ_C8));
   ASSERT_TRUE(position.isLegalPosition());
   position.undoMove();
-  
+
+  // in check - no castling at all
+  fen = "r3k2r/1ppn3p/2q1qNn1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3";
+  position = Position(fen);
+
+  position.doMove(createMove<CASTLING>(SQ_E8, SQ_G8));
+  ASSERT_FALSE(position.isLegalPosition());
+  position.undoMove();
+
+  position.doMove(createMove<CASTLING>(SQ_E8, SQ_C8));
+  ASSERT_FALSE(position.isLegalPosition());
+  position.undoMove();
+
 
 }
