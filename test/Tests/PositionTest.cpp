@@ -617,6 +617,21 @@ TEST(PositionTest, rotatedBB) {
 
 }
 
+TEST(PositionTest, hasCheck) {
+  Position::init();
+  Bitboards::init();
+  NEWLINE;
+
+  string fen;
+  Position position;
+
+  fen = "r3k2r/1ppn3p/2q1qNn1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3";
+  position = Position(fen);
+
+  ASSERT_TRUE(position.isAttacked(SQ_E8, WHITE));
+  ASSERT_TRUE(position.hasCheck());
+}
+
 TEST(PositionTest, isAttacked) {
   Position::init();
   Bitboards::init();
@@ -831,4 +846,44 @@ TEST(PositionTest, giveCheck) {
   position = Position("rnbq1bnr/pppkpppp/8/3p4/3P4/3Q4/PPP1PPPP/RNB1KBNR w KQ -");
   move = createMove("d3h7");
   ASSERT_FALSE(position.givesCheck(move));
+}
+
+
+TEST(PositionTest, isLegalMove) {
+  Position::init();
+  Bitboards::init();
+  NEWLINE;
+
+  string fen;
+  Position position;
+  Move move;
+
+  fen = "r3k2r/1ppn3p/2q1qNn1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3";
+  position = Position(fen);
+  ASSERT_FALSE(position.isLegalMove(createMove<CASTLING>(SQ_E8, SQ_G8)));
+  ASSERT_TRUE(position.isLegalMove(createMove<CASTLING>(SQ_E8, SQ_C8)));
+
+}
+
+TEST(PositionTest, isLegalPosition) {
+  Position::init();
+  Bitboards::init();
+  NEWLINE;
+
+  string fen;
+  Position position;
+  Move move;
+
+  fen = "r3k2r/1ppn3p/2q1qNn1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3";
+  position = Position(fen);
+
+  position.doMove(createMove<CASTLING>(SQ_E8, SQ_G8));
+  ASSERT_FALSE(position.isLegalPosition());
+  position.undoMove();
+
+  position.doMove(createMove<CASTLING>(SQ_E8, SQ_C8));
+  ASSERT_TRUE(position.isLegalPosition());
+  position.undoMove();
+  
+
 }

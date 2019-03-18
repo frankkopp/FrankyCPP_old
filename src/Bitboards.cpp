@@ -475,13 +475,13 @@ namespace Bitboards {
       case WEST:
         return (b >> 1) & ~FileHBB;
       case NORTH_EAST:
-        return (b << 9);
+        return (b << 9) & ~FileABB;
       case SOUTH_EAST:
-        return (b >> 7);
+        return (b >> 7) & ~FileABB;
       case SOUTH_WEST:
-        return (b >> 9);
+        return (b >> 9) & ~FileHBB;;
       case NORTH_WEST:
-        return (b << 7);
+        return (b << 7) & ~FileHBB;;
     }
     assert(false);
     return b;

@@ -34,14 +34,6 @@
 using namespace std;
 using namespace Bitboards;
 
-struct myLoc : std::numpunct<char> {
-  char do_decimal_point() const override { return ','; }
-  char do_thousands_sep() const override { return '.'; }
-  std::string do_grouping() const override { return "\03"; }
-};
-
-locale loc(cout.getloc(), new myLoc);
-
 void testTiming(ostringstream &os, int rounds, int iterations, int repetitions,
                 const vector<void (*)()> &tests);
 
@@ -144,8 +136,8 @@ void
 testTiming(ostringstream &os, int rounds, int iterations, int repetitions,
            const vector<void (*)()> &tests) {
 
-  cout.imbue(loc);
-  os.imbue(loc);
+  cout.imbue(digitLocale);
+  os.imbue(digitLocale);
   os << setprecision(9);
 
   os << endl;

@@ -180,6 +180,18 @@ public:
   bool isAttacked(Square sq, Color byColor);
 
   /**
+   * This checks if the  move is legal by checking if it leaves the king in check or if it
+   * would pass an attacked square when castling.
+   */
+  bool isLegalMove(Move move);
+
+  /**
+   * This checks if the last move was legal by checking if it left the king in check or if
+   * the king has passed an attacked square during castling
+   */
+  bool isLegalPosition();
+
+  /**
    * The fifty-move rule if during the previous 50 moves no pawn has been moved and no capture has
    * been made, either player may claim a draw.
    *
@@ -270,7 +282,7 @@ private:
   ///// FIELDS
 
   // Flag for boolean states with undetermined state
-  enum Flag { FLAG_FALSE, FLAG_TRUE, FLAG_TBD };
+  enum Flag { FLAG_TBD, FLAG_FALSE, FLAG_TRUE };
 
   // Random number generator
   static const Random rng;
@@ -297,7 +309,7 @@ private:
   CastlingRights castlingRights;
   CastlingRights castlingRights_History[MAX_HISTORY];
 
-  // en passant field - if NOSQUARE then we do not have an en passant option
+  // en passant field
   Square enPassantSquare = SQ_NONE;
   Square enPassantSquare_History[MAX_HISTORY];
 
@@ -315,6 +327,9 @@ private:
   // **********************************************************
   // Extended Board State -------------------------------------
   // not necessary for a unique position
+
+  // special for king squares
+  Square kingSquare[COLOR_LENGTH];
 
   // We can recreate the board through the last move - no need for history of board itself
   // with this we can also capture 3-fold repetition

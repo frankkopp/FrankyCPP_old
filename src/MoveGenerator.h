@@ -47,11 +47,66 @@ public:
 
   MoveGenerator();
 
+  /**
+   * Generates pseudo moves for the next player. Does not check if king is left in check or
+   * passes an attacked square when castling.
+   *
+   * @param genMode
+   * @param position
+   * @param moves - generated moves will be added to this list
+   */
+  vector<Move> generatePseudoLegalMoves(GenMode genMode, const Position *position);
+
+  /**
+  * Generates legal moves for the next player.
+  *
+  * @param genMode
+  * @param position
+  * @param moves - generated moves will be added to this list
+  */
+  vector<Move> generateLegalMoves(GenMode genMode, Position *position);
+
 private:
 
   FRIEND_TEST(MoveGenTest, pawnMoves);
+  FRIEND_TEST(MoveGenTest, kingMoves);
+  FRIEND_TEST(MoveGenTest, normalMoves);
+  FRIEND_TEST(MoveGenTest, castlingMoves);
 
+  /**
+   * Generates pseudo pawn moves for the next player. Does not check if king is left in check
+   * @param genMode
+   * @param position
+   * @param moves - generated moves will be added to this list
+   */
   void generatePawnMoves(GenMode genMode, const Position *position, vector<Move> *moves);
+
+  /**
+   * Generates pseudo knight, bishop, rook and queen moves for the next player.
+   * Does not check if king is left in check
+   * @param genMode
+   * @param position
+   * @param moves - generated moves will be added to this list
+   */
+  void generateMoves(GenMode genMode, const Position *position, vector<Move> *moves);
+
+  /**
+   * Generates pseudo king moves for the next player. Does not check if king
+   * lands on an attacked square.
+   * @param genMode
+   * @param position
+   * @param moves - generated moves will be added to this list
+   */
+  void generateKingMoves(GenMode genMode, const Position *position, vector<Move> *moves);
+
+  /**
+   * Generates pseudo castling move for the next player. Does not check if king passes or lands on an
+   * attacked square.
+   * @param genMode
+   * @param position
+   * @param moves - generated moves will be added to this list
+   */
+  void generateCastling(GenMode genMode, const Position *position, vector<Move> *moves);
 
 };
 

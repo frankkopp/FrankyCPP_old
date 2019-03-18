@@ -61,6 +61,7 @@ Classes to be defined as C++ classes:
 using namespace std;
 
 #define NEWLINE std::cout << std::endl
+#define printBB(bb) cout << Bitboards::print((bb)) << endl;
 
 // Global constants
 static const int MAX_MOVES = 256;
@@ -167,6 +168,8 @@ enum PieceType : int {
   KING, PAWN, KNIGHT, BISHOP, ROOK, QUEEN, PIECETYPE_NONE, PT_LENGTH = 7
   // non sliding ---  sliding -----------
 };
+
+static const std::string pieceTypeToChar = "kpnbrq";
 
 /** PieceType values */
 const static int pieceValue[] = {
@@ -324,22 +327,7 @@ inline std::string printMove(const Move &move) {
       tp = "NORMAL";
       break;
     case PROMOTION:
-      switch (promotionType(move)) {
-        case KNIGHT:
-          promPt = 'n';
-          break;
-        case BISHOP:
-          promPt = 'b';
-          break;
-        case ROOK:
-          promPt = 'r';
-          break;
-        case QUEEN:
-          promPt = 'q';
-          break;
-        default:
-          break;
-      }
+      promPt = pieceTypeToChar[promotionType(move)];
       tp = "PROMOTION";
       break;
     case ENPASSANT:
@@ -455,5 +443,13 @@ ENABLE_INCR_OPERATORS_ON(CastlingRights)
 
 constexpr const char *boolStr(bool b) { return b ? "true" : "false"; };
 constexpr const char *boolStr(int b) { return b ? "true" : "false"; };
+
+struct myLocale : std::numpunct<char> {
+  char do_decimal_point() const override { return ','; }
+  char do_thousands_sep() const override { return '.'; }
+  std::string do_grouping() const override { return "\03"; }
+};
+
+const std::locale digitLocale(std::cout.getloc(), new myLocale);
 
 #endif //FRANKYCPP_GLOBALS_H

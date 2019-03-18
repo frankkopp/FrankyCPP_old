@@ -23,12 +23,42 @@
  *
  */
 
+#include <algorithm>
 #include "MoveGenerator.h"
 
 using namespace std;
 using namespace Bitboards;
 
+////////////////////////////////////////////////
+///// CONSTRUCTORS
+
 MoveGenerator::MoveGenerator() = default;
+
+////////////////////////////////////////////////
+///// PUBLIC
+
+vector<Move> MoveGenerator::generatePseudoLegalMoves(GenMode genMode, const Position *position) {
+  vector<Move> moves;
+  generatePawnMoves(genMode, position, &moves);
+  generateCastling(genMode, position, &moves);
+  generateMoves(genMode, position, &moves);
+  generateKingMoves(genMode, position, &moves);
+  return moves;
+}
+
+vector<Move>
+MoveGenerator::generateLegalMoves(GenMode genMode, Position *position) {
+  vector<Move> moves(generatePseudoLegalMoves(genMode, position));
+  std::vector<Move> filteredMoves;
+  for (Move m : moves) {
+    if (position->isLegalMove(m)) filteredMoves.push_back(m);
+  }
+  moves = filteredMoves;
+  return moves;
+}
+
+////////////////////////////////////////////////
+///// PRIVATE
 
 void
 MoveGenerator::generatePawnMoves(GenMode genMode, const Position *position, vector<Move> *moves) {
@@ -79,7 +109,7 @@ MoveGenerator::generatePawnMoves(GenMode genMode, const Position *position, vect
     tmpCaptures &= ~promotionRank[nextPlayer];
     while (tmpCaptures) {
       const Square toSquare = popLSB(&tmpCaptures);
-      const Square fromSquare = toSquare + pawnDir[~nextPlayer] + EAST;
+      const Square fromSquare = toSquare + pawnDir[~nextPlayer] + WEST;
       moves->push_back(createMove(fromSquare, toSquare));
     }
 
@@ -87,22 +117,22 @@ MoveGenerator::generatePawnMoves(GenMode genMode, const Position *position, vect
     const Square enPassantSquare = position->getEnPassantSquare();
     if (enPassantSquare != SQ_NONE) {
       // left
-      tmpCaptures = shift(pawnDir[~nextPlayer] + WEST, squareBB[enPassantSquare]) & myPawns;
+      const Bitboard shift1 = shift(pawnDir[~nextPlayer] + WEST, squareBB[enPassantSquare]);
+      tmpCaptures = shift1 & myPawns;
+      if (tmpCaptures) {
+        Square sqx = lsb(tmpCaptures);
+        moves->push_back(createMove<ENPASSANT>(sqx, sqx + pawnDir[nextPlayer] + EAST));
+      }
+      // right
+      tmpCaptures = shift(pawnDir[~nextPlayer] + EAST, squareBB[enPassantSquare]) & myPawns;
       if (tmpCaptures) {
         Square sqx = lsb(tmpCaptures);
         moves->push_back(createMove<ENPASSANT>(sqx, sqx + pawnDir[nextPlayer] + WEST));
-      } else {
-        // right
-        tmpCaptures = shift(pawnDir[~nextPlayer] + EAST, squareBB[enPassantSquare]) & myPawns;
-        if (tmpCaptures) {
-          Square sqx = lsb(tmpCaptures);
-          moves->push_back(createMove<ENPASSANT>(sqx, sqx + pawnDir[nextPlayer] + WEST));
-        }
       }
     }
   }
 
-  // captures
+  // non captures
   if (genMode & GENNONCAP) {
 
     /*
@@ -133,6 +163,7 @@ MoveGenerator::generatePawnMoves(GenMode genMode, const Position *position, vect
       const Square toSquare = popLSB(&tmpMovesDouble);
       moves->push_back(createMove(toSquare + 2 * pawnDir[~nextPlayer], toSquare));
     }
+    // normal single pawn steps
     tmpMoves = tmpMoves & ~promotionRank[nextPlayer];
     while (tmpMoves) {
       const Square toSquare = popLSB(&tmpMoves);
@@ -142,4 +173,129 @@ MoveGenerator::generatePawnMoves(GenMode genMode, const Position *position, vect
   }
 }
 
+void
+MoveGenerator::generateKingMoves(GenMode genMode, const Position *position, vector<Move> *moves) {
+  const Color nextPlayer = position->getNextPlayer();
+  const Bitboard occupiedBB = position->getOccupiedBB();
+  const Bitboard opponentBB = position->getOccupiedBB(~nextPlayer);
+
+  Bitboard pieces = position->getPieceBB(nextPlayer, KING);
+  assert(popcount(pieces) == 1 && "More than one king not allowed!");
+
+  const Square fromSquare = popLSB(&pieces);
+  const Bitboard pseudoMoves = pseudoAttacks[KING][fromSquare];
+
+  // captures
+  if (genMode & GENCAP) {
+    Bitboard captures = pseudoMoves & opponentBB;
+    while (captures) moves->push_back(createMove(fromSquare, popLSB(&captures)));
+  }
+
+  // non captures
+  if (genMode & GENNONCAP) {
+    Bitboard nonCaptures = pseudoMoves & ~occupiedBB;
+    while (nonCaptures) moves->push_back(createMove(fromSquare, popLSB(&nonCaptures)));
+  }
+}
+
+void
+MoveGenerator::generateMoves(GenMode genMode, const Position *position, vector<Move> *moves) {
+  const Color nextPlayer = position->getNextPlayer();
+  const Bitboard occupiedBB = position->getOccupiedBB();
+  const Bitboard opponentBB = position->getOccupiedBB(~nextPlayer);
+
+  for (PieceType pt = KNIGHT; pt < PIECETYPE_NONE; ++pt) {
+    Bitboard pieces = position->getPieceBB(nextPlayer, pt);
+
+    while (pieces) {
+      const Square fromSquare = popLSB(&pieces);
+      const Bitboard pseudoMoves = pseudoAttacks[pt][fromSquare];
+
+      // captures
+      if (genMode & GENCAP) {
+        Bitboard captures = pseudoMoves & opponentBB;
+        while (captures) {
+          const Square targetSquare = popLSB(&captures);
+          if (pt > KNIGHT) { // sliding pieces
+            if (!(intermediateBB[fromSquare][targetSquare] & occupiedBB)) {
+              moves->push_back(createMove(fromSquare, targetSquare));
+            };
+          }
+          else { // king and knight cannot be blocked
+            moves->push_back(createMove(fromSquare, targetSquare));
+          }
+        }
+      }
+
+      // non captures
+      if (genMode & GENNONCAP) {
+        Bitboard nonCaptures = pseudoMoves & ~occupiedBB;
+        while (nonCaptures) {
+          const Square toSquare = popLSB(&nonCaptures);
+          if (pt > KNIGHT) { // sliding pieces
+            if (!(intermediateBB[fromSquare][toSquare] & occupiedBB)) {
+              moves->push_back(createMove(fromSquare, toSquare));
+            };
+          }
+          else { // king and knight cannot be blocked
+            moves->push_back(createMove(fromSquare, toSquare));
+          }
+        }
+      }
+    }
+  }
+}
+
+void
+MoveGenerator::generateCastling(GenMode genMode, const Position *position, vector<Move> *moves) {
+  const Color nextPlayer = position->getNextPlayer();
+  const Bitboard occupiedBB = position->getOccupiedBB();
+
+  // castling - pseudo castling - we will not check if we are in check after the move
+  // or if we have passed an attacked square with the king
+
+  if ((genMode & GENNONCAP) && position->getCastlingRights()) {
+    const CastlingRights cr = position->getCastlingRights();
+    if (nextPlayer == WHITE) { // white
+      if (cr == WHITE_OO) {
+        const Square from = SQ_E1;
+        const Square to = SQ_G1;
+        const Square rookFrom = SQ_H1;
+        // way is free
+        if (!(intermediateBB[from][rookFrom] & occupiedBB)) {
+          moves->push_back(createMove<CASTLING>(from, to));
+        }
+      }
+      if (cr == WHITE_OOO) {
+        const Square from = SQ_E1;
+        const Square to = SQ_C1;
+        const Square rookFrom = SQ_A1;
+        // way is free
+        if (!(intermediateBB[from][rookFrom] & occupiedBB)) {
+          moves->push_back(createMove<CASTLING>(from, to));
+        }
+      }
+    }
+    else { // black
+      if (cr == BLACK_OO) {
+        const Square from = SQ_E8;
+        const Square to = SQ_G8;
+        const Square rookFrom = SQ_H8;
+        // way is free
+        if (!(intermediateBB[from][rookFrom] & occupiedBB)) {
+          moves->push_back(createMove<CASTLING>(from, to));
+        }
+      }
+      if (cr == BLACK_OOO) {
+        const Square from = SQ_E8;
+        const Square to = SQ_C8;
+        const Square rookFrom = SQ_A8;
+        // way is free
+        if (!(intermediateBB[from][rookFrom] & occupiedBB)) {
+          moves->push_back(createMove<CASTLING>(from, to));
+        }
+      }
+    }
+  }
+}
 
