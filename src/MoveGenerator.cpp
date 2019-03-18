@@ -23,8 +23,8 @@
  *
  */
 
-#include <algorithm>
 #include "MoveGenerator.h"
+#include "Position.h"
 
 using namespace std;
 using namespace Bitboards;
@@ -42,35 +42,127 @@ MoveGenerator::MoveGenerator() {
 
 // TODO:
 //  Implement caching when position is known to avoid re-generation
+//  Implement on demand (lazy) move gen
 
-vector<Move> MoveGenerator::generatePseudoLegalMoves(GenMode genMode, Position *position) {
+MoveList MoveGenerator::generatePseudoLegalMoves(GenMode genMode, Position *pPosition) {
   pseudoLegalMoves.clear();
-  generatePawnMoves(genMode, position, &pseudoLegalMoves);
-  generateCastling(genMode, position, &pseudoLegalMoves);
-  generateMoves(genMode, position, &pseudoLegalMoves);
-  generateKingMoves(genMode, position, &pseudoLegalMoves);
+  generatePawnMoves(genMode, pPosition, &pseudoLegalMoves);
+  generateCastling(genMode, pPosition, &pseudoLegalMoves);
+  generateMoves(genMode, pPosition, &pseudoLegalMoves);
+  generateKingMoves(genMode, pPosition, &pseudoLegalMoves);
   return pseudoLegalMoves;
 }
 
-vector<Move>
-MoveGenerator::generateLegalMoves(GenMode genMode, Position *position) {
+MoveList
+MoveGenerator::generateLegalMoves(GenMode genMode, Position *pPosition) {
   legalMoves.clear();
-  generatePseudoLegalMoves(genMode, position);
-  for (Move m : pseudoLegalMoves) {
-    if (position->isLegalMove(m)) legalMoves.push_back(m);
-  }
+  generatePseudoLegalMoves(genMode, pPosition);
+  for (Move m : pseudoLegalMoves) if (pPosition->isLegalMove(m)) legalMoves.push_back(m);
   return legalMoves;
+}
+
+bool
+MoveGenerator::hasLegalMove(Position *pPosition) {
+
+  // find KING, PAWN, KNIGHT, BISHOP, ROOK, QUEEN move
+
+  const Color nextPlayer = pPosition->getNextPlayer();
+  const Bitboard occupiedBB = pPosition->getOccupiedBB();
+  const Bitboard nextPlayerBB = pPosition->getOccupiedBB(nextPlayer);
+  const Bitboard opponentBB = pPosition->getOccupiedBB(~nextPlayer);
+  const Bitboard myPawns = pPosition->getPieceBB(nextPlayer, PAWN);
+
+  // KING
+  const Square kingSquare = pPosition->getKingSquare(nextPlayer);
+  Bitboard tmpMoves = pseudoAttacks[KING][kingSquare] & ~nextPlayerBB;
+  while (tmpMoves) {
+    const Square toSquare = popLSB(&tmpMoves);
+    if (pPosition->isLegalMove(createMove(kingSquare, toSquare))) return true;
+  }
+
+  // PAWN
+  // normal pawn captures to the west - promotions first
+  tmpMoves = Bitboards::shift(pawnDir[nextPlayer] + WEST, myPawns) & opponentBB;
+  while (tmpMoves) {
+    const Square toSquare = popLSB(&tmpMoves);
+    const Square fromSquare = toSquare + pawnDir[~nextPlayer] + EAST;
+    if (pPosition->isLegalMove(createMove(fromSquare, toSquare))) return true;
+  }
+
+  // normal pawn captures to the east - promotions first
+  tmpMoves = Bitboards::shift(pawnDir[nextPlayer] + EAST, myPawns) & opponentBB;
+  while (tmpMoves) {
+    const Square toSquare = popLSB(&tmpMoves);
+    const Square fromSquare = toSquare + pawnDir[~nextPlayer] + WEST;
+    if (pPosition->isLegalMove(createMove(fromSquare, toSquare))) return true;
+  }
+
+  // pawns - check step one to unoccupied squares
+  tmpMoves = shift(pawnDir[nextPlayer], myPawns) & ~pPosition->getOccupiedBB();
+  while (tmpMoves) {
+    const Square toSquare = popLSB(&tmpMoves);
+    const Square fromSquare = toSquare + pawnDir[~nextPlayer];
+    if (pPosition->isLegalMove(createMove(fromSquare, toSquare))) return true;
+  }
+
+  // en passant captures
+  const Square enPassantSquare = pPosition->getEnPassantSquare();
+  if (enPassantSquare != SQ_NONE) {
+    // left
+    tmpMoves = shift(pawnDir[~nextPlayer] + WEST, squareBB[enPassantSquare]) & myPawns;
+    if (tmpMoves) {
+      const Square fromSquare = lsb(tmpMoves);
+      if (pPosition->isLegalMove(
+        createMove<ENPASSANT>(fromSquare, fromSquare + pawnDir[nextPlayer] + EAST)))
+        return true;
+    }
+    // right
+    tmpMoves = shift(pawnDir[~nextPlayer] + EAST, squareBB[enPassantSquare]) & myPawns;
+    if (tmpMoves) {
+      const Square fromSquare = lsb(tmpMoves);
+      if (pPosition->isLegalMove(
+        createMove<ENPASSANT>(fromSquare, fromSquare + pawnDir[nextPlayer] + WEST))  )
+        return true;
+    }
+  }
+
+  // OFFICERS
+  for (PieceType pt = KNIGHT; pt <= QUEEN; ++pt) {
+    Bitboard pieces = pPosition->getPieceBB(nextPlayer, pt);
+
+    while (pieces) {
+      const Square fromSquare = popLSB(&pieces);
+      const Bitboard pseudoMoves = pseudoAttacks[pt][fromSquare];
+
+      Bitboard moves = pseudoMoves & ~nextPlayerBB;
+      while (moves) {
+        const Square toSquare = popLSB(&moves);
+        
+        if (pt > KNIGHT) { // sliding pieces
+          if (!(intermediateBB[fromSquare][toSquare] & occupiedBB)) {
+            if (pPosition->isLegalMove(createMove(fromSquare, toSquare))) return true;
+          }
+        }
+        else { // knight cannot be blocked
+          if (pPosition->isLegalMove(createMove(fromSquare, toSquare))) return true;
+        }
+      }
+    }
+  }
+
+  // no move found
+  return false;
 }
 
 ////////////////////////////////////////////////
 ///// PRIVATE
 
 void
-MoveGenerator::generatePawnMoves(GenMode genMode, const Position *position, vector<Move> *moves) {
+MoveGenerator::generatePawnMoves(GenMode genMode, const Position *pPosition, MoveList *pMoves) {
 
-  const Color nextPlayer = position->getNextPlayer();
-  const Bitboard myPawns = position->getPieceBB(nextPlayer, PAWN);
-  const Bitboard oppPieces = position->getOccupiedBB(~nextPlayer);
+  const Color nextPlayer = pPosition->getNextPlayer();
+  const Bitboard myPawns = pPosition->getPieceBB(nextPlayer, PAWN);
+  const Bitboard oppPieces = pPosition->getOccupiedBB(~nextPlayer);
 
   // captures
   if (genMode & GENCAP) {
@@ -88,16 +180,16 @@ MoveGenerator::generatePawnMoves(GenMode genMode, const Position *position, vect
     while (promCaptures) {
       const Square toSquare = popLSB(&promCaptures);
       const Square fromSquare = toSquare + pawnDir[~nextPlayer] + EAST;
-      moves->push_back(createMove<PROMOTION>(fromSquare, toSquare, QUEEN));
-      moves->push_back(createMove<PROMOTION>(fromSquare, toSquare, ROOK));
-      moves->push_back(createMove<PROMOTION>(fromSquare, toSquare, BISHOP));
-      moves->push_back(createMove<PROMOTION>(fromSquare, toSquare, KNIGHT));
+      pMoves->push_back(createMove<PROMOTION>(fromSquare, toSquare, QUEEN));
+      pMoves->push_back(createMove<PROMOTION>(fromSquare, toSquare, ROOK));
+      pMoves->push_back(createMove<PROMOTION>(fromSquare, toSquare, BISHOP));
+      pMoves->push_back(createMove<PROMOTION>(fromSquare, toSquare, KNIGHT));
     }
     tmpCaptures &= ~promotionRank[nextPlayer];
     while (tmpCaptures) {
       const Square toSquare = popLSB(&tmpCaptures);
       const Square fromSquare = toSquare + pawnDir[~nextPlayer] + EAST;
-      moves->push_back(createMove(fromSquare, toSquare));
+      pMoves->push_back(createMove(fromSquare, toSquare));
     }
 
     // normal pawn captures to the east - promotions first
@@ -106,33 +198,32 @@ MoveGenerator::generatePawnMoves(GenMode genMode, const Position *position, vect
     while (promCaptures) {
       const Square toSquare = popLSB(&promCaptures);
       const Square fromSquare = toSquare + pawnDir[~nextPlayer] + WEST;
-      moves->push_back(createMove<PROMOTION>(fromSquare, toSquare, QUEEN));
-      moves->push_back(createMove<PROMOTION>(fromSquare, toSquare, ROOK));
-      moves->push_back(createMove<PROMOTION>(fromSquare, toSquare, BISHOP));
-      moves->push_back(createMove<PROMOTION>(fromSquare, toSquare, KNIGHT));
+      pMoves->push_back(createMove<PROMOTION>(fromSquare, toSquare, QUEEN));
+      pMoves->push_back(createMove<PROMOTION>(fromSquare, toSquare, ROOK));
+      pMoves->push_back(createMove<PROMOTION>(fromSquare, toSquare, BISHOP));
+      pMoves->push_back(createMove<PROMOTION>(fromSquare, toSquare, KNIGHT));
     }
     tmpCaptures &= ~promotionRank[nextPlayer];
     while (tmpCaptures) {
       const Square toSquare = popLSB(&tmpCaptures);
       const Square fromSquare = toSquare + pawnDir[~nextPlayer] + WEST;
-      moves->push_back(createMove(fromSquare, toSquare));
+      pMoves->push_back(createMove(fromSquare, toSquare));
     }
 
     // en passant captures
-    const Square enPassantSquare = position->getEnPassantSquare();
+    const Square enPassantSquare = pPosition->getEnPassantSquare();
     if (enPassantSquare != SQ_NONE) {
       // left
-      const Bitboard shift1 = shift(pawnDir[~nextPlayer] + WEST, squareBB[enPassantSquare]);
-      tmpCaptures = shift1 & myPawns;
+      tmpCaptures = shift(pawnDir[~nextPlayer] + WEST, squareBB[enPassantSquare]) & myPawns;
       if (tmpCaptures) {
         Square sqx = lsb(tmpCaptures);
-        moves->push_back(createMove<ENPASSANT>(sqx, sqx + pawnDir[nextPlayer] + EAST));
+        pMoves->push_back(createMove<ENPASSANT>(sqx, sqx + pawnDir[nextPlayer] + EAST));
       }
       // right
       tmpCaptures = shift(pawnDir[~nextPlayer] + EAST, squareBB[enPassantSquare]) & myPawns;
       if (tmpCaptures) {
         Square sqx = lsb(tmpCaptures);
-        moves->push_back(createMove<ENPASSANT>(sqx, sqx + pawnDir[nextPlayer] + WEST));
+        pMoves->push_back(createMove<ENPASSANT>(sqx, sqx + pawnDir[nextPlayer] + WEST));
       }
     }
   }
@@ -147,44 +238,44 @@ MoveGenerator::generatePawnMoves(GenMode genMode, const Position *position, vect
      */
 
     // pawns - check step one to unoccupied squares
-    Bitboard tmpMoves = shift(pawnDir[nextPlayer], myPawns) & ~position->getOccupiedBB();
+    Bitboard tmpMoves = shift(pawnDir[nextPlayer], myPawns) & ~pPosition->getOccupiedBB();
     // pawns double - check step two to unoccupied squares
     Bitboard tmpMovesDouble = shift(pawnDir[nextPlayer],
                                     tmpMoves & (nextPlayer == WHITE ? Rank3BB : Rank6BB)) &
-                              ~position->getOccupiedBB();
+                              ~pPosition->getOccupiedBB();
 
     // single pawn steps - promotions first
     Bitboard promMoves = tmpMoves & promotionRank[nextPlayer];
     while (promMoves) {
       const Square toSquare = popLSB(&promMoves);
       const Square fromSquare = toSquare + pawnDir[~nextPlayer];
-      moves->push_back(createMove<PROMOTION>(fromSquare, toSquare, QUEEN));
-      moves->push_back(createMove<PROMOTION>(fromSquare, toSquare, ROOK));
-      moves->push_back(createMove<PROMOTION>(fromSquare, toSquare, BISHOP));
-      moves->push_back(createMove<PROMOTION>(fromSquare, toSquare, KNIGHT));
+      pMoves->push_back(createMove<PROMOTION>(fromSquare, toSquare, QUEEN));
+      pMoves->push_back(createMove<PROMOTION>(fromSquare, toSquare, ROOK));
+      pMoves->push_back(createMove<PROMOTION>(fromSquare, toSquare, BISHOP));
+      pMoves->push_back(createMove<PROMOTION>(fromSquare, toSquare, KNIGHT));
     }
     // double pawn steps
     while (tmpMovesDouble) {
       const Square toSquare = popLSB(&tmpMovesDouble);
-      moves->push_back(createMove(toSquare + 2 * pawnDir[~nextPlayer], toSquare));
+      pMoves->push_back(createMove(toSquare + 2 * pawnDir[~nextPlayer], toSquare));
     }
     // normal single pawn steps
     tmpMoves = tmpMoves & ~promotionRank[nextPlayer];
     while (tmpMoves) {
       const Square toSquare = popLSB(&tmpMoves);
       const Square fromSquare = toSquare + pawnDir[~nextPlayer];
-      moves->push_back(createMove(fromSquare, toSquare));
+      pMoves->push_back(createMove(fromSquare, toSquare));
     }
   }
 }
 
 void
-MoveGenerator::generateKingMoves(GenMode genMode, const Position *position, vector<Move> *moves) {
-  const Color nextPlayer = position->getNextPlayer();
-  const Bitboard occupiedBB = position->getOccupiedBB();
-  const Bitboard opponentBB = position->getOccupiedBB(~nextPlayer);
+MoveGenerator::generateKingMoves(GenMode genMode, const Position *pPosition, MoveList *pMoves) {
+  const Color nextPlayer = pPosition->getNextPlayer();
+  const Bitboard occupiedBB = pPosition->getOccupiedBB();
+  const Bitboard opponentBB = pPosition->getOccupiedBB(~nextPlayer);
 
-  Bitboard pieces = position->getPieceBB(nextPlayer, KING);
+  Bitboard pieces = pPosition->getPieceBB(nextPlayer, KING);
   assert(popcount(pieces) == 1 && "More than one king not allowed!");
 
   const Square fromSquare = popLSB(&pieces);
@@ -193,24 +284,24 @@ MoveGenerator::generateKingMoves(GenMode genMode, const Position *position, vect
   // captures
   if (genMode & GENCAP) {
     Bitboard captures = pseudoMoves & opponentBB;
-    while (captures) moves->push_back(createMove(fromSquare, popLSB(&captures)));
+    while (captures) pMoves->push_back(createMove(fromSquare, popLSB(&captures)));
   }
 
   // non captures
   if (genMode & GENNONCAP) {
     Bitboard nonCaptures = pseudoMoves & ~occupiedBB;
-    while (nonCaptures) moves->push_back(createMove(fromSquare, popLSB(&nonCaptures)));
+    while (nonCaptures) pMoves->push_back(createMove(fromSquare, popLSB(&nonCaptures)));
   }
 }
 
 void
-MoveGenerator::generateMoves(GenMode genMode, const Position *position, vector<Move> *moves) {
-  const Color nextPlayer = position->getNextPlayer();
-  const Bitboard occupiedBB = position->getOccupiedBB();
-  const Bitboard opponentBB = position->getOccupiedBB(~nextPlayer);
+MoveGenerator::generateMoves(GenMode genMode, const Position *pPosition, MoveList *pMoves) {
+  const Color nextPlayer = pPosition->getNextPlayer();
+  const Bitboard occupiedBB = pPosition->getOccupiedBB();
+  const Bitboard opponentBB = pPosition->getOccupiedBB(~nextPlayer);
 
   for (PieceType pt = KNIGHT; pt < PIECETYPE_NONE; ++pt) {
-    Bitboard pieces = position->getPieceBB(nextPlayer, pt);
+    Bitboard pieces = pPosition->getPieceBB(nextPlayer, pt);
 
     while (pieces) {
       const Square fromSquare = popLSB(&pieces);
@@ -223,11 +314,11 @@ MoveGenerator::generateMoves(GenMode genMode, const Position *position, vector<M
           const Square targetSquare = popLSB(&captures);
           if (pt > KNIGHT) { // sliding pieces
             if (!(intermediateBB[fromSquare][targetSquare] & occupiedBB)) {
-              moves->push_back(createMove(fromSquare, targetSquare));
+              pMoves->push_back(createMove(fromSquare, targetSquare));
             };
           }
           else { // king and knight cannot be blocked
-            moves->push_back(createMove(fromSquare, targetSquare));
+            pMoves->push_back(createMove(fromSquare, targetSquare));
           }
         }
       }
@@ -239,11 +330,11 @@ MoveGenerator::generateMoves(GenMode genMode, const Position *position, vector<M
           const Square toSquare = popLSB(&nonCaptures);
           if (pt > KNIGHT) { // sliding pieces
             if (!(intermediateBB[fromSquare][toSquare] & occupiedBB)) {
-              moves->push_back(createMove(fromSquare, toSquare));
+              pMoves->push_back(createMove(fromSquare, toSquare));
             };
           }
           else { // king and knight cannot be blocked
-            moves->push_back(createMove(fromSquare, toSquare));
+            pMoves->push_back(createMove(fromSquare, toSquare));
           }
         }
       }
@@ -252,16 +343,16 @@ MoveGenerator::generateMoves(GenMode genMode, const Position *position, vector<M
 }
 
 void
-MoveGenerator::generateCastling(GenMode genMode, Position *position, vector<Move> *moves) {
-  const Color nextPlayer = position->getNextPlayer();
-  const Bitboard occupiedBB = position->getOccupiedBB();
+MoveGenerator::generateCastling(GenMode genMode, const Position *pPosition, MoveList *pMoves) {
+  const Color nextPlayer = pPosition->getNextPlayer();
+  const Bitboard occupiedBB = pPosition->getOccupiedBB();
 
   // castling - pseudo castling - we will not check if we are in check after the move
   // or if we have passed an attacked square with the king or if the king has been in check
 
-  if ((genMode & GENNONCAP) && position->getCastlingRights()) {
+  if ((genMode & GENNONCAP) && pPosition->getCastlingRights()) {
 
-    const CastlingRights cr = position->getCastlingRights();
+    const CastlingRights cr = pPosition->getCastlingRights();
     if (nextPlayer == WHITE) { // white
       if (cr == WHITE_OO) {
         const Square from = SQ_E1;
@@ -269,7 +360,7 @@ MoveGenerator::generateCastling(GenMode genMode, Position *position, vector<Move
         const Square rookFrom = SQ_H1;
         // way is free
         if (!(intermediateBB[from][rookFrom] & occupiedBB)) {
-          moves->push_back(createMove<CASTLING>(from, to));
+          pMoves->push_back(createMove<CASTLING>(from, to));
         }
       }
       if (cr == WHITE_OOO) {
@@ -278,7 +369,7 @@ MoveGenerator::generateCastling(GenMode genMode, Position *position, vector<Move
         const Square rookFrom = SQ_A1;
         // way is free
         if (!(intermediateBB[from][rookFrom] & occupiedBB)) {
-          moves->push_back(createMove<CASTLING>(from, to));
+          pMoves->push_back(createMove<CASTLING>(from, to));
         }
       }
     }
@@ -289,7 +380,7 @@ MoveGenerator::generateCastling(GenMode genMode, Position *position, vector<Move
         const Square rookFrom = SQ_H8;
         // way is free
         if (!(intermediateBB[from][rookFrom] & occupiedBB)) {
-          moves->push_back(createMove<CASTLING>(from, to));
+          pMoves->push_back(createMove<CASTLING>(from, to));
         }
       }
       if (cr == BLACK_OOO) {
@@ -298,7 +389,7 @@ MoveGenerator::generateCastling(GenMode genMode, Position *position, vector<Move
         const Square rookFrom = SQ_A8;
         // way is free
         if (!(intermediateBB[from][rookFrom] & occupiedBB)) {
-          moves->push_back(createMove<CASTLING>(from, to));
+          pMoves->push_back(createMove<CASTLING>(from, to));
         }
       }
     }

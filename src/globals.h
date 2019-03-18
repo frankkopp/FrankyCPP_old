@@ -57,6 +57,7 @@ Classes to be defined as C++ classes:
 #include <cassert>
 #include <iostream>
 #include <sstream>
+#include <vector>
 
 using namespace std;
 
@@ -340,6 +341,8 @@ inline std::string printMove(const Move &move) {
   return squareLabel(getFromSquare(move)) + squareLabel(getToSquare(move)) + promPt
          + " (" + tp + ")";;
 }
+
+typedef std::vector<Move> MoveList;
 
 ///////////////////////////////////
 //// CASTLING

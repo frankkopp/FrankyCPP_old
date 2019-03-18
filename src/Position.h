@@ -27,10 +27,15 @@
 #define FRANKYCPP_POSITION_H
 
 #include <cstdint>
+
+#include "../test/lib/googletest-master/googletest/include/gtest/gtest_prod.h"
 #include "globals.h"
 #include "Random.h"
 #include "Values.h"
-#include "../test/lib/googletest-master/googletest/include/gtest/gtest_prod.h"
+#include "Bitboards.h"
+
+// circle reference between Position and MoveGenerator - this make it possible
+class MoveGenerator;
 
 namespace Zobrist {
   // zobrist key for pieces - piece, board
@@ -48,6 +53,102 @@ namespace Zobrist {
  * Can be created with any FEN notation and as a copy from another Position.
  */
 class Position {
+
+  ////////////////////////////////////////////////
+  ///// FIELDS
+
+  // Flag for boolean states with undetermined state
+  enum Flag { FLAG_TBD, FLAG_FALSE, FLAG_TRUE };
+
+  // Random number generator
+  static const Random rng;
+
+  static const int MAX_HISTORY = 256;
+
+  // history counter
+  int historyCounter = 0;
+
+  // The zobrist key to use as a hash key in transposition tables
+  // The zobrist key will be updated incrementally every time one of the the state variables change.
+  Key zobristKey;
+  Key zobristKey_History[MAX_HISTORY];
+
+  // **********************************************************
+  // Board State START ----------------------------------------
+  // unique chess position (exception is 3-fold repetition
+  // which is also not represented in a FEN string)
+
+  // piece Board
+  Piece board[SQ_LENGTH];
+
+  // Castling rights
+  CastlingRights castlingRights;
+  CastlingRights castlingRights_History[MAX_HISTORY];
+
+  // en passant field
+  Square enPassantSquare = SQ_NONE;
+  Square enPassantSquare_History[MAX_HISTORY];
+
+  // half move clock - number of half moves since last capture
+  int halfMoveClock = 0;
+  int halfMoveClockHistory[MAX_HISTORY];
+  // has no zobrist key
+
+  // next player color
+  Color nextPlayer = WHITE;
+
+  // Board State END ------------------------------------------
+  // **********************************************************
+
+  // **********************************************************
+  // Extended Board State -------------------------------------
+  // not necessary for a unique position
+
+  // special for king squares
+  Square kingSquare[COLOR_LENGTH];
+
+  // We can recreate the board through the last move - no need for history of board itself
+  // with this we can also capture 3-fold repetition
+  Move moveHistory[MAX_HISTORY];
+  Piece fromPieceHistory[MAX_HISTORY];
+  Piece capturedPieceHistory[MAX_HISTORY];
+
+  // half move number - the actual half move number to determine the full move number
+  int nextHalfMoveNumber = 1;
+
+  // piece bitboards
+  Bitboard piecesBB[COLOR_LENGTH][PT_LENGTH];
+
+  // occupied bitboards with rotations
+  Bitboard occupiedBB[COLOR_LENGTH];
+  Bitboard occupiedBBR90[COLOR_LENGTH];
+  Bitboard occupiedBBL90[COLOR_LENGTH];
+  Bitboard occupiedBBR45[COLOR_LENGTH];
+  Bitboard occupiedBBL45[COLOR_LENGTH];
+
+  // Extended Board State END ---------------------------------
+  // **********************************************************
+
+  // Material value will always be up to date
+  int material[COLOR_LENGTH];
+
+  // Positional value will always be up to date
+  int psqMGValue[COLOR_LENGTH];
+  int psqEGValue[COLOR_LENGTH];
+
+  // Game phase value
+  int gamePhase;
+
+  // caches a hasCheck and hasMate Flag for the current position. Will be set after
+  // a call to hasCheck() and reset to TBD every time a move is made or unmade.
+  Flag hasCheckFlag = FLAG_TBD;
+  Flag hasCheckFlagHistory[MAX_HISTORY];
+  Flag hasMateFlag = FLAG_TBD;
+  Flag hasMateFlagHistory[MAX_HISTORY];
+
+  // To be able to check for mate (no more moves) we need to include
+  // a move generator instance
+  MoveGenerator *pMoveGenerator;
 
 public:
 
@@ -86,6 +187,11 @@ public:
    * @param op
    */
   Position(const Position &op);
+
+  /**
+   * Destructor
+   */
+  ~Position();
 
   /**
   * Returns a String representation of the chess position of this Position as a FEN String.
@@ -242,6 +348,7 @@ public:
   Key getZobristKey() const { return zobristKey; }
   Color getNextPlayer() const { return nextPlayer; }
   Square getEnPassantSquare() const { return enPassantSquare; }
+  Square getKingSquare(const Color color) const { return kingSquare[color]; };
 
   Bitboard getPieceBB(Color c, PieceType pt) const { return piecesBB[c][pt]; }
   Bitboard getOccupiedBB() const { return occupiedBB[WHITE] | occupiedBB[BLACK]; }
@@ -277,98 +384,6 @@ private:
   Piece removePiece(Square square);
   void invalidateCastlingRights(Square from, Square to);
   void clearEnPassant();
-
-  ////////////////////////////////////////////////
-  ///// FIELDS
-
-  // Flag for boolean states with undetermined state
-  enum Flag { FLAG_TBD, FLAG_FALSE, FLAG_TRUE };
-
-  // Random number generator
-  static const Random rng;
-
-  static const int MAX_HISTORY = 256;
-
-  // history counter
-  int historyCounter = 0;
-
-  // The zobrist key to use as a hash key in transposition tables
-  // The zobrist key will be updated incrementally every time one of the the state variables change.
-  Key zobristKey;
-  Key zobristKey_History[MAX_HISTORY];
-
-  // **********************************************************
-  // Board State START ----------------------------------------
-  // unique chess position (exception is 3-fold repetition
-  // which is also not represented in a FEN string)
-
-  // piece Board
-  Piece board[SQ_LENGTH];
-
-  // Castling rights
-  CastlingRights castlingRights;
-  CastlingRights castlingRights_History[MAX_HISTORY];
-
-  // en passant field
-  Square enPassantSquare = SQ_NONE;
-  Square enPassantSquare_History[MAX_HISTORY];
-
-  // half move clock - number of half moves since last capture
-  int halfMoveClock = 0;
-  int halfMoveClockHistory[MAX_HISTORY];
-  // has no zobrist key
-
-  // next player color
-  Color nextPlayer = WHITE;
-
-  // Board State END ------------------------------------------
-  // **********************************************************
-
-  // **********************************************************
-  // Extended Board State -------------------------------------
-  // not necessary for a unique position
-
-  // special for king squares
-  Square kingSquare[COLOR_LENGTH];
-
-  // We can recreate the board through the last move - no need for history of board itself
-  // with this we can also capture 3-fold repetition
-  Move moveHistory[MAX_HISTORY];
-  Piece fromPieceHistory[MAX_HISTORY];
-  Piece capturedPieceHistory[MAX_HISTORY];
-
-  // half move number - the actual half move number to determine the full move number
-  int nextHalfMoveNumber = 1;
-
-  // piece bitboards
-  Bitboard piecesBB[COLOR_LENGTH][PT_LENGTH];
-
-  // occupied bitboards with rotations
-  Bitboard occupiedBB[COLOR_LENGTH];
-  Bitboard occupiedBBR90[COLOR_LENGTH];
-  Bitboard occupiedBBL90[COLOR_LENGTH];
-  Bitboard occupiedBBR45[COLOR_LENGTH];
-  Bitboard occupiedBBL45[COLOR_LENGTH];
-
-  // Material value will always be up to date
-  int material[COLOR_LENGTH];
-
-  // Positional value will always be up to date
-  int psqMGValue[COLOR_LENGTH];
-  int psqEGValue[COLOR_LENGTH];
-
-  // Game phase value
-  int gamePhase;
-
-  // caches a hasCheck and hasMate Flag for the current position. Will be set after
-  // a call to hasCheck() and reset to TBD every time a move is made or unmade.
-  Flag hasCheckFlag = FLAG_TBD;
-  Flag hasCheckFlagHistory[MAX_HISTORY];
-  Flag hasMateFlag = FLAG_TBD;
-  Flag hasMateFlagHistory[MAX_HISTORY];
-
-  // Extended Board State END ---------------------------------
-  // **********************************************************
 };
 
 #endif //FRANKYCPP_POSITION_H

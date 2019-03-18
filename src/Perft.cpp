@@ -29,7 +29,6 @@
 
 #include "Perft.h"
 
-
 Perft::Perft() {
   fen = START_POSITION_FEN;
 }

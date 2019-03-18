@@ -63,7 +63,7 @@ TEST(PerftTest, stdPerft) {
   };
   // @formatter:on
 
-  int maxDepth = 8;
+  int maxDepth = 7;
 
   for (int i = 1; i <= maxDepth; i++) {
     p.perft(i);
@@ -71,7 +71,7 @@ TEST(PerftTest, stdPerft) {
     ASSERT_EQ(results[i][2], p.getCaptureCounter());
     ASSERT_EQ(results[i][3], p.getEnpassantCounter());
     ASSERT_EQ(results[i][4], p.getCheckCounter());
-//    ASSERT_EQ(results[i][5], p.getCheckMateCounter());
+    ASSERT_EQ(results[i][5], p.getCheckMateCounter());
   }
   cout << "==============================" << endl;
 

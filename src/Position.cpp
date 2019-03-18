@@ -27,7 +27,6 @@
 #include <sstream>
 
 #include "Position.h"
-#include "Bitboards.h"
 #include "MoveGenerator.h"
 
 using namespace std;
@@ -67,12 +66,12 @@ void Position::init() {
 Position::Position() : Position(START_POSITION_FEN) {};
 
 /** Creates a board with setup from the given fen */
-Position::Position(std::string fen) {
-  setupBoard(fen.c_str());
-}
+Position::Position(std::string fen) : Position(fen.c_str()) {};
 
 /** Creates a board with setup from the given fen */
 Position::Position(const char *fen) {
+  // move generator is used for checking mate positions 
+  pMoveGenerator = new MoveGenerator;
   setupBoard(fen);
 }
 
@@ -122,6 +121,13 @@ Position::Position(const Position &op) {
             this->hasCheckFlagHistory);
   std::copy(op.hasMateFlagHistory, op.hasMateFlagHistory + MAX_HISTORY, this->hasMateFlagHistory);
 
+  // move generator is used for checking mate positions
+  pMoveGenerator = new MoveGenerator;
+
+}
+
+Position::~Position() {
+  delete pMoveGenerator;
 }
 
 ////////////////////////////////////////////////
@@ -533,11 +539,18 @@ bool Position::hasCheck() {
 bool Position::hasCheckMate() {
   if (!hasCheck()) return false;
   if (hasMateFlag != FLAG_TBD) return (hasMateFlag == FLAG_TRUE);
-//  MoveGenerator mateCheckMG;
-//  if (!mateCheckMG.hasLegalMove(this)) {
-//    hasMateFlag = FLAG_TRUE;
-//    return true;
+  // DEBUG
+  MoveList legalMoves = pMoveGenerator->generateLegalMoves(GENALL, this);
+  const bool hasLegalMove = pMoveGenerator->hasLegalMove(this);
+//  if (!legalMoves.empty() != hasLegalMove) {
+//    cout << "BUG" << endl;
 //  }
+  assert(!legalMoves.empty() == hasLegalMove);
+  // DEBUG
+  if (!hasLegalMove) {
+    hasMateFlag = FLAG_TRUE;
+    return true;
+  }
   hasMateFlag = FLAG_FALSE;
   return false;
 }
@@ -1151,6 +1164,7 @@ void Position::setupBoard(const char *fen) {
   nextHalfMoveNumber = 2 * nextHalfMoveNumber - (nextPlayer == WHITE);
 
 }
+
 
 
 

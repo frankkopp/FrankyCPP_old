@@ -28,6 +28,7 @@
 #include <ostream>
 #include <string>
 
+#include "../../src/Position.h"
 #include "../../src/MoveGenerator.h"
 
 using namespace std;
@@ -49,7 +50,7 @@ TEST(MoveGenTest, pawnMoves) {
   fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3";
 
   Position position(fen);
-  vector<Move> moves;
+  MoveList moves;
 
   cout << position.printBoard() << endl;
 
@@ -83,7 +84,7 @@ TEST(MoveGenTest, kingMoves) {
   string fen;
   MoveGenerator mg;
   GenMode genMode;
-  vector<Move> moves;
+  MoveList moves;
 
   fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3";
   Position position(fen);
@@ -118,7 +119,7 @@ TEST(MoveGenTest, normalMoves) {
   string fen;
   MoveGenerator mg;
   GenMode genMode;
-  vector<Move> moves;
+  MoveList moves;
 
   fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3";
   Position position(fen);
@@ -153,7 +154,7 @@ TEST(MoveGenTest, castlingMoves) {
   string fen;
   MoveGenerator mg;
   GenMode genMode;
-  vector<Move> moves;
+  MoveList moves;
 
   fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3";
   Position position(fen);
@@ -188,7 +189,7 @@ TEST(MoveGenTest, pseudoLegalMoves) {
   string fen;
   MoveGenerator mg;
   GenMode genMode;
-  vector<Move> moves;
+  MoveList moves;
   Position position;
 
   // 86 pseudo legal moves (incl. castling over attacked square)
@@ -260,7 +261,7 @@ TEST(MoveGenTest, legalMoves) {
   string fen;
   MoveGenerator mg;
   GenMode genMode;
-  vector<Move> moves;
+  MoveList moves;
   Position position;
 
   // 86 pseudo legal moves (incl. castling over attacked square)
