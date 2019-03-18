@@ -43,6 +43,9 @@ enum GenMode {
 
 class MoveGenerator {
 
+  vector<Move> pseudoLegalMoves;
+  vector<Move> legalMoves;
+
 public:
 
   MoveGenerator();

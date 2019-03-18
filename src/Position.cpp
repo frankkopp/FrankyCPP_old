@@ -585,7 +585,7 @@ int Position::countRepetitions() {
 }
 
 bool Position::checkInsufficientMaterial() {
-  // TODO optimze??
+  // TODO optimize??
 
   /*
     * both sides have a bare king
@@ -631,8 +631,8 @@ bool Position::checkInsufficientMaterial() {
         ||
         ((blackSquaresBB & piecesBB[WHITE][BISHOP]) && (blackSquaresBB & piecesBB[BLACK][BISHOP])));
     }
-    return false;
   }
+  return false;
 }
 
 bool Position::givesCheck(Move move) {

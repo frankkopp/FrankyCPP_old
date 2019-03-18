@@ -32,29 +32,34 @@ using namespace Bitboards;
 ////////////////////////////////////////////////
 ///// CONSTRUCTORS
 
-MoveGenerator::MoveGenerator() = default;
+MoveGenerator::MoveGenerator() {
+  pseudoLegalMoves.reserve(256);
+  legalMoves.reserve(256);
+}
 
 ////////////////////////////////////////////////
 ///// PUBLIC
 
+// TODO:
+//  Implement caching when position is known to avoid re-generation
+
 vector<Move> MoveGenerator::generatePseudoLegalMoves(GenMode genMode, Position *position) {
-  vector<Move> moves;
-  generatePawnMoves(genMode, position, &moves);
-  generateCastling(genMode, position, &moves);
-  generateMoves(genMode, position, &moves);
-  generateKingMoves(genMode, position, &moves);
-  return moves;
+  pseudoLegalMoves.clear();
+  generatePawnMoves(genMode, position, &pseudoLegalMoves);
+  generateCastling(genMode, position, &pseudoLegalMoves);
+  generateMoves(genMode, position, &pseudoLegalMoves);
+  generateKingMoves(genMode, position, &pseudoLegalMoves);
+  return pseudoLegalMoves;
 }
 
 vector<Move>
 MoveGenerator::generateLegalMoves(GenMode genMode, Position *position) {
-  vector<Move> moves(generatePseudoLegalMoves(genMode, position));
-  std::vector<Move> filteredMoves;
-  for (Move m : moves) {
-    if (position->isLegalMove(m)) filteredMoves.push_back(m);
+  legalMoves.clear();
+  generatePseudoLegalMoves(genMode, position);
+  for (Move m : pseudoLegalMoves) {
+    if (position->isLegalMove(m)) legalMoves.push_back(m);
   }
-  moves = filteredMoves;
-  return moves;
+  return legalMoves;
 }
 
 ////////////////////////////////////////////////

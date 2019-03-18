@@ -39,9 +39,9 @@ TEST(PerftTest, stdPerft) {
   Position::init();
   Bitboards::init();
   NEWLINE;
-  
+
   MoveGenerator mg;
-  Position     position;
+  Position position;
   Perft p;
 
   cout << "Standard PERFT Test" << endl;
