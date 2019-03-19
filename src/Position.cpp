@@ -542,9 +542,11 @@ bool Position::hasCheckMate() {
   // DEBUG
   MoveList legalMoves = pMoveGenerator->generateLegalMoves(GENALL, this);
   const bool hasLegalMove = pMoveGenerator->hasLegalMove(this);
-//  if (!legalMoves.empty() != hasLegalMove) {
-//    cout << "BUG" << endl;
-//  }
+  if (legalMoves.empty() == hasLegalMove) {
+    cout << printMove(legalMoves[0]);
+    cout << this->str();
+    cout << "BUG" << endl;
+  }
   assert(!legalMoves.empty() == hasLegalMove);
   // DEBUG
   if (!hasLegalMove) {

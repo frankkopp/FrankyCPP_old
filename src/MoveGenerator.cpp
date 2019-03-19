@@ -99,9 +99,16 @@ MoveGenerator::hasLegalMove(Position *pPosition) {
 
   // pawns - check step one to unoccupied squares
   tmpMoves = shift(pawnDir[nextPlayer], myPawns) & ~pPosition->getOccupiedBB();
+  // double pawn steps
+  Bitboard tmpMoves2 = shift(pawnDir[nextPlayer], tmpMoves) & ~pPosition->getOccupiedBB();
   while (tmpMoves) {
     const Square toSquare = popLSB(&tmpMoves);
     const Square fromSquare = toSquare + pawnDir[~nextPlayer];
+    if (pPosition->isLegalMove(createMove(fromSquare, toSquare))) return true;
+  }
+  while (tmpMoves2) {
+    const Square toSquare = popLSB(&tmpMoves2);
+    const Square fromSquare = toSquare + pawnDir[~nextPlayer] + pawnDir[~nextPlayer];
     if (pPosition->isLegalMove(createMove(fromSquare, toSquare))) return true;
   }
 
