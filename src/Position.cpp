@@ -70,7 +70,7 @@ Position::Position(std::string fen) : Position(fen.c_str()) {};
 
 /** Creates a board with setup from the given fen */
 Position::Position(const char *fen) {
-  // move generator is used for checking mate positions 
+  // move generator is used for checking mate positions
   pMoveGenerator = new MoveGenerator;
   setupBoard(fen);
 }
@@ -122,12 +122,14 @@ Position::Position(const Position &op) {
   std::copy(op.hasMateFlagHistory, op.hasMateFlagHistory + MAX_HISTORY, this->hasMateFlagHistory);
 
   // move generator is used for checking mate positions
-  pMoveGenerator = new MoveGenerator;
+  pMoveGenerator =  new MoveGenerator;
 
 }
 
 Position::~Position() {
-  delete pMoveGenerator;
+   if (pMoveGenerator)
+     delete pMoveGenerator;
+   pMoveGenerator = nullptr;
 }
 
 ////////////////////////////////////////////////
@@ -229,6 +231,8 @@ void Position::doMove(Move move) {
           movePiece(fromSq, toSq); // King
           movePiece(SQ_H1, SQ_F1); // Rook
           zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
+          // clear both by first OR then XOR
+          castlingRights += WHITE_CASTLING;
           castlingRights -= WHITE_CASTLING;
           zobristKey ^= Zobrist::castlingRights[castlingRights]; // in;
           break;
@@ -241,6 +245,7 @@ void Position::doMove(Move move) {
           movePiece(fromSq, toSq); // King
           movePiece(SQ_A1, SQ_D1); // Rook
           zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
+          castlingRights += WHITE_CASTLING;
           castlingRights -= WHITE_CASTLING;
           zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
           break;
@@ -253,6 +258,7 @@ void Position::doMove(Move move) {
           movePiece(fromSq, toSq); // King
           movePiece(SQ_H8, SQ_F8); // Rook
           zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
+          castlingRights += BLACK_CASTLING;
           castlingRights -= BLACK_CASTLING;
           zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
           break;
@@ -265,6 +271,7 @@ void Position::doMove(Move move) {
           movePiece(fromSq, toSq); // King
           movePiece(SQ_A8, SQ_D8); // Rook
           zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
+          castlingRights += BLACK_CASTLING;
           castlingRights -= BLACK_CASTLING;
           zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
           break;
@@ -539,15 +546,19 @@ bool Position::hasCheck() {
 bool Position::hasCheckMate() {
   if (!hasCheck()) return false;
   if (hasMateFlag != FLAG_TBD) return (hasMateFlag == FLAG_TRUE);
-  // DEBUG
-  MoveList legalMoves = pMoveGenerator->generateLegalMoves(GENALL, this);
   const bool hasLegalMove = pMoveGenerator->hasLegalMove(this);
-  if (legalMoves.empty() == hasLegalMove) {
-    cout << printMove(legalMoves[0]);
-    cout << this->str();
-    cout << "BUG" << endl;
-  }
-  assert(!legalMoves.empty() == hasLegalMove);
+  // DEBUG
+  //  const MoveList legalMoves = pMoveGenerator->generateLegalMoves(GENALL, this);
+  //  if (legalMoves.empty() == hasLegalMove) {
+  //    NEWLINE;
+  //    println("BUG");
+  //    println(printMove(legalMoves[0]));
+  //    println(this->str());
+  //    println("Legal Moves Size: " + to_string(legalMoves.size()));
+  //    println("hasLegalMoves: ");
+  //    println(boolStr(hasLegalMove));
+  //  }
+  //  assert(!legalMoves.empty() == hasLegalMove);
   // DEBUG
   if (!hasLegalMove) {
     hasMateFlag = FLAG_TRUE;
@@ -1007,9 +1018,10 @@ Piece Position::removePiece(Square square) {
 
 void Position::invalidateCastlingRights(Square fromSq, Square toSq) {
   // check for castling rights invalidation
-  if (castlingRights == WHITE_CASTLING) {
+  if (castlingRights & WHITE_CASTLING) {
     if (fromSq == SQ_E1 || toSq == SQ_E1) {
       zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
+      castlingRights += WHITE_CASTLING; // set both to delete both
       castlingRights -= WHITE_CASTLING;
       zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
     }
@@ -1024,9 +1036,10 @@ void Position::invalidateCastlingRights(Square fromSq, Square toSq) {
       zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
     }
   }
-  if (castlingRights == BLACK_CASTLING) {
+  if (castlingRights & BLACK_CASTLING) {
     if (fromSq == SQ_E8 || toSq == SQ_E8) {
       zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
+      castlingRights += BLACK_CASTLING; // set both to delete both
       castlingRights -= BLACK_CASTLING;
       zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
     }

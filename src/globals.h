@@ -58,17 +58,19 @@ Classes to be defined as C++ classes:
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <deque>
 
 using namespace std;
 
-#define NEWLINE std::cout << std::endl
+#define NEWLINE std::cout << std::endl;
 #define printBB(bb) cout << Bitboards::print((bb)) << endl;
+#define println(s) cout << (s) << endl;
 
 // Global constants
 static const int MAX_MOVES = 256;
 static const int MAX_PLY = 128;
 
-static const char *START_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+#define START_POSITION_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 /** 64 bit Key for zobrist etc. */
 typedef uint64_t Key;
@@ -342,7 +344,7 @@ inline std::string printMove(const Move &move) {
          + " (" + tp + ")";;
 }
 
-typedef std::vector<Move> MoveList;
+typedef std::deque<Move> MoveList;
 
 ///////////////////////////////////
 //// CASTLING
@@ -385,12 +387,10 @@ constexpr CastlingRights &operator-=(CastlingRights &cr1, CastlingRights cr2) {
 }
 
 constexpr CastlingRights operator+(CastlingRights cr1, CastlingRights cr2) {
-  assert(!(cr1 & cr2));
   return CastlingRights(cr1 | cr2);
 }
 
 constexpr CastlingRights &operator+=(CastlingRights &cr1, CastlingRights cr2) {
-  assert(!(cr1 & cr2));
   return cr1 = CastlingRights(cr1 | cr2);
 }
 

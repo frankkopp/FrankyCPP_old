@@ -42,21 +42,21 @@ void Perft::perft(int maxDepth) {
 
   Position position(fen);
   MoveGenerator mg;
-
-  long result;
-  auto start = std::chrono::high_resolution_clock::now();
-  result = miniMax(maxDepth, position, mg);
-  auto finish = std::chrono::high_resolution_clock::now();
-  long duration = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start).count();
-
-  nodes = result;
-
   ostringstream os;
   cout.imbue(digitLocale);
   os.imbue(digitLocale);
   os << setprecision(9);
 
   os << "Testing at depth " << maxDepth << endl;
+
+  long result;
+  auto start = std::chrono::high_resolution_clock::now();
+  result = miniMax(maxDepth, &position, &mg);
+  auto finish = std::chrono::high_resolution_clock::now();
+  long duration = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start).count();
+
+  nodes = result;
+
   os << "Leaf Nodes: " << nodes
      << " Captures: " << captureCounter
      << " EnPassant: " << enpassantCounter
@@ -67,7 +67,7 @@ void Perft::perft(int maxDepth) {
   os << "Duration: " << duration << " ms" << endl;
   os << "NPS: " << ((result * 1e3) / duration) << " nps" << endl;
 
-  cout << os.str() << endl;
+  cout << os.str();
 }
 
 void Perft::resetCounter() {
@@ -78,35 +78,37 @@ void Perft::resetCounter() {
   enpassantCounter = 0;
 }
 
-long Perft::miniMax(int depth, Position position, MoveGenerator mg) {
+long Perft::miniMax(int depth, Position *pPosition, MoveGenerator *pMg) {
 
   // Iterate over moves
   long totalNodes = 0L;
 
+  //println(pPosition->str())
+  
   // moves to search recursively
-  vector<Move> moves = mg.generatePseudoLegalMoves(GENALL, &position);
+  MoveList moves = pMg->generatePseudoLegalMoves(GENALL, pPosition);
   for (Move move : moves) {
     if (depth > 1) {
-      position.doMove(move);
+      pPosition->doMove(move);
       // only go into recursion if move was legal
-      if (position.isLegalPosition()) totalNodes += miniMax(depth - 1, position, mg);
-      position.undoMove();
+      if (pPosition->isLegalPosition()) totalNodes += miniMax(depth - 1, pPosition, pMg);
+      pPosition->undoMove();
     }
     else {
-      const bool cap = position.getPiece(getToSquare(move)) != PIECE_NONE;
+      const bool cap = pPosition->getPiece(getToSquare(move)) != PIECE_NONE;
       const bool ep = typeOf(move) == ENPASSANT;
-      position.doMove(move);
-      if (position.isLegalPosition()) {
+      pPosition->doMove(move);
+      if (pPosition->isLegalPosition()) {
         totalNodes++;
         if (ep) {
           enpassantCounter++;
           captureCounter++;
         }
         if (cap) captureCounter++;
-        if (position.hasCheck()) checkCounter++;
-        if (position.hasCheckMate()) checkMateCounter++;
+        if (pPosition->hasCheck()) checkCounter++;
+        if (pPosition->hasCheckMate()) checkMateCounter++;
       } 
-      position.undoMove();
+      pPosition->undoMove();
     }
   }
   return totalNodes;

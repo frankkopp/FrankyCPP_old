@@ -290,3 +290,52 @@ TEST(MoveGenTest, legalMoves) {
   NEWLINE;
 }
 
+TEST(MoveGenTest, onDemandGen) {
+  Position::init();
+  Bitboards::init();
+  NEWLINE;
+
+  string fen;
+  MoveGenerator mg;
+  GenMode genMode;
+  MoveList moves;
+
+  // 86 pseudo legal moves (incl. castling over attacked square)
+  fen = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3";
+  Position position(fen);
+  cout << position.printBoard() << endl;
+
+  genMode = GENALL;
+  Move move;
+  int counter = 0;
+  while (true) {
+    move = mg.getNextPseudoLegalMove(genMode, &position);
+    if (move == NOMOVE) break;
+    cout << printMove(move) << endl;
+    counter++;
+  }
+  ASSERT_EQ(86, counter);
+  NEWLINE;
+
+}
+
+TEST(MoveGenTest, hasLegalMoves) {
+  Position::init();
+  Bitboards::init();
+  NEWLINE;
+
+  string fen;
+  MoveGenerator mg;
+  MoveList moves;
+
+  fen = "rn2kbnr/pbpp1ppp/8/1p2p1q1/4K3/3P4/PPP1PPPP/RNBQ1BNR w kq -";
+  Position position(fen);
+  println(position.str())
+
+  moves = mg.generateLegalMoves(GENALL, &position);
+  const bool expected = mg.hasLegalMove(&position);
+
+  ASSERT_EQ(0, moves.size());
+  ASSERT_FALSE(expected);
+
+}

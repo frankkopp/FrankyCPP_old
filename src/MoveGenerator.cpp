@@ -33,18 +33,19 @@ using namespace Bitboards;
 ///// CONSTRUCTORS
 
 MoveGenerator::MoveGenerator() {
-  pseudoLegalMoves.reserve(256);
-  legalMoves.reserve(256);
+//  pseudoLegalMoves.reserve(256);
+//  legalMoves.reserve(256);
 }
+
+MoveGenerator::~MoveGenerator() {
+}
+
 
 ////////////////////////////////////////////////
 ///// PUBLIC
 
-// TODO:
-//  Implement caching when position is known to avoid re-generation
-//  Implement on demand (lazy) move gen
-
-MoveList MoveGenerator::generatePseudoLegalMoves(GenMode genMode, Position *pPosition) {
+MoveList
+MoveGenerator::generatePseudoLegalMoves(GenMode genMode, Position *pPosition) {
   pseudoLegalMoves.clear();
   generatePawnMoves(genMode, pPosition, &pseudoLegalMoves);
   generateCastling(genMode, pPosition, &pseudoLegalMoves);
@@ -59,6 +60,68 @@ MoveGenerator::generateLegalMoves(GenMode genMode, Position *pPosition) {
   generatePseudoLegalMoves(genMode, pPosition);
   for (Move m : pseudoLegalMoves) if (pPosition->isLegalMove(m)) legalMoves.push_back(m);
   return legalMoves;
+}
+
+Move
+MoveGenerator::getNextPseudoLegalMove(GenMode genMode, Position *pPosition) {
+  // if the position changes during iteration the iteration will be reset and
+  // generation will be restart with the new position.
+  if (pPosition->getZobristKey() != currentIteratorKey) {
+    onDemandMoves.clear();
+    currentODStage = OD_NEW;
+    currentIteratorKey = pPosition->getZobristKey();
+  }
+
+  /*
+    * If the list is currently empty and we have not generated all moves yet
+    * generate the next batch until we have new moves or all moves are generated
+    * and there are no more moves to generate
+    */
+  while (onDemandMoves.empty() && currentODStage < OD_END) {
+    switch (currentODStage) {
+      case OD_NEW:
+        currentODStage = OD1;
+        // fall through
+      case OD1:
+        generatePawnMoves(GENCAP, pPosition, &onDemandMoves);
+        currentODStage = OD2;
+        break;
+      case OD2:
+        generateMoves(GENCAP, pPosition, &onDemandMoves);
+        currentODStage = OD3;
+        break;
+      case OD3:
+        generateKingMoves(GENCAP, pPosition, &onDemandMoves);
+        if (genMode & GENNONCAP) currentODStage = OD4;
+        else currentODStage = OD_END;
+        break;
+      case OD4:
+        generatePawnMoves(GENNONCAP, pPosition, &onDemandMoves);
+        currentODStage = OD5;
+        break;
+      case OD5:
+        generateCastling(GENNONCAP, pPosition, &onDemandMoves);
+        currentODStage = OD6;
+        break;
+      case OD6:
+        generateMoves(GENNONCAP, pPosition, &onDemandMoves);
+        currentODStage = OD7;
+        break;
+      case OD7:
+        generateKingMoves(GENNONCAP, pPosition, &onDemandMoves);
+        currentODStage = OD_END;
+        break;
+      case OD_END:
+        break;
+    }
+  }
+  // return a move and delete it form the list
+  if (onDemandMoves.empty()) return NOMOVE;
+  else {
+    Move move = onDemandMoves.front();
+    onDemandMoves.pop_front();
+    return move;
+  }
 }
 
 bool
@@ -97,10 +160,12 @@ MoveGenerator::hasLegalMove(Position *pPosition) {
     if (pPosition->isLegalMove(createMove(fromSquare, toSquare))) return true;
   }
 
-  // pawns - check step one to unoccupied squares
+  // pawn pushes - check step one to unoccupied squares
   tmpMoves = shift(pawnDir[nextPlayer], myPawns) & ~pPosition->getOccupiedBB();
   // double pawn steps
-  Bitboard tmpMoves2 = shift(pawnDir[nextPlayer], tmpMoves) & ~pPosition->getOccupiedBB();
+  Bitboard tmpMoves2 = shift(pawnDir[nextPlayer],
+                             tmpMoves & (nextPlayer == WHITE ? Rank3BB : Rank6BB)) &
+                       ~pPosition->getOccupiedBB();
   while (tmpMoves) {
     const Square toSquare = popLSB(&tmpMoves);
     const Square fromSquare = toSquare + pawnDir[~nextPlayer];
@@ -128,7 +193,7 @@ MoveGenerator::hasLegalMove(Position *pPosition) {
     if (tmpMoves) {
       const Square fromSquare = lsb(tmpMoves);
       if (pPosition->isLegalMove(
-        createMove<ENPASSANT>(fromSquare, fromSquare + pawnDir[nextPlayer] + WEST))  )
+        createMove<ENPASSANT>(fromSquare, fromSquare + pawnDir[nextPlayer] + WEST)))
         return true;
     }
   }
@@ -144,7 +209,7 @@ MoveGenerator::hasLegalMove(Position *pPosition) {
       Bitboard moves = pseudoMoves & ~nextPlayerBB;
       while (moves) {
         const Square toSquare = popLSB(&moves);
-        
+
         if (pt > KNIGHT) { // sliding pieces
           if (!(intermediateBB[fromSquare][toSquare] & occupiedBB)) {
             if (pPosition->isLegalMove(createMove(fromSquare, toSquare))) return true;
@@ -362,41 +427,37 @@ MoveGenerator::generateCastling(GenMode genMode, const Position *pPosition, Move
     const CastlingRights cr = pPosition->getCastlingRights();
     if (nextPlayer == WHITE) { // white
       if (cr == WHITE_OO) {
-        const Square from = SQ_E1;
-        const Square to = SQ_G1;
-        const Square rookFrom = SQ_H1;
+        assert(pPosition->getKingSquare(WHITE) == SQ_E1);
+        assert(pPosition->getPiece(SQ_H1) == WHITE_ROOK);
         // way is free
-        if (!(intermediateBB[from][rookFrom] & occupiedBB)) {
-          pMoves->push_back(createMove<CASTLING>(from, to));
+        if (!(intermediateBB[SQ_E1][SQ_H1] & occupiedBB)) {
+          pMoves->push_back(createMove<CASTLING>(SQ_E1, SQ_G1));
         }
       }
       if (cr == WHITE_OOO) {
-        const Square from = SQ_E1;
-        const Square to = SQ_C1;
-        const Square rookFrom = SQ_A1;
+        assert(pPosition->getKingSquare(WHITE) == SQ_E1);
+        assert(pPosition->getPiece(SQ_A1) == WHITE_ROOK);
         // way is free
-        if (!(intermediateBB[from][rookFrom] & occupiedBB)) {
-          pMoves->push_back(createMove<CASTLING>(from, to));
+        if (!(intermediateBB[SQ_E1][SQ_A1] & occupiedBB)) {
+          pMoves->push_back(createMove<CASTLING>(SQ_E1, SQ_C1));
         }
       }
     }
     else { // black
       if (cr == BLACK_OO) {
-        const Square from = SQ_E8;
-        const Square to = SQ_G8;
-        const Square rookFrom = SQ_H8;
+        assert(pPosition->getKingSquare(BLACK) == SQ_E8);
+        assert(pPosition->getPiece(SQ_H8) == BLACK_ROOK);
         // way is free
-        if (!(intermediateBB[from][rookFrom] & occupiedBB)) {
-          pMoves->push_back(createMove<CASTLING>(from, to));
+        if (!(intermediateBB[SQ_E8][SQ_H8] & occupiedBB)) {
+          pMoves->push_back(createMove<CASTLING>(SQ_E8, SQ_G8));
         }
       }
       if (cr == BLACK_OOO) {
-        const Square from = SQ_E8;
-        const Square to = SQ_C8;
-        const Square rookFrom = SQ_A8;
+        assert(pPosition->getKingSquare(BLACK) == SQ_E8);
+        assert(pPosition->getPiece(SQ_A8) == BLACK_ROOK);
         // way is free
-        if (!(intermediateBB[from][rookFrom] & occupiedBB)) {
-          pMoves->push_back(createMove<CASTLING>(from, to));
+        if (!(intermediateBB[SQ_E8][SQ_A8] & occupiedBB)) {
+          pMoves->push_back(createMove<CASTLING>(SQ_E8, SQ_C8));
         }
       }
     }

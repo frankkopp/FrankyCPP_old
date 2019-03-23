@@ -48,10 +48,16 @@ class MoveGenerator {
 
   MoveList pseudoLegalMoves;
   MoveList legalMoves;
+  MoveList onDemandMoves;
+
+  enum onDemandStage : int { OD_NEW, OD1, OD2, OD3, OD4, OD5, OD6, OD7, OD_END };
+  onDemandStage currentODStage = OD_NEW;
+  Key currentIteratorKey;
 
 public:
 
   MoveGenerator();
+  ~MoveGenerator();
 
   /**
    * Generates pseudo moves for the next player. Does not check if king is left in check or
@@ -71,6 +77,16 @@ public:
   * @param moves - generated moves will be added to this list
   */
   MoveList generateLegalMoves(GenMode genMode, Position *pPosition);
+
+  /**
+   * Returns the next move for the given position. Usually this would be used in a loop
+   * during search. If the position changes this will restart at the first move.
+   *
+   * @param genMode
+   * @param pPosition
+   * @return
+   */
+  Move getNextPseudoLegalMove(GenMode genMode, Position *pPosition);
 
   /**
    * This method checks if the position has at least one legal move. It will mainly be used to
