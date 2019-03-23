@@ -174,18 +174,19 @@ TEST(PerftTest, pos4Perft) {
   Perft p("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1");
 
   // @formatter:off
-  const u_int64_t results[8][6] = {
+  const u_int64_t results[7][6] = {
           //N  Nodes      Captures EP     Checks   Mates
-          { 0, 6,         0,         0,     0,        0},
-          { 1, 264,       87,        0,     10,       0},
-          { 2, 9467,      1021,      4,     38,       22},
-          { 3, 422333,    131393,    0,     15492,    5},
-          { 4, 15833292,  2046173,   6512,  200568,   50562},
-          { 5, 706045033, 210369132, 212,   26973664, 81076}
+          { 0, 0,         0,         0,     0,        0},
+          { 1, 6,         0,         0,     0,        0},
+          { 2, 264,       87,        0,     10,       0},
+          { 3, 9467,      1021,      4,     38,       22},
+          { 4, 422333,    131393,    0,     15492,    5},
+          { 5, 15833292,  2046173,   6512,  200568,   50562},
+          { 6, 706045033, 210369132, 212,   26973664, 81076}
   };
   // @formatter:on
 
-  int maxDepth = 6;
+  int maxDepth = 5;
 
   for (int i = 1; i <= maxDepth; i++) {
     p.perft(i);
@@ -204,25 +205,26 @@ TEST(PerftTest, pos4Perft) {
   Perft p2("r2q1rk1/pP1p2pp/Q4n2/bbp1p3/Np6/1B3NBn/pPPP1PPP/R3K2R b KQ - 0 1");
 
   // @formatter:off
-  const u_int64_t results2[6][6] = {
+  const u_int64_t results2[7][6] = {
           //N  Nodes      Captures EP     Checks   Mates
-          { 0, 6,         0,         0,     0,        0},
-          { 1, 264,       87,        0,     10,       0},
-          { 2, 9467,      1021,      4,     38,       22},
-          { 3, 422333,    131393,    0,     15492,    5},
-          { 4, 15833292,  2046173,   6512,  200568,   50562},
-          { 5, 706045033, 210369132, 212,   26973664, 81076}
+          { 0, 0,         0,         0,     0,        0},
+          { 1, 6,         0,         0,     0,        0},
+          { 2, 264,       87,        0,     10,       0},
+          { 3, 9467,      1021,      4,     38,       22},
+          { 4, 422333,    131393,    0,     15492,    5},
+          { 5, 15833292,  2046173,   6512,  200568,   50562},
+          { 6, 706045033, 210369132, 212,   26973664, 81076}
   };
   // @formatter:on
 
   for (int i = 1; i <= maxDepth; i++) {
     p2.perft(i);
     NEWLINE
-    ASSERT_EQ(results2[i][1], p.getNodes());
-    ASSERT_EQ(results2[i][2], p.getCaptureCounter());
-    ASSERT_EQ(results2[i][3], p.getEnpassantCounter());
-    ASSERT_EQ(results2[i][4], p.getCheckCounter());
-    ASSERT_EQ(results2[i][5], p.getCheckMateCounter());
+    ASSERT_EQ(results2[i][1], p2.getNodes());
+    ASSERT_EQ(results2[i][2], p2.getCaptureCounter());
+    ASSERT_EQ(results2[i][3], p2.getEnpassantCounter());
+    ASSERT_EQ(results2[i][4], p2.getCheckCounter());
+    ASSERT_EQ(results2[i][5], p2.getCheckMateCounter());
   }
   cout << "==============================" << endl;
 }

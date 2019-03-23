@@ -43,14 +43,12 @@ TEST(TimingTests, popcount) {
 
   //// TESTS START
   Bitboards::init();
-  auto f1 = []() { int i = popcount(DiagUpA1); };
-  auto f2 = []() { int i = popcount(DiagUpA1); };
+  auto f1 = []() { popcount(DiagUpA1); };
   vector<void (*)()> tests;
   tests.push_back(f1);
-  tests.push_back(f2);
   //// TESTS END
 
-  testTiming(os, 5, 50, 10'000'000, tests);
+  testTiming(os, 5, 50, 100'000'000, tests);
 
   cout << os.str();
 }
@@ -91,13 +89,8 @@ TEST(TimingTests, doMoveUndoMove) {
     // ASSERT_EQ(fen, position.printFen());
   };
 
-  auto f2 = []() {
-    //
-  };
-
   vector<void (*)()> tests;
   tests.push_back(f1);
-  //  tests.push_back(f2);
   //// TESTS END
 
   testTiming(os, 5, 10, 2'000'000, tests);
@@ -164,7 +157,8 @@ testTiming(ostringstream &os, int rounds, int iterations, int repetitions,
       auto avg = ((double) sum / iterations);
       os << "Round " << setw(2) << round << " Test " << setw(2) << testNr++ << ": " << setw(12)
          << avg
-         << " ns" << " (" << setw(12) << (avg / 1e9) << " sec)" << endl;
+         << " ns" << " (" << setw(12) << (avg / 1e9) << " sec)"
+         << " (" << setw(12) << (avg/(repetitions*iterations)) << " ns avg per test)" << endl;
     }
     // os << endl;
   }
