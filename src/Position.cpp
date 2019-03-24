@@ -1085,7 +1085,7 @@ void Position::setupBoard(const char *fen) {
   while ((iss >> token) && !isspace(token)) {
     if (isdigit(token)) currentSquare += (token - '0') * EAST;
     else if (token == '/') currentSquare += 2 * SOUTH;
-    else if ((idx = pieceToChar.find(token)) != string::npos) {
+    else if ((idx = string(pieceToChar).find(token)) != string::npos) {
       putPiece(Piece(idx), currentSquare);
       ++currentSquare;
     }

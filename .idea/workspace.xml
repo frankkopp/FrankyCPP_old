@@ -22,28 +22,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4febe152-5c70-47fd-9338-9cb20e6462e6" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/INIT.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/Frank.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/Frank.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Bitboards.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Bitboards.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Bitboards.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Bitboards.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/MoveGenerator.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/MoveGenerator.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/MoveGenerator.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/MoveGenerator.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Perft.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Perft.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/INIT.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/INIT.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Position.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Position.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Position.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Position.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/UCIOption.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/UCIOption.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Values.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Values.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Values.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Values.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/globals.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/datatypes.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/Tests/EvaluationTest.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/test/Tests/EvaluationTest.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/Tests/GlobalsTest.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/test/Tests/GlobalsTest.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/Tests/MoveGeneratorTest.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/test/Tests/MoveGeneratorTest.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/Tests/PerftTest.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/test/Tests/PerftTest.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/Tests/PositionTest.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/test/Tests/PositionTest.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/datatypes.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/datatypes.h" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <ignored path="$PROJECT_DIR$/cmake-build-release/" />
@@ -91,8 +73,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/INIT.cpp">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="247">
-                  <caret line="36" column="1" selection-start-line="36" selection-start-column="1" selection-end-line="36" selection-end-column="1" />
+                <state relative-caret-position="133">
+                  <caret line="30" selection-start-line="30" selection-end-line="30" />
                   <folding>
                     <element signature="e#0#1135#0" />
                     <element signature="e#1137#1159#0" expanded="true" />
@@ -101,11 +83,11 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/datatypes.h">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1611">
-                  <caret line="389" column="12" lean-forward="true" selection-start-line="389" selection-start-column="12" selection-end-line="389" selection-end-column="12" />
+                <state relative-caret-position="181">
+                  <caret line="510" column="46" lean-forward="true" selection-start-line="510" selection-start-column="46" selection-end-line="510" selection-end-column="46" />
                   <folding>
                     <element signature="e#0#1135#0" />
                     <element signature="e#1462#1479#0" expanded="true" />
@@ -118,11 +100,11 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/src/Values.h">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="228">
-                  <caret line="35" selection-start-line="35" selection-end-line="36" selection-end-column="52" />
+                <state relative-caret-position="133">
+                  <caret line="30" column="52" lean-forward="true" selection-start-line="30" selection-start-column="52" selection-end-line="30" selection-end-column="52" />
                   <folding>
                     <element signature="e#0#1135#0" />
                   </folding>
@@ -180,8 +162,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/Position.cpp">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="4341">
-                  <caret line="990" column="47" selection-start-line="990" selection-start-column="47" selection-end-line="990" selection-end-column="47" />
+                <state relative-caret-position="441">
+                  <caret line="1091" column="3" selection-start-line="1091" selection-start-column="3" selection-end-line="1091" selection-end-column="3" />
                   <folding>
                     <element signature="e#0#1135#0" />
                     <element signature="e#1137#1156#0" expanded="true" />
@@ -193,10 +175,10 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/MoveGenerator.h">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-252">
+                <state relative-caret-position="152">
+                  <caret line="31" selection-start-line="31" selection-end-line="31" />
                   <folding>
                     <element signature="e#0#1135#0" />
-                    <element signature="e#1206#1223#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -219,7 +201,7 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/Perft.h">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="501">
+                <state relative-caret-position="684">
                   <caret line="59" column="64" selection-start-line="59" selection-start-column="64" selection-end-line="59" selection-end-column="64" />
                   <folding>
                     <element signature="e#0#1135#0" />
@@ -307,10 +289,10 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/test/Tests/MoveGeneratorTest.cpp">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="441">
+                <state relative-caret-position="297">
                   <caret line="194" column="16" selection-start-line="194" selection-start-column="16" selection-end-line="194" selection-end-column="16" />
                   <folding>
                     <element signature="e#0#1135#0" />
@@ -320,14 +302,13 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/test/Tests/PerftTest.cpp">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="573">
-                  <caret line="65" column="18" selection-start-line="65" selection-start-column="18" selection-end-line="65" selection-end-column="18" />
+                <state relative-caret-position="8">
+                  <caret line="31" selection-start-line="31" selection-end-line="31" />
                   <folding>
                     <element signature="e#0#1135#0" />
-                    <element signature="e#1138#1162#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -477,15 +458,15 @@
         <option value="$PROJECT_DIR$/test/Tests/PerftTest.cpp" />
         <option value="$PROJECT_DIR$/test/Tests/PositionTest.cpp" />
         <option value="$PROJECT_DIR$/test/Tests/EvaluationTest.cpp" />
-        <option value="$PROJECT_DIR$/src/datatypes.h" />
         <option value="$PROJECT_DIR$/src/main.cpp" />
-        <option value="$PROJECT_DIR$/src/INIT.cpp" />
         <option value="$PROJECT_DIR$/src/MoveGenerator.cpp" />
         <option value="$PROJECT_DIR$/test/Tests/MoveGeneratorTest.cpp" />
         <option value="$PROJECT_DIR$/src/Values.h" />
-        <option value="$PROJECT_DIR$/src/Position.cpp" />
         <option value="$PROJECT_DIR$/src/Position.h" />
         <option value="$PROJECT_DIR$/src/Values.cpp" />
+        <option value="$PROJECT_DIR$/src/INIT.cpp" />
+        <option value="$PROJECT_DIR$/src/Position.cpp" />
+        <option value="$PROJECT_DIR$/src/datatypes.h" />
       </list>
     </option>
   </component>
@@ -917,13 +898,17 @@
       <option name="project" value="LOCAL" />
       <updated>1553335054720</updated>
     </task>
-    <option name="localTasksCounter" value="32" />
+    <task id="LOCAL-00032" summary="Added move sorting">
+      <created>1553433653165</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1553433653165</updated>
+    </task>
+    <option name="localTasksCounter" value="33" />
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="MoveGenTest_pseudoLegalMoves - 2019.03.24 at 13h 52m 58s.xml">
-      <configuration name="MoveGenTest.pseudoLegalMoves" configurationId="CMakeGoogleTestRunConfigurationType" />
-    </history-entry>
     <history-entry file="PositionTest_ZobristTest - 2019.03.24 at 13h 53m 41s.xml">
       <configuration name="PositionTest.ZobristTest" configurationId="CMakeGoogleTestRunConfigurationType" />
     </history-entry>
@@ -951,9 +936,12 @@
     <history-entry file="MoveGenTest_pseudoLegalMoves - 2019.03.24 at 14h 15m 46s.xml">
       <configuration name="MoveGenTest.pseudoLegalMoves" configurationId="CMakeGoogleTestRunConfigurationType" />
     </history-entry>
+    <history-entry file="MoveGenTest_pseudoLegalMoves - 2019.03.24 at 14h 50m 17s.xml">
+      <configuration name="MoveGenTest.pseudoLegalMoves" configurationId="CMakeGoogleTestRunConfigurationType" />
+    </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="481162000" />
+    <option name="totallyTimeSpent" value="483916000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-9" y="0" width="2860" height="1223" extended-state="0" />
@@ -963,7 +951,7 @@
       <window_info id="Structure" order="1" sideWeight="0.5133641" side_tool="true" visible="true" weight="0.08255897" />
       <window_info id="Favorites" order="2" side_tool="true" weight="0.06847361" />
       <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Find" order="1" sideWeight="0.49948928" weight="0.32872927" />
+      <window_info anchor="bottom" id="Find" order="1" sideWeight="0.49923116" weight="0.3281106" />
       <window_info anchor="bottom" id="Cvs" order="2" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="3" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="4" />
@@ -974,7 +962,7 @@
       <window_info anchor="bottom" id="CMake" order="9" weight="0.32872927" />
       <window_info active="true" anchor="bottom" x="242" y="323" width="2188" height="903" id="CPU Profiler" order="10" sideWeight="0.5761563" visible="true" weight="0.42857143" />
       <window_info anchor="bottom" id="Inspection Results" order="11" weight="0.3299539" />
-      <window_info anchor="bottom" x="360" y="71" width="815" height="713" id="Messages" order="12" sideWeight="0.4238437" side_tool="true" visible="true" weight="0.2746544" />
+      <window_info anchor="bottom" x="360" y="71" width="815" height="713" id="Messages" order="12" sideWeight="0.50076884" side_tool="true" visible="true" weight="0.3281106" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -1000,7 +988,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="Thread tests" />
     <MESSAGE value="Semaphore" />
     <MESSAGE value="Basic UCI::loop" />
     <MESSAGE value="Added UCIOption, Engine stubs" />
@@ -1025,7 +1012,8 @@
     <MESSAGE value="Implemented perft test and fixed move gen issues" />
     <MESSAGE value="Bug hunting" />
     <MESSAGE value="PERFT 8 working" />
-    <option name="LAST_COMMIT_MESSAGE" value="PERFT 8 working" />
+    <MESSAGE value="Added move sorting" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added move sorting" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1388,32 +1376,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/Perft.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="501">
-          <caret line="59" column="64" selection-start-line="59" selection-start-column="64" selection-end-line="59" selection-end-column="64" />
-          <folding>
-            <element signature="e#0#1135#0" />
-            <element signature="e#1190#1207#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://C:/cygwin64/lib/gcc/x86_64-pc-cygwin/7.4.0/include/c++/ext/new_allocator.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="424">
           <caret line="124" selection-start-line="124" selection-end-line="124" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/Tests/PerftTest.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="573">
-          <caret line="65" column="18" selection-start-line="65" selection-start-column="18" selection-end-line="65" selection-end-column="18" />
-          <folding>
-            <element signature="e#0#1135#0" />
-            <element signature="e#1138#1162#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1442,38 +1408,6 @@
           <folding>
             <element signature="e#0#1135#0" />
             <element signature="e#1137#1161#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="133">
-          <caret line="30" selection-start-line="30" selection-end-line="30" />
-          <folding>
-            <element signature="e#0#1135#0" />
-            <element signature="e#1137#1160#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/INIT.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="247">
-          <caret line="36" column="1" selection-start-line="36" selection-start-column="1" selection-end-line="36" selection-end-column="1" />
-          <folding>
-            <element signature="e#0#1135#0" />
-            <element signature="e#1137#1159#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/MoveGenerator.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-252">
-          <folding>
-            <element signature="e#0#1135#0" />
-            <element signature="e#1206#1223#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1512,17 +1446,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/Position.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="4341">
-          <caret line="990" column="47" selection-start-line="990" selection-start-column="47" selection-end-line="990" selection-end-column="47" />
-          <folding>
-            <element signature="e#0#1135#0" />
-            <element signature="e#1137#1156#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/Position.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="491">
@@ -1530,16 +1453,6 @@
           <folding>
             <element signature="e#0#1135#0" />
             <element signature="e#1196#1214#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/Values.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="228">
-          <caret line="35" selection-start-line="35" selection-end-line="36" selection-end-column="52" />
-          <folding>
-            <element signature="e#0#1135#0" />
           </folding>
         </state>
       </provider>
@@ -1556,7 +1469,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/test/Tests/MoveGeneratorTest.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="441">
+        <state relative-caret-position="297">
           <caret line="194" column="16" selection-start-line="194" selection-start-column="16" selection-end-line="194" selection-end-column="16" />
           <folding>
             <element signature="e#0#1135#0" />
@@ -1565,10 +1478,64 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/Perft.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="684">
+          <caret line="59" column="64" selection-start-line="59" selection-start-column="64" selection-end-line="59" selection-end-column="64" />
+          <folding>
+            <element signature="e#0#1135#0" />
+            <element signature="e#1190#1207#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/MoveGenerator.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="152">
+          <caret line="31" selection-start-line="31" selection-end-line="31" />
+          <folding>
+            <element signature="e#0#1135#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/INIT.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="133">
+          <caret line="30" selection-start-line="30" selection-end-line="30" />
+          <folding>
+            <element signature="e#0#1135#0" />
+            <element signature="e#1137#1159#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="133">
+          <caret line="30" selection-start-line="30" selection-end-line="30" />
+          <folding>
+            <element signature="e#0#1135#0" />
+            <element signature="e#1137#1160#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Position.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="441">
+          <caret line="1091" column="3" selection-start-line="1091" selection-start-column="3" selection-end-line="1091" selection-end-column="3" />
+          <folding>
+            <element signature="e#0#1135#0" />
+            <element signature="e#1137#1156#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/datatypes.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1611">
-          <caret line="389" column="12" lean-forward="true" selection-start-line="389" selection-start-column="12" selection-end-line="389" selection-end-column="12" />
+        <state relative-caret-position="181">
+          <caret line="510" column="46" lean-forward="true" selection-start-line="510" selection-start-column="46" selection-end-line="510" selection-end-column="46" />
           <folding>
             <element signature="e#0#1135#0" />
             <element signature="e#1462#1479#0" expanded="true" />
@@ -1576,6 +1543,26 @@
             <element signature="e#7768#7780#0" expanded="true" />
             <element signature="e#7163#7184#0" expanded="true" />
             <element signature="e#7104#8736#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Values.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="133">
+          <caret line="30" column="52" lean-forward="true" selection-start-line="30" selection-start-column="52" selection-end-line="30" selection-end-column="52" />
+          <folding>
+            <element signature="e#0#1135#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/Tests/PerftTest.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="8">
+          <caret line="31" selection-start-line="31" selection-end-line="31" />
+          <folding>
+            <element signature="e#0#1135#0" />
           </folding>
         </state>
       </provider>

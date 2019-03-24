@@ -28,6 +28,8 @@
 #include "Bitboards.h"
 #include "Position.h"
 
+
+
 namespace INIT {
   void init() {
     Values::init();

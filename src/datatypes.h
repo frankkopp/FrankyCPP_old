@@ -23,30 +23,6 @@
  *
  */
 
-/**
-Data Types defined here
-  Color
-  Square
-  Bitboard
-  Move
-  MoveType
-  Piece
-  PieceType
-
-Classes to be defined as C++ classes:
-  Engine
-  Position
-  MoveGen
-  TT
-  EvalCache
-  Search
-  Evaluation
-
-  UCIHandler
-  UCIOption
-  UCISearchMode
- */
-
 // #define NDEBUG
 
 #ifndef FRANKYCPP_GLOBALS_H
@@ -62,33 +38,37 @@ Classes to be defined as C++ classes:
 
 using namespace std;
 
+// convenience macros
 #define NEWLINE std::cout << std::endl;
 #define printBB(bb) cout << Bitboards::print((bb)) << endl;
 #define println(s) cout << (s) << endl;
 
 // Global constants
-#define START_POSITION_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+inline const char *START_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-namespace INIT {
-  extern void init();
-}
+/** Max number of moves in a game to be used in arrays etc. */
+inline const int MAX_MOVES = 256;
 
-static const int MAX_MOVES = 256;
-static const int MAX_PLY = 128;
+/** Max number of search depths */
+inline const int MAX_PLY = 128;
 
-/**
- * Game phase is 24 when all officers are present. 0 when no officer is present.
- */
-static const int GAME_PHASE_MAX = 24;
+/** Game phase is 24 when all officers are present. 0 when no officer is present */
+inline const int GAME_PHASE_MAX = 24;
 
 /** 64 bit Key for zobrist etc. */
 typedef uint64_t Key;
 
+///////////////////////////////////
+//// INITIALIZATION
+
+namespace INIT {
+  /** initializes Values, Bitboards, Position */
+  extern void init();
+}
 
 ///////////////////////////////////
 //// COLOR
 
-/** COLOR */
 enum Color {
   WHITE, BLACK, NOCOLOR,
   COLOR_LENGTH = 2
@@ -99,13 +79,11 @@ constexpr Color operator~(Color c) { return Color(c ^ BLACK); };
 ///////////////////////////////////
 //// BITBOARD
 
-/** Bitboard */
 typedef uint64_t Bitboard;
 
 ///////////////////////////////////
-//// SQUARES / FILES / RANKS
+//// SQUARES
 
-/** Squares */
 // @formatter:off
 enum Square : int {
   SQ_A1, SQ_B1, SQ_C1, SQ_D1, SQ_E1, SQ_F1, SQ_G1, SQ_H1,
@@ -121,24 +99,33 @@ enum Square : int {
 };
 // @formatter:on
 
+/** checks if this is a valid square (int >= 0 and <64 */
 constexpr bool isSquare(Square s) { return s >= SQ_A1 && s <= SQ_H8; }
 
-/** Files */
+///////////////////////////////////
+//// FILES
+
 enum File : int {
   FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H, FILE_NONE,
   FILE_LENGTH = 9
 };
 
+/** returns the file of this square */
 constexpr File fileOf(Square s) { return File(s & 7); }
 
-/** Ranks */
+///////////////////////////////////
+//// RANKS
+
 enum Rank : int {
   RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_NONE,
   RANK_LENGTH = 9
 };
 
+/** returns the rank of this square */
 constexpr Rank rankOf(Square s) { return Rank(s >> 3); }
+/** returns the square of the intersection of file and rank */
 constexpr Square getSquare(File f, Rank r) { return Square((r << 3) + f); }
+/** returns a string representing the square (e.g. a1 or h8) */
 inline std::string squareLabel(Square sq) {
   return std::string{char('a' + fileOf(sq)), char('1' + rankOf(sq))};
 }
@@ -146,7 +133,6 @@ inline std::string squareLabel(Square sq) {
 ///////////////////////////////////
 //// DIRECTION
 
-/** Direction */
 enum Direction : int {
   NORTH = 8,
   EAST = 1,
@@ -159,6 +145,7 @@ enum Direction : int {
   NORTH_WEST = NORTH + WEST
 };
 
+/** return direction of pawns for the color */
 const static Direction pawnDir[COLOR_LENGTH] = {NORTH, SOUTH};
 
 /** Orientation */
@@ -174,18 +161,18 @@ inline Square &operator+=(Square &s, Direction d) { return s = s + d; }
 inline Square &operator-=(Square &s, Direction d) { return s = s - d; }
 
 ///////////////////////////////////
-//// PIECES
+//// PIECE TYPES
 
-/** PieceTypes */
 enum PieceType : int {
   KING, PAWN, KNIGHT, BISHOP, ROOK, QUEEN, PIECETYPE_NONE, PT_LENGTH = 7
   // non sliding ---  sliding -----------
 };
 
-static const std::string pieceTypeToChar = "kpnbrq";
+/** returns a char representing the piece type - "kpnbrq" */
+inline const char *pieceTypeToChar = "kpnbrq";
 
 /** Game phase values */
-const static int gamePhaseValue[] = {
+inline const int gamePhaseValue[] = {
   0, // king
   0,  // pawn
   1,  // knight
@@ -202,10 +189,15 @@ enum Piece : int {
   PIECE_NONE = 16, // 0x10
   PIECE_LENGTH = 16
 };
-static const std::string pieceToChar = "KPNBRQ  kpnbrq   ";
 
+/** returns a char representing the piece. Upper case letters for white, lower case for black */
+inline const char *pieceToChar = "KPNBRQ  kpnbrq   ";
+
+/** creates hte piece given by color and piece type */
 constexpr Piece makePiece(Color c, PieceType pt) { return Piece((c << 3) + pt); }
+/** returns the color of the given piece */
 constexpr Color colorOf(Piece p) { return Color(p >> 3); }
+/** returns the piece type of the given piece */
 constexpr PieceType typeOf(Piece p) { return PieceType(p & 7); }
 
 ///////////////////////////////////
@@ -226,9 +218,8 @@ inline std::ostream &operator<<(std::ostream &os, const Value &v) {
   return os;
 }
 
-
 /** PieceType values */
-const static Value pieceTypeValue[] = {
+inline const Value pieceTypeValue[] = {
   Value(2000), // king
   Value(100),  // pawn
   Value(320),  // knight
@@ -238,7 +229,9 @@ const static Value pieceTypeValue[] = {
   Value(0)     // notype
 };
 
+/** returns the value of the given piece type */
 inline Value valueOf(const PieceType pt) { return pieceTypeValue[pt]; }
+/** returns the value of the given piece */
 inline Value valueOf(const Piece p) { return pieceTypeValue[typeOf(p)]; }
 
 ///////////////////////////////////
@@ -256,18 +249,18 @@ BITMAP 32-bit
                                 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 move sort value
 */ // @formatter:on
 
-static const int FROM_SHIFT = 6;
-static const int PROM_TYPE_SHIFT = 12;
-static const int TYPE_SHIFT = 14;
-static const int VALUE_SHIFT = 16;
+inline const int FROM_SHIFT = 6;
+inline const int PROM_TYPE_SHIFT = 12;
+inline const int TYPE_SHIFT = 14;
+inline const int VALUE_SHIFT = 16;
 
-static const int SQUARE_MASK = 0x3F;
-static const int FROMTO_MASK = 0xFFF;
-static const int PROM_TYPE_MASK = 3 << PROM_TYPE_SHIFT;
-static const int MOVE_TYPE_MASK = 3 << TYPE_SHIFT;
+inline const int SQUARE_MASK = 0x3F;
+inline const int FROMTO_MASK = 0xFFF;
+inline const int PROM_TYPE_MASK = 3 << PROM_TYPE_SHIFT;
+inline const int MOVE_TYPE_MASK = 3 << TYPE_SHIFT;
 
-static const int MOVE_MASK = 0xFFFF;  // first 16-bit
-static const int VALUE_MASK = 0xFFFF << VALUE_SHIFT; // second 16-bit
+inline const int MOVE_MASK = 0xFFFF;  // first 16-bit
+inline const int VALUE_MASK = 0xFFFF << VALUE_SHIFT; // second 16-bit
 
 /** A move is basically a 32-bit int */
 enum Move : int {
@@ -281,8 +274,10 @@ enum MoveType {
   ENPASSANT = 2 << TYPE_SHIFT,
   CASTLING = 3 << TYPE_SHIFT
 };
+
 /** Creates a move of type NORMAL */
 constexpr Move createMove(Square from, Square to) { return Move((from << FROM_SHIFT) + to); }
+/** Creates a move of type NORMAL with the given value */
 constexpr Move createMove(Square from, Square to, Value v) {
   return Move((Value(v - VALUE_NONE) << VALUE_SHIFT) + (from << FROM_SHIFT) + to);
 }
@@ -295,7 +290,7 @@ constexpr Move createMove(Square from, Square to, PieceType pt = KNIGHT) {
   return Move(T + ((pt - KNIGHT) << PROM_TYPE_SHIFT) + (from << FROM_SHIFT) + to);
 }
 
-/** Creates a move of type T with optional promotion type */
+/** Creates a move of type T with optional promotion type and the given value */
 template<MoveType T>
 constexpr Move createMove(Square from, Square to, Value v, PieceType pt = KNIGHT) {
   assert(T == PROMOTION || pt == KNIGHT);
@@ -364,17 +359,28 @@ Move createMove(const char *move) {
 
   return createMove<T>(from, to);
 }
-
+/** returns the square the move originates from */
 constexpr Square getFromSquare(Move m) { return Square((m >> FROM_SHIFT) & SQUARE_MASK); }
+/** returns the square the move goes to */
 constexpr Square getToSquare(Move m) { return Square(m & SQUARE_MASK); }
-constexpr bool isMove(Move m) { return getFromSquare(m) != getToSquare(m); }
-constexpr int fromTo(Move m) { return m & FROMTO_MASK; }
+/** checks if this a valid move */
+constexpr bool isMove(Move m) {
+  Square fromSquare = getFromSquare(m);
+  Square toSquare = getToSquare(m);
+  return fromSquare >= SQ_A1
+         && fromSquare <= SQ_H8
+         && toSquare >= SQ_A1
+         && toSquare <= SQ_H8
+         && fromSquare != toSquare;
+}
+/** returns the type of the move */
 constexpr MoveType typeOf(Move m) { return MoveType(m & MOVE_TYPE_MASK); }
-// promotion type only makes sense if it actually is a promotion otherwise it must be ignored
+/** returns the promotion type of the move. This only makes sense if the move
+ * actually is of type promotion. Otherwise it must be ignored */
 constexpr PieceType promotionType(Move m) {
   return PieceType(((m & PROM_TYPE_MASK) >> PROM_TYPE_SHIFT) + KNIGHT);
 }
-
+/** sets the value for the move. E.g. used by the move generator for move sorting */
 constexpr void setValue(Move &m, Value v) {
   assert(v <= VALUE_INF && v >= VALUE_NONE);
   // when saving a value to a move we shift value to a positive integer (0-VALUE_NONE) and
@@ -382,6 +388,7 @@ constexpr void setValue(Move &m, Value v) {
   // for retrieving we then shift the value back to a range from VALUE_NONE to VALUE_INF
   m = Move((m & MOVE_MASK) | (Value(v - VALUE_NONE) << VALUE_SHIFT));
 }
+/** returns the value of the move */
 constexpr Value valueOf(Move m) { return Value(((m & VALUE_MASK) >> VALUE_SHIFT) + VALUE_NONE); }
 
 inline std::ostream &operator<<(std::ostream &os, const Move &move) {
@@ -389,6 +396,7 @@ inline std::ostream &operator<<(std::ostream &os, const Move &move) {
   return os;
 }
 
+/** returns a verbose representation of the move as string */
 inline std::string printMove(const Move &move) {
   std::string tp;
   std::string promPt;
@@ -411,6 +419,7 @@ inline std::string printMove(const Move &move) {
          + " (" + tp + ") (" + to_string(valueOf(move)) + ")";
 }
 
+/** A collection of moves using a std::deque */
 typedef std::deque<Move> MoveList;
 
 ///////////////////////////////////
@@ -442,29 +451,23 @@ enum CastlingRights : int {
 constexpr CastlingRights operator|(Color c, CastlingSide s) {
   return CastlingRights(WHITE_OO << ((s == QUEEN_SIDE) + 2 * c));
 }
-
 constexpr CastlingRights operator-(CastlingRights cr1, CastlingRights cr2) {
   assert(cr1 & cr2);
   return CastlingRights(cr1 ^ cr2);
 }
-
 constexpr CastlingRights &operator-=(CastlingRights &cr1, CastlingRights cr2) {
   assert(cr1 & cr2);
   return cr1 = CastlingRights(cr1 ^ cr2);
 }
-
 constexpr CastlingRights operator+(CastlingRights cr1, CastlingRights cr2) {
   return CastlingRights(cr1 | cr2);
 }
-
 constexpr CastlingRights &operator+=(CastlingRights &cr1, CastlingRights cr2) {
   return cr1 = CastlingRights(cr1 | cr2);
 }
-
 constexpr bool operator==(CastlingRights cr1, CastlingRights cr2) {
   return (cr1 & cr2) || (cr1 == 0 && cr2 == 0);
 }
-
 constexpr bool operator!=(CastlingRights cr1, CastlingRights cr2) {
   return !(cr1 & cr2);
 }
