@@ -40,14 +40,13 @@ using testing::Eq;
  // TODO create real tests
  */
 TEST(MoveGenTest, pawnMoves) {
-  Position::init();
-  Bitboards::init();
+  INIT::init();
   NEWLINE;
 
   string fen;
   MoveGenerator mg;
 
-  fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3";
+  fen = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3";
 
   Position position(fen);
   MoveList moves;
@@ -57,28 +56,26 @@ TEST(MoveGenTest, pawnMoves) {
   GenMode genMode = GENCAP;
   mg.generatePawnMoves(genMode, &position, &moves);
   cout << "Moves CAP: " << moves.size() << endl;
+  sort(moves.begin(), moves.end());
   for (Move m : moves) {
-    cout << printMove(m) << endl;
+    cout << printMove(m) << " (" << int(m) << ")" << endl;
   }
 
   NEWLINE;
+
   moves.clear();
   genMode = GENNONCAP;
   mg.generatePawnMoves(genMode, &position, &moves);
   cout << "Moves NONCAP: " << moves.size() << endl;
+  sort(moves.begin(), moves.end());
   for (Move m : moves) {
-    cout << printMove(m) << endl;
+    cout << printMove(m) << " (" << int(m) << ")" << endl;
   }
 
 }
 
-/**
- * Test move generation
- // TODO create real tests
- */
 TEST(MoveGenTest, kingMoves) {
-  Position::init();
-  Bitboards::init();
+  INIT::init();
   NEWLINE;
 
   string fen;
@@ -86,24 +83,28 @@ TEST(MoveGenTest, kingMoves) {
   GenMode genMode;
   MoveList moves;
 
-  fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3";
+  fen = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3";
   Position position(fen);
   cout << position.printBoard() << endl;
 
+  moves.clear();
   genMode = GENCAP;
   mg.generateKingMoves(genMode, &position, &moves);
   cout << "Moves CAP: " << moves.size() << endl;
+  sort(moves.begin(), moves.end());
   for (Move m : moves) {
-    cout << printMove(m) << endl;
+    cout << printMove(m) << " (" << int(m) << ")" << endl;
   }
 
   NEWLINE;
 
+  moves.clear();
   genMode = GENNONCAP;
   mg.generateKingMoves(genMode, &position, &moves);
   cout << "Moves NONCAP: " << moves.size() << endl;
+  sort(moves.begin(), moves.end());
   for (Move m : moves) {
-    cout << printMove(m) << endl;
+    cout << printMove(m) << " (" << int(m) << ")" << endl;
   }
 }
 
@@ -112,8 +113,7 @@ TEST(MoveGenTest, kingMoves) {
  // TODO create real tests
  */
 TEST(MoveGenTest, normalMoves) {
-  Position::init();
-  Bitboards::init();
+  INIT::init();
   NEWLINE;
 
   string fen;
@@ -125,30 +125,29 @@ TEST(MoveGenTest, normalMoves) {
   Position position(fen);
   cout << position.printBoard() << endl;
 
+  moves.clear();
   genMode = GENCAP;
   mg.generateMoves(genMode, &position, &moves);
   cout << "Moves CAP: " << moves.size() << endl;
+  sort(moves.begin(), moves.end());
   for (Move m : moves) {
-    cout << printMove(m) << endl;
+    cout << printMove(m) << " (" << int(m) << ")" << endl;
   }
 
   NEWLINE;
 
+  moves.clear();
   genMode = GENNONCAP;
   mg.generateMoves(genMode, &position, &moves);
   cout << "Moves NONCAP: " << moves.size() << endl;
+  sort(moves.begin(), moves.end());
   for (Move m : moves) {
-    cout << printMove(m) << endl;
+    cout << printMove(m) << " (" << int(m) << ")" << endl;
   }
 }
 
-/**
- * Test move generation
- // TODO create real tests
- */
 TEST(MoveGenTest, castlingMoves) {
-  Position::init();
-  Bitboards::init();
+  INIT::init();
   NEWLINE;
 
   string fen;
@@ -160,6 +159,7 @@ TEST(MoveGenTest, castlingMoves) {
   Position position(fen);
   cout << position.printBoard() << endl;
 
+  moves.clear();
   genMode = GENCAP;
   mg.generateCastling(genMode, &position, &moves);
   cout << "Moves CAP: " << moves.size() << endl;
@@ -168,7 +168,7 @@ TEST(MoveGenTest, castlingMoves) {
   }
 
   NEWLINE;
-
+  moves.clear();
   genMode = GENNONCAP;
   mg.generateCastling(genMode, &position, &moves);
   cout << "Moves NONCAP: " << moves.size() << endl;
@@ -177,13 +177,8 @@ TEST(MoveGenTest, castlingMoves) {
   }
 }
 
-/**
-* Test move generation
-// TODO create real tests
-*/
 TEST(MoveGenTest, pseudoLegalMoves) {
-  Position::init();
-  Bitboards::init();
+  INIT::init();
   NEWLINE;
 
   string fen;
@@ -192,36 +187,35 @@ TEST(MoveGenTest, pseudoLegalMoves) {
   MoveList moves;
   Position position;
 
-  // 86 pseudo legal moves (incl. castling over attacked square)
-  fen = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3";
+  // Start pos
+  fen = START_POSITION_FEN;
   position = Position(fen);
-  cout << position.printBoard() << endl;
+  cout << position.str() << endl;
 
-  genMode = GENCAP;
-  moves = mg.generatePseudoLegalMoves(genMode, &position);
-  cout << "Moves CAP: " << moves.size() << endl;
-  for (Move m : moves) {
-    cout << printMove(m) << endl;
-  }
-  ASSERT_EQ(18, moves.size());
-  NEWLINE;
-
-  genMode = GENNONCAP;
-  moves = mg.generatePseudoLegalMoves(genMode, &position);
-  cout << "Moves NONCAP: " << moves.size() << endl;
-  for (Move m : moves) {
-    cout << printMove(m) << endl;
-  }
-  ASSERT_EQ(68, moves.size());
-  NEWLINE;
-
+  moves.clear();
   genMode = GENALL;
   moves = mg.generatePseudoLegalMoves(genMode, &position);
   cout << "Moves ALL: " << moves.size() << endl;
   for (Move m : moves) {
-    cout << printMove(m) << endl;
+    cout << printMove(m) << " (" << int(m) << ")" << endl;
+  }
+  ASSERT_EQ(20, moves.size());
+  NEWLINE;
+
+  // 86 pseudo legal moves (incl. castling over attacked square)
+  fen = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3";
+  position = Position(fen);
+  cout << position.str() << endl;
+
+  moves.clear();
+  genMode = GENALL;
+  moves = mg.generatePseudoLegalMoves(genMode, &position);
+  cout << "Moves ALL: " << moves.size() << endl;
+  for (Move m : moves) {
+    cout << printMove(m) << " (" << int(m) << ")" << endl;
   }
   ASSERT_EQ(86, moves.size());
+  NEWLINE;
 
   // bug fixed positions
   fen = "rnbqkbnr/1ppppppp/8/p7/7P/8/PPPPPPP1/RNBQKBNR w KQkq a6";
@@ -233,7 +227,7 @@ TEST(MoveGenTest, pseudoLegalMoves) {
   moves = mg.generatePseudoLegalMoves(genMode, &position);
   cout << "Moves CAP: " << moves.size() << endl;
   for (Move m : moves) {
-    cout << printMove(m) << endl;
+    cout << printMove(m) << " (" << int(m) << ")" << endl;
   }
   ASSERT_EQ(21, moves.size());
   NEWLINE;
@@ -247,7 +241,7 @@ TEST(MoveGenTest, pseudoLegalMoves) {
   moves = mg.generatePseudoLegalMoves(genMode, &position);
   cout << "Moves CAP: " << moves.size() << endl;
   for (Move m : moves) {
-    cout << printMove(m) << endl;
+    cout << printMove(m) << " (" << int(m) << ")" << endl;
   }
   ASSERT_EQ(26, moves.size());
   NEWLINE;
@@ -311,7 +305,7 @@ TEST(MoveGenTest, onDemandGen) {
   while (true) {
     move = mg.getNextPseudoLegalMove(genMode, &position);
     if (move == NOMOVE) break;
-    cout << printMove(move) << endl;
+    cout << printMove(move) << " (" << int(move) << ")" << endl;
     counter++;
   }
   ASSERT_EQ(86, counter);

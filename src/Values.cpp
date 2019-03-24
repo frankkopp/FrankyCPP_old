@@ -26,63 +26,104 @@
 #include "Values.h"
 
 namespace Values {
-  int midGamePosValue[PIECE_LENGTH][SQ_LENGTH];
-  int endGamePosValue[PIECE_LENGTH][SQ_LENGTH];
+  Value posMidValue[PIECE_LENGTH][SQ_LENGTH];
+  Value posEndValue[PIECE_LENGTH][SQ_LENGTH];
+  Value posValue[PIECE_LENGTH][SQ_LENGTH][25];
+
+  inline int
+  calcPosValueWhite(const Square &sq, int gp, const int posMidTable[], const int posEndTable[]) {
+    return static_cast<const int>(
+      float(gp) / GAME_PHASE_MAX * posMidTable[63 - sq] +
+      (1 - float(gp) / GAME_PHASE_MAX) * posEndTable[63 - sq]);
+  }
+
+  inline int
+  calcPosValueBlack(const Square &sq, int gp, const int posMidTable[], const int posEndTable[]) {
+    return static_cast<const int>(
+      float(gp) / GAME_PHASE_MAX * posMidTable[sq] +
+      (1 - float(gp) / GAME_PHASE_MAX) * posEndTable[sq]);
+  }
 
   void init() {
     for (Piece pc = WHITE_KING; pc < PIECE_NONE; ++pc) {
       for (Square sq = SQ_A1; sq <= SQ_H8; ++sq) {
-        switch (pc) {
-          case WHITE_KING:
-            midGamePosValue[pc][sq] = kingMidGame[63 - sq];
-            endGamePosValue[pc][sq] = kingEndGame[63 - sq];
-            break;
-          case WHITE_PAWN:
-            midGamePosValue[pc][sq] = pawnsMidGame[63 - sq];
-            endGamePosValue[pc][sq] = pawnsEndGame[63 - sq];
-            break;
-          case WHITE_KNIGHT:
-            midGamePosValue[pc][sq] = knightMidGame[63 - sq];
-            endGamePosValue[pc][sq] = knightEndGame[63 - sq];
-            break;
-          case WHITE_BISHOP:
-            midGamePosValue[pc][sq] = bishopMidGame[63 - sq];
-            endGamePosValue[pc][sq] = bishopEndGame[63 - sq];
-            break;
-          case WHITE_ROOK:
-            midGamePosValue[pc][sq] = rookMidGame[63 - sq];
-            endGamePosValue[pc][sq] = rookEndGame[63 - sq];
-            break;
-          case WHITE_QUEEN:
-            midGamePosValue[pc][sq] = queenMidGame[63 - sq];
-            endGamePosValue[pc][sq] = queenEndGame[63 - sq];
-            break;
-          case BLACK_KING:
-            midGamePosValue[pc][sq] = kingMidGame[sq];
-            endGamePosValue[pc][sq] = kingEndGame[sq];
-            break;
-          case BLACK_PAWN:
-            midGamePosValue[pc][sq] = pawnsMidGame[sq];
-            endGamePosValue[pc][sq] = pawnsEndGame[sq];
-            break;
-          case BLACK_KNIGHT:
-            midGamePosValue[pc][sq] = knightMidGame[sq];
-            endGamePosValue[pc][sq] = knightEndGame[sq];
-            break;
-          case BLACK_BISHOP:
-            midGamePosValue[pc][sq] = bishopMidGame[sq];
-            endGamePosValue[pc][sq] = bishopEndGame[sq];
-            break;
-          case BLACK_ROOK:
-            midGamePosValue[pc][sq] = rookMidGame[sq];
-            endGamePosValue[pc][sq] = rookEndGame[sq];
-            break;
-          case BLACK_QUEEN:
-            midGamePosValue[pc][sq] = queenMidGame[sq];
-            endGamePosValue[pc][sq] = queenEndGame[sq];
-            break;
-          case PIECE_NONE:
-            break;
+        for (int gp = GAME_PHASE_MAX; gp >= 0; gp--) {
+          switch (pc) {
+            case WHITE_KING:
+              posMidValue[pc][sq] = static_cast<const Value>(kingMidGame[63 - sq]);
+              posEndValue[pc][sq] = static_cast<const Value>(kingEndGame[63 - sq]);
+              posValue[pc][sq][gp] =
+                static_cast<Value>(calcPosValueWhite(sq, gp, kingMidGame, kingEndGame));
+              break;
+            case WHITE_PAWN:
+              posMidValue[pc][sq] = static_cast<const Value>(pawnsMidGame[63 - sq]);
+              posEndValue[pc][sq] = static_cast<const Value>(pawnsEndGame[63 - sq]);
+              posValue[pc][sq][gp] =
+                static_cast<Value>(calcPosValueWhite(sq, gp, pawnsMidGame, pawnsEndGame));
+              break;
+            case WHITE_KNIGHT:
+              posMidValue[pc][sq] = static_cast<const Value>(knightMidGame[63 - sq]);
+              posEndValue[pc][sq] = static_cast<const Value>(knightEndGame[63 - sq]);
+              posValue[pc][sq][gp] =
+                static_cast<Value>(calcPosValueWhite(sq, gp, knightMidGame, knightEndGame));
+              break;
+            case WHITE_BISHOP:
+              posMidValue[pc][sq] = static_cast<const Value>(bishopMidGame[63 - sq]);
+              posEndValue[pc][sq] = static_cast<const Value>(bishopEndGame[63 - sq]);
+              posValue[pc][sq][gp] =
+                static_cast<Value>(calcPosValueWhite(sq, gp, bishopMidGame, bishopEndGame));
+              break;
+            case WHITE_ROOK:
+              posMidValue[pc][sq] = static_cast<const Value>(rookMidGame[63 - sq]);
+              posEndValue[pc][sq] = static_cast<const Value>(rookEndGame[63 - sq]);
+              posValue[pc][sq][gp] =
+                static_cast<Value>(calcPosValueWhite(sq, gp, rookMidGame, rookEndGame));
+              break;
+            case WHITE_QUEEN:
+              posMidValue[pc][sq] = static_cast<const Value>(queenMidGame[63 - sq]);
+              posEndValue[pc][sq] = static_cast<const Value>(queenEndGame[63 - sq]);
+              posValue[pc][sq][gp] =
+                static_cast<Value>(calcPosValueWhite(sq, gp, queenMidGame, queenEndGame));
+              break;
+            case BLACK_KING:
+              posMidValue[pc][sq] = static_cast<const Value>(kingMidGame[sq]);
+              posEndValue[pc][sq] = static_cast<const Value>(kingEndGame[sq]);
+              posValue[pc][sq][gp] =
+                static_cast<Value>(calcPosValueBlack(sq, gp, kingMidGame, kingEndGame));
+              break;
+            case BLACK_PAWN:
+              posMidValue[pc][sq] = static_cast<const Value>(pawnsMidGame[sq]);
+              posEndValue[pc][sq] = static_cast<const Value>(pawnsEndGame[sq]);
+              posValue[pc][sq][gp] =
+                static_cast<Value>(calcPosValueBlack(sq, gp, pawnsMidGame, pawnsEndGame));
+              break;
+            case BLACK_KNIGHT:
+              posMidValue[pc][sq] = static_cast<const Value>(knightMidGame[sq]);
+              posEndValue[pc][sq] = static_cast<const Value>(knightEndGame[sq]);
+              posValue[pc][sq][gp] =
+                static_cast<Value>(calcPosValueBlack(sq, gp, knightMidGame, knightEndGame));
+              break;
+            case BLACK_BISHOP:
+              posMidValue[pc][sq] = static_cast<const Value>(bishopMidGame[sq]);
+              posEndValue[pc][sq] = static_cast<const Value>(bishopEndGame[sq]);
+              posValue[pc][sq][gp] =
+                static_cast<Value>(calcPosValueBlack(sq, gp, bishopMidGame, bishopEndGame));
+              break;
+            case BLACK_ROOK:
+              posMidValue[pc][sq] = static_cast<const Value>(rookMidGame[sq]);
+              posEndValue[pc][sq] = static_cast<const Value>(rookEndGame[sq]);
+              posValue[pc][sq][gp] =
+                static_cast<Value>(calcPosValueBlack(sq, gp, rookMidGame, rookEndGame));
+              break;
+            case BLACK_QUEEN:
+              posMidValue[pc][sq] = static_cast<const Value>(queenMidGame[sq]);
+              posEndValue[pc][sq] = static_cast<const Value>(queenEndGame[sq]);
+              posValue[pc][sq][gp] =
+                static_cast<Value>(calcPosValueBlack(sq, gp, queenMidGame, queenEndGame));
+              break;
+            case PIECE_NONE:
+              break;
+          }
         }
       }
     }

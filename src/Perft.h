@@ -28,7 +28,7 @@
 
 #include <string>
 
-#include "globals.h"
+#include "datatypes.h"
 #include "Bitboards.h"
 #include "Position.h"
 #include "MoveGenerator.h"

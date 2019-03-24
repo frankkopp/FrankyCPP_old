@@ -28,7 +28,7 @@
 #include <ostream>
 #include <string>
 
-#include "../../src/globals.h"
+#include "../../src/datatypes.h"
 #include "../../src/Position.h"
 #include "../../src/Bitboards.h"
 
@@ -91,7 +91,7 @@ TEST(PositionTest, Setup) {
   Bitboards::init();
   Position::init();
   Values::init();
-  // NEWLINE  ;
+  NEWLINE;
   string fen;
 
   Position position;
@@ -99,9 +99,10 @@ TEST(PositionTest, Setup) {
   ASSERT_EQ(BLACK, ~position.getNextPlayer());
   ASSERT_EQ(position.getMaterial(WHITE), position.getMaterial(BLACK));
   ASSERT_EQ(24, position.getGamePhase());
-  ASSERT_EQ(position.getMgPosValue(WHITE), position.getMgPosValue(BLACK));
-  ASSERT_EQ(-225, position.getMgPosValue(WHITE));
-  ASSERT_EQ(-225, position.getMgPosValue(BLACK));
+  ASSERT_FLOAT_EQ(1.0, position.getGamePhaseFactor());
+  ASSERT_EQ(position.getMidPosValue(WHITE), position.getMidPosValue(BLACK));
+  ASSERT_EQ(-225, position.getMidPosValue(WHITE));
+  ASSERT_EQ(-225, position.getMidPosValue(BLACK));
   ASSERT_EQ(WHITE_KING, position.getPiece(SQ_E1));
   ASSERT_EQ(BLACK_KING, position.getPiece(SQ_E8));
   ASSERT_EQ(WHITE_KNIGHT, position.getPiece(SQ_B1));
@@ -115,8 +116,9 @@ TEST(PositionTest, Setup) {
   ASSERT_EQ(3400, position.getMaterial(WHITE));
   ASSERT_EQ(6940, position.getMaterial(BLACK));
   ASSERT_EQ(22, position.getGamePhase());
-  ASSERT_EQ(90, position.getMgPosValue(WHITE));
-  ASSERT_EQ(7, position.getMgPosValue(BLACK));
+  ASSERT_FLOAT_EQ((22.0/24), position.getGamePhaseFactor());
+  ASSERT_EQ(90, position.getMidPosValue(WHITE));
+  ASSERT_EQ(7, position.getMidPosValue(BLACK));
   ASSERT_EQ(WHITE_KING, position.getPiece(SQ_G1));
   ASSERT_EQ(BLACK_KING, position.getPiece(SQ_E8));
   ASSERT_EQ(WHITE_ROOK, position.getPiece(SQ_G3));
@@ -208,10 +210,8 @@ TEST(PositionTest, PosValue) {
   ASSERT_EQ(2, position.getGamePhase());
   ASSERT_EQ(2320, position.getMaterial(WHITE));
   ASSERT_EQ(2320, position.getMaterial(BLACK));
-  ASSERT_EQ(0, position.getMgPosValue(WHITE));
-  ASSERT_EQ(0, position.getMgPosValue(BLACK));
-  ASSERT_EQ(-10, position.getEgPosValue(WHITE));
-  ASSERT_EQ(-10, position.getEgPosValue(BLACK));
+  ASSERT_EQ(0, position.getMidPosValue(WHITE));
+  ASSERT_EQ(0, position.getMidPosValue(BLACK));
 }
 
 

@@ -70,8 +70,6 @@ Position::Position(std::string fen) : Position(fen.c_str()) {};
 
 /** Creates a board with setup from the given fen */
 Position::Position(const char *fen) {
-  // move generator is used for checking mate positions
-  pMoveGenerator = new MoveGenerator;
   setupBoard(fen);
 }
 
@@ -103,8 +101,7 @@ Position::Position(const Position &op) {
     this->occupiedBBL45[c] = op.occupiedBBL45[c];
 
     this->material[c] = op.material[c];
-    this->psqMGValue[c] = op.psqMGValue[c];
-    this->psqEGValue[c] = op.psqEGValue[c];
+    this->psqMidValue[c] = op.psqMidValue[c];
   }
   // necessary history b/o move repetition
   this->historyCounter = op.historyCounter;
@@ -120,16 +117,9 @@ Position::Position(const Position &op) {
   std::copy(op.hasCheckFlagHistory, op.hasCheckFlagHistory + MAX_HISTORY,
             this->hasCheckFlagHistory);
   std::copy(op.hasMateFlagHistory, op.hasMateFlagHistory + MAX_HISTORY, this->hasMateFlagHistory);
-
-  // move generator is used for checking mate positions
-  pMoveGenerator =  new MoveGenerator;
-
 }
 
 Position::~Position() {
-   if (pMoveGenerator)
-     delete pMoveGenerator;
-   pMoveGenerator = nullptr;
 }
 
 ////////////////////////////////////////////////
@@ -546,21 +536,8 @@ bool Position::hasCheck() {
 bool Position::hasCheckMate() {
   if (!hasCheck()) return false;
   if (hasMateFlag != FLAG_TBD) return (hasMateFlag == FLAG_TRUE);
-  const bool hasLegalMove = pMoveGenerator->hasLegalMove(this);
-  // DEBUG
-  //  const MoveList legalMoves = pMoveGenerator->generateLegalMoves(GENALL, this);
-  //  if (legalMoves.empty() == hasLegalMove) {
-  //    NEWLINE;
-  //    println("BUG");
-  //    println(printMove(legalMoves[0]));
-  //    println(this->str());
-  //    println("Legal Moves Size: " + to_string(legalMoves.size()));
-  //    println("hasLegalMoves: ");
-  //    println(boolStr(hasLegalMove));
-  //  }
-  //  assert(!legalMoves.empty() == hasLegalMove);
-  // DEBUG
-  if (!hasLegalMove) {
+  const bool hasLegalMove = mateCheckMG.hasLegalMove(this);
+   if (!hasLegalMove) {
     hasMateFlag = FLAG_TRUE;
     return true;
   }
@@ -861,8 +838,7 @@ std::string Position::str() const {
          << endl;
   output << "Gamephase: " << gamePhase << endl;
   output << "Material: white=" << material[WHITE] << " black=" << material[BLACK] << endl;
-  output << "PosValue MG: white=" << psqMGValue[WHITE] << " black=" << psqMGValue[BLACK] << endl;
-  output << "PosValue EG: white=" << psqEGValue[WHITE] << " black=" << psqEGValue[BLACK] << endl;
+  output << "PosValue: white=" << psqMidValue[WHITE] << " black=" << psqMidValue[BLACK] << endl;
   return output.str();
 }
 
@@ -976,12 +952,12 @@ void Position::putPiece(Piece piece, Square square) {
   // zobrist
   zobristKey ^= Zobrist::pieces[piece][square];
   // material
-  material[color] += pieceValue[pieceType];
-  // position value
-  psqMGValue[color] += Values::midGamePosValue[piece][square];
-  psqEGValue[color] += Values::endGamePosValue[piece][square];
+  material[color] += pieceTypeValue[pieceType];
   // game phase
   gamePhase += gamePhaseValue[pieceType];
+  // position value
+  psqMidValue[color] += Values::posMidValue[piece][square];
+  psqEndValue[color] += Values::posEndValue[piece][square];
 }
 
 Piece Position::removePiece(Square square) {
@@ -1007,12 +983,12 @@ Piece Position::removePiece(Square square) {
   board[square] = PIECE_NONE;
   zobristKey ^= Zobrist::pieces[old][square];
   // material
-  material[color] -= pieceValue[pieceType];
-  // position value
-  psqMGValue[color] -= Values::midGamePosValue[old][square];
-  psqEGValue[color] -= Values::endGamePosValue[old][square];
+  material[color] -= pieceTypeValue[pieceType];
   // game phase
   gamePhase -= gamePhaseValue[pieceType];
+  // position value
+  psqMidValue[color] -= Values::posMidValue[old][square];
+  psqEndValue[color] -= Values::posEndValue[old][square];
   return old;
 }
 
@@ -1087,8 +1063,7 @@ void Position::initializeBoard() {
     std::fill_n(&piecesBB[color][0], sizeof(piecesBB[color]), Bitboards::EMPTY_BB);
     kingSquare[color] = SQ_NONE;
     material[color] = 0;
-    psqMGValue[color] = 0;
-    psqEGValue[color] = 0;
+    psqMidValue[color] = 0;
   }
 
   hasCheckFlag = FLAG_TBD;

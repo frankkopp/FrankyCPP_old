@@ -26,7 +26,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "../../src/globals.h"
+#include "../../src/datatypes.h"
 #include "../../src/Bitboards.h"
 
 using namespace std;
@@ -118,6 +118,40 @@ TEST(MoveTest, moves) {
   ASSERT_EQ("a7a8q (PROMOTION)", printMove(move));
 }
 
+TEST(MoveTest, movesValue) {
+  NEWLINE
+  Move move = createMove<NORMAL>(SQ_A1, SQ_H1);
+
+  ASSERT_EQ(VALUE_NONE, valueOf(move));
+  
+  Value v = VALUE_MAX;
+  setValue(move, v);
+  ASSERT_EQ(v, valueOf(move));
+
+  v = VALUE_MIN;
+  setValue(move, v);
+  ASSERT_EQ(v, valueOf(move));
+
+  v = Value(100);
+  setValue(move, v);
+  ASSERT_EQ(v, valueOf(move));
+
+  v = VALUE_CHECKMATE_THRESHOLD;
+  setValue(move, v);
+  ASSERT_EQ(v, valueOf(move));
+
+  move = createMove<NORMAL>(SQ_A1, SQ_H1, VALUE_DRAW);
+  ASSERT_EQ(VALUE_DRAW, valueOf(move));
+  move = createMove<NORMAL>(SQ_A1, SQ_H1, Value(-100));
+  ASSERT_EQ(Value(-100), valueOf(move));
+  move = createMove<NORMAL>(SQ_A1, SQ_H1, Value(100));
+  ASSERT_EQ(Value(100), valueOf(move));
+
+  move = createMove<PROMOTION>(SQ_A1, SQ_H1, Value(-pieceTypeValue[QUEEN]), QUEEN);
+  ASSERT_EQ(-pieceTypeValue[QUEEN], valueOf(move));
+
+}
+
 TEST(CastlingTest, castling) {
   ASSERT_EQ(0b1000, BLACK | QUEEN_SIDE);
   ASSERT_EQ(BLACK_OOO, BLACK | QUEEN_SIDE);
@@ -168,9 +202,11 @@ TEST(CastlingTest, castling) {
   ASSERT_FALSE(cr == BLACK_OO);
 }
 
-TEST(CastlingTest, Iteration) {
-  cout << endl;
-  for (CastlingRights cr = NO_CASTLING; cr <= ANY_CASTLING; ++cr) {
-    cout << "Castling: " << cr << " " << Bitboards::printFlat(cr) << endl;
-  }
-}
+//TEST(CastlingTest, Iteration) {
+//  cout << endl;
+//  for (CastlingRights cr = NO_CASTLING; cr <= ANY_CASTLING; ++cr) {
+//    cout << "Castling: " << cr << " " << Bitboards::printFlat(cr) << endl;
+//  }
+//}
+
+

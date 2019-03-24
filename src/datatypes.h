@@ -67,13 +67,23 @@ using namespace std;
 #define println(s) cout << (s) << endl;
 
 // Global constants
+#define START_POSITION_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+
+namespace INIT {
+  extern void init();
+}
+
 static const int MAX_MOVES = 256;
 static const int MAX_PLY = 128;
 
-#define START_POSITION_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+/**
+ * Game phase is 24 when all officers are present. 0 when no officer is present.
+ */
+static const int GAME_PHASE_MAX = 24;
 
 /** 64 bit Key for zobrist etc. */
 typedef uint64_t Key;
+
 
 ///////////////////////////////////
 //// COLOR
@@ -174,17 +184,6 @@ enum PieceType : int {
 
 static const std::string pieceTypeToChar = "kpnbrq";
 
-/** PieceType values */
-const static int pieceValue[] = {
-  2000, // king
-  100,  // pawn
-  320,  // knight
-  330,  // bishop
-  500,  // rook
-  900,  // queen
-  0     // notype
-};
-
 /** Game phase values */
 const static int gamePhaseValue[] = {
   0, // king
@@ -210,28 +209,67 @@ constexpr Color colorOf(Piece p) { return Color(p >> 3); }
 constexpr PieceType typeOf(Piece p) { return PieceType(p & 7); }
 
 ///////////////////////////////////
+//// VALUE
+
+enum Value : int {
+  VALUE_DRAW = 0,
+  VALUE_INF = 15000,
+  VALUE_NONE = -VALUE_INF - 1,
+  VALUE_MIN = -10000,
+  VALUE_MAX = 10000,
+  VALUE_CHECKMATE = VALUE_MAX,
+  VALUE_CHECKMATE_THRESHOLD = VALUE_CHECKMATE - MAX_PLY,
+};
+
+inline std::ostream &operator<<(std::ostream &os, const Value &v) {
+  os << to_string(v);
+  return os;
+}
+
+
+/** PieceType values */
+const static Value pieceTypeValue[] = {
+  Value(2000), // king
+  Value(100),  // pawn
+  Value(320),  // knight
+  Value(330),  // bishop
+  Value(500),  // rook
+  Value(900),  // queen
+  Value(0)     // notype
+};
+
+inline Value valueOf(const PieceType pt) { return pieceTypeValue[pt]; }
+inline Value valueOf(const Piece p) { return pieceTypeValue[typeOf(p)]; }
+
+///////////////////////////////////
 //// MOVE
 
 /* @formatter:off
-BITMAP 16-bit
-0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1
-0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
---------------------------------
-1 1 1 1 1 1                     to
-            1 1 1 1 1 1         from
-                        1 1     promotion piece type (pt-2 > 0-3)
-                            1 1 move type
+BITMAP 32-bit
+0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
+0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+---------------------------------------------------------------
+1 1 1 1 1 1                                                     to
+            1 1 1 1 1 1                                         from
+                        1 1                                     promotion piece type (pt-2 > 0-3)
+                            1 1                                 move type
+                                1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 move sort value
 */ // @formatter:on
 
 static const int FROM_SHIFT = 6;
 static const int PROM_TYPE_SHIFT = 12;
 static const int TYPE_SHIFT = 14;
-static const int MOVE_MASK = 0x3F;
-static const int MOVES_MASK = 0xFFF;
-static const int MOVE_TYPE_MASK = 3;
-static const int PROM_TYPE_MASK = 3;
+static const int VALUE_SHIFT = 16;
 
-/** A move is basically a 16-bit int */
+static const int SQUARE_MASK = 0x3F;
+static const int FROMTO_MASK = 0xFFF;
+static const int PROM_TYPE_MASK = 3 << PROM_TYPE_SHIFT;
+static const int MOVE_TYPE_MASK = 3 << TYPE_SHIFT;
+
+static const int MOVE_MASK = 0xFFFF;  // first 16-bit
+static const int VALUE_MASK = 0xFFFF << VALUE_SHIFT; // second 16-bit
+
+/** A move is basically a 32-bit int */
 enum Move : int {
   NOMOVE
 };
@@ -245,6 +283,9 @@ enum MoveType {
 };
 /** Creates a move of type NORMAL */
 constexpr Move createMove(Square from, Square to) { return Move((from << FROM_SHIFT) + to); }
+constexpr Move createMove(Square from, Square to, Value v) {
+  return Move((Value(v - VALUE_NONE) << VALUE_SHIFT) + (from << FROM_SHIFT) + to);
+}
 
 /** Creates a move of type T with optional promotion type */
 template<MoveType T>
@@ -252,6 +293,16 @@ constexpr Move createMove(Square from, Square to, PieceType pt = KNIGHT) {
   assert(T == PROMOTION || pt == KNIGHT);
   assert(pt == KNIGHT || pt == QUEEN || pt == ROOK || pt == BISHOP);
   return Move(T + ((pt - KNIGHT) << PROM_TYPE_SHIFT) + (from << FROM_SHIFT) + to);
+}
+
+/** Creates a move of type T with optional promotion type */
+template<MoveType T>
+constexpr Move createMove(Square from, Square to, Value v, PieceType pt = KNIGHT) {
+  assert(T == PROMOTION || pt == KNIGHT);
+  assert(pt == KNIGHT || pt == QUEEN || pt == ROOK || pt == BISHOP);
+  assert(v <= VALUE_INF && v >= VALUE_NONE);
+  return Move((Value(v - VALUE_NONE) << VALUE_SHIFT) + T + ((pt - KNIGHT) << PROM_TYPE_SHIFT) +
+              (from << FROM_SHIFT) + to);
 }
 
 /** Creates a move of type T from an UCI string */
@@ -270,9 +321,12 @@ Move createMove(const char *move) {
       if ((token >= '1' && token <= '8')) {
         Rank r = Rank(token - '1');
         from = getSquare(f, r);
-      } else return NOMOVE; // malformed - ignore the rest
-    } else return NOMOVE; // malformed - ignore the rest
-  } else return NOMOVE; // malformed - ignore the rest
+      }
+      else return NOMOVE; // malformed - ignore the rest
+    }
+    else return NOMOVE; // malformed - ignore the rest
+  }
+  else return NOMOVE; // malformed - ignore the rest
 
   // to
   if (iss >> token) {
@@ -282,9 +336,12 @@ Move createMove(const char *move) {
       if ((token >= '1' && token <= '8')) {
         Rank r = Rank(token - '1');
         to = getSquare(f, r);
-      } else return NOMOVE; // malformed - ignore the rest
-    } else return NOMOVE; // malformed - ignore the rest
-  } else return NOMOVE; // malformed - ignore the rest
+      }
+      else return NOMOVE; // malformed - ignore the rest
+    }
+    else return NOMOVE; // malformed - ignore the rest
+  }
+  else return NOMOVE; // malformed - ignore the rest
 
   // promotion
   if (T == PROMOTION) {
@@ -301,21 +358,31 @@ Move createMove(const char *move) {
         default:
           break;
       }
-    } else return NOMOVE; // malformed - ignore the rest
+    }
+    else return NOMOVE; // malformed - ignore the rest
   }
 
   return createMove<T>(from, to);
 }
 
-constexpr Square getFromSquare(Move m) { return Square((m >> FROM_SHIFT) & MOVE_MASK); }
-constexpr Square getToSquare(Move m) { return Square(m & MOVE_MASK); }
+constexpr Square getFromSquare(Move m) { return Square((m >> FROM_SHIFT) & SQUARE_MASK); }
+constexpr Square getToSquare(Move m) { return Square(m & SQUARE_MASK); }
 constexpr bool isMove(Move m) { return getFromSquare(m) != getToSquare(m); }
-constexpr int fromTo(Move m) { return m & MOVES_MASK; }
-constexpr MoveType typeOf(Move m) { return MoveType(m & (MOVE_TYPE_MASK << TYPE_SHIFT)); }
+constexpr int fromTo(Move m) { return m & FROMTO_MASK; }
+constexpr MoveType typeOf(Move m) { return MoveType(m & MOVE_TYPE_MASK); }
 // promotion type only makes sense if it actually is a promotion otherwise it must be ignored
 constexpr PieceType promotionType(Move m) {
-  return PieceType(((m >> PROM_TYPE_SHIFT) & PROM_TYPE_MASK) + KNIGHT);
+  return PieceType(((m & PROM_TYPE_MASK) >> PROM_TYPE_SHIFT) + KNIGHT);
 }
+
+constexpr void setValue(Move &m, Value v) {
+  assert(v <= VALUE_INF && v >= VALUE_NONE);
+  // when saving a value to a move we shift value to a positive integer (0-VALUE_NONE) and
+  // encode it into the move
+  // for retrieving we then shift the value back to a range from VALUE_NONE to VALUE_INF
+  m = Move((m & MOVE_MASK) | (Value(v - VALUE_NONE) << VALUE_SHIFT));
+}
+constexpr Value valueOf(Move m) { return Value(((m & VALUE_MASK) >> VALUE_SHIFT) + VALUE_NONE); }
 
 inline std::ostream &operator<<(std::ostream &os, const Move &move) {
   os << squareLabel(getFromSquare(move)) << squareLabel(getToSquare(move));
@@ -341,7 +408,7 @@ inline std::string printMove(const Move &move) {
       break;
   }
   return squareLabel(getFromSquare(move)) + squareLabel(getToSquare(move)) + promPt
-         + " (" + tp + ")";;
+         + " (" + tp + ") (" + to_string(valueOf(move)) + ")";
 }
 
 typedef std::deque<Move> MoveList;
@@ -426,7 +493,7 @@ constexpr int operator/(T d1, T d2) { return int(d1) / int(d2); }  \
 inline T& operator*=(T& d, int i) { return d = T(int(d) * i); }    \
 inline T& operator/=(T& d, int i) { return d = T(int(d) / i); }
 
-//ENABLE_FULL_OPERATORS_ON(Value)
+ENABLE_FULL_OPERATORS_ON(Value)
 //ENABLE_FULL_OPERATORS_ON(Depth)
 ENABLE_FULL_OPERATORS_ON(Direction)
 

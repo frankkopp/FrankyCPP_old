@@ -23,7 +23,7 @@
  *
  */
 
-#include "globals.h"
+#include "datatypes.h"
 #include "UCIOption.h"
 
 using namespace std;

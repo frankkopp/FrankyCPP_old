@@ -29,7 +29,7 @@
 #include <vector>
 
 #include "../test/lib/googletest-master/googletest/include/gtest/gtest_prod.h"
-#include "globals.h"
+#include "datatypes.h"
 #include "Bitboards.h"
 
 // circle reference between Position and MoveGenerator - this make it possible

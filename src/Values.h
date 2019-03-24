@@ -26,15 +26,16 @@
 #ifndef FRANKYCPP_EVALUATION_H
 #define FRANKYCPP_EVALUATION_H
 
-#include "globals.h"
+#include "datatypes.h"
 
 namespace Values {
   
   void init();
 
   // initialize in init();
-  extern int midGamePosValue[PIECE_LENGTH][SQ_LENGTH];
-  extern int endGamePosValue[PIECE_LENGTH][SQ_LENGTH];
+  extern Value posMidValue[PIECE_LENGTH][SQ_LENGTH];
+  extern Value posEndValue[PIECE_LENGTH][SQ_LENGTH];
+  extern Value posValue[PIECE_LENGTH][SQ_LENGTH][25];
 
   /// Tables are upright for easier reading - will be transposed in init()
 

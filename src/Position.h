@@ -29,10 +29,11 @@
 #include <cstdint>
 
 #include "../test/lib/googletest-master/googletest/include/gtest/gtest_prod.h"
-#include "globals.h"
+#include "datatypes.h"
 #include "Random.h"
 #include "Values.h"
 #include "Bitboards.h"
+#include "MoveGenerator.h"
 
 // circle reference between Position and MoveGenerator - this make it possible
 class MoveGenerator;
@@ -58,7 +59,9 @@ class Position {
   ///// FIELDS
 
   // Flag for boolean states with undetermined state
-  enum Flag { FLAG_TBD, FLAG_FALSE, FLAG_TRUE };
+  enum Flag {
+    FLAG_TBD, FLAG_FALSE, FLAG_TRUE
+  };
 
   // Random number generator
   static const Random rng;
@@ -133,8 +136,8 @@ class Position {
   int material[COLOR_LENGTH];
 
   // Positional value will always be up to date
-  int psqMGValue[COLOR_LENGTH];
-  int psqEGValue[COLOR_LENGTH];
+  int psqMidValue[COLOR_LENGTH];
+  int psqEndValue[COLOR_LENGTH];
 
   // Game phase value
   int gamePhase;
@@ -148,14 +151,9 @@ class Position {
 
   // To be able to check for mate (no more moves) we need to include
   // a move generator instance
-  MoveGenerator *pMoveGenerator;
+  MoveGenerator mateCheckMG;
 
 public:
-
-  /**
-   * Game phase is 24 when all officers are present. 0 when no officer is present.
-   */
-  static const u_int8_t GAME_PHASE_MAX = 24;
 
   /**
    * Initialize static Position class - should be called once from main();
@@ -339,7 +337,7 @@ public:
   *
   * @return int representing a move
   */
-  Move getLastMove() { return historyCounter > 0 ? moveHistory[historyCounter-1] : NOMOVE; };
+  Move getLastMove() { return historyCounter > 0 ? moveHistory[historyCounter - 1] : NOMOVE; };
 
 
   ////////////////////////////////////////////////
@@ -363,9 +361,14 @@ public:
   Bitboard getOccupiedBBL45(Color c) const { return occupiedBBL45[c]; }
 
   int getMaterial(Color c) const { return material[c]; }
-  int getMgPosValue(Color c) const { return psqMGValue[c]; }
-  int getEgPosValue(Color c) const { return psqEGValue[c]; }
+  int getMidPosValue(Color c) const { return psqMidValue[c]; }
+  int getEndPosValue(Color c) const { return psqEndValue[c]; }
+  int getPosValue(Color c) const {
+    return static_cast<int>(
+      getGamePhaseFactor() * psqMidValue[c] + (1 - getGamePhaseFactor()) * psqEndValue[c]);
+  }
   int getGamePhase() const { return gamePhase; }
+  float getGamePhaseFactor() const { return float(gamePhase) / GAME_PHASE_MAX; }
   CastlingRights getCastlingRights() const { return castlingRights; }
   int getHalfMoveClock() const { return halfMoveClock; }
   int getNextHalfMoveNumber() const { return nextHalfMoveNumber; }

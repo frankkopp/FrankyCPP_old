@@ -23,17 +23,15 @@
  *
  */
 
-#include "UCIHandler.h"
-#include "Bitboards.h"
+#include "datatypes.h"
 #include "Values.h"
+#include "Bitboards.h"
 #include "Position.h"
 
-int main() {
-
-  INIT::init();
-
-  auto uci = new UCI::Handler();
-  uci->loop();
-  
-  return 0;
+namespace INIT {
+  void init() {
+    Values::init();
+    Bitboards::init();
+    Position::init();
+  }
 }

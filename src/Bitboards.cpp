@@ -26,7 +26,7 @@
 #include <string>
 #include <iostream>
 
-#include "globals.h"
+#include "datatypes.h"
 #include "Bitboards.h"
 
 using namespace std;
