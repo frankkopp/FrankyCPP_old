@@ -31,8 +31,8 @@
 namespace Bitboards {
   void init();
 
-  std::string print(Bitboard b);
-  std::string printFlat(Bitboard b);
+  const std::string print(Bitboard b);
+  const std::string printFlat(Bitboard b);
 
   Bitboard shift(Direction d, Bitboard b);
   Bitboard rotateR90(Bitboard b);
@@ -213,7 +213,6 @@ namespace Bitboards {
     return (ONE_BB << lengthDiagDown[sq]) - 1;
   }
 
-  // TODO test could be wrong
   constexpr int shiftsDiagUp[SQ_LENGTH] = {
     28, 21, 15, 10,  6,  3,  1,  0,
     36, 28, 21, 15, 10,  6,  3,  1,
@@ -225,7 +224,6 @@ namespace Bitboards {
     63, 61, 58, 54, 49, 43, 36, 28
   };
 
-  // TODO test could be wrong
   constexpr int shiftsDiagDown[SQ_LENGTH] = {
      0,  1,  3,  6, 10, 15, 21, 28,
      1,  3,  6, 10, 15, 21, 28, 36,

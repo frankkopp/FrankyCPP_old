@@ -45,6 +45,8 @@ namespace Values {
   }
 
   void init() {
+    // pre-compute piece on square values for mid and endgame and also for
+    // all game phases
     for (Piece pc = WHITE_KING; pc < PIECE_NONE; ++pc) {
       for (Square sq = SQ_A1; sq <= SQ_H8; ++sq) {
         for (int gp = GAME_PHASE_MAX; gp >= 0; gp--) {

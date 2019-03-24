@@ -47,6 +47,7 @@ class Perft {
 public:
   Perft();
   explicit Perft(const string &fen);
+
   void perft(int maxDepth);
   void perft(int maxDepth, bool onDemand);
 

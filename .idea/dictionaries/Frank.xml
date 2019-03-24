@@ -3,8 +3,10 @@
     <words>
       <w>bitboard</w>
       <w>bitboards</w>
+      <w>enpassant</w>
       <w>gamephase</w>
       <w>passant</w>
+      <w>perft</w>
       <w>zobrist</w>
     </words>
   </dictionary>

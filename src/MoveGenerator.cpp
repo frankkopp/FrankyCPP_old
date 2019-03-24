@@ -363,7 +363,7 @@ MoveGenerator::generatePawnMoves(GenMode genMode, const Position *pPosition, Mov
     while (promMoves) {
       const Square toSquare = popLSB(&promMoves);
       const Square fromSquare = toSquare + pawnDir[~nextPlayer];
-      // value is doone manually for sorting of queen prom first, then knight and others
+      // value is done manually for sorting of queen prom first, then knight and others
       pMoves->push_back(
         createMove<PROMOTION>(fromSquare, toSquare, static_cast<Value>(9000), QUEEN));
       pMoves->push_back(
@@ -413,7 +413,7 @@ MoveGenerator::generateKingMoves(GenMode genMode, const Position *pPosition, Mov
     Bitboard captures = pseudoMoves & opponentBB;
     while (captures) {
       const Square toSquare = popLSB(&captures);
-      // value is the positional value of the piece at this gamephase plus the
+      // value is the positional value of the piece at this gamephase minus the
       // value of the captured piece
       const Value value = Values::posValue[piece][toSquare][gamePhase]
                         - valueOf(pPosition->getPiece(toSquare));
