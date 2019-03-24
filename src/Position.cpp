@@ -443,7 +443,7 @@ bool Position::isAttacked(Square attackedSquare, Color attackerColor) {
       sq = attackedSquare + EAST;
       return distance(attackedSquare, sq) == 1 && getPiece(sq) == WHITE_PAWN;
     }
-      // black is attacker (assume not noColor)
+    // black is attacker (assume not noColor)
     else if (attackerColor == BLACK
              // white is target
              && getPiece(enPassantSquare + NORTH) == WHITE_PAWN
@@ -951,10 +951,10 @@ void Position::putPiece(Piece piece, Square square) {
 
   // zobrist
   zobristKey ^= Zobrist::pieces[piece][square];
-  // material
-  material[color] += pieceTypeValue[pieceType];
   // game phase
   gamePhase = min(GAME_PHASE_MAX, gamePhase + gamePhaseValue[pieceType]);
+  // material
+  material[color] += pieceTypeValue[pieceType];
   // position value
   psqMidValue[color] += Values::posMidValue[piece][square];
   psqEndValue[color] += Values::posEndValue[piece][square];
@@ -982,10 +982,10 @@ Piece Position::removePiece(Square square) {
   assert (getPiece(square) != PIECE_NONE);
   board[square] = PIECE_NONE;
   zobristKey ^= Zobrist::pieces[old][square];
-  // material
-  material[color] -= pieceTypeValue[pieceType];
   // game phase
   gamePhase = max(0, gamePhase - gamePhaseValue[pieceType]);
+  // material
+  material[color] -= pieceTypeValue[pieceType];
   // position value
   psqMidValue[color] -= Values::posMidValue[old][square];
   psqEndValue[color] -= Values::posEndValue[old][square];
