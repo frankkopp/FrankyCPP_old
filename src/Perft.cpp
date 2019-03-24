@@ -45,7 +45,7 @@ void Perft::perft(int maxDepth, bool onDemand) {
   resetCounter();
 
   Position position(fen);
-  MoveGenerator mg;
+  MoveGenerator mg[MAX_PLY];
   ostringstream os;
   cout.imbue(digitLocale);
   os.imbue(digitLocale);
@@ -55,8 +55,8 @@ void Perft::perft(int maxDepth, bool onDemand) {
 
   long result;
   auto start = std::chrono::high_resolution_clock::now();
-  if (onDemand) result = miniMaxOD(maxDepth, &position, &mg);
-  else result = miniMax(maxDepth, &position, &mg);
+  if (onDemand) result = miniMaxOD(maxDepth, &position, mg);
+  else result = miniMax(maxDepth, &position, mg);
   auto finish = std::chrono::high_resolution_clock::now();
   long duration = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start).count();
 
@@ -91,7 +91,7 @@ long Perft::miniMax(int depth, Position *pPosition, MoveGenerator *pMg) {
   //println(pPosition->str())
   
   // moves to search recursively
-  MoveList moves = pMg->generatePseudoLegalMoves(GENALL, pPosition);
+  MoveList moves = pMg[depth].generatePseudoLegalMoves(GENALL, pPosition);
   for (Move move : moves) {
     if (depth > 1) {
       pPosition->doMove(move);
@@ -128,8 +128,9 @@ long Perft::miniMaxOD(int depth, Position *pPosition, MoveGenerator *pMg) {
   // moves to search recursively
   Move move;
   while (true) {
-    move = pMg->getNextPseudoLegalMove(GENALL, pPosition);
+    move = pMg[depth].getNextPseudoLegalMove(GENALL, pPosition);
     if (move == NOMOVE) break;
+    // println(move);
 
     if (depth > 1) {
       pPosition->doMove(move);
