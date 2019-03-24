@@ -134,7 +134,7 @@ long Perft::miniMaxOD(int depth, Position *pPosition, MoveGenerator *pMg) {
     if (depth > 1) {
       pPosition->doMove(move);
       // only go into recursion if move was legal
-      if (pPosition->isLegalPosition()) totalNodes += miniMax(depth - 1, pPosition, pMg);
+      if (pPosition->isLegalPosition()) totalNodes += miniMaxOD(depth - 1, pPosition, pMg);
       pPosition->undoMove();
     }
     else {
