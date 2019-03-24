@@ -129,6 +129,13 @@ TEST(PositionTest, Setup) {
   ASSERT_EQ(fen, position.printFen());
   ASSERT_EQ(SQ_E6, position.getEnPassantSquare());
   ASSERT_EQ(WHITE, position.getNextPlayer());
+
+  fen = string("R6R/3Q4/1Q4Q1/4Q3/2Q4Q/Q4Q2/pp1Q4/kBNN1KB1 w - - 0 1");
+  position = Position(fen.c_str());
+  ASSERT_EQ(fen, position.printFen());
+  ASSERT_EQ(WHITE, position.getNextPlayer());
+  ASSERT_EQ(24, position.getGamePhase());
+
 }
 
 TEST(PositionTest, Output) {

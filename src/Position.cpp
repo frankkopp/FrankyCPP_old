@@ -954,7 +954,7 @@ void Position::putPiece(Piece piece, Square square) {
   // material
   material[color] += pieceTypeValue[pieceType];
   // game phase
-  gamePhase += gamePhaseValue[pieceType];
+  gamePhase = min(GAME_PHASE_MAX, gamePhase + gamePhaseValue[pieceType]);
   // position value
   psqMidValue[color] += Values::posMidValue[piece][square];
   psqEndValue[color] += Values::posEndValue[piece][square];
@@ -985,7 +985,7 @@ Piece Position::removePiece(Square square) {
   // material
   material[color] -= pieceTypeValue[pieceType];
   // game phase
-  gamePhase -= gamePhaseValue[pieceType];
+  gamePhase = max(0, gamePhase - gamePhaseValue[pieceType]);
   // position value
   psqMidValue[color] -= Values::posMidValue[old][square];
   psqEndValue[color] -= Values::posEndValue[old][square];
