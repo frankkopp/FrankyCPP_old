@@ -55,8 +55,10 @@ void Perft::perft(int maxDepth, bool onDemand) {
 
   long result;
   auto start = std::chrono::high_resolution_clock::now();
+
   if (onDemand) result = miniMaxOD(maxDepth, &position, mg);
   else result = miniMax(maxDepth, &position, mg);
+
   auto finish = std::chrono::high_resolution_clock::now();
   long duration = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start).count();
 

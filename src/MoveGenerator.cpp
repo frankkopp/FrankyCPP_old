@@ -32,7 +32,6 @@ using namespace std;
 using namespace Bitboards;
 
 // TODO
-//  - sort moves
 //  - PV move
 //  - Killer Moves
 
@@ -87,31 +86,38 @@ MoveGenerator::getNextPseudoLegalMove(GenMode genMode, Position *pPosition) {
         // fall through
       case OD1:
         generatePawnMoves(GENCAP, pPosition, &onDemandMoves);
+        sort(onDemandMoves.begin(), onDemandMoves.end());
         currentODStage = OD2;
         break;
       case OD2:
         generateMoves(GENCAP, pPosition, &onDemandMoves);
+        sort(onDemandMoves.begin(), onDemandMoves.end());
         currentODStage = OD3;
         break;
       case OD3:
         generateKingMoves(GENCAP, pPosition, &onDemandMoves);
+        sort(onDemandMoves.begin(), onDemandMoves.end());
         if (genMode & GENNONCAP) currentODStage = OD4;
         else currentODStage = OD_END;
         break;
       case OD4:
         generatePawnMoves(GENNONCAP, pPosition, &onDemandMoves);
+        sort(onDemandMoves.begin(), onDemandMoves.end());
         currentODStage = OD5;
         break;
       case OD5:
         generateCastling(GENNONCAP, pPosition, &onDemandMoves);
+        sort(onDemandMoves.begin(), onDemandMoves.end());
         currentODStage = OD6;
         break;
       case OD6:
         generateMoves(GENNONCAP, pPosition, &onDemandMoves);
+        sort(onDemandMoves.begin(), onDemandMoves.end());
         currentODStage = OD7;
         break;
       case OD7:
         generateKingMoves(GENNONCAP, pPosition, &onDemandMoves);
+        sort(onDemandMoves.begin(), onDemandMoves.end());
         currentODStage = OD_END;
         break;
       case OD_END:

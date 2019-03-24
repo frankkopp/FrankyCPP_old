@@ -285,8 +285,7 @@ TEST(MoveGenTest, legalMoves) {
 }
 
 TEST(MoveGenTest, onDemandGen) {
-  Position::init();
-  Bitboards::init();
+  INIT::init();
   NEWLINE;
 
   string fen;
@@ -297,7 +296,7 @@ TEST(MoveGenTest, onDemandGen) {
   // 86 pseudo legal moves (incl. castling over attacked square)
   fen = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3";
   Position position(fen);
-  cout << position.printBoard() << endl;
+  cout << position.str() << endl;
 
   genMode = GENALL;
   Move move;
@@ -308,7 +307,25 @@ TEST(MoveGenTest, onDemandGen) {
     cout << printMove(move) << " (" << int(move) << ")" << endl;
     counter++;
   }
+  println("Moves: " + to_string(counter))
   ASSERT_EQ(86, counter);
+  NEWLINE;
+
+  // 218 moves
+  fen = "R6R/3Q4/1Q4Q1/4Q3/2Q4Q/Q4Q2/pp1Q4/kBNN1KB1 w - - 0 1";
+  position = Position(fen);
+  cout << position.str() << endl;
+
+  genMode = GENALL;
+  counter = 0;
+  while (true) {
+    move = mg.getNextPseudoLegalMove(genMode, &position);
+    if (move == NOMOVE) break;
+    cout << printMove(move) << " (" << int(move) << ")" << endl;
+    counter++;
+  }
+  println("Moves: " + to_string(counter))
+  ASSERT_EQ(218, counter);
   NEWLINE;
 
 }
