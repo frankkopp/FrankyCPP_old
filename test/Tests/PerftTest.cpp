@@ -35,6 +35,50 @@ using namespace std;
 
 using testing::Eq;
 
+TEST(PerftTest, stdPerftOD) {
+  Position::init();
+  Bitboards::init();
+  NEWLINE;
+
+  MoveGenerator mg;
+  Position position;
+  Perft p;
+
+  cout << "Standard PERFT Test" << endl;
+  cout << "==============================" << endl;
+
+  // @formatter:off
+  const u_int64_t results[10][6] = {
+    //N                 Nodes            Captures              EP             Checks              Mates
+    { 0,                 1ULL,               0ULL,           0ULL,              0ULL,              0ULL },
+    { 1,                20ULL,               0ULL,           0ULL,              0ULL,              0ULL },
+    { 2,               400ULL,               0ULL,           0ULL,              0ULL,              0ULL },
+    { 3,             8'902ULL,              34ULL,           0ULL,             12ULL,              0ULL },
+    { 4,           197'281ULL,           1'576ULL,           0ULL,            469ULL,              8ULL },
+    { 5,         4'865'609ULL,          82'719ULL,         258ULL,         27'351ULL,            347ULL },
+    { 6,       119'060'324ULL,       2'812'008ULL,       5'248ULL,        809'099ULL,         10'828ULL },
+    { 7,     3'195'901'860ULL,     108'329'926ULL,     319'617ULL,     33'103'848ULL,        435'767ULL },
+    { 8,    84'998'978'956ULL,   3'523'740'106ULL,   7'187'977ULL,    968'981'593ULL,      9'852'036ULL },
+    { 9, 2'439'530'234'167ULL, 125'208'536'153ULL, 319'496'827ULL, 36'095'901'903ULL,    400'191'963ULL }
+  };
+  // @formatter:on
+
+  int maxDepth = 7;
+
+  for (int i = 1; i <= maxDepth; i++) {
+    p.perft(i, true);
+    NEWLINE
+    ASSERT_EQ(results[i][1], p.getNodes());
+    ASSERT_EQ(results[i][2], p.getCaptureCounter());
+    ASSERT_EQ(results[i][3], p.getEnpassantCounter());
+    ASSERT_EQ(results[i][4], p.getCheckCounter());
+    ASSERT_EQ(results[i][5], p.getCheckMateCounter());
+  }
+  cout << "==============================" << endl;
+
+}
+
+
 TEST(PerftTest, stdPerft) {
   Position::init();
   Bitboards::init();

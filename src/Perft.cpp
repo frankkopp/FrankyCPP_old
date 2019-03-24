@@ -38,6 +38,10 @@ Perft::Perft(const string &f) {
 }
 
 void Perft::perft(int maxDepth) {
+  perft(maxDepth, false);
+}
+
+void Perft::perft(int maxDepth, bool onDemand) {
   resetCounter();
 
   Position position(fen);
@@ -51,7 +55,8 @@ void Perft::perft(int maxDepth) {
 
   long result;
   auto start = std::chrono::high_resolution_clock::now();
-  result = miniMax(maxDepth, &position, &mg);
+  if (onDemand) result = miniMaxOD(maxDepth, &position, &mg);
+  else result = miniMax(maxDepth, &position, &mg);
   auto finish = std::chrono::high_resolution_clock::now();
   long duration = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start).count();
 
@@ -112,6 +117,44 @@ long Perft::miniMax(int depth, Position *pPosition, MoveGenerator *pMg) {
     }
   }
   return totalNodes;
+}
+
+long Perft::miniMaxOD(int depth, Position *pPosition, MoveGenerator *pMg) {
+  // Iterate over moves
+  long totalNodes = 0L;
+
+  //println(pPosition->str())
+
+  // moves to search recursively
+  Move move;
+  while (true) {
+    move = pMg->getNextPseudoLegalMove(GENALL, pPosition);
+    if (move == NOMOVE) break;
+
+    if (depth > 1) {
+      pPosition->doMove(move);
+      // only go into recursion if move was legal
+      if (pPosition->isLegalPosition()) totalNodes += miniMax(depth - 1, pPosition, pMg);
+      pPosition->undoMove();
+    }
+    else {
+      const bool cap = pPosition->getPiece(getToSquare(move)) != PIECE_NONE;
+      const bool ep = typeOf(move) == ENPASSANT;
+      pPosition->doMove(move);
+      if (pPosition->isLegalPosition()) {
+        totalNodes++;
+        if (ep) {
+          enpassantCounter++;
+          captureCounter++;
+        }
+        if (cap) captureCounter++;
+        if (pPosition->hasCheck()) checkCounter++;
+        if (pPosition->hasCheckMate()) checkMateCounter++;
+      }
+      pPosition->undoMove();
+    }
+  }
+    return totalNodes;
 }
 
 

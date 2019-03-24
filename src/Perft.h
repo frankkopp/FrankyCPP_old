@@ -48,6 +48,7 @@ public:
   Perft();
   explicit Perft(const string &fen);
   void perft(int maxDepth);
+  void perft(int maxDepth, bool onDemand);
 
   long getNodes() const { return nodes; }
   long getCaptureCounter() const { return captureCounter; }
@@ -58,6 +59,7 @@ public:
 private:
   void resetCounter();
   long miniMax(int depth, Position *pPosition, MoveGenerator *pMg);
+  long miniMaxOD(int depth, Position *pPosition, MoveGenerator *pMg);
 };
 
 
