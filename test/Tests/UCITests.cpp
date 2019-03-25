@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 Frank Kopp
+ * Copyright (c) 2018 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,42 +23,3 @@
  *
  */
 
-#ifndef FRANKYCPP_ENGINE_H
-#define FRANKYCPP_ENGINE_H
-
-#include <map>
-#include <ostream>
-
-#include "UCIOption.h"
-#include "Position.h"
-
-#define MAP(name, option) optionMap.insert(make_pair(name, option));
-
-using namespace std;
-
-class Engine {
-
-  // a map for the engine's available options
-  map<string, UCI::Option> optionMap;
-
-  Position position;
-
-public:
-
-  Engine();
-  void newGame();
-
-  void clearHash();
-  string str() const;
-
-  friend ostream &operator<<(ostream &os, const Engine &engine);
-  void setOption(string name, string value);
-  void setPosition(string fen);
-
-  void doMove(string moveStr);
-private:
-
-  void initOptions();
-};
-
-#endif //FRANKYCPP_ENGINE_H

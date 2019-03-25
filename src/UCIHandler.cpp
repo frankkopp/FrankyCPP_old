@@ -26,6 +26,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "datatypes.h"
 #include "UCIHandler.h"
 #include "Search.h"
 
@@ -40,7 +41,7 @@ namespace UCI {
     string cmd, token;
     do {
 
-      cout << "WAIT FOR COMMAND:" << endl;
+      cerr << "WAIT FOR COMMAND:" << endl;
 
       // Block here waiting for input or EOF
       if (!getline(cin, cmd)) cmd = "quit";
@@ -54,19 +55,111 @@ namespace UCI {
       // read word from stream delimiter is whitespace
       // to get line use inStream.str()
       inStream >> skipws >> token;
-      cout << "RECEIVED: " << token << endl;
+      cerr << "RECEIVED: " << token << endl;
 
       if (token == "quit") break;
+      else if (token == "uci") uciCommand();
+      else if (token == "isready") isReadyCommand();
+      else if (token == "setoption") setOptionCommand(inStream);
+      else if (token == "ucinewgame") uciNewGameCommand();
+      else if (token == "position") positionCommand(inStream);
       else if (token == "go") goCommand(inStream);
-
-      cout << "COMMAND PROCESSED: " << token << endl;
+      else if (token == "stop") stopCommand();
+      else if (token == "ponderhit") ponderHitCommand();
+      else if (token == "register") registerCommand(inStream);
+      else if (token == "debug") debugCommand(inStream);
+      else cerr << "Unknown UCI command: " << token << endl;
+      cerr << "COMMAND PROCESSED: " << token << endl;
 
     } while (token != "quit");
   }
 
+  void Handler::uciCommand() {
+    send("id name FrankyCPP");
+    send("id author Frank Kopp, Germany");
+    send(engine.str());
+    send("uciok");
+  }
+
+  void Handler::isReadyCommand() {
+    send("readyok");
+  }
+
+  void Handler::setOptionCommand(istringstream &inStream) {
+    string token, name, value;
+
+    if (inStream >> token && token != "name") {
+      cerr << ("Command setoption is malformed - expected 'name': " + token) << endl;
+      return;
+    }
+
+    // read name which could contain spaces
+    while (inStream >> token && token != "value") {
+      if (!name.empty()) name += " ";
+      name += token;
+    }
+
+    // read value which could contain spaces
+    while (inStream >> token) {
+      if (!value.empty()) name += " ";
+      value += token;
+    }
+    engine.setOption(name, value);
+  }
+
+  void Handler::uciNewGameCommand() {
+    engine.newGame();
+  }
+
+  void Handler::positionCommand(istringstream &inStream) {
+    string token, startFen;
+    inStream >> token;
+    if (token == "startpos") {
+      startFen = START_POSITION_FEN;
+      inStream >> token;
+    }
+    else if (token == "fen") {
+      while (inStream >> token && token != "moves") {
+        startFen += token + " ";
+      }
+    }
+    engine.setPosition(startFen);
+    if (token == "moves") {
+      vector<string> moves;
+      while (inStream >> token) {
+        moves.push_back(token);
+      }
+      for (const string &move : moves) {
+        engine.doMove(move);
+      }
+    }
+  }
+
   void Handler::goCommand(istringstream &inStream) {
+    // DEBUG
+    // This need to be done in Engine then
     Search search;
     search.start();
+  }
+
+  void Handler::stopCommand() {
+
+  }
+
+  void Handler::ponderHitCommand() {
+
+  }
+
+  void Handler::registerCommand(istringstream &inStream) {
+    cerr << "UCI Protocol Command: register not implemented!" << endl;
+  }
+
+  void Handler::debugCommand(istringstream &inStream) {
+
+  }
+
+  void Handler::send(string toSend) const {
+    cout << toSend << endl;
   }
 
 }

@@ -23,16 +23,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4febe152-5c70-47fd-9338-9cb20e6462e6" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/UCISearchMode.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/UCISearchMode.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/engine-interface.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/Tests/UCITests.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/MoveGenerator.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/MoveGenerator.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Perft.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Perft.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/datatypes.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/datatypes.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/Tests/GlobalsTest.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/test/Tests/GlobalsTest.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/Tests/MoveGeneratorTest.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/test/Tests/MoveGeneratorTest.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Engine.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Engine.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Engine.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Engine.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UCIHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/UCIHandler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UCIHandler.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/UCIHandler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/test/CMakeLists.txt" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <ignored path="$PROJECT_DIR$/cmake-build-release/" />
@@ -70,8 +69,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/datatypes.h">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="541">
-                  <caret line="429" column="22" lean-forward="true" selection-start-line="429" selection-start-column="22" selection-end-line="429" selection-end-column="22" />
+                <state relative-caret-position="1513">
+                  <caret line="429" column="3" selection-start-line="429" selection-start-column="3" selection-end-line="429" selection-end-column="3" />
                   <folding>
                     <element signature="e#0#1135#0" />
                     <element signature="e#1462#1479#0" expanded="true" />
@@ -85,25 +84,13 @@
             </entry>
           </file>
           <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/src/Engine.h">
+            <entry file="file://$PROJECT_DIR$/src/main.cpp">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="342">
-                  <caret line="41" column="74" selection-start-line="41" selection-start-column="74" selection-end-line="41" selection-end-column="74" />
+                <state relative-caret-position="285">
+                  <caret line="38" column="1" selection-start-line="38" selection-start-column="1" selection-end-line="38" selection-end-column="1" />
                   <folding>
                     <element signature="e#0#1135#0" />
-                    <element signature="e#1192#1206#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/src/Engine.cpp">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="247">
-                  <caret line="36" column="66" selection-start-line="36" selection-start-column="66" selection-end-line="36" selection-end-column="66" />
-                  <folding>
-                    <element signature="e#0#1149#0" />
+                    <element signature="e#1137#1160#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -112,11 +99,62 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/UCIHandler.h">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="475">
-                  <caret line="48" column="9" selection-start-line="48" selection-start-column="9" selection-end-line="48" selection-end-column="9" />
+                <state relative-caret-position="-4">
+                  <caret line="39" column="26" selection-start-line="39" selection-start-column="26" selection-end-line="39" selection-end-column="26" />
                   <folding>
                     <element signature="e#0#1135#0" />
                     <element signature="e#1216#1233#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/src/UCIHandler.cpp">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="465">
+                  <caret line="122" column="33" selection-start-line="122" selection-start-column="33" selection-end-line="122" selection-end-column="33" />
+                  <folding>
+                    <element signature="e#0#1135#0" />
+                    <element signature="e#1137#1156#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/Search.h">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="-216" />
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/Search.cpp">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="-504" />
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/UCIOption.h">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="608">
+                  <caret line="56" column="13" selection-start-line="56" selection-start-column="13" selection-end-line="56" selection-end-column="13" />
+                  <folding>
+                    <element signature="e#0#1135#0" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/UCIOption.cpp">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="475">
+                  <caret line="49" selection-start-line="49" selection-end-line="49" />
+                  <folding>
+                    <element signature="e#0#1135#0" />
                   </folding>
                 </state>
               </provider>
@@ -143,87 +181,136 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/src/UCIHandler.cpp">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="436">
-                  <caret line="55" column="34" selection-start-line="55" selection-start-column="6" selection-end-line="55" selection-end-column="34" />
-                  <folding>
-                    <element signature="e#0#1135#0" />
-                    <element signature="e#1137#1156#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/src/UCIOption.h">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="608">
-                  <caret line="56" column="13" selection-start-line="56" selection-start-column="13" selection-end-line="56" selection-end-column="13" />
-                  <folding>
-                    <element signature="e#0#1135#0" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/src/UCIOption.cpp">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="475">
-                  <caret line="49" selection-start-line="49" selection-end-line="49" />
-                  <folding>
-                    <element signature="e#0#1135#0" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
         </leaf>
       </split-first>
       <split-second>
-        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="342">
-                  <caret line="18" selection-start-line="18" selection-end-line="18" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/test/Tests/GlobalsTest.cpp">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="487">
-                  <caret line="221" column="28" selection-start-line="221" selection-start-column="28" selection-end-line="221" selection-end-column="28" />
-                  <folding>
-                    <element signature="e#0#1135#0" />
-                    <element signature="e#1137#1161#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/test/Tests/SemaphoreTest.cpp">
-              <provider selected="true" editor-type-id="text-editor" />
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/test/Tests/TimeingTests.cpp">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1180">
-                  <caret line="88" column="43" selection-start-line="88" selection-start-column="43" selection-end-line="88" selection-end-column="43" />
-                  <folding>
-                    <element signature="e#0#1135#0" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-        </leaf>
+        <splitter split-orientation="vertical" split-proportion="0.5">
+          <split-first>
+            <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+              <file pinned="false" current-in-tab="false">
+                <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+                  <provider selected="true" editor-type-id="text-editor">
+                    <state relative-caret-position="228">
+                      <caret line="12" selection-start-line="12" selection-end-line="12" />
+                    </state>
+                  </provider>
+                </entry>
+              </file>
+              <file pinned="false" current-in-tab="false">
+                <entry file="file://$PROJECT_DIR$/src/CMakeLists.txt">
+                  <provider selected="true" editor-type-id="text-editor">
+                    <state relative-caret-position="95">
+                      <caret line="5" column="14" selection-start-line="5" selection-start-column="14" selection-end-line="5" selection-end-column="14" />
+                    </state>
+                  </provider>
+                </entry>
+              </file>
+              <file pinned="false" current-in-tab="false">
+                <entry file="file://$PROJECT_DIR$/test/Tests/GlobalsTest.cpp">
+                  <provider selected="true" editor-type-id="text-editor">
+                    <state relative-caret-position="487">
+                      <caret line="221" column="28" selection-start-line="221" selection-start-column="28" selection-end-line="221" selection-end-column="28" />
+                      <folding>
+                        <element signature="e#0#1135#0" />
+                        <element signature="e#1137#1161#0" expanded="true" />
+                      </folding>
+                    </state>
+                  </provider>
+                </entry>
+              </file>
+              <file pinned="false" current-in-tab="false">
+                <entry file="file://$PROJECT_DIR$/test/Tests/SemaphoreTest.cpp">
+                  <provider selected="true" editor-type-id="text-editor" />
+                </entry>
+              </file>
+              <file pinned="false" current-in-tab="false">
+                <entry file="file://$PROJECT_DIR$/test/Tests/UCITests.cpp">
+                  <provider selected="true" editor-type-id="text-editor">
+                    <state>
+                      <folding>
+                        <element signature="e#0#1135#0" />
+                      </folding>
+                    </state>
+                  </provider>
+                </entry>
+              </file>
+              <file pinned="false" current-in-tab="false">
+                <entry file="file://$PROJECT_DIR$/test/Tests/EngineTest.cpp">
+                  <provider selected="true" editor-type-id="text-editor">
+                    <state relative-caret-position="228">
+                      <caret line="38" selection-start-line="38" selection-end-line="38" />
+                      <folding>
+                        <element signature="e#0#1135#0" />
+                      </folding>
+                    </state>
+                  </provider>
+                </entry>
+              </file>
+              <file pinned="false" current-in-tab="false">
+                <entry file="file://$PROJECT_DIR$/test/Tests/TimeingTests.cpp">
+                  <provider selected="true" editor-type-id="text-editor">
+                    <state relative-caret-position="1180">
+                      <caret line="88" column="43" selection-start-line="88" selection-start-column="43" selection-end-line="88" selection-end-column="43" />
+                      <folding>
+                        <element signature="e#0#1135#0" />
+                      </folding>
+                    </state>
+                  </provider>
+                </entry>
+              </file>
+              <file pinned="false" current-in-tab="true">
+                <entry file="file://$PROJECT_DIR$/src/Engine.h">
+                  <provider selected="true" editor-type-id="text-editor">
+                    <state relative-caret-position="87">
+                      <caret line="36" column="58" lean-forward="true" selection-start-line="36" selection-start-column="58" selection-end-line="36" selection-end-column="58" />
+                      <folding>
+                        <element signature="e#0#1135#0" />
+                        <element signature="e#1192#1206#0" expanded="true" />
+                      </folding>
+                    </state>
+                  </provider>
+                </entry>
+              </file>
+              <file pinned="false" current-in-tab="false">
+                <entry file="file://$PROJECT_DIR$/src/Engine.cpp">
+                  <provider selected="true" editor-type-id="text-editor">
+                    <state relative-caret-position="293">
+                      <caret line="85" column="37" selection-start-line="85" selection-start-column="37" selection-end-line="85" selection-end-column="37" />
+                      <folding>
+                        <element signature="e#0#1149#0" />
+                        <element signature="e#1151#1173#0" expanded="true" />
+                      </folding>
+                    </state>
+                  </provider>
+                </entry>
+              </file>
+              <file pinned="false" current-in-tab="false">
+                <entry file="file://$PROJECT_DIR$/engine-interface.txt">
+                  <provider selected="true" editor-type-id="text-editor">
+                    <state relative-caret-position="-2196" />
+                  </provider>
+                </entry>
+              </file>
+            </leaf>
+          </split-first>
+          <split-second>
+            <leaf>
+              <file pinned="false" current-in-tab="true">
+                <entry file="file://$PROJECT_DIR$/src/Engine.cpp">
+                  <provider selected="true" editor-type-id="text-editor">
+                    <state relative-caret-position="264">
+                      <caret line="90" column="40" lean-forward="true" selection-start-line="90" selection-start-column="40" selection-end-line="90" selection-end-column="40" />
+                      <folding>
+                        <element signature="e#0#1149#0" />
+                        <element signature="e#1151#1173#0" expanded="true" />
+                      </folding>
+                    </state>
+                  </provider>
+                </entry>
+              </file>
+            </leaf>
+          </split-second>
+        </splitter>
       </split-second>
     </splitter>
   </component>
@@ -313,24 +400,19 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/basic_semaphore.h" />
         <option value="$PROJECT_DIR$/src/UCIProtocolHandler.cpp" />
         <option value="$PROJECT_DIR$/src/Search.h" />
         <option value="$PROJECT_DIR$/src/Search.cpp" />
         <option value="$PROJECT_DIR$/src/Semaphore.cpp" />
         <option value="$PROJECT_DIR$/src/Semaphore.h" />
         <option value="$PROJECT_DIR$/src/UCIProtocolHandler.h" />
-        <option value="$PROJECT_DIR$/src/UCIHandler.cpp" />
         <option value="$PROJECT_DIR$/test/Tests/EngineTest.cpp" />
-        <option value="$PROJECT_DIR$/src/Engine.h" />
-        <option value="$PROJECT_DIR$/src/Engine.cpp" />
         <option value="$PROJECT_DIR$/src/Move.cpp" />
         <option value="$PROJECT_DIR$/src/Move.h" />
         <option value="$PROJECT_DIR$/test/Tests/BitboardTests.cpp" />
         <option value="$PROJECT_DIR$/src/Random.h" />
         <option value="$PROJECT_DIR$/src/Evaluation.cpp" />
         <option value="$PROJECT_DIR$/src/Evaluation.h" />
-        <option value="$PROJECT_DIR$/src/UCIHandler.h" />
         <option value="$PROJECT_DIR$/test/main.cpp" />
         <option value="$PROJECT_DIR$/src/UCIOption.h" />
         <option value="$PROJECT_DIR$/test/Tests/SemaphoreTest.cpp" />
@@ -345,7 +427,6 @@
         <option value="$PROJECT_DIR$/src/globals.h" />
         <option value="$PROJECT_DIR$/src/MoveGenerator.h" />
         <option value="$PROJECT_DIR$/test/Tests/EvaluationTest.cpp" />
-        <option value="$PROJECT_DIR$/src/main.cpp" />
         <option value="$PROJECT_DIR$/src/Values.h" />
         <option value="$PROJECT_DIR$/src/Position.h" />
         <option value="$PROJECT_DIR$/test/Tests/PositionTest.cpp" />
@@ -357,13 +438,19 @@
         <option value="$PROJECT_DIR$/src/Bitboards.cpp" />
         <option value="$PROJECT_DIR$/src/Perft.h" />
         <option value="$PROJECT_DIR$/src/Perft.cpp" />
-        <option value="$PROJECT_DIR$/CMakeLists.txt" />
         <option value="$PROJECT_DIR$/src/MoveGenerator.cpp" />
         <option value="$PROJECT_DIR$/src/UCISearchMode.cpp" />
         <option value="$PROJECT_DIR$/src/UCISearchMode.h" />
         <option value="$PROJECT_DIR$/test/Tests/GlobalsTest.cpp" />
         <option value="$PROJECT_DIR$/src/datatypes.h" />
         <option value="$PROJECT_DIR$/test/Tests/MoveGeneratorTest.cpp" />
+        <option value="$PROJECT_DIR$/src/main.cpp" />
+        <option value="$PROJECT_DIR$/src/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/UCIHandler.h" />
+        <option value="$PROJECT_DIR$/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Engine.h" />
+        <option value="$PROJECT_DIR$/src/Engine.cpp" />
+        <option value="$PROJECT_DIR$/src/UCIHandler.cpp" />
       </list>
     </option>
   </component>
@@ -425,14 +512,15 @@
     <property name="settings.editor.selected.configurable" value="CMakeSettings" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\Frank\Dropbox\Private\Projekte\_GITHUB\FrankyCpp\test" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\Frank\Dropbox\Private\Projekte\_GITHUB\FrankyCpp\test" />
       <recent name="C:\Users\Frank\Dropbox\Private\Projekte\_GITHUB\FrankyCpp\test\.repo" />
       <recent name="C:\Users\Frank\Dropbox\Private\Projekte\_GITHUB\FrankyCpp" />
       <recent name="C:\Users\Frank\Dropbox\Private\Projekte\_GITHUB\FrankyCpp\Franky" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Frank\Dropbox\Private\Projekte\_GITHUB\FrankyCpp" />
+      <recent name="C:\Users\Frank\Dropbox\Private\Projekte\_GITHUB\FrankyCpp\test" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -447,20 +535,20 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Google Test.MoveGenTest.legalMoves">
-    <configuration name="MoveGenTest.legalMoves" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" PASS_PARENT_ENVS_2="true" PROJECT_NAME="FrankyCPP" TARGET_NAME="FrankyTest" RUN_TARGET_PROJECT_NAME="FrankyCPP" RUN_TARGET_NAME="FrankyTest" TEST_CLASS="MoveGenTest" TEST_METHOD="legalMoves" TEST_MODE="SUITE_TEST">
+  <component name="RunManager" selected="Application.Franky">
+    <configuration name="EngienTest.basic" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" PASS_PARENT_ENVS_2="true" PROJECT_NAME="FrankyCPP" TARGET_NAME="FrankyTest" CONFIG_NAME="Release" RUN_TARGET_PROJECT_NAME="FrankyCPP" RUN_TARGET_NAME="FrankyTest" TEST_CLASS="EngienTest" TEST_METHOD="basic" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="MoveGenTest.onDemandGen" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" PASS_PARENT_ENVS_2="true" PROJECT_NAME="FrankyCPP" TARGET_NAME="FrankyTest" CONFIG_NAME="Release" RUN_TARGET_PROJECT_NAME="FrankyCPP" RUN_TARGET_NAME="FrankyTest" TEST_CLASS="MoveGenTest" TEST_METHOD="onDemandGen" TEST_MODE="SUITE_TEST">
+    <configuration name="MoveGenTest.legalMoves" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" PASS_PARENT_ENVS_2="true" PROJECT_NAME="FrankyCPP" TARGET_NAME="FrankyTest" CONFIG_NAME="Release" RUN_TARGET_PROJECT_NAME="FrankyCPP" RUN_TARGET_NAME="FrankyTest" TEST_CLASS="MoveGenTest" TEST_METHOD="legalMoves" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="MoveListTest.moveListPrint" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" PASS_PARENT_ENVS_2="true" PROJECT_NAME="FrankyCPP" TARGET_NAME="FrankyTest" RUN_TARGET_PROJECT_NAME="FrankyCPP" RUN_TARGET_NAME="FrankyTest" TEST_CLASS="MoveListTest" TEST_METHOD="moveListPrint" TEST_MODE="SUITE_TEST">
+    <configuration name="MoveListTest.moveListPrint" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" PASS_PARENT_ENVS_2="true" PROJECT_NAME="FrankyCPP" TARGET_NAME="FrankyTest" CONFIG_NAME="Release" RUN_TARGET_PROJECT_NAME="FrankyCPP" RUN_TARGET_NAME="FrankyTest" TEST_CLASS="MoveListTest" TEST_METHOD="moveListPrint" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
@@ -522,18 +610,18 @@
       <item itemvalue="Application.gtest" />
       <item itemvalue="Application.gtest_main" />
       <item itemvalue="Google Test.PerftTest.stdPerftOD" />
-      <item itemvalue="Google Test.MoveGenTest.onDemandGen" />
       <item itemvalue="Google Test.TimingTests.doMoveUndoMove" />
       <item itemvalue="Google Test.MoveListTest.moveListPrint" />
       <item itemvalue="Google Test.MoveGenTest.legalMoves" />
+      <item itemvalue="Google Test.EngienTest.basic" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Google Test.EngienTest.basic" />
         <item itemvalue="Google Test.MoveGenTest.legalMoves" />
         <item itemvalue="Google Test.MoveListTest.moveListPrint" />
         <item itemvalue="Google Test.PerftTest.stdPerftOD" />
         <item itemvalue="Google Test.TimingTests.doMoveUndoMove" />
-        <item itemvalue="Google Test.MoveGenTest.onDemandGen" />
       </list>
     </recent_temporary>
   </component>
@@ -826,13 +914,17 @@
       <option name="project" value="LOCAL" />
       <updated>1553470484453</updated>
     </task>
-    <option name="localTasksCounter" value="38" />
+    <task id="LOCAL-00038" summary="MoveGen done - now UCI stuff">
+      <created>1553533432952</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1553533432952</updated>
+    </task>
+    <option name="localTasksCounter" value="39" />
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="PerftTest_stdPerftOD - 2019.03.25 at 11h 08m 28s.xml">
-      <configuration name="PerftTest.stdPerftOD" configurationId="CMakeGoogleTestRunConfigurationType" />
-    </history-entry>
     <history-entry file="PerftTest_stdPerftOD - 2019.03.25 at 11h 36m 44s.xml">
       <configuration name="PerftTest.stdPerftOD" configurationId="CMakeGoogleTestRunConfigurationType" />
     </history-entry>
@@ -860,15 +952,18 @@
     <history-entry file="MoveGenTest_legalMoves - 2019.03.25 at 17h 29m 57s.xml">
       <configuration name="MoveGenTest.legalMoves" configurationId="CMakeGoogleTestRunConfigurationType" />
     </history-entry>
+    <history-entry file="EngienTest_basic - 2019.03.25 at 19h 39m 02s.xml">
+      <configuration name="EngienTest.basic" configurationId="CMakeGoogleTestRunConfigurationType" />
+    </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="509328000" />
+    <option name="totallyTimeSpent" value="520619000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-9" y="0" width="2860" height="1223" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.48663595" visible="true" weight="0.08255897" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.48663595" visible="true" weight="0.08255897" />
       <window_info id="Structure" order="1" sideWeight="0.5133641" side_tool="true" visible="true" weight="0.08255897" />
       <window_info id="Favorites" order="2" side_tool="true" weight="0.06847361" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -883,14 +978,14 @@
       <window_info anchor="bottom" id="CMake" order="9" sideWeight="0.49974373" weight="0.3281106" />
       <window_info anchor="bottom" x="242" y="323" width="2188" height="903" id="CPU Profiler" order="10" sideWeight="0.5761563" weight="0.42857143" />
       <window_info anchor="bottom" id="Inspection Results" order="11" weight="0.3299539" />
-      <window_info anchor="bottom" x="360" y="71" width="815" height="713" id="Messages" order="12" sideWeight="0.5002563" side_tool="true" visible="true" weight="0.3281106" />
+      <window_info anchor="bottom" x="360" y="71" width="815" height="713" id="Messages" order="12" sideWeight="0.5002563" side_tool="true" visible="true" weight="0.19815668" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" auto_hide="true" id="Database" internal_type="SLIDING" order="3" type="SLIDING" weight="0.32972583" />
-      <window_info anchor="right" id="Run" order="4" sideWeight="0.78860295" visible="true" weight="0.22015725" />
+      <window_info anchor="right" id="Run" order="4" sideWeight="0.78860295" weight="0.22444603" />
       <window_info anchor="right" id="Key Promoter X" order="5" weight="0.3299639" />
-      <window_info anchor="right" id="Debug" order="6" sideWeight="0.8150874" weight="0.22337385" />
+      <window_info active="true" anchor="right" id="Debug" order="6" sideWeight="0.8150874" visible="true" weight="0.22337385" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -909,7 +1004,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="More Bitboard initializations" />
     <MESSAGE value="Added Position - work in progress" />
     <MESSAGE value="Added timeing tests" />
     <MESSAGE value="Bitboard rotation and moves" />
@@ -934,10 +1028,18 @@
     <MESSAGE value="Fixed Game Phase" />
     <MESSAGE value="Perft OnDemand" />
     <MESSAGE value="CleanUp" />
-    <option name="LAST_COMMIT_MESSAGE" value="CleanUp" />
+    <MESSAGE value="MoveGen done - now UCI stuff" />
+    <option name="LAST_COMMIT_MESSAGE" value="MoveGen done - now UCI stuff" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/UCIHandler.cpp</url>
+          <line>114</line>
+          <option name="timeStamp" value="58" />
+        </line-breakpoint>
+      </breakpoints>
       <default-breakpoints>
         <breakpoint enabled="true" type="CidrExceptionBreakpoint">
           <properties />
@@ -1044,12 +1146,6 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://C:/cygwin64/lib/gcc/x86_64-pc-cygwin/7.4.0/include/c++/bits/vector.tcc" />
-    <entry file="file://C:/cygwin64/lib/gcc/x86_64-pc-cygwin/7.4.0/include/c++/bits/stl_vector.h" />
-    <entry file="file://$PROJECT_DIR$/cmake-build-debug/src/Franky.exe.stackdump" />
-    <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/buffer1.txt" />
-    <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/buffer2.txt" />
-    <entry file="file:///Library/Developer/CommandLineTools/usr/include/c++/v1/vector" />
     <entry file="file://$PROJECT_DIR$/cmake-build-debug/test/gmon.txt" />
     <entry file="file://$PROJECT_DIR$/cmake-build-release/test/FrankyTest.exe.stackdump" />
     <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/buffer3.txt" />
@@ -1074,17 +1170,6 @@
           <folding>
             <element signature="e#0#1135#0" />
             <element signature="e#1137#1161#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="133">
-          <caret line="30" selection-start-line="30" selection-end-line="30" />
-          <folding>
-            <element signature="e#0#1135#0" />
-            <element signature="e#1137#1160#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1157,13 +1242,6 @@
         <state relative-caret-position="-7774" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="342">
-          <caret line="18" selection-start-line="18" selection-end-line="18" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/Perft.cpp">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2166">
@@ -1204,17 +1282,6 @@
           <caret line="31" selection-start-line="31" selection-end-line="31" />
           <folding>
             <element signature="e#0#1135#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/Position.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="8040">
-          <caret line="425" selection-start-line="425" selection-end-line="425" />
-          <folding>
-            <element signature="e#0#1135#0" />
-            <element signature="e#1137#1156#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1270,59 +1337,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/UCIHandler.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="436">
-          <caret line="55" column="34" selection-start-line="55" selection-start-column="6" selection-end-line="55" selection-end-column="34" />
-          <folding>
-            <element signature="e#0#1135#0" />
-            <element signature="e#1137#1156#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/UCIOption.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="608">
           <caret line="56" column="13" selection-start-line="56" selection-start-column="13" selection-end-line="56" selection-end-column="13" />
           <folding>
             <element signature="e#0#1135#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/Engine.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="342">
-          <caret line="41" column="74" selection-start-line="41" selection-start-column="74" selection-end-line="41" selection-end-column="74" />
-          <folding>
-            <element signature="e#0#1135#0" />
-            <element signature="e#1192#1206#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/Engine.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="247">
-          <caret line="36" column="66" selection-start-line="36" selection-start-column="66" selection-end-line="36" selection-end-column="66" />
-          <folding>
-            <element signature="e#0#1149#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/datatypes.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="541">
-          <caret line="429" column="22" lean-forward="true" selection-start-line="429" selection-start-column="22" selection-end-line="429" selection-end-column="22" />
-          <folding>
-            <element signature="e#0#1135#0" />
-            <element signature="e#1462#1479#0" expanded="true" />
-            <element signature="e#6819#6831#0" expanded="true" />
-            <element signature="e#7768#7780#0" expanded="true" />
-            <element signature="e#7163#7184#0" expanded="true" />
-            <element signature="e#7104#8736#0" />
           </folding>
         </state>
       </provider>
@@ -1337,47 +1357,6 @@
           </folding>
         </state>
       </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/UCIHandler.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="475">
-          <caret line="48" column="9" selection-start-line="48" selection-start-column="9" selection-end-line="48" selection-end-column="9" />
-          <folding>
-            <element signature="e#0#1135#0" />
-            <element signature="e#1216#1233#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/UCISearchMode.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="494">
-          <caret line="26" selection-start-line="26" selection-end-line="26" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/UCISearchMode.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="497">
-          <caret line="49" column="21" selection-start-line="49" selection-start-column="21" selection-end-line="49" selection-end-column="21" />
-          <folding>
-            <element signature="e#1206#1224#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/UCIOption.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="475">
-          <caret line="49" selection-start-line="49" selection-end-line="49" />
-          <folding>
-            <element signature="e#0#1135#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/Tests/SemaphoreTest.cpp">
-      <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/test/Tests/BitboardTest.cpp">
       <provider selected="true" editor-type-id="text-editor">
@@ -1397,6 +1376,165 @@
           <folding>
             <element signature="e#0#1135#0" />
             <element signature="e#1137#1161#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Search.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-216" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Search.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-504" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="285">
+          <caret line="38" column="1" selection-start-line="38" selection-start-column="1" selection-end-line="38" selection-end-column="1" />
+          <folding>
+            <element signature="e#0#1135#0" />
+            <element signature="e#1137#1160#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/Tests/EngineTest.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="228">
+          <caret line="38" selection-start-line="38" selection-end-line="38" />
+          <folding>
+            <element signature="e#0#1135#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/Tests/UCITests.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <folding>
+            <element signature="e#0#1135#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/Tests/SemaphoreTest.cpp">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="95">
+          <caret line="5" column="14" selection-start-line="5" selection-start-column="14" selection-end-line="5" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/UCISearchMode.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="497">
+          <caret line="49" column="21" selection-start-line="49" selection-start-column="21" selection-end-line="49" selection-end-column="21" />
+          <folding>
+            <element signature="e#1206#1224#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Position.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-12772">
+          <caret line="425" selection-start-line="425" selection-end-line="425" />
+          <folding>
+            <element signature="e#0#1135#0" />
+            <element signature="e#1137#1156#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="228">
+          <caret line="12" selection-start-line="12" selection-end-line="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/UCIHandler.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-4">
+          <caret line="39" column="26" selection-start-line="39" selection-start-column="26" selection-end-line="39" selection-end-column="26" />
+          <folding>
+            <element signature="e#0#1135#0" />
+            <element signature="e#1216#1233#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/UCISearchMode.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="494">
+          <caret line="26" selection-start-line="26" selection-end-line="26" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/datatypes.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1513">
+          <caret line="429" column="3" selection-start-line="429" selection-start-column="3" selection-end-line="429" selection-end-column="3" />
+          <folding>
+            <element signature="e#0#1135#0" />
+            <element signature="e#1462#1479#0" expanded="true" />
+            <element signature="e#6819#6831#0" expanded="true" />
+            <element signature="e#7768#7780#0" expanded="true" />
+            <element signature="e#7163#7184#0" expanded="true" />
+            <element signature="e#7104#8736#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/engine-interface.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-2196" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Engine.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="293">
+          <caret line="85" column="37" selection-start-line="85" selection-start-column="37" selection-end-line="85" selection-end-column="37" />
+          <folding>
+            <element signature="e#0#1149#0" />
+            <element signature="e#1151#1173#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/UCIOption.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="475">
+          <caret line="49" selection-start-line="49" selection-end-line="49" />
+          <folding>
+            <element signature="e#0#1135#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Engine.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="87">
+          <caret line="36" column="58" lean-forward="true" selection-start-line="36" selection-start-column="58" selection-end-line="36" selection-end-column="58" />
+          <folding>
+            <element signature="e#0#1135#0" />
+            <element signature="e#1192#1206#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/UCIHandler.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="465">
+          <caret line="122" column="33" selection-start-line="122" selection-start-column="33" selection-end-line="122" selection-end-column="33" />
+          <folding>
+            <element signature="e#0#1135#0" />
+            <element signature="e#1137#1156#0" expanded="true" />
           </folding>
         </state>
       </provider>

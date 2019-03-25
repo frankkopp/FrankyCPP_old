@@ -29,6 +29,7 @@
 #include <thread>
 #include <iostream>
 #include "Semaphore.h"
+#include "Engine.h"
 
 using namespace std;
 
@@ -36,7 +37,8 @@ namespace UCI {
 
   class Handler {
 
-    const Semaphore mySemaphore;
+    Semaphore mySemaphore;
+    Engine engine;
 
   public:
 
@@ -47,8 +49,21 @@ namespace UCI {
 
     /** Starts the handler loop */
     void loop();
-    void goCommand(istringstream &inStream);
 
+    void uciCommand();
+    void isReadyCommand();
+    void setOptionCommand(istringstream &inStream);
+    void uciNewGameCommand();
+    void positionCommand(istringstream &inStream);
+    void goCommand(istringstream &inStream);
+    void stopCommand();
+    void ponderHitCommand();
+    void registerCommand(istringstream &inStream);
+    void debugCommand(istringstream &inStream);
+
+  private:
+
+    void send(string toSend) const;
   };
 }
 #endif //FRANKYCPP_UCIPROTOCOLHANDLER_H

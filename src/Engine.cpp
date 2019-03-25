@@ -23,7 +23,10 @@
  *
  */
 
+#include "datatypes.h"
 #include "Engine.h"
+#include "Position.h"
+
 using namespace std;
 
 Engine::Engine() {
@@ -40,11 +43,15 @@ void Engine::initOptions() {
 }
 
 std::ostream &operator<<(std::ostream &os, const Engine &engine) {
+  os << engine.str();
+  return os;
+}
 
-  for (const auto &it : engine.optionMap) {
+std::string Engine::str() const {
+  stringstream os;
+  for (const auto &it : optionMap) {
     UCI::Option o = it.second;
     os << "\noption name " << it.first << " type " << o.getTypeString();
-
     if (o.getType() == UCI::STRING
         || o.getType() == UCI::CHECK
         || o.getType() == UCI::COMBO)
@@ -56,6 +63,32 @@ std::ostream &operator<<(std::ostream &os, const Engine &engine) {
          << " max " << o.getMaxValue();
 
   }
+  return os.str();
+}
 
-  return os;
+void Engine::newGame() {
+  println("Engine: New Game");
+}
+
+void Engine::clearHash() {
+  println("Engine: Clear Hash");
+}
+
+void Engine::setOption(string name, string value) {
+  println("Engine: Set option " + name + "=" + value);
+}
+
+void Engine::setPosition(string fen) {
+  println("Engine: Set position to " + fen);
+  position = Position(fen);
+}
+
+void Engine::doMove(string moveStr) {
+  println("Engine: Do move " + moveStr);
+  const Move move = createMove(moveStr.c_str());
+  if (!isMove(move)) {
+    cerr << "Invalid move " << moveStr << endl;
+    return;
+  }
+  position.doMove(move);
 }
