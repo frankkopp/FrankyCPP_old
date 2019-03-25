@@ -35,7 +35,6 @@ using namespace Bitboards;
 //  - PV move
 //  - Killer Moves
 
-
 ////////////////////////////////////////////////
 ///// CONSTRUCTORS
 

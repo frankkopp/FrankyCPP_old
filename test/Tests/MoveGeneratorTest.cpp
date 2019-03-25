@@ -248,8 +248,7 @@ TEST(MoveGenTest, pseudoLegalMoves) {
 }
 
 TEST(MoveGenTest, legalMoves) {
-  Position::init();
-  Bitboards::init();
+  INIT::init();
   NEWLINE;
 
   string fen;
@@ -279,6 +278,7 @@ TEST(MoveGenTest, legalMoves) {
   for (Move m : moves) {
     cout << printMove(m) << endl;
   }
+  cout << moves << endl;
   ASSERT_FALSE(position.isLegalMove(createMove<CASTLING>(SQ_E8, SQ_G8)));
   ASSERT_EQ(83, moves.size());
   NEWLINE;

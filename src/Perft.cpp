@@ -52,6 +52,10 @@ void Perft::perft(int maxDepth, bool onDemand) {
   os << setprecision(9);
 
   os << "Testing at depth " << maxDepth << endl;
+  cout << os.str();
+  cout.flush();
+  os.str("");
+  os.clear();
 
   long result;
   auto start = std::chrono::high_resolution_clock::now();
@@ -91,7 +95,7 @@ long Perft::miniMax(int depth, Position *pPosition, MoveGenerator *pMg) {
   long totalNodes = 0L;
 
   //println(pPosition->str())
-  
+
   // moves to search recursively
   MoveList moves = pMg[depth].generatePseudoLegalMoves(GENALL, pPosition);
   for (Move move : moves) {
@@ -114,7 +118,7 @@ long Perft::miniMax(int depth, Position *pPosition, MoveGenerator *pMg) {
         if (cap) captureCounter++;
         if (pPosition->hasCheck()) checkCounter++;
         if (pPosition->hasCheckMate()) checkMateCounter++;
-      } 
+      }
       pPosition->undoMove();
     }
   }
@@ -157,7 +161,7 @@ long Perft::miniMaxOD(int depth, Position *pPosition, MoveGenerator *pMg) {
       pPosition->undoMove();
     }
   }
-    return totalNodes;
+  return totalNodes;
 }
 
 

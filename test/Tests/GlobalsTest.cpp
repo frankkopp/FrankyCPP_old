@@ -209,4 +209,17 @@ TEST(CastlingTest, castling) {
 //  }
 //}
 
+TEST(MoveListTest, moveListPrint) {
+  INIT::init();
+  NEWLINE
 
+  Move move1 = createMove<NORMAL>(SQ_A1, SQ_H1);
+  Move move2 = createMove<PROMOTION>(SQ_A7, SQ_A8, QUEEN);
+  Move move3 = createMove<CASTLING>(SQ_E1, SQ_G1);
+  MoveList moveList;
+  moveList.push_back(move1);
+  moveList.push_back(move2);
+  moveList.push_back(move3);
+
+  cout << moveList << endl;
+}

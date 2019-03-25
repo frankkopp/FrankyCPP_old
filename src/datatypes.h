@@ -422,6 +422,17 @@ inline std::string printMove(const Move &move) {
 /** A collection of moves using a std::deque */
 typedef std::deque<Move> MoveList;
 
+inline std::ostream &operator<<(std::ostream &os, const MoveList &moveList) {
+  os << "MoveList: size=" << moveList.size() << " [";
+  for (Move m : moveList) {
+     os << m;
+     if (m != moveList.back()) os << ", ";
+  }
+  os << "]" << endl;
+  return os;
+}
+
+
 ///////////////////////////////////
 //// CASTLING
 
