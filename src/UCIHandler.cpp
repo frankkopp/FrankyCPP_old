@@ -25,6 +25,7 @@
 
 #include <iostream>
 #include <sstream>
+#include "unistd.h"
 
 #include "datatypes.h"
 #include "UCIHandler.h"
@@ -35,18 +36,27 @@ using namespace std;
 namespace UCI {
 
   Handler::Handler() = default;
+  Handler::Handler(istream *in, ostream *out) {
+    pInputStream = in;
+    pOutputStream = out;
+  };
   Handler::~Handler() = default;
 
   void Handler::loop() {
     string cmd, token;
     do {
 
-      cerr << "WAIT FOR COMMAND:" << endl;
+      cout << "HANDLER WAIT FOR COMMAND:" << endl;
+
+//      char* input[128];
+//      int noChars = pInputStream->readsome(*input, 128);
+//      cout << "FOUND " << noChars << " chars to read." << endl;
+//      istringstream inStream(*input);
 
       // Block here waiting for input or EOF
-      if (!getline(cin, cmd)) cmd = "quit";
-
-      // create the stream object
+      // only blocks on cin!!
+      if (!getline(*pInputStream, cmd)) cmd = "quit";
+      //  create the stream object
       istringstream inStream(cmd);
 
       // clear possible previous entries
@@ -55,7 +65,7 @@ namespace UCI {
       // read word from stream delimiter is whitespace
       // to get line use inStream.str()
       inStream >> skipws >> token;
-      cerr << "RECEIVED: " << token << endl;
+      cout << "HANDLER RECEIVED: " << token << endl;
 
       if (token == "quit") break;
       else if (token == "uci") uciCommand();
@@ -68,8 +78,9 @@ namespace UCI {
       else if (token == "ponderhit") ponderHitCommand();
       else if (token == "register") registerCommand(inStream);
       else if (token == "debug") debugCommand(inStream);
+      else if (token == "noop") /* noop */;
       else cerr << "Unknown UCI command: " << token << endl;
-      cerr << "COMMAND PROCESSED: " << token << endl;
+      cout << "HANDLER COMMAND PROCESSED: " << token << endl;
 
     } while (token != "quit");
   }
@@ -159,7 +170,7 @@ namespace UCI {
   }
 
   void Handler::send(string toSend) const {
-    cout << toSend << endl;
+    *pOutputStream << toSend << endl;
   }
 
 }

@@ -37,13 +37,17 @@ namespace UCI {
 
   class Handler {
 
-    Semaphore mySemaphore;
     Engine engine;
+
+    istream* pInputStream = &cin;
+    ostream* pOutputStream = &cout;
 
   public:
 
     /** Constructor */
     Handler();
+    /** Constructor */
+    Handler(istream *in, ostream *out);
     /** Destructor */
     virtual ~Handler();
 
