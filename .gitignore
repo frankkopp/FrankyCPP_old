@@ -1,3 +1,6 @@
 test/lib/
 cmake-build-debug/
 cmake-build-release/
+cmake-build-relwithdebinfo/
+cmake-build-minsizerel/
+cmake-build-default/
