@@ -23,3 +23,39 @@
  *
  */
 
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
+#include "../../src/datatypes.h"
+#include "../../src/UCIHandler.h"
+
+using namespace std;
+using testing::Eq;
+
+thread startHandlerThread(UCI::Handler &uciHandler) {
+  thread myThread(&UCI::Handler::loop, uciHandler);
+  myThread.detach();
+  return myThread;
+}
+
+TEST(UCITest, baseTest) {
+  INIT::init();
+  NEWLINE
+
+  println("Creating UCIHandler")
+
+  istringstream is;
+  ostringstream os;
+
+  UCI::Handler uciHandler;
+  thread th = startHandlerThread(uciHandler);
+
+  while (true) {
+    //cout << "UI SENDING..." << endl;
+    //is."isready";
+    sleep(1);
+    //cout << "UI RECEIVED:" << os.str() << endl;
+    //os.clear();
+  }
+
+}
