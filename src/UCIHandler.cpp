@@ -35,24 +35,23 @@ using namespace std;
 
 namespace UCI {
 
-  Handler::Handler() = default;
-  Handler::Handler(istream *in, ostream *out) {
-    pInputStream = in;
-    pOutputStream = out;
+  Handler::Handler(Engine *pEngine) {
+    this->pEngine = pEngine;
+    pEngine->registerUCIHandler(this);
+  }
+
+  Handler::Handler(Engine *pEng, istream *pIstream, ostream *pOstream)
+  : Handler::Handler(pEng) {
+    pInputStream = pIstream;
+    pOutputStream = pOstream;
   };
+  
   Handler::~Handler() = default;
 
   void Handler::loop() {
     string cmd, token;
     do {
-
       cout << "HANDLER WAIT FOR COMMAND:" << endl;
-
-//      char* input[128];
-//      int noChars = pInputStream->readsome(*input, 128);
-//      cout << "FOUND " << noChars << " chars to read." << endl;
-//      istringstream inStream(*input);
-
       // Block here waiting for input or EOF
       // only blocks on cin!!
       if (!getline(*pInputStream, cmd)) cmd = "quit";
@@ -82,13 +81,16 @@ namespace UCI {
       else cerr << "Unknown UCI command: " << token << endl;
       cout << "HANDLER COMMAND PROCESSED: " << token << endl;
 
+      sleep(1);
+
     } while (token != "quit");
+
   }
 
   void Handler::uciCommand() {
     send("id name FrankyCPP");
     send("id author Frank Kopp, Germany");
-    send(engine.str());
+    send(pEngine->str());
     send("uciok");
   }
 
@@ -115,11 +117,11 @@ namespace UCI {
       if (!value.empty()) name += " ";
       value += token;
     }
-    engine.setOption(name, value);
+    pEngine->setOption(name, value);
   }
 
   void Handler::uciNewGameCommand() {
-    engine.newGame();
+    pEngine->newGame();
   }
 
   void Handler::positionCommand(istringstream &inStream) {
@@ -134,14 +136,14 @@ namespace UCI {
         startFen += token + " ";
       }
     }
-    engine.setPosition(startFen);
+    pEngine->setPosition(startFen);
     if (token == "moves") {
       vector<string> moves;
       while (inStream >> token) {
         moves.push_back(token);
       }
       for (const string &move : moves) {
-        engine.doMove(move);
+        pEngine->doMove(move);
       }
     }
   }

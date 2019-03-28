@@ -32,30 +32,41 @@
 using namespace std;
 using testing::Eq;
 
-thread startHandlerThread(UCI::Handler &uciHandler) {
-  thread myThread(&UCI::Handler::loop, uciHandler);
-  myThread.detach();
-  return myThread;
-}
-
-TEST(UCITest, baseTest) {
+TEST(UCITest, uciTest) {
   INIT::init();
   NEWLINE
 
-  println("Creating UCIHandler")
+  string command = "uci";
+  string expectedStart = "id name";
+  string expectedEnd = "uciok\n";
 
-  istringstream is;
+  println("COMMAND: " + command)
+  istringstream is(command);
   ostringstream os;
+  Engine engine;
+  UCI::Handler uciHandler(&engine, &is, &os);
+  uciHandler.loop();
+  string result = os.str();
+  println("RESPONSE: " + result)
 
-  UCI::Handler uciHandler;
-  thread th = startHandlerThread(uciHandler);
-
-  while (true) {
-    //cout << "UI SENDING..." << endl;
-    //is."isready";
-    sleep(1);
-    //cout << "UI RECEIVED:" << os.str() << endl;
-    //os.clear();
-  }
-
+  ASSERT_EQ(expectedStart, result.substr(0, 7));
+  ASSERT_EQ(expectedEnd, result.substr(result.size()-6, result.size()));
 }
+
+TEST(UCITest, isreadyTest) {
+  INIT::init();
+  NEWLINE
+
+  string command = "isready";
+  string expected = "readyok\n";
+
+  println("COMMAND: " + command)
+  istringstream is(command);
+  ostringstream os;
+  Engine engine;
+  UCI::Handler uciHandler(&engine, &is, &os);
+  uciHandler.loop();
+  println("RESPONSE: " + os.str())
+  ASSERT_EQ(expected, os.str());
+}
+

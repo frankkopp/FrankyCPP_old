@@ -28,26 +28,29 @@
 
 #include <thread>
 #include <iostream>
+
 #include "Semaphore.h"
 #include "Engine.h"
 
 using namespace std;
 
+class Engine;
+
 namespace UCI {
 
   class Handler {
 
-    Engine engine;
+    Engine *pEngine;
 
-    istream* pInputStream = &cin;
-    ostream* pOutputStream = &cout;
+    istream *pInputStream = &cin;
+    ostream *pOutputStream = &cout;
 
   public:
 
     /** Constructor */
-    Handler();
+    Handler(Engine *pEng);
     /** Constructor */
-    Handler(istream *in, ostream *out);
+    Handler(Engine *pEng, istream *pIstream, ostream *pOstream);
     /** Destructor */
     virtual ~Handler();
 
@@ -64,10 +67,10 @@ namespace UCI {
     void ponderHitCommand();
     void registerCommand(istringstream &inStream);
     void debugCommand(istringstream &inStream);
+    void send(string toSend) const;
 
   private:
 
-    void send(string toSend) const;
   };
 }
 #endif //FRANKYCPP_UCIPROTOCOLHANDLER_H

@@ -34,12 +34,10 @@ Engine::Engine() {
 }
 
 void Engine::initOptions() {
-
   // @formatter:off
   MAP("Hash",       UCI::Option("Hash", 1024, 1, 8192)); // spin
   MAP("Clear Hash", UCI::Option("Clear Hash"));          // button
   // @formatter:on
-
 }
 
 std::ostream &operator<<(std::ostream &os, const Engine &engine) {
@@ -66,16 +64,16 @@ std::string Engine::str() const {
   return os.str();
 }
 
-void Engine::newGame() {
-  println("Engine: New Game");
-}
-
 void Engine::clearHash() {
   println("Engine: Clear Hash");
 }
 
 void Engine::setOption(string name, string value) {
   println("Engine: Set option " + name + "=" + value);
+}
+
+void Engine::newGame() {
+  println("Engine: New Game");
 }
 
 void Engine::setPosition(string fen) {

@@ -23,17 +23,17 @@
  *
  */
 
+#include "datatypes.h"
+#include "Engine.h"
 #include "UCIHandler.h"
-#include "Bitboards.h"
-#include "Values.h"
-#include "Position.h"
 
 int main() {
 
   INIT::init();
 
-  auto uci = new UCI::Handler();
-  uci->loop();
+  Engine engine;
+  UCI::Handler uci(&engine);
+  uci.loop();
   
   return 0;
 }

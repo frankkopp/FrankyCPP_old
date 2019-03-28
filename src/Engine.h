@@ -29,6 +29,7 @@
 #include <map>
 #include <ostream>
 
+#include "UCIHandler.h"
 #include "UCIOption.h"
 #include "Position.h"
 
@@ -36,26 +37,41 @@
 
 using namespace std;
 
+namespace UCI {
+  class Handler;
+}
+
 class Engine {
 
   // a map for the engine's available options
   map<string, UCI::Option> optionMap;
 
+  // callback reference for sending responses to the uci ui
+  UCI::Handler *pUciHandler;
+
+  // engine's current position
   Position position;
 
 public:
 
   Engine();
-  void newGame();
 
-  void clearHash();
+  // callback reference for sending responses to the uci ui
+  void registerUCIHandler(UCI::Handler *handler) {
+    pUciHandler = handler;
+  };
+
+  // output
   string str() const;
-
   friend ostream &operator<<(ostream &os, const Engine &engine);
-  void setOption(string name, string value);
-  void setPosition(string fen);
 
+  // commands
+  void clearHash();
+  void setOption(string name, string value);
+  void newGame();
+  void setPosition(string fen);
   void doMove(string moveStr);
+
 private:
 
   void initOptions();
