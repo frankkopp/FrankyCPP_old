@@ -32,6 +32,8 @@
 #include "UCIHandler.h"
 #include "UCIOption.h"
 #include "Position.h"
+#include "Search.h"
+#include "SearchMode.h"
 
 #define MAP(name, option) optionMap.insert(make_pair(name, option));
 
@@ -52,6 +54,9 @@ class Engine {
   // engine's current position
   Position position;
 
+  // engine's search instance
+  Search search;
+
 public:
 
   Engine();
@@ -71,9 +76,11 @@ public:
   void newGame();
   void setPosition(string fen);
   void doMove(string moveStr);
+  void startSearch(SearchMode *pSearchMode);
+  void stopSearch();
 
+  void ponderHit();
 private:
-
   void initOptions();
 };
 

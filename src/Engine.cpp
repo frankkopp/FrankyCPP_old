@@ -65,14 +65,17 @@ std::string Engine::str() const {
 }
 
 void Engine::clearHash() {
+  // TODO
   println("Engine: Clear Hash");
 }
 
 void Engine::setOption(string name, string value) {
+  // TODO
   println("Engine: Set option " + name + "=" + value);
 }
 
 void Engine::newGame() {
+  // TODO
   println("Engine: New Game");
 }
 
@@ -89,4 +92,18 @@ void Engine::doMove(string moveStr) {
     return;
   }
   position.doMove(move);
+}
+
+void Engine::startSearch(SearchMode *pSearchMode) {
+  // TODO - this is just a placeholder
+  search.start();
+}
+
+void Engine::stopSearch() {
+  // TODO
+  println("Engine: STOP Search Command received");
+}
+void Engine::ponderHit() {
+  // TODO
+  println("Engine: Ponder Hit Command received");
 }

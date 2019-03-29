@@ -73,3 +73,59 @@ TEST(UCITest, isreadyTest) {
 // TODO Test Postion command
 
 
+// TODO Test go command
+
+TEST(UCITest, goTest) {
+  INIT::init();
+  NEWLINE
+
+  ostringstream os;
+  Engine engine;
+
+  string command = "go infinite";
+  println("COMMAND: " + command)
+  istringstream is(command);
+  UCI::Handler uciHandler(&engine, &is, &os);
+  uciHandler.loop();
+  SearchMode searchMode = uciHandler.getSearchMode();
+  ASSERT_TRUE(searchMode.infinite);
+
+  command = "go ponder";
+  println("COMMAND: " + command)
+  is = istringstream(command);
+  uciHandler = UCI::Handler(&engine, &is, &os);
+  uciHandler.loop();
+  searchMode = uciHandler.getSearchMode();
+  ASSERT_TRUE(searchMode.ponder);
+  
+  command = "go perft";
+  println("COMMAND: " + command)
+  is = istringstream(command);
+  uciHandler = UCI::Handler(&engine, &is, &os);
+  uciHandler.loop();
+  searchMode = uciHandler.getSearchMode();
+  ASSERT_TRUE(searchMode.perft);
+
+  command = "go depth 5";
+  println("COMMAND: " + command)
+  is = istringstream(command);
+  uciHandler = UCI::Handler(&engine, &is, &os);
+  uciHandler.loop();
+  searchMode = uciHandler.getSearchMode();
+  ASSERT_EQ(5, searchMode.depth);
+
+  command = "go movetime 600 moves e2e4 d2d4";
+  println("COMMAND: " + command)
+  is = istringstream(command);
+  uciHandler = UCI::Handler(&engine, &is, &os);
+  uciHandler.loop();
+  searchMode = uciHandler.getSearchMode();
+  ASSERT_EQ(600, searchMode.movetime);
+  ASSERT_EQ(createMove("e2e4"), searchMode.moves.front());
+  ASSERT_EQ(createMove("d2d4"), searchMode.moves.back());
+
+  
+
+
+}
+

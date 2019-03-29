@@ -23,9 +23,9 @@
  *
  */
 
-#include "UCISearchMode.h"
+#include "SearchMode.h"
 
-ostream &operator<<(ostream &os, const UCISearchMode &mode) {
+ostream &operator<<(ostream &os, const SearchMode &mode) {
   os << "whiteTime: " << mode.whiteTime << " blackTime: " << mode.blackTime << " whiteInc: "
      << mode.whiteInc << " blackInc: " << mode.blackInc << " movesToGo: " << mode.movesToGo
      << " depth: " << mode.depth << " nodes: " << mode.nodes << " mate: " << mode.mate

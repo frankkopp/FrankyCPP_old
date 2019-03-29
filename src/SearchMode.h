@@ -29,7 +29,7 @@
 #include <ostream>
 #include "datatypes.h"
 
-class UCISearchMode {
+class SearchMode {
 
 public:
   
@@ -49,7 +49,7 @@ public:
   bool infinite = false;
   bool perft    = false;
 
-  friend ostream &operator<<(ostream &os, const UCISearchMode &mode);
+  friend ostream &operator<<(ostream &os, const SearchMode &mode);
 
 };
 
