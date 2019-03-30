@@ -23,48 +23,52 @@
  *
  */
 
+
+#define MAP(name, option) optionMap.insert(make_pair(name, option));
+
 #ifndef FRANKYCPP_ENGINE_H
 #define FRANKYCPP_ENGINE_H
 
 #include <map>
 #include <ostream>
 
-#include "UCIHandler.h"
+#include "EngineConfig.h"
 #include "UCIOption.h"
+#include "UCIHandler.h"
 #include "Position.h"
 #include "Search.h"
-#include "SearchMode.h"
-
-#define MAP(name, option) optionMap.insert(make_pair(name, option));
+#include "SearchLimits.h"
 
 using namespace std;
 
-namespace UCI {
-  class Handler;
-}
+namespace UCI { class Handler; }
 
 class Engine {
 
   // a map for the engine's available options
-  map<string, UCI::Option> optionMap;
+  map<const string, UCI::Option> optionMap;
 
   // callback reference for sending responses to the uci ui
   UCI::Handler *pUciHandler;
 
+  // engine's search instance
+  Search search = Search(this);
+
   // engine's current position
   Position position;
 
-  // engine's search instance
-  Search search;
+  // engine's search limits
+  SearchLimits searchLimits;
 
 public:
+
+  // configuration
+  Config config;
 
   Engine();
 
   // callback reference for sending responses to the uci ui
-  void registerUCIHandler(UCI::Handler *handler) {
-    pUciHandler = handler;
-  };
+  void registerUCIHandler(UCI::Handler *handler) {pUciHandler = handler; };
 
   // output
   string str() const;
@@ -73,15 +77,19 @@ public:
   // commands
   void clearHash();
   void setOption(string name, string value);
+  string getOption(const string &name);
   void newGame();
   void setPosition(string fen);
   void doMove(string moveStr);
-  void startSearch(SearchMode *pSearchMode);
+  void startSearch(UCISearchMode *pSearchMode);
   void stopSearch();
-
+  bool isSearching();
   void ponderHit();
+
 private:
   void initOptions();
+  void updateConfig();
+  int getInt(const string &value) const;
 };
 
 #endif //FRANKYCPP_ENGINE_H

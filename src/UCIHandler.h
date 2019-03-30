@@ -29,9 +29,7 @@
 #include <thread>
 #include <iostream>
 
-#include "Semaphore.h"
-#include "Engine.h"
-#include "SearchMode.h"
+#include "UCISearchMode.h"
 
 using namespace std;
 
@@ -47,7 +45,7 @@ namespace UCI {
     ostream *pOutputStream = &cout;
 
     // stores the last search mode we read in from UCI protocoll
-    SearchMode searchMode;
+    UCISearchMode searchMode;
 
   public:
 
@@ -69,16 +67,17 @@ namespace UCI {
     void goCommand(istringstream &inStream);
     void stopCommand();
     void ponderHitCommand();
-    void registerCommand(istringstream &inStream);
-    void debugCommand(istringstream &inStream);
+    void registerCommand();
+    void debugCommand();
     void send(string toSend) const;
 
     ///////////////////
     //// GETTER
-    const SearchMode &getSearchMode() const { return searchMode; };
-  
+    const UCISearchMode &getSearchMode() const { return searchMode; };
+
   private:
 
   };
 }
+
 #endif //FRANKYCPP_UCIPROTOCOLHANDLER_H

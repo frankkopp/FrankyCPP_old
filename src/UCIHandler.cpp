@@ -28,9 +28,11 @@
 #include "unistd.h"
 
 #include "datatypes.h"
+
+#include "Engine.h"
 #include "UCIHandler.h"
 #include "Search.h"
-#include "SearchMode.h"
+#include "UCISearchMode.h"
 
 using namespace std;
 
@@ -76,13 +78,11 @@ namespace UCI {
       else if (token == "go") goCommand(inStream);
       else if (token == "stop") stopCommand();
       else if (token == "ponderhit") ponderHitCommand();
-      else if (token == "register") registerCommand(inStream);
-      else if (token == "debug") debugCommand(inStream);
+      else if (token == "register") registerCommand();
+      else if (token == "debug") debugCommand();
       else if (token == "noop") /* noop */;
       else cerr << "Unknown UCI command: " << token << endl;
       cout << "HANDLER COMMAND PROCESSED: " << token << endl;
-
-      sleep(1);
 
     } while (token != "quit");
 
@@ -150,7 +150,7 @@ namespace UCI {
   }
 
   void Handler::goCommand(istringstream &inStream) {
-    searchMode = SearchMode();
+    searchMode = UCISearchMode();
 
     string token, startFen;
 
@@ -287,11 +287,11 @@ namespace UCI {
     pEngine->ponderHit();
   }
 
-  void Handler::registerCommand(istringstream &inStream) {
+  void Handler::registerCommand() {
     cerr << "UCI Protocol Command: register not implemented!" << endl;
   }
 
-  void Handler::debugCommand(istringstream &inStream) {
+  void Handler::debugCommand() {
     cerr << "UCI Protocol Command: debug not implemented!" << endl;
   }
 

@@ -23,13 +23,35 @@
  *
  */
 
-#include "SearchMode.h"
+#ifndef FRANKYCPP_UCISEARCHMODE_H
+#define FRANKYCPP_UCISEARCHMODE_H
 
-ostream &operator<<(ostream &os, const SearchMode &mode) {
-  os << "whiteTime: " << mode.whiteTime << " blackTime: " << mode.blackTime << " whiteInc: "
-     << mode.whiteInc << " blackInc: " << mode.blackInc << " movesToGo: " << mode.movesToGo
-     << " depth: " << mode.depth << " nodes: " << mode.nodes << " mate: " << mode.mate
-     << " movetime: " << mode.movetime << " moves: " << mode.moves << " ponder: " << mode.ponder
-     << " infinite: " << mode.infinite << " perft: " << mode.perft;
-  return os;
-}
+#include <ostream>
+#include "datatypes.h"
+
+class UCISearchMode {
+
+public:
+  
+  // defaults
+  int          whiteTime = 0;
+  int          blackTime = 0;
+  int          whiteInc  = 0;
+  int          blackInc  = 0;
+  int          movesToGo = 0;
+  int          depth     = 0;
+  long         nodes     = 0;
+  int          mate      = 0;
+  int          movetime  = 0;
+  MoveList     moves;
+
+  bool ponder   = false;
+  bool infinite = false;
+  bool perft    = false;
+
+  friend ostream &operator<<(ostream &os, const UCISearchMode &mode);
+
+};
+
+
+#endif //FRANKYCPP_UCISEARCHMODE_H

@@ -23,35 +23,69 @@
  *
  */
 
-#ifndef FRANKYCPP_UCISEARCHMODE_H
-#define FRANKYCPP_UCISEARCHMODE_H
+#ifndef FRANKYCPP_SEARCHLIMITS_H
+#define FRANKYCPP_SEARCHLIMITS_H
 
+#include <chrono>
 #include <ostream>
+
 #include "datatypes.h"
 
-class SearchMode {
+using namespace std;
+
+typedef uint64_t Millisec;
+
+class SearchLimits {
 
 public:
-  
-  // defaults
-  int          whiteTime = 0;
-  int          blackTime = 0;
-  int          whiteInc  = 0;
-  int          blackInc  = 0;
-  int          movesToGo = 0;
-  int          depth     = 0;
-  long         nodes     = 0;
-  int          mate      = 0;
-  int          movetime  = 0;
-  MoveList     moves;
 
-  bool ponder   = false;
-  bool infinite = false;
-  bool perft    = false;
+  // defaults time control
+  Millisec whiteTime;
+  Millisec blackTime;
+  Millisec whiteInc;
+  Millisec blackInc;
+  Millisec moveTime;
+  int movesToGo;
 
-  friend ostream &operator<<(ostream &os, const SearchMode &mode);
+  // extra limits
+  int depth;
+  long nodes;
+  MoveList moves;
+
+  // no time control
+  int mate;
+  bool ponder;
+  bool infinite;
+  bool perft;
+
+  // state
+  bool timeControl = false;
+  int startDepth = 1;
+  int maxDepth = MAX_PLY;
+
+  // Constructor
+  SearchLimits();
+  SearchLimits(Millisec whiteTime,
+               Millisec blackTime,
+               Millisec whiteInc,
+               Millisec blackInc,
+               Millisec moveTime,
+               int movesToGo,
+               int depth,
+               long nodes,
+               const MoveList &moves,
+               int mate,
+               bool ponder,
+               bool infinite,
+               bool perft);
+
+  // output
+  friend ostream &operator<<(ostream &os, const SearchLimits &limits);
+
+private:
+  void setupLimits();
 
 };
 
 
-#endif //FRANKYCPP_UCISEARCHMODE_H
+#endif //FRANKYCPP_SEARCHLIMITS_H

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 Frank Kopp
+ * Copyright (c) 2018 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,29 +23,13 @@
  *
  */
 
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
+#include "UCISearchMode.h"
 
-#include "../../src/Engine.h"
-
-using testing::Eq;
-
-using namespace std;
-
-TEST(EngineTest, basic) {
-  Engine engine;
-  cout << "\nEngine" << engine << endl;
+ostream &operator<<(ostream &os, const UCISearchMode &mode) {
+  os << "whiteTime: " << mode.whiteTime << " blackTime: " << mode.blackTime << " whiteInc: "
+     << mode.whiteInc << " blackInc: " << mode.blackInc << " movesToGo: " << mode.movesToGo
+     << " depth: " << mode.depth << " nodes: " << mode.nodes << " mate: " << mode.mate
+     << " movetime: " << mode.movetime << " moves: " << mode.moves << " ponder: " << mode.ponder
+     << " infinite: " << mode.infinite << " perft: " << mode.perft;
+  return os;
 }
-
-TEST(EngineTest, startSearch) {
-  Engine engine;
-  UCISearchMode uciSearchMode;
-  uciSearchMode.infinite = true;
-  engine.startSearch(&uciSearchMode);
-
-  sleep(5);
-  engine.stopSearch();
-  while (engine.isSearching()) sleep(1);
-}
-
-

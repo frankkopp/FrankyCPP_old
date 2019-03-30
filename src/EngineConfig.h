@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 Frank Kopp
+ * Copyright (c) 2018 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,29 +23,12 @@
  *
  */
 
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
+#ifndef FRANKYCPP_SEARCHCONFIG_H
+#define FRANKYCPP_SEARCHCONFIG_H
 
-#include "../../src/Engine.h"
+struct Config {
+  int hash = 1024; // in MB
+  bool ponder = true;
+};
 
-using testing::Eq;
-
-using namespace std;
-
-TEST(EngineTest, basic) {
-  Engine engine;
-  cout << "\nEngine" << engine << endl;
-}
-
-TEST(EngineTest, startSearch) {
-  Engine engine;
-  UCISearchMode uciSearchMode;
-  uciSearchMode.infinite = true;
-  engine.startSearch(&uciSearchMode);
-
-  sleep(5);
-  engine.stopSearch();
-  while (engine.isSearching()) sleep(1);
-}
-
-
+#endif //FRANKYCPP_SEARCHCONFIG_H

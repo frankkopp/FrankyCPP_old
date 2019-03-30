@@ -24,36 +24,73 @@
  */
 
 #include <iostream>
+
 #include "Search.h"
+#include "Engine.h"
 
 using namespace std;
 
-void Search::start() {
+////////////////////////////////////////////////
+///// CONSTRUCTORS
 
-  cout << "Start Thread!\n";
-  thread myThread(&Search::run, this);
-  myThread.detach();
+Search::Search(Engine *pEng) {
+  pEngine = pEng;
+}
 
-  cout << "Wait for Thread init!\n";
+////////////////////////////////////////////////
+///// PUBLIC
+
+void Search::startSearch(SearchLimits *limits) {
+  if (running) {
+    cerr << "Search already running" << endl;
+    return;
+  }
+  pSearchLimits = limits;
+  // start search in a separate thread
+  myThread = thread(&Search::run, this);
+  // wait until thread is initialized before returning to caller
   mySemaphore.wait();
+  assert (running);
+}
 
-  cout << "Thread Started - return to caller\n";
+void Search::stopSearch() {
+  if (!running) return;
+  // set stop flag - search needs to check regularly and stop accordingly
+  stopSearchFlag = true;
+  // Wait for the thread to die
+  if (myThread.joinable()) myThread.join();
+  assert (!running);
 }
 
 void Search::run() {
+  stopSearchFlag = false;
+  running = true;
+
+  // DEBUG / PROTOTYPE
   cout << "New Thread: Started!\n";
 
-  for (int i = 0; i < 3; ++i) {
-    cout << "Init SIM: " << i << endl;
+  for (int i = 0; i < 2; ++i) {
+    cout << "Init SIMULATION: " << i << endl;
     this_thread::sleep_for(chrono::seconds(1));
   }
   cout << "New Thread: Init done!\n";
   mySemaphore.notify();
 
   cout << "New Thread: Start work...!\n";
-  for (int i = 0; i < 100; ++i) {
-    cout << "Search SIM: " << i << endl;
+  for (int i = 0; i < 20; ++i) {
+    cout << "Search SIMULATION: " << i << endl;
     this_thread::sleep_for(std::chrono::seconds(1));
+    if (stopSearchFlag) break;
   }
+
+  this_thread::sleep_for(std::chrono::seconds(1));
+  // DEBUG / PROTOTYPE
+
+  running = false;
   cout << "New Thread: Finished!\n";
 }
+
+bool Search::isRunning() {
+  return running;
+}
+

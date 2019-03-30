@@ -30,16 +30,42 @@
 #include <iostream>
 
 #include "Semaphore.h"
+#include "SearchLimits.h"
 
 using namespace std;
+
+class Engine;
 
 class Search {
 
   Semaphore mySemaphore;
   thread myThread;
 
+  Engine *pEngine;
+  SearchLimits *pSearchLimits;
+
+  // search state
+  bool running = false;
+  bool stopSearchFlag = false;
+
 public:
-  void start();
+
+  ////////////////////////////////////////////////
+  ///// CONSTRUCTORS
+
+  /** Default constructor creates a board with a back reference to the engine */
+  Search(Engine *pEng);
+  Search() = delete;
+  ~Search() = default;
+
+  /** starts the search in a separate thread with the given search limits */
+  void startSearch(SearchLimits *limits);
+
+  /** stops a running search gracefully - e.g. returns the best move found so far */
+  void stopSearch();
+
+  /** checks if the search is already running */
+  bool isRunning();
 
 private:
   void run();

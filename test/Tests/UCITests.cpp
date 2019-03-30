@@ -28,6 +28,7 @@
 
 #include "../../src/datatypes.h"
 #include "../../src/UCIHandler.h"
+#include "../../src/Engine.h"
 
 using namespace std;
 using testing::Eq;
@@ -70,10 +71,35 @@ TEST(UCITest, isreadyTest) {
   ASSERT_EQ(expected, os.str());
 }
 
-// TODO Test Postion command
+// TODO Test Position command
 
 
-// TODO Test go command
+// TODO Test setoption command
+
+TEST(UCITest, setoptionTest) {
+  INIT::init();
+  NEWLINE
+
+  ostringstream os;
+  Engine engine;
+
+  string command = "setoption name Hash value 2048";
+  println("COMMAND: " + command)
+  istringstream is(command);
+  UCI::Handler uciHandler(&engine, &is, &os);
+  uciHandler.loop();
+  ASSERT_EQ("2048", engine.getOption("Hash"));
+  ASSERT_EQ(2048, engine.config.hash);
+
+  command = "setoption name Ponder value false";
+  println("COMMAND: " + command)
+  is = istringstream(command);
+  uciHandler = UCI::Handler(&engine, &is, &os);
+  uciHandler.loop();
+  ASSERT_EQ("false", engine.getOption("Ponder"));
+  ASSERT_FALSE(engine.config.ponder);
+}
+
 
 TEST(UCITest, goTest) {
   INIT::init();
@@ -87,7 +113,7 @@ TEST(UCITest, goTest) {
   istringstream is(command);
   UCI::Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
-  SearchMode searchMode = uciHandler.getSearchMode();
+  UCISearchMode searchMode = uciHandler.getSearchMode();
   ASSERT_TRUE(searchMode.infinite);
 
   command = "go ponder";
@@ -123,9 +149,6 @@ TEST(UCITest, goTest) {
   ASSERT_EQ(600, searchMode.movetime);
   ASSERT_EQ(createMove("e2e4"), searchMode.moves.front());
   ASSERT_EQ(createMove("d2d4"), searchMode.moves.back());
-
-  
-
 
 }
 
