@@ -121,8 +121,7 @@ Position::Position(const Position &op) {
   std::copy(op.hasMateFlagHistory, op.hasMateFlagHistory + MAX_HISTORY, this->hasMateFlagHistory);
 }
 
-Position::~Position() {
-}
+Position::~Position() = default;
 
 ////////////////////////////////////////////////
 ///// PUBLIC
@@ -841,6 +840,7 @@ std::string Position::str() const {
   output << "Gamephase: " << gamePhase << endl;
   output << "Material: white=" << material[WHITE] << " black=" << material[BLACK] << endl;
   output << "PosValue: white=" << psqMidValue[WHITE] << " black=" << psqMidValue[BLACK] << endl;
+  output << "Zobrist Key: "<< zobristKey << endl;
   return output.str();
 }
 

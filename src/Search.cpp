@@ -52,6 +52,8 @@ void Search::startSearch(SearchLimits *limits) {
   pSearchLimits = limits;
   // make sure we have a semaphore available
   searchSemaphore.release();
+  // join() previous thread
+  if (myThread.joinable()) myThread.join();
   // start search in a separate thread
   myThread = thread(&Search::run, this);
   //myThread.detach();
@@ -104,19 +106,19 @@ void Search::run() {
     if (stopSearchFlag) break;
   }
 
-//  cout << "Generate debug move\n";
-//  MoveGenerator moveGenerator;
-//  cout << "Generate position\n";
-//  cout << pEngine->getPosition()->str() << endl;
-//  Position myPosition(*pEngine->getPosition());
-//  cout << myPosition.str() << endl;
-//  cout << pEngine->getPosition() << endl;
-//  cout << &myPosition << endl;
-//  cout << "Generate legal moves\n";
-//  MoveList moves = moveGenerator.generateLegalMoves(GENALL, &myPosition);
-//  cout << "Legal Moves: " << moves << endl;
-//  cout << "Send move\n";
-  //pEngine->sendResult(moves.front(), NOMOVE);
+  cout << "Generate debug move\n";
+  MoveGenerator moveGenerator;
+  cout << "Generate position\n";
+  cout << pEngine->getPosition()->str() << endl;
+  Position myPosition(*pEngine->getPosition());
+  cout << myPosition.str() << endl;
+  cout << pEngine->getPosition() << endl;
+  cout << &myPosition << endl;
+  cout << "Generate legal moves\n";
+  MoveList moves = moveGenerator.generateLegalMoves(GENALL, &myPosition);
+  cout << "Legal Moves: " << moves << endl;
+  cout << "Send move\n";
+  pEngine->sendResult(moves.front(), NOMOVE);
 
   // DEBUG / PROTOTYPE
 
