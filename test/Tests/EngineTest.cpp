@@ -46,6 +46,12 @@ TEST(EngineTest, startSearch) {
   sleep(5);
   engine.stopSearch();
   while (engine.isSearching()) sleep(1);
+
+  engine.startSearch(&uciSearchMode);
+
+  sleep(5);
+  engine.stopSearch();
+  while (engine.isSearching()) sleep(1);
 }
 
 

@@ -26,7 +26,6 @@
 #ifndef FRANKYCPP_UCIOPTION_H
 #define FRANKYCPP_UCIOPTION_H
 
-#include <iostream>
 #include <sstream>
 
 namespace UCI {
@@ -71,7 +70,7 @@ namespace UCI {
     const string &getMaxValue() const { return maxValue; }
     const string &getVarValue() const { return varValue; }
     string getCurrentValue() const { return currentValue; }
-    void  setCurrentValue(string value)  { currentValue = value; }
+    void  setCurrentValue(string value)  { currentValue = std::move(value); }
 
   };
 

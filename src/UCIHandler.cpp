@@ -47,17 +47,21 @@ namespace UCI {
     : Handler::Handler(pEng) {
     pInputStream = pIstream;
     pOutputStream = pOstream;
-  };
+  }
 
   Handler::~Handler() = default;
 
   void Handler::loop() {
+    loop(pInputStream);
+  }
+
+  void Handler::loop(istream *pIstream) {
     string cmd, token;
     do {
       cout << "HANDLER WAIT FOR COMMAND:" << endl;
       // Block here waiting for input or EOF
       // only blocks on cin!!
-      if (!getline(*pInputStream, cmd)) cmd = "quit";
+      if (!getline(*pIstream, cmd)) cmd = "quit";
       //  create the stream object
       istringstream inStream(cmd);
 
@@ -67,7 +71,7 @@ namespace UCI {
       // read word from stream delimiter is whitespace
       // to get line use inStream.str()
       inStream >> skipws >> token;
-      cout << "HANDLER RECEIVED: " << token << endl;
+      cout << "HANDLER COMMAND RECEIVED: " << token << endl;
 
       if (token == "quit") break;
       else if (token == "uci") uciCommand();
@@ -166,7 +170,7 @@ namespace UCI {
       }
       if (token == "ponder") {
         searchMode.ponder = true;
-      };
+      }
       if (token == "wtime") {
         inStream >> token;
         try {
@@ -178,7 +182,7 @@ namespace UCI {
         catch (out_of_range &e ) {
           cerr << "wtime invalid - numeric value out of range of int. Was " << token << endl;
         }
-      };
+      }
       if (token == "btime") {
         inStream >> token;
         try {
@@ -190,7 +194,7 @@ namespace UCI {
         catch (out_of_range &e ) {
           cerr << "btime invalid - numeric value out of range of int. Was " << token << endl;
         }
-      };
+      }
       if (token == "winc") {
         inStream >> token;
         try {
@@ -202,7 +206,7 @@ namespace UCI {
         catch (out_of_range &e ) {
           cerr << "winc invalid - numeric value out of range of int. Was " << token << endl;
         }
-      };
+      }
       if (token == "binc") {
         inStream >> token;
         try {
@@ -214,7 +218,7 @@ namespace UCI {
         catch (out_of_range &e ) {
           cerr << "binc invalid - numeric value out of range of int. Was " << token << endl;
         }
-      };
+      }
       if (token == "movestogo") {
         inStream >> token;
         try {
@@ -226,7 +230,7 @@ namespace UCI {
         catch (out_of_range &e ) {
           cerr << "movestogo invalid - numeric value out of range of int. Was " << token << endl;
         }
-      };
+      }
       if (token == "depth") {
         inStream >> token;
         try {
@@ -238,7 +242,7 @@ namespace UCI {
         catch (out_of_range &e ) {
           cerr << "depth invalid - numeric value out of range of int. Was " << token << endl;
         }
-      };
+      }
       if (token == "mate") {
         inStream >> token;
         try {
@@ -250,7 +254,7 @@ namespace UCI {
         catch (out_of_range &e ) {
           cerr << "mate invalid - numeric value out of range of int. Was " << token << endl;
         }
-      };
+      }
       if (token == "movetime") {
         inStream >> token;
         try {
@@ -262,20 +266,17 @@ namespace UCI {
         catch (out_of_range &e ) {
           cerr << "movetime invalid - numeric value out of range of int. Was " << token << endl;
         }
-      };
+      }
       if (token == "infinite") {
         searchMode.infinite = true;
-      };
+      }
       if (token == "perft") {
         searchMode.perft = true;
-      };
-
-      cout << "HANDLER GO SUBCOMMAND PROCESSED: " << token << endl << searchMode << endl;
+      }
     }
 
     // start search in engine
-    println("Start Search to be implemented")
-    //pEngine->startSearch(&searchMode);
+    pEngine->startSearch(&searchMode);
   }
 
   void Handler::stopCommand() {
@@ -295,8 +296,14 @@ namespace UCI {
     cerr << "UCI Protocol Command: debug not implemented!" << endl;
   }
 
-  void Handler::send(string toSend) const {
+  void Handler::send(const string& toSend) const {
     *pOutputStream << toSend << endl;
+  }
+
+  void Handler::sendResult(Move bestMove, Move ponderMove) {
+    *pOutputStream << "bestmove " << bestMove;
+    if (isMove(ponderMove)) *pOutputStream << " ponderOption " << ponderMove;
+    *pOutputStream << endl;
   }
 
 }

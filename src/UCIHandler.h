@@ -50,14 +50,17 @@ namespace UCI {
   public:
 
     /** Constructor */
-    Handler(Engine *pEng);
+    explicit Handler(Engine *pEng);
     /** Constructor */
     Handler(Engine *pEng, istream *pIstream, ostream *pOstream);
     /** Destructor */
     virtual ~Handler();
 
-    /** Starts the handler loop */
+    /** Starts the handler loop with the istream provided when creating the instance */
     void loop();
+
+    /** Starts the handler loop  with the given istream (mainly for testing) */
+    void loop(istream *pIstream);
 
     void uciCommand();
     void isReadyCommand();
@@ -69,13 +72,13 @@ namespace UCI {
     void ponderHitCommand();
     void registerCommand();
     void debugCommand();
-    void send(string toSend) const;
+    void send(const string& toSend) const;
 
     ///////////////////
     //// GETTER
     const UCISearchMode &getSearchMode() const { return searchMode; };
 
-  private:
+    void sendResult(Move bestMove, Move ponderMove);
 
   };
 }

@@ -10,8 +10,8 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -23,19 +23,18 @@
  *
  */
 
+#include <algorithm>
 #include <iostream>
 
-#include "Search.h"
 #include "Engine.h"
+#include "Search.h"
 
 using namespace std;
 
 ////////////////////////////////////////////////
 ///// CONSTRUCTORS
 
-Search::Search(Engine *pEng) {
-  pEngine = pEng;
-}
+Search::Search(Engine *pEng) { pEngine = pEng; }
 
 ////////////////////////////////////////////////
 ///// PUBLIC
@@ -50,16 +49,18 @@ void Search::startSearch(SearchLimits *limits) {
   myThread = thread(&Search::run, this);
   // wait until thread is initialized before returning to caller
   mySemaphore.wait();
-  assert (running);
+  assert(running);
 }
 
 void Search::stopSearch() {
-  if (!running) return;
+  if (!running)
+    return;
   // set stop flag - search needs to check regularly and stop accordingly
   stopSearchFlag = true;
   // Wait for the thread to die
-  if (myThread.joinable()) myThread.join();
-  assert (!running);
+  if (myThread.joinable())
+    myThread.join();
+  assert(!running);
 }
 
 void Search::run() {
@@ -77,20 +78,31 @@ void Search::run() {
   mySemaphore.notify();
 
   cout << "New Thread: Start work...!\n";
-  for (int i = 0; i < 20; ++i) {
+  for (int i = 0; i < 5; ++i) {
     cout << "Search SIMULATION: " << i << endl;
     this_thread::sleep_for(std::chrono::seconds(1));
-    if (stopSearchFlag) break;
+    if (stopSearchFlag)
+      break;
   }
 
-  this_thread::sleep_for(std::chrono::seconds(1));
+  cout << "Generate debug move\n";
+  MoveGenerator moveGenerator;
+  cout << "Generate position\n";
+  cout << pEngine->getPosition()->str() << endl;
+  Position myPosition(*pEngine->getPosition());
+  cout << myPosition.str() << endl;
+  cout << pEngine->getPosition() << endl;
+  cout << &myPosition << endl;
+  cout << "Generate legal moves\n";
+  MoveList moves = moveGenerator.generateLegalMoves(GENALL, &myPosition);
+  cout << "Legal Moves: " << moves << endl;
+  cout << "Send move\n";
+  pEngine->sendResult(moves.front(), NOMOVE);
+
   // DEBUG / PROTOTYPE
 
   running = false;
   cout << "New Thread: Finished!\n";
 }
 
-bool Search::isRunning() {
-  return running;
-}
-
+bool Search::isRunning() { return running; }

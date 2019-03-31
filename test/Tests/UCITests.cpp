@@ -100,7 +100,6 @@ TEST(UCITest, setoptionTest) {
   ASSERT_FALSE(engine.config.ponder);
 }
 
-
 TEST(UCITest, goTest) {
   INIT::init();
   NEWLINE
@@ -138,7 +137,7 @@ TEST(UCITest, goTest) {
   uciHandler = UCI::Handler(&engine, &is, &os);
   uciHandler.loop();
   searchMode = uciHandler.getSearchMode();
-  ASSERT_EQ(5, searchMode.depth);
+  ASSERT_EQ(5, searchMode.depth);                                                       
 
   command = "go movetime 600 moves e2e4 d2d4";
   println("COMMAND: " + command)
@@ -152,3 +151,23 @@ TEST(UCITest, goTest) {
 
 }
 
+TEST(UCITest, moveTest) {
+  INIT::init();
+  NEWLINE
+
+  ostringstream os;
+  Engine engine;
+
+  string command = "position startpos moves e2e4";
+  println("COMMAND: " + command)
+  istringstream is(command);
+  UCI::Handler uciHandler(&engine, &is, &os);
+  uciHandler.loop();
+
+  command = "go wtime 60000 btime 60000 winc 0 binc 0 movestogo 40";
+  println("COMMAND: " + command)
+  is = istringstream(command);
+  uciHandler.loop(&is);
+  
+
+}

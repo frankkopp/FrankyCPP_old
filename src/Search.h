@@ -10,8 +10,8 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -26,11 +26,11 @@
 #ifndef FRANKYCPP_SEARCH_H
 #define FRANKYCPP_SEARCH_H
 
-#include <thread>
 #include <iostream>
+#include <thread>
 
-#include "Semaphore.h"
 #include "SearchLimits.h"
+#include "Semaphore.h"
 
 using namespace std;
 
@@ -49,7 +49,6 @@ class Search {
   bool stopSearchFlag = false;
 
 public:
-
   ////////////////////////////////////////////////
   ///// CONSTRUCTORS
 
@@ -61,7 +60,8 @@ public:
   /** starts the search in a separate thread with the given search limits */
   void startSearch(SearchLimits *limits);
 
-  /** stops a running search gracefully - e.g. returns the best move found so far */
+  /** stops a running search gracefully - e.g. returns the best move found so
+   * far */
   void stopSearch();
 
   /** checks if the search is already running */
@@ -69,9 +69,6 @@ public:
 
 private:
   void run();
-
-
 };
 
-
-#endif //FRANKYCPP_SEARCH_H
+#endif // FRANKYCPP_SEARCH_H

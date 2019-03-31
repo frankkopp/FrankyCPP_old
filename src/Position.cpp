@@ -26,6 +26,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "Random.h"
 #include "UCIHandler.h"
 #include "Position.h"
 #include "MoveGenerator.h"

@@ -30,7 +30,6 @@
 
 #include "../test/lib/googletest-master/googletest/include/gtest/gtest_prod.h"
 #include "datatypes.h"
-#include "Random.h"
 #include "Values.h"
 #include "Bitboards.h"
 #include "MoveGenerator.h"
@@ -62,9 +61,6 @@ class Position {
   enum Flag {
     FLAG_TBD, FLAG_FALSE, FLAG_TRUE
   };
-
-  // Random number generator
-  static const Random rng;
 
   static const int MAX_HISTORY = 256;
 

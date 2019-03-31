@@ -23,7 +23,6 @@
  *
  */
 
-#include "datatypes.h"
 #include "Values.h"
 #include "Bitboards.h"
 #include "Position.h"

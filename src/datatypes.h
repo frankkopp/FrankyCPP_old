@@ -398,6 +398,7 @@ inline std::ostream &operator<<(std::ostream &os, const Move &move) {
 
 /** returns a verbose representation of the move as string */
 inline std::string printMove(const Move &move) {
+  if (move == NOMOVE) return "NOMOVE";
   std::string tp;
   std::string promPt;
   switch (typeOf(move)) {

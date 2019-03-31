@@ -23,9 +23,6 @@
  *
  */
 
-
-#define MAP(name, option) optionMap.insert(make_pair(name, option));
-
 #ifndef FRANKYCPP_ENGINE_H
 #define FRANKYCPP_ENGINE_H
 
@@ -38,6 +35,8 @@
 #include "Position.h"
 #include "Search.h"
 #include "SearchLimits.h"
+
+#define MAP(name, option) optionMap.insert(make_pair(name, option));
 
 using namespace std;
 
@@ -68,7 +67,7 @@ public:
   Engine();
 
   // callback reference for sending responses to the uci ui
-  void registerUCIHandler(UCI::Handler *handler) {pUciHandler = handler; };
+  void registerUCIHandler(UCI::Handler *handler) { pUciHandler = handler; };
 
   // output
   string str() const;
@@ -76,15 +75,18 @@ public:
 
   // commands
   void clearHash();
-  void setOption(string name, string value);
+  void setOption(const string& name, const string& value);
   string getOption(const string &name);
   void newGame();
   void setPosition(string fen);
+  Position *getPosition() { return &position; };
   void doMove(string moveStr);
   void startSearch(UCISearchMode *pSearchMode);
   void stopSearch();
   bool isSearching();
   void ponderHit();
+
+  void sendResult(Move bestMove, Move ponderMove);
 
 private:
   void initOptions();

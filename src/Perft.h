@@ -29,7 +29,6 @@
 #include <string>
 
 #include "datatypes.h"
-#include "Bitboards.h"
 #include "Position.h"
 #include "MoveGenerator.h"
 
@@ -37,11 +36,11 @@ using namespace std;
 
 class Perft {
 
-  long   nodes;
-  long   checkCounter;
-  long   checkMateCounter;
-  long   captureCounter;
-  long   enpassantCounter;
+  long   nodes{};
+  long   checkCounter{};
+  long   checkMateCounter{};
+  long   captureCounter{};
+  long   enpassantCounter{};
   string fen;
 
 public:

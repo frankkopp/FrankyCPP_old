@@ -24,16 +24,16 @@
  */
 
 #include "datatypes.h"
-#include "Engine.h"
-#include "UCIHandler.h"
+//#include "Engine.h"
+//#include "UCIHandler.h"
 
 int main() {
 
   INIT::init();
 
-  Engine engine;
-  UCI::Handler uci(&engine);
-  uci.loop();
+//  Engine engine;
+//  UCI::Handler uci(&engine);
+//  uci.loop();
   
   return 0;
 }
