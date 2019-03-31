@@ -74,10 +74,10 @@ MoveGenerator::getNextPseudoLegalMove(GenMode genMode, Position *pPosition) {
   }
 
   /*
-    * If the list is currently empty and we have not generated all moves yet
-    * generate the next batch until we have new moves or all moves are generated
-    * and there are no more moves to generate
-    */
+   * If the list is currently empty and we have not generated all moves yet
+   * generate the next batch until we have new moves or all moves are generated
+   * and there are no more moves to generate
+   */
   while (onDemandMoves.empty() && currentODStage < OD_END) {
     switch (currentODStage) {
       case OD_NEW:
