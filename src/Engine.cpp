@@ -30,18 +30,12 @@
 using namespace std;
 
 ////////////////////////////////////////////////
-///// PUBLIC
+///// CONSTRUCTORS
 
 Engine::Engine() { initOptions(); }
 
-void Engine::initOptions() {
-  // @formatter:off
-  MAP("Hash", UCI::Option("Hash", config.hash, 1, 8192)); // spin
-  MAP("Clear Hash", UCI::Option("Clear Hash"));           // button
-  MAP("Ponder", UCI::Option("Ponder", config.ponder));    // check
-  // @formatter:on
-  updateConfig();
-}
+////////////////////////////////////////////////
+///// PUBLIC
 
 std::ostream &operator<<(std::ostream &os, const Engine &engine) {
   os << engine.str();
@@ -154,8 +148,21 @@ void Engine::sendResult(Move bestMove, Move ponderMove) {
   pUciHandler->sendResult(bestMove, ponderMove);
 }
 
+void Engine::waitWhileSearching() {
+  search.waitWhileSearching();
+}
+
 ////////////////////////////////////////////////
 ///// PRIVATE
+
+void Engine::initOptions() {
+  // @formatter:off
+  MAP("Hash", UCI::Option("Hash", config.hash, 1, 8192)); // spin
+  MAP("Clear Hash", UCI::Option("Clear Hash"));           // button
+  MAP("Ponder", UCI::Option("Ponder", config.ponder));    // check
+  // @formatter:on
+  updateConfig();
+}
 
 void Engine::updateConfig() {
   // iterate through all UCI options and update config accordingly
@@ -181,4 +188,5 @@ int Engine::getInt(const string &value) const {
   }
   return intValue;
 }
+
 

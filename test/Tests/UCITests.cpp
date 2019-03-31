@@ -168,6 +168,9 @@ TEST(UCITest, moveTest) {
   println("COMMAND: " + command)
   is = istringstream(command);
   uciHandler.loop(&is);
-  
+
+  cout << "Waiting until search ends..." << endl;
+  engine.waitWhileSearching();
+  cout << "SEARCH ENDED" << endl;
 
 }

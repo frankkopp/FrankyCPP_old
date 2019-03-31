@@ -43,15 +43,20 @@ TEST(EngineTest, startSearch) {
   uciSearchMode.infinite = true;
   engine.startSearch(&uciSearchMode);
 
-  sleep(5);
-  engine.stopSearch();
-  while (engine.isSearching()) sleep(1);
+  cout << "Start and Stop test..." << endl;
+  for (int i = 0; i < 5; ++i) {
+    sleep(3);
+    engine.stopSearch();
+    engine.waitWhileSearching();
 
-  engine.startSearch(&uciSearchMode);
+    engine.startSearch(&uciSearchMode);
 
-  sleep(5);
-  engine.stopSearch();
-  while (engine.isSearching()) sleep(1);
+    sleep(3);
+    engine.stopSearch();
+    engine.waitWhileSearching();
+  }
+  cout << "...FINISHED" << endl;
+
 }
 
 

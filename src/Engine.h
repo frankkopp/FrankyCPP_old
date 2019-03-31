@@ -61,10 +61,16 @@ class Engine {
 
 public:
 
-  // configuration
+  // configuration (public for convenience)
   Config config;
 
+  ////////////////////////////////////////////////
+  ///// CONSTRUCTORS
+
   Engine();
+
+  ////////////////////////////////////////////////
+  ///// PUBLIC
 
   // callback reference for sending responses to the uci ui
   void registerUCIHandler(UCI::Handler *handler) { pUciHandler = handler; };
@@ -86,9 +92,17 @@ public:
   bool isSearching();
   void ponderHit();
 
+  // send to UCI
   void sendResult(Move bestMove, Move ponderMove);
 
+  // other
+  void waitWhileSearching();
+
 private:
+
+  ////////////////////////////////////////////////
+  ///// PRIVATE
+
   void initOptions();
   void updateConfig();
   int getInt(const string &value) const;

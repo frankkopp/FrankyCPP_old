@@ -31,13 +31,13 @@ public:
   basic_semaphore& operator=(basic_semaphore&&) = delete;
 
   // methods
-  void notify();
-  void wait();
-  bool try_wait();
+  void release();
+  void getOrWait();
+  bool get();
   template<class Rep, class Period>
-  bool wait_for(const std::chrono::duration<Rep, Period>& d);
+  bool getOrWaitFor(const std::chrono::duration<Rep, Period> &d);
   template<class Clock, class Duration>
-  bool wait_until(const std::chrono::time_point<Clock, Duration>& t);
+  bool getOrWaitUntil(const std::chrono::time_point<Clock, Duration> &t);
 
   native_handle_type native_handle();
 
@@ -68,7 +68,7 @@ basic_semaphore<Mutex, CondVar>::basic_semaphore(size_t count) : mCount{count} {
  * @return
  */
 template <typename Mutex, typename CondVar>
-bool basic_semaphore<Mutex, CondVar>::try_wait() {
+bool basic_semaphore<Mutex, CondVar>::get() {
 
   // get the lock - will be released when exiting the block
   // as it is set in the destructor of this class
@@ -86,7 +86,7 @@ bool basic_semaphore<Mutex, CondVar>::try_wait() {
  * Release a semaphore for others to grab
  */
 template <typename Mutex, typename CondVar>
-void basic_semaphore<Mutex, CondVar>::notify() {
+void basic_semaphore<Mutex, CondVar>::release() {
   // get the lock - will be released when exiting the block
   // as it is set in the destructor of this class
   std::lock_guard<Mutex> lock{mMutex};
@@ -100,7 +100,7 @@ void basic_semaphore<Mutex, CondVar>::notify() {
  * @tparam CondVar
  */
 template <typename Mutex, typename CondVar>
-void basic_semaphore<Mutex, CondVar>::wait() {
+void basic_semaphore<Mutex, CondVar>::getOrWait() {
   // get the lock - will be released when exiting the block
   // as it is set in the destructor of this class
   std::unique_lock<Mutex> lock{mMutex};
@@ -121,7 +121,7 @@ void basic_semaphore<Mutex, CondVar>::wait() {
  */
 template <typename Mutex, typename CondVar>
 template<class Rep, class Period>
-bool basic_semaphore<Mutex, CondVar>::wait_for(const std::chrono::duration<Rep, Period>& d) {
+bool basic_semaphore<Mutex, CondVar>::getOrWaitFor(const std::chrono::duration<Rep, Period> &d) {
   // get the lock - will be released when exiting the block
   // as it is set in the destructor of this class
   std::unique_lock<Mutex> lock{mMutex};
@@ -146,7 +146,8 @@ bool basic_semaphore<Mutex, CondVar>::wait_for(const std::chrono::duration<Rep, 
  */
 template <typename Mutex, typename CondVar>
 template<class Clock, class Duration>
-bool basic_semaphore<Mutex, CondVar>::wait_until(const std::chrono::time_point<Clock, Duration>& t) {
+bool basic_semaphore<Mutex, CondVar>::getOrWaitUntil(
+  const std::chrono::time_point<Clock, Duration> &t) {
   // get the lock - will be released when exiting the block
   // as it is set in the destructor of this class
   std::unique_lock<Mutex> lock{mMutex};

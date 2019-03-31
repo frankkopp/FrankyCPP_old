@@ -24,7 +24,7 @@ State myState = NONE;
 TEST(SemaphoreTest, basic) {
 
   // semaphore should not be available
-  ASSERT_FALSE(mySemaphore.try_wait());
+  ASSERT_FALSE(mySemaphore.get());
   ASSERT_EQ(NONE, myState);
 
   std::cout << "Start Thread!\n";
@@ -33,8 +33,8 @@ TEST(SemaphoreTest, basic) {
   ASSERT_EQ(NEW, myState);
 
   std::cout << "Wait for Thread init!\n";
-  mySemaphore.wait();
-  ASSERT_FALSE(mySemaphore.try_wait());
+  mySemaphore.getOrWait();
+  ASSERT_FALSE(mySemaphore.get());
   ASSERT_EQ(INITIALIZED, myState);
 
   std::cout << "Thread Started\n";
@@ -54,7 +54,7 @@ void run() {
   std::this_thread::sleep_for(std::chrono::seconds(2));
   myState = INITIALIZED;
   std::cout << "New Thread: Init done!\n";
-  mySemaphore.notify();
+  mySemaphore.release();
   if (myThread.get_id() == std::this_thread::get_id()) std::cout << "run: NEW THREAD\n";
   else std::cout << "run: OLD THREAD\n";
   std::this_thread::sleep_for(std::chrono::seconds(2));

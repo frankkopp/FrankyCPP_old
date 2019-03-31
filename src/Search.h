@@ -38,11 +38,12 @@ class Engine;
 
 class Search {
 
-  Semaphore mySemaphore;
+  Semaphore initSemaphore; // used to block while initializing thread
+  Semaphore searchSemaphore; // used to block while searching
   thread myThread;
 
   Engine *pEngine;
-  SearchLimits *pSearchLimits;
+  SearchLimits *pSearchLimits{};
 
   // search state
   bool running = false;
@@ -53,9 +54,12 @@ public:
   ///// CONSTRUCTORS
 
   /** Default constructor creates a board with a back reference to the engine */
-  Search(Engine *pEng);
+  explicit Search(Engine *pEng);
   Search() = delete;
-  ~Search() = default;
+  virtual ~Search();
+
+  ////////////////////////////////////////////////
+  ///// PUBLIC
 
   /** starts the search in a separate thread with the given search limits */
   void startSearch(SearchLimits *limits);
@@ -67,7 +71,13 @@ public:
   /** checks if the search is already running */
   bool isRunning();
 
+  /** wait while searching */
+  void waitWhileSearching();
+
 private:
+  ////////////////////////////////////////////////
+  ///// PRIVATE
+
   void run();
 };
 
