@@ -249,7 +249,7 @@ TEST(MoveGenTest, pseudoLegalMoves) {
 
 TEST(MoveGenTest, legalMoves) {
   INIT::init();
-  NEWLINE
+  NEWLINE;
 
   string fen;
   MoveGenerator mg;
@@ -268,7 +268,7 @@ TEST(MoveGenTest, legalMoves) {
     cout << printMove(m) << endl;
   }
   ASSERT_EQ(20, moves.size());
-  NEWLINE
+  NEWLINE;
 
   // 86 pseudo legal moves (incl. castling over attacked square)
   fen = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3";
@@ -282,7 +282,7 @@ TEST(MoveGenTest, legalMoves) {
     cout << printMove(m) << endl;
   }
   ASSERT_EQ(86, moves.size());
-  NEWLINE
+  NEWLINE;
 
   moves.clear();
   genMode = GENALL;
@@ -294,12 +294,12 @@ TEST(MoveGenTest, legalMoves) {
   cout << moves << endl;
   ASSERT_FALSE(position.isLegalMove(createMove<CASTLING>(SQ_E8, SQ_G8)));
   ASSERT_EQ(83, moves.size());
-  NEWLINE
+  NEWLINE;
 }
 
 TEST(MoveGenTest, onDemandGen) {
   INIT::init();
-  NEWLINE
+  NEWLINE;
 
   string fen;
   MoveGenerator mg;
@@ -320,9 +320,9 @@ TEST(MoveGenTest, onDemandGen) {
     cout << printMove(move) << " (" << int(move) << ")" << endl;
     counter++;
   }
-  println("Moves: " + to_string(counter))
+  println("Moves: " + to_string(counter));
   ASSERT_EQ(86, counter);
-  NEWLINE
+  NEWLINE;
 
   // 218 moves
   fen = "R6R/3Q4/1Q4Q1/4Q3/2Q4Q/Q4Q2/pp1Q4/kBNN1KB1 w - - 0 1";
@@ -337,16 +337,16 @@ TEST(MoveGenTest, onDemandGen) {
     cout << printMove(move) << " (" << int(move) << ")" << endl;
     counter++;
   }
-  println("Moves: " + to_string(counter))
+  println("Moves: " + to_string(counter));
   ASSERT_EQ(218, counter);
-  NEWLINE
+  NEWLINE;
 
 }
 
 TEST(MoveGenTest, hasLegalMoves) {
   Position::init();
   Bitboards::init();
-  NEWLINE
+  NEWLINE;
 
   string fen;
   MoveGenerator mg;
@@ -354,7 +354,7 @@ TEST(MoveGenTest, hasLegalMoves) {
 
   fen = "rn2kbnr/pbpp1ppp/8/1p2p1q1/4K3/3P4/PPP1PPPP/RNBQ1BNR w kq -";
   Position position(fen);
-  println(position.str())
+  println(position.str());
 
   moves = mg.generateLegalMoves(GENALL, &position);
   const bool expected = mg.hasLegalMove(&position);

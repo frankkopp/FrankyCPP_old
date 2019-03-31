@@ -91,16 +91,12 @@ void Search::run() {
 
   // DEBUG / PROTOTYPE
   cout << "New Thread: Started!\n";
-
-  for (int i = 0; i < 2; ++i) {
-    cout << "Init SIMULATION: " << i << endl;
     this_thread::sleep_for(chrono::seconds(1));
-  }
   cout << "New Thread: Init done!\n";
   initSemaphore.release();
 
   cout << "New Thread: Start work...!\n";
-  for (int i = 0; i < 5; ++i) {
+  for (int i = 0; i < 2; ++i) {
     cout << "Search SIMULATION: " << i << endl;
     this_thread::sleep_for(std::chrono::seconds(1));
     if (stopSearchFlag) break;
@@ -118,6 +114,9 @@ void Search::run() {
   MoveList moves = moveGenerator.generateLegalMoves(GENALL, &myPosition);
   cout << "Legal Moves: " << moves << endl;
   cout << "Send move\n";
+  ostringstream ss;
+  ss << moves;
+  pEngine->sendInfo(ss.str());
   pEngine->sendResult(moves.front(), NOMOVE);
 
   // DEBUG / PROTOTYPE

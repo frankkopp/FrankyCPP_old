@@ -119,7 +119,7 @@ TEST(MoveTest, moves) {
 }
 
 TEST(MoveTest, movesValue) {
-  NEWLINE
+  NEWLINE;
   Move move = createMove<NORMAL>(SQ_A1, SQ_H1);
 
   ASSERT_EQ(VALUE_NONE, valueOf(move));
@@ -211,7 +211,7 @@ TEST(CastlingTest, castling) {
 
 TEST(MoveListTest, moveListPrint) {
   INIT::init();
-  NEWLINE
+  NEWLINE;
 
   Move move1 = createMove<NORMAL>(SQ_A1, SQ_H1);
   Move move2 = createMove<PROMOTION>(SQ_A7, SQ_A8, QUEEN);

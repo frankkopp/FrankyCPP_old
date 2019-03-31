@@ -39,9 +39,9 @@
 using namespace std;
 
 // convenience macros
-#define NEWLINE std::cout << std::endl;
-#define printBB(bb) cout << Bitboards::print((bb)) << endl;
-#define println(s) cout << (s) << endl;
+#define NEWLINE std::cout << std::endl
+#define printBB(bb) cout << Bitboards::print((bb)) << endl
+#define println(s) cout << (s) << endl
 
 // Global constants
 inline const char *START_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -420,6 +420,10 @@ inline std::string printMove(const Move &move) {
          + " (" + tp + ") (" + to_string(valueOf(move)) + ")";
 }
 
+
+///////////////////////////////////
+//// MOVELIST
+
 /** A collection of moves using a std::deque */
 typedef std::deque<Move> MoveList;
 
@@ -432,7 +436,6 @@ inline std::ostream &operator<<(std::ostream &os, const MoveList &moveList) {
   os << "]" << endl;
   return os;
 }
-
 
 ///////////////////////////////////
 //// CASTLING

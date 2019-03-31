@@ -63,11 +63,11 @@ TEST(PerftTest, stdPerftOD) {
   };
   // @formatter:on
 
-  int maxDepth = 8;
+  int maxDepth = 6;
 
   for (int i = 1; i <= maxDepth; i++) {
     p.perft(i, true);
-    NEWLINE
+    NEWLINE;
     ASSERT_EQ(results[i][1], p.getNodes());
     ASSERT_EQ(results[i][2], p.getCaptureCounter());
     ASSERT_EQ(results[i][3], p.getEnpassantCounter());
@@ -107,11 +107,11 @@ TEST(PerftTest, stdPerft) {
   };
   // @formatter:on
 
-  int maxDepth = 8;
+  int maxDepth = 6;
 
   for (int i = 1; i <= maxDepth; i++) {
     p.perft(i);
-    NEWLINE
+    NEWLINE;
     ASSERT_EQ(results[i][1], p.getNodes());
     ASSERT_EQ(results[i][2], p.getCaptureCounter());
     ASSERT_EQ(results[i][3], p.getEnpassantCounter());
@@ -151,7 +151,7 @@ TEST(PerftTest, kiwiPetePerft) {
 
   for (int i = 1; i <= maxDepth; i++) {
     p.perft(i);
-    NEWLINE
+    NEWLINE;
     ASSERT_EQ(results[i][1], p.getNodes());
     ASSERT_EQ(results[i][2], p.getCaptureCounter());
     ASSERT_EQ(results[i][3], p.getEnpassantCounter());
@@ -193,7 +193,7 @@ TEST(PerftTest, pos3Perft) {
 
   for (int i = 1; i <= maxDepth; i++) {
     p.perft(i);
-    NEWLINE
+    NEWLINE;
     ASSERT_EQ(results[i][1], p.getNodes());
     ASSERT_EQ(results[i][2], p.getCaptureCounter());
     ASSERT_EQ(results[i][3], p.getEnpassantCounter());
@@ -234,7 +234,7 @@ TEST(PerftTest, pos4Perft) {
 
   for (int i = 1; i <= maxDepth; i++) {
     p.perft(i);
-    NEWLINE
+    NEWLINE;
     ASSERT_EQ(results[i][1], p.getNodes());
     ASSERT_EQ(results[i][2], p.getCaptureCounter());
     ASSERT_EQ(results[i][3], p.getEnpassantCounter());
@@ -263,7 +263,7 @@ TEST(PerftTest, pos4Perft) {
 
   for (int i = 1; i <= maxDepth; i++) {
     p2.perft(i);
-    NEWLINE
+    NEWLINE;
     ASSERT_EQ(results2[i][1], p2.getNodes());
     ASSERT_EQ(results2[i][2], p2.getCaptureCounter());
     ASSERT_EQ(results2[i][3], p2.getEnpassantCounter());
@@ -303,7 +303,7 @@ TEST(PerftTest, pos5Perft) {
 
   for (int i = 1; i <= maxDepth; i++) {
     p.perft(i);
-    NEWLINE
+    NEWLINE;
     ASSERT_EQ(results[i][1], p.getNodes());
   }
   cout << "==============================" << endl;

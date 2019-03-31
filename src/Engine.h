@@ -36,7 +36,7 @@
 #include "Search.h"
 #include "SearchLimits.h"
 
-#define MAP(name, option) optionMap.insert(make_pair(name, option));
+#define MAP(name, option) optionMap.insert(make_pair(name, option))
 
 using namespace std;
 
@@ -84,16 +84,17 @@ public:
   void setOption(const string& name, const string& value);
   string getOption(const string &name);
   void newGame();
-  void setPosition(string fen);
+  void setPosition(const string& fen);
   Position *getPosition() { return &position; };
-  void doMove(string moveStr);
+  void doMove(const string& moveStr);
   void startSearch(UCISearchMode *pSearchMode);
   void stopSearch();
   bool isSearching();
   void ponderHit();
 
   // send to UCI
-  void sendResult(Move bestMove, Move ponderMove);
+  void sendResult(Move bestMove, Move ponderMove) const;
+  void sendInfo(const string &info) const;
 
   // other
   void waitWhileSearching();

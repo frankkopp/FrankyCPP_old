@@ -64,8 +64,8 @@ void Engine::clearHash() {
 }
 
 void Engine::setOption(const string &name, const string &value) {
-  println("Engine: Set option " + name + "=" + value) const auto pos =
-      optionMap.find(name);
+  println("Engine: Set option " + name + "=" + value);
+  const auto pos = optionMap.find(name);
   if (pos != optionMap.end()) {
     pos->second.setCurrentValue(value);
   } else {
@@ -90,12 +90,12 @@ void Engine::newGame() {
   // TODO
 }
 
-void Engine::setPosition(string fen) {
+void Engine::setPosition(const string& fen) {
   println("Engine: Set position to " + fen);
   position = Position(fen);
 }
 
-void Engine::doMove(string moveStr) {
+void Engine::doMove(const string& moveStr) {
   println("Engine: Do move " + moveStr);
 
   const Move move = createMove(moveStr.c_str());
@@ -132,20 +132,25 @@ void Engine::startSearch(UCISearchMode *pSearchMode) {
 }
 
 void Engine::stopSearch() {
-  println("Engine: STOP Search Command received") search.stopSearch();
+  println("Engine: STOP Search Command received");
+  search.stopSearch();
 }
 
 bool Engine::isSearching() { return search.isRunning(); }
 
 void Engine::ponderHit() {
-  println("Engine: Ponder Hit Command received")
+  println("Engine: Ponder Hit Command received");
   // TODO
 }
 
-void Engine::sendResult(Move bestMove, Move ponderMove) {
+void Engine::sendResult(Move bestMove, Move ponderMove) const {
   println("Engine Result: Best Move = " + printMove(bestMove) +
           " Ponder Move = " + printMove(ponderMove));
   pUciHandler->sendResult(bestMove, ponderMove);
+}
+
+void Engine::sendInfo(const string &info) const {
+  pUciHandler->send("info string " + info);
 }
 
 void Engine::waitWhileSearching() {

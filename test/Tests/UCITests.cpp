@@ -35,20 +35,20 @@ using testing::Eq;
 
 TEST(UCITest, uciTest) {
   INIT::init();
-  NEWLINE
+  NEWLINE;
 
   string command = "uci";
   string expectedStart = "id name";
   string expectedEnd = "uciok\n";
 
-  println("COMMAND: " + command)
+  println("COMMAND: " + command);
   istringstream is(command);
   ostringstream os;
   Engine engine;
   UCI::Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
   string result = os.str();
-  println("RESPONSE: " + result)
+  println("RESPONSE: " + result);
 
   ASSERT_EQ(expectedStart, result.substr(0, 7));
   ASSERT_EQ(expectedEnd, result.substr(result.size()-6, result.size()));
@@ -56,18 +56,18 @@ TEST(UCITest, uciTest) {
 
 TEST(UCITest, isreadyTest) {
   INIT::init();
-  NEWLINE
+  NEWLINE;
 
   string command = "isready";
   string expected = "readyok\n";
 
-  println("COMMAND: " + command)
+  println("COMMAND: " + command);
   istringstream is(command);
   ostringstream os;
   Engine engine;
   UCI::Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
-  println("RESPONSE: " + os.str())
+  println("RESPONSE: " + os.str());
   ASSERT_EQ(expected, os.str());
 }
 
@@ -78,13 +78,13 @@ TEST(UCITest, isreadyTest) {
 
 TEST(UCITest, setoptionTest) {
   INIT::init();
-  NEWLINE
+  NEWLINE;
 
   ostringstream os;
   Engine engine;
 
   string command = "setoption name Hash value 2048";
-  println("COMMAND: " + command)
+  println("COMMAND: " + command);
   istringstream is(command);
   UCI::Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
@@ -92,7 +92,7 @@ TEST(UCITest, setoptionTest) {
   ASSERT_EQ(2048, engine.config.hash);
 
   command = "setoption name Ponder value false";
-  println("COMMAND: " + command)
+  println("COMMAND: " + command);
   is = istringstream(command);
   uciHandler = UCI::Handler(&engine, &is, &os);
   uciHandler.loop();
@@ -102,13 +102,13 @@ TEST(UCITest, setoptionTest) {
 
 TEST(UCITest, goTest) {
   INIT::init();
-  NEWLINE
+  NEWLINE;
 
   ostringstream os;
   Engine engine;
 
   string command = "go infinite";
-  println("COMMAND: " + command)
+  println("COMMAND: " + command);
   istringstream is(command);
   UCI::Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
@@ -116,7 +116,7 @@ TEST(UCITest, goTest) {
   ASSERT_TRUE(searchMode.infinite);
 
   command = "go ponder";
-  println("COMMAND: " + command)
+  println("COMMAND: " + command);
   is = istringstream(command);
   uciHandler = UCI::Handler(&engine, &is, &os);
   uciHandler.loop();
@@ -124,7 +124,7 @@ TEST(UCITest, goTest) {
   ASSERT_TRUE(searchMode.ponder);
   
   command = "go perft";
-  println("COMMAND: " + command)
+  println("COMMAND: " + command);
   is = istringstream(command);
   uciHandler = UCI::Handler(&engine, &is, &os);
   uciHandler.loop();
@@ -132,7 +132,7 @@ TEST(UCITest, goTest) {
   ASSERT_TRUE(searchMode.perft);
 
   command = "go depth 5";
-  println("COMMAND: " + command)
+  println("COMMAND: " + command);
   is = istringstream(command);
   uciHandler = UCI::Handler(&engine, &is, &os);
   uciHandler.loop();
@@ -140,7 +140,7 @@ TEST(UCITest, goTest) {
   ASSERT_EQ(5, searchMode.depth);                                                       
 
   command = "go movetime 600 moves e2e4 d2d4";
-  println("COMMAND: " + command)
+  println("COMMAND: " + command);
   is = istringstream(command);
   uciHandler = UCI::Handler(&engine, &is, &os);
   uciHandler.loop();
@@ -153,19 +153,19 @@ TEST(UCITest, goTest) {
 
 TEST(UCITest, moveTest) {
   INIT::init();
-  NEWLINE
+  NEWLINE;
 
   ostringstream os;
   Engine engine;
 
   string command = "position startpos moves e2e4";
-  println("COMMAND: " + command)
+  println("COMMAND: " + command);
   istringstream is(command);
   UCI::Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
   command = "go wtime 60000 btime 60000 winc 0 binc 0 movestogo 40";
-  println("COMMAND: " + command)
+  println("COMMAND: " + command);
   is = istringstream(command);
   uciHandler.loop(&is);
 
