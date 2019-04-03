@@ -128,7 +128,7 @@ void Engine::startSearch(UCISearchMode *pSearchMode) {
                               pSearchMode->mate, pSearchMode->ponder,
                               pSearchMode->infinite, pSearchMode->perft);
 
-  search.startSearch(&searchLimits);
+  search.startSearch(position, &searchLimits);
 }
 
 void Engine::stopSearch() {

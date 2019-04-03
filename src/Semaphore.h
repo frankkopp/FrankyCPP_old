@@ -69,16 +69,13 @@ basic_semaphore<Mutex, CondVar>::basic_semaphore(size_t count) : mCount{count} {
  */
 template <typename Mutex, typename CondVar>
 bool basic_semaphore<Mutex, CondVar>::get() {
-
   // get the lock - will be released when exiting the block
   // as it is set in the destructor of this class
   std::lock_guard<Mutex> lock{mMutex};
-
   if (mCount > 0) {
     --mCount;
     return true;
   }
-
   return false;
 }
 
@@ -125,12 +122,8 @@ bool basic_semaphore<Mutex, CondVar>::getOrWaitFor(const std::chrono::duration<R
   // get the lock - will be released when exiting the block
   // as it is set in the destructor of this class
   std::unique_lock<Mutex> lock{mMutex};
-
   auto finished = mCv.wait_for(lock, d, [&]{ return mCount > 0; });
-
-  if (finished)
-    --mCount;
-
+  if (finished) --mCount;
   return finished;
 }
 
@@ -152,10 +145,7 @@ bool basic_semaphore<Mutex, CondVar>::getOrWaitUntil(
   // as it is set in the destructor of this class
   std::unique_lock<Mutex> lock{mMutex};
   auto finished = mCv.wait_until(lock, t, [&]{ return mCount > 0; });
-
-  if (finished)
-    --mCount;
-
+  if (finished) --mCount;
   return finished;
 }
 

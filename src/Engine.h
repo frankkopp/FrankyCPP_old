@@ -48,7 +48,7 @@ class Engine {
   map<const string, UCI::Option> optionMap;
 
   // callback reference for sending responses to the uci ui
-  UCI::Handler *pUciHandler;
+  UCI::Handler *pUciHandler {nullptr};
 
   // engine's search instance
   Search search = Search(this);

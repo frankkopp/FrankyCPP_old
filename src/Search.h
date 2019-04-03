@@ -30,6 +30,7 @@
 #include <thread>
 
 #include "SearchLimits.h"
+#include "SearchStats.h"
 #include "Semaphore.h"
 
 using namespace std;
@@ -42,12 +43,16 @@ class Search {
   Semaphore searchSemaphore; // used to block while searching
   thread myThread;
 
-  Engine *pEngine;
-  SearchLimits *pSearchLimits{};
+  Engine *pEngine {nullptr};
+  SearchLimits *pSearchLimits{nullptr};
+
+  SearchStats searchStats;
+  Position position;
 
   // search state
   bool running = false;
   bool stopSearchFlag = false;
+
 
 public:
   ////////////////////////////////////////////////
@@ -62,7 +67,7 @@ public:
   ///// PUBLIC
 
   /** starts the search in a separate thread with the given search limits */
-  void startSearch(SearchLimits *limits);
+  void startSearch(Position position, SearchLimits *limits);
 
   /** stops a running search gracefully - e.g. returns the best move found so
    * far */
@@ -79,6 +84,7 @@ private:
   ///// PRIVATE
 
   void run();
+
 };
 
 #endif // FRANKYCPP_SEARCH_H

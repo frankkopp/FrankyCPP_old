@@ -34,7 +34,11 @@ using namespace std;
 ////////////////////////////////////////////////
 ///// CONSTRUCTORS
 
-Search::Search(Engine *pEng) { pEngine = pEng; }
+Search::Search(Engine *pEng) {
+  pEngine = pEng;
+
+
+}
 
 Search::~Search() {
   // necessary to avoid err message: terminate called without an active exception
@@ -44,12 +48,18 @@ Search::~Search() {
 ////////////////////////////////////////////////
 ///// PUBLIC
 
-void Search::startSearch(SearchLimits *limits) {
+void Search::startSearch(Position pos, SearchLimits *limits) {
   if (running) {
     cerr << "Search already running" << endl;
     return;
   }
+
+  // // pos is a deep copy of the position parameter to not change
+  // the original position given
+  position = pos;
   pSearchLimits = limits;
+  stopSearchFlag = false;
+
   // make sure we have a semaphore available
   searchSemaphore.release();
   // join() previous thread
@@ -63,8 +73,7 @@ void Search::startSearch(SearchLimits *limits) {
 }
 
 void Search::stopSearch() {
-  if (!running)
-    return;
+  if (!running) return;
   // set stop flag - search needs to check regularly and stop accordingly
   stopSearchFlag = true;
   // Wait for the thread to die
@@ -86,32 +95,21 @@ void Search::waitWhileSearching() {
 void Search::run() {
   // get the search lock
   searchSemaphore.getOrWait();
-  stopSearchFlag = false;
   running = true;
 
-  // DEBUG / PROTOTYPE
-  cout << "New Thread: Started!\n";
-    this_thread::sleep_for(chrono::seconds(1));
-  cout << "New Thread: Init done!\n";
+  // Initialize for new search
+  searchStats = SearchStats();
+
   initSemaphore.release();
 
-  cout << "New Thread: Start work...!\n";
-  for (int i = 0; i < 2; ++i) {
-    cout << "Search SIMULATION: " << i << endl;
-    this_thread::sleep_for(std::chrono::seconds(1));
-    if (stopSearchFlag) break;
-  }
+  // DEBUG / PROTOTYPE
 
   cout << "Generate debug move\n";
   MoveGenerator moveGenerator;
   cout << "Generate position\n";
-  cout << pEngine->getPosition()->str() << endl;
-  Position myPosition(*pEngine->getPosition());
-  cout << myPosition.str() << endl;
-  cout << pEngine->getPosition() << endl;
-  cout << &myPosition << endl;
+  cout << position.str() << endl;
   cout << "Generate legal moves\n";
-  MoveList moves = moveGenerator.generateLegalMoves(GENALL, &myPosition);
+  MoveList moves = moveGenerator.generateLegalMoves(GENALL, &position);
   cout << "Legal Moves: " << moves << endl;
   cout << "Send move\n";
   ostringstream ss;
@@ -122,7 +120,6 @@ void Search::run() {
   // DEBUG / PROTOTYPE
 
   running = false;
-  cout << "New Thread: Finished!\n";
   searchSemaphore.release();
 }
 
