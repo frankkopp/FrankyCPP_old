@@ -34,8 +34,6 @@
 #include "Search.h"
 #include "UCISearchMode.h"
 
-using namespace std;
-
 namespace UCI {
 
   Handler::Handler(Engine *pEngine) {
@@ -43,7 +41,7 @@ namespace UCI {
     pEngine->registerUCIHandler(this);
   }
 
-  Handler::Handler(Engine *pEng, istream *pIstream, ostream *pOstream)
+  Handler::Handler(Engine *pEng, std::istream *pIstream, std::ostream *pOstream)
     : Handler::Handler(pEng) {
     pInputStream = pIstream;
     pOutputStream = pOstream;
@@ -55,15 +53,15 @@ namespace UCI {
     loop(pInputStream);
   }
 
-  void Handler::loop(istream *pIstream) {
-    string cmd, token;
+  void Handler::loop(std::istream *pIstream) {
+    std::string cmd, token;
     do {
-      cout << "HANDLER WAIT FOR COMMAND:" << endl;
+      std::cout << "HANDLER WAIT FOR COMMAND:" << std::endl;
       // Block here waiting for input or EOF
       // only blocks on cin!!
       if (!getline(*pIstream, cmd)) cmd = "quit";
       //  create the stream object
-      istringstream inStream(cmd);
+      std::istringstream inStream(cmd);
 
       // clear possible previous entries
       token.clear();
@@ -71,7 +69,7 @@ namespace UCI {
       // read word from stream delimiter is whitespace
       // to get line use inStream.str()
       inStream >> skipws >> token;
-      cout << "HANDLER COMMAND RECEIVED: " << token << endl;
+      std::cout << "HANDLER COMMAND RECEIVED: " << token << std::endl;
 
       if (token == "quit") break;
       else if (token == "uci") uciCommand();
@@ -85,8 +83,8 @@ namespace UCI {
       else if (token == "register") registerCommand();
       else if (token == "debug") debugCommand();
       else if (token == "noop") /* noop */;
-      else cerr << "Unknown UCI command: " << token << endl;
-      cout << "HANDLER COMMAND PROCESSED: " << token << endl;
+      else cerr << "Unknown UCI command: " << token << std::endl;
+      cout << "HANDLER COMMAND PROCESSED: " << token << std::endl;
 
     } while (token != "quit");
 
@@ -103,11 +101,11 @@ namespace UCI {
     send("readyok");
   }
 
-  void Handler::setOptionCommand(istringstream &inStream) {
+  void Handler::setOptionCommand(std::istringstream &inStream) {
     string token, name, value;
 
     if (inStream >> token && token != "name") {
-      cerr << ("Command setoption is malformed - expected 'name': " + token) << endl;
+      cerr << ("Command setoption is malformed - expected 'name': " + token) << std::endl;
       return;
     }
 
@@ -129,8 +127,8 @@ namespace UCI {
     pEngine->newGame();
   }
 
-  void Handler::positionCommand(istringstream &inStream) {
-    string token, startFen;
+  void Handler::positionCommand(std::istringstream &inStream) {
+    std::string token, startFen;
     inStream >> token;
     if (token == "startpos") {
       startFen = START_POSITION_FEN;
@@ -143,20 +141,20 @@ namespace UCI {
     }
     pEngine->setPosition(startFen);
     if (token == "moves") {
-      vector<string> moves;
+      std::vector<string> moves;
       while (inStream >> token) {
         moves.push_back(token);
       }
-      for (const string &move : moves) {
+      for (const std::string &move : moves) {
         pEngine->doMove(move);
       }
     }
   }
 
-  void Handler::goCommand(istringstream &inStream) {
+  void Handler::goCommand(std::istringstream &inStream) {
     searchMode = UCISearchMode();
 
-    string token, startFen;
+    std::string token, startFen;
 
     while (inStream >> token) {
       if (token == "moves") {
@@ -177,10 +175,10 @@ namespace UCI {
           searchMode.whiteTime = stoi(token);
         }
         catch (invalid_argument &e) {
-          cerr << "wtime invalid - expected numeric value. Was " << token << endl;
+          cerr << "wtime invalid - expected numeric value. Was " << token << std::endl;
         }
         catch (out_of_range &e ) {
-          cerr << "wtime invalid - numeric value out of range of int. Was " << token << endl;
+          cerr << "wtime invalid - numeric value out of range of int. Was " << token << std::endl;
         }
       }
       if (token == "btime") {
@@ -189,58 +187,58 @@ namespace UCI {
           searchMode.blackTime = stoi(token);
         }
         catch (invalid_argument &e) {
-          cerr << "btime invalid - expected numeric value. Was " << token << endl;
+          cerr << "btime invalid - expected numeric value. Was " << token << std::endl;
         }
         catch (out_of_range &e ) {
-          cerr << "btime invalid - numeric value out of range of int. Was " << token << endl;
+          cerr << "btime invalid - numeric value out of range of int. Was " << token << std::endl;
         }
       }
       if (token == "winc") {
         inStream >> token;
         try {
-          searchMode.whiteInc = stoi(token);
+          searchMode.whiteInc = std::stoi(token);
         }
-        catch (invalid_argument &e) {
-          cerr << "winc invalid - expected numeric value. Was " << token << endl;
+        catch (std::invalid_argument &e) {
+          cerr << "winc invalid - expected numeric value. Was " << token << std::endl;
         }
-        catch (out_of_range &e ) {
-          cerr << "winc invalid - numeric value out of range of int. Was " << token << endl;
+        catch (std::out_of_range &e ) {
+          cerr << "winc invalid - numeric value out of range of int. Was " << token << std::endl;
         }
       }
       if (token == "binc") {
         inStream >> token;
         try {
-          searchMode.blackInc = stoi(token);
+          searchMode.blackInc = std::stoi(token);
         }
-        catch (invalid_argument &e) {
-          cerr << "binc invalid - expected numeric value. Was " << token << endl;
+        catch (std::invalid_argument &e) {
+          cerr << "binc invalid - expected numeric value. Was " << token << std::endl;
         }
-        catch (out_of_range &e ) {
-          cerr << "binc invalid - numeric value out of range of int. Was " << token << endl;
+        catch (std::out_of_range &e ) {
+          cerr << "binc invalid - numeric value out of range of int. Was " << token << std::endl;
         }
       }
       if (token == "movestogo") {
         inStream >> token;
         try {
-          searchMode.movesToGo = stoi(token);
+          searchMode.movesToGo = std::stoi(token);
         }
-        catch (invalid_argument &e) {
-          cerr << "movestogo invalid - expected numeric value. Was " << token << endl;
+        catch (std::invalid_argument &e) {
+          cerr << "movestogo invalid - expected numeric value. Was " << token << std::endl;
         }
         catch (out_of_range &e ) {
-          cerr << "movestogo invalid - numeric value out of range of int. Was " << token << endl;
+          cerr << "movestogo invalid - numeric value out of range of int. Was " << token << std::endl;
         }
       }
       if (token == "depth") {
         inStream >> token;
         try {
-          searchMode.depth = stoi(token);
+          searchMode.depth = std::stoi(token);
         }
-        catch (invalid_argument &e) {
-          cerr << "depth invalid - expected numeric value. Was " << token << endl;
+        catch (std::invalid_argument &e) {
+          cerr << "depth invalid - expected numeric value. Was " << token << std::endl;
         }
-        catch (out_of_range &e ) {
-          cerr << "depth invalid - numeric value out of range of int. Was " << token << endl;
+        catch (std::out_of_range &e ) {
+          cerr << "depth invalid - numeric value out of range of int. Was " << token << std::endl;
         }
       }
       if (token == "mate") {
@@ -248,11 +246,11 @@ namespace UCI {
         try {
           searchMode.mate = stoi(token);
         }
-        catch (invalid_argument &e) {
-          cerr << "mate invalid - expected numeric value. Was " << token << endl;
+        catch (std::invalid_argument &e) {
+          cerr << "mate invalid - expected numeric value. Was " << token << std::endl;
         }
-        catch (out_of_range &e ) {
-          cerr << "mate invalid - numeric value out of range of int. Was " << token << endl;
+        catch (std::out_of_range &e ) {
+          cerr << "mate invalid - numeric value out of range of int. Was " << token << std::endl;
         }
       }
       if (token == "movetime") {
@@ -260,11 +258,11 @@ namespace UCI {
         try {
           searchMode.movetime = stoi(token);
         }
-        catch (invalid_argument &e) {
-          cerr << "movetime invalid - expected numeric value. Was " << token << endl;
+        catch (std::invalid_argument &e) {
+          cerr << "movetime invalid - expected numeric value. Was " << token << std::endl;
         }
-        catch (out_of_range &e ) {
-          cerr << "movetime invalid - numeric value out of range of int. Was " << token << endl;
+        catch (std::out_of_range &e ) {
+          cerr << "movetime invalid - numeric value out of range of int. Was " << token << std::endl;
         }
       }
       if (token == "infinite") {
@@ -296,7 +294,7 @@ namespace UCI {
     cerr << "UCI Protocol Command: debug not implemented!" << endl;
   }
 
-  void Handler::send(const string& toSend) const {
+  void Handler::send(const std::string& toSend) const {
     *pOutputStream << toSend << endl;
   }
 

@@ -31,8 +31,6 @@
 
 #include "UCISearchMode.h"
 
-using namespace std;
-
 class Engine;
 
 namespace UCI {
@@ -41,8 +39,8 @@ namespace UCI {
 
     Engine *pEngine;
 
-    istream *pInputStream = &cin;
-    ostream *pOutputStream = &cout;
+    std::istream *pInputStream = &std::cin;
+    std::ostream *pOutputStream = &std::cout;
 
     // stores the last search mode we read in from UCI protocoll
     UCISearchMode searchMode;
@@ -52,7 +50,7 @@ namespace UCI {
     /** Constructor */
     explicit Handler(Engine *pEng);
     /** Constructor */
-    Handler(Engine *pEng, istream *pIstream, ostream *pOstream);
+    Handler(Engine *pEng, std::istream *pIstream, std::ostream *pOstream);
     /** Destructor */
     virtual ~Handler();
 
@@ -60,19 +58,19 @@ namespace UCI {
     void loop();
 
     /** Starts the handler loop  with the given istream (mainly for testing) */
-    void loop(istream *pIstream);
+    void loop(std::istream *pIstream);
 
     void uciCommand();
     void isReadyCommand();
-    void setOptionCommand(istringstream &inStream);
+    void setOptionCommand(std::istringstream &inStream);
     void uciNewGameCommand();
-    void positionCommand(istringstream &inStream);
-    void goCommand(istringstream &inStream);
+    void positionCommand(std::istringstream &inStream);
+    void goCommand(std::istringstream &inStream);
     void stopCommand();
     void ponderHitCommand();
     void registerCommand();
     void debugCommand();
-    void send(const string& toSend) const;
+    void send(const std::string& toSend) const;
 
     ///////////////////
     //// GETTER

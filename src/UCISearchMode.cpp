@@ -25,7 +25,7 @@
 
 #include "UCISearchMode.h"
 
-ostream &operator<<(ostream &os, const UCISearchMode &mode) {
+std::ostream &operator<<(std::ostream &os, const UCISearchMode &mode) {
   os << "whiteTime: " << mode.whiteTime << " blackTime: " << mode.blackTime << " whiteInc: "
      << mode.whiteInc << " blackInc: " << mode.blackInc << " movesToGo: " << mode.movesToGo
      << " depth: " << mode.depth << " nodes: " << mode.nodes << " mate: " << mode.mate

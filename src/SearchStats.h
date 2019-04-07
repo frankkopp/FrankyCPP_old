@@ -27,6 +27,7 @@
 #define FRANKYCPP_SEARCHSTATS_H
 
 #include <ostream>
+
 /** data structure to cluster all search statistical values */
 class SearchStats {
 

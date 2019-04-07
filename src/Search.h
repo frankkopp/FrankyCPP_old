@@ -33,15 +33,13 @@
 #include "SearchStats.h"
 #include "Semaphore.h"
 
-using namespace std;
-
 class Engine;
 
 class Search {
 
   Semaphore initSemaphore; // used to block while initializing thread
   Semaphore searchSemaphore; // used to block while searching
-  thread myThread;
+  std::thread myThread;
 
   Engine *pEngine {nullptr};
   SearchLimits *pSearchLimits{nullptr};

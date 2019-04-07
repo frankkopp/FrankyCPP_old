@@ -27,6 +27,7 @@
 #define FRANKYCPP_UCISEARCHMODE_H
 
 #include <ostream>
+
 #include "datatypes.h"
 
 class UCISearchMode {
@@ -49,7 +50,7 @@ public:
   bool infinite = false;
   bool perft    = false;
 
-  friend ostream &operator<<(ostream &os, const UCISearchMode &mode);
+  friend std::ostream &operator<<(std::ostream &os, const UCISearchMode &mode);
 
 };
 

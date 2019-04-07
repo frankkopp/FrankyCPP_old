@@ -32,8 +32,6 @@
 #include "Position.h"
 #include "MoveGenerator.h"
 
-using namespace std;
-
 class Perft {
 
   long   nodes{};
@@ -41,11 +39,11 @@ class Perft {
   long   checkMateCounter{};
   long   captureCounter{};
   long   enpassantCounter{};
-  string fen;
+  std::string fen;
 
 public:
   Perft();
-  explicit Perft(const string &fen);
+  explicit Perft(const std::string &fen);
 
   void perft(int maxDepth);
   void perft(int maxDepth, bool onDemand);

@@ -38,14 +38,12 @@
 
 #define MAP(name, option) optionMap.insert(make_pair(name, option))
 
-using namespace std;
-
 namespace UCI { class Handler; }
 
 class Engine {
 
   // a map for the engine's available options
-  map<const string, UCI::Option> optionMap;
+  std::map<const std::string, UCI::Option> optionMap;
 
   // callback reference for sending responses to the uci ui
   UCI::Handler *pUciHandler {nullptr};
@@ -77,16 +75,16 @@ public:
 
   // output
   string str() const;
-  friend ostream &operator<<(ostream &os, const Engine &engine);
+  friend ostream &operator<<(std::ostream &os, const Engine &engine);
 
   // commands
   void clearHash();
-  void setOption(const string& name, const string& value);
-  string getOption(const string &name);
+  void setOption(const std::string& name, const std::string& value);
+  std::string getOption(const std::string &name);
   void newGame();
-  void setPosition(const string& fen);
+  void setPosition(const std::string& fen);
   Position *getPosition() { return &position; };
-  void doMove(const string& moveStr);
+  void doMove(const std::string& moveStr);
   void startSearch(UCISearchMode *pSearchMode);
   void stopSearch();
   bool isSearching();
@@ -94,7 +92,7 @@ public:
 
   // send to UCI
   void sendResult(Move bestMove, Move ponderMove) const;
-  void sendInfo(const string &info) const;
+  void sendInfo(const std::string &info) const;
 
   // other
   void waitWhileSearching();
@@ -106,7 +104,7 @@ private:
 
   void initOptions();
   void updateConfig();
-  int getInt(const string &value) const;
+  int getInt(const std::string &value) const;
 };
 
 #endif //FRANKYCPP_ENGINE_H

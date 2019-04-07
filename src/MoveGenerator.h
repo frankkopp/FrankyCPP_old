@@ -35,8 +35,6 @@
 // circle reference between Position and MoveGenerator - this make it possible
 class Position;
 
-using namespace std;
-
 enum GenMode {
   GENZERO,
   GENCAP,

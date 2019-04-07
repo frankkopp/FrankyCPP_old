@@ -33,7 +33,7 @@ Perft::Perft() {
   fen = START_POSITION_FEN;
 }
 
-Perft::Perft(const string &f) {
+Perft::Perft(const std::string &f) {
   fen = f;
 }
 
@@ -46,14 +46,14 @@ void Perft::perft(int maxDepth, bool onDemand) {
 
   Position position(fen);
   MoveGenerator mg[MAX_PLY];
-  ostringstream os;
-  cout.imbue(digitLocale);
+  std::ostringstream os;
+  std::cout.imbue(digitLocale);
   os.imbue(digitLocale);
-  os << setprecision(9);
+  os << std::setprecision(9);
 
-  os << "Testing at depth " << maxDepth << endl;
-  cout << os.str();
-  cout.flush();
+  os << "Testing at depth " << maxDepth << std::endl;
+  std::cout << os.str();
+  std::cout.flush();
   os.str("");
   os.clear();
 
@@ -73,12 +73,12 @@ void Perft::perft(int maxDepth, bool onDemand) {
      << " EnPassant: " << enpassantCounter
      << " Checks: " << checkCounter
      << " Mates: " << checkMateCounter
-     << endl;
+     << std::endl;
 
-  os << "Duration: " << duration << " ms" << endl;
-  os << "NPS: " << ((result * 1e3) / duration) << " nps" << endl;
+  os << "Duration: " << duration << " ms" << std::endl;
+  os << "NPS: " << ((result * 1e3) / duration) << " nps" << std::endl;
 
-  cout << os.str();
+  std::cout << os.str();
 }
 
 void Perft::resetCounter() {

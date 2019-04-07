@@ -36,8 +36,6 @@
 #include <vector>
 #include <deque>
 
-using namespace std;
-
 // convenience macros
 #define NEWLINE std::cout << std::endl
 #define printBB(bb) cout << Bitboards::print((bb)) << endl
@@ -214,7 +212,7 @@ enum Value : int {
 };
 
 inline std::ostream &operator<<(std::ostream &os, const Value &v) {
-  os << to_string(v);
+  os << std::to_string(v);
   return os;
 }
 
@@ -417,7 +415,7 @@ inline std::string printMove(const Move &move) {
       break;
   }
   return squareLabel(getFromSquare(move)) + squareLabel(getToSquare(move)) + promPt
-         + " (" + tp + ") (" + to_string(valueOf(move)) + ")";
+         + " (" + tp + ") (" + std::to_string(valueOf(move)) + ")";
 }
 
 
@@ -433,7 +431,7 @@ inline std::ostream &operator<<(std::ostream &os, const MoveList &moveList) {
      os << m;
      if (m != moveList.back()) os << ", ";
   }
-  os << "]" << endl;
+  os << "]" << std::endl;
   return os;
 }
 
@@ -446,7 +444,7 @@ enum CastlingSide : int {
 };
 
 /** CastlingRight */
-enum CastlingRights : int {
+enum CastlingRights : unsigned int {
   // @formatter:off
   NO_CASTLING = 0,                                // 0000
 

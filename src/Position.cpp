@@ -31,9 +31,6 @@
 #include "Position.h"
 #include "MoveGenerator.h"
 
-using namespace std;
-using namespace Bitboards;
-
 Key Zobrist::pieces[PIECE_LENGTH][SQ_LENGTH];
 Key Zobrist::castlingRights[CR_LENGTH];
 Key Zobrist::enPassantFile[FILE_LENGTH];
@@ -65,10 +62,10 @@ void Position::init() {
 ///// CONSTRUCTORS
 
 /** Default constructor creates a board with standard start setup */
-Position::Position() : Position(START_POSITION_FEN) {};
+Position::Position() : Position(START_POSITION_FEN) {}
 
 /** Creates a board with setup from the given fen */
-Position::Position(std::string fen) : Position(fen.c_str()) {};
+Position::Position(const std::string& fen) : Position(fen.c_str()) {};
 
 /** Creates a board with setup from the given fen */
 Position::Position(const char *fen) {
@@ -165,7 +162,7 @@ void Position::doMove(Move move) {
   switch (moveType) {
 
     case NORMAL:
-      if (castlingRights && (CastlingMask & fromSq || CastlingMask & toSq)) {
+      if (castlingRights && (Bitboards::CastlingMask & fromSq || Bitboards::CastlingMask & toSq)) {
         invalidateCastlingRights(fromSq, toSq);
       }
       clearEnPassant();
@@ -175,7 +172,7 @@ void Position::doMove(Move move) {
       }
       else if (fromPT == PAWN) {
         halfMoveClock = 0; // reset half move clock because of pawn move
-        if (distance(fromSq, toSq) == 2) { // pawn double - set en passant
+        if (Bitboards::distance(fromSq, toSq) == 2) { // pawn double - set en passant
           // set new en passant target field - always one "behind" the toSquare
           enPassantSquare = toSq + pawnDir[~myColor];
           zobristKey = zobristKey ^ Zobrist::enPassantFile[fileOf(enPassantSquare)]; // in
@@ -189,7 +186,7 @@ void Position::doMove(Move move) {
       assert(fromPC == makePiece(myColor, PAWN));
       assert(rankOf(toSq) == (myColor == WHITE ? RANK_8 : RANK_1));
       if (targetPC != PIECE_NONE) removePiece(toSq); // capture
-      if (castlingRights && (CastlingMask & fromSq || CastlingMask & toSq)) {
+      if (castlingRights && (Bitboards::CastlingMask & fromSq || Bitboards::CastlingMask & toSq)) {
         invalidateCastlingRights(fromSq, toSq);
       }
       removePiece(fromSq);
@@ -218,7 +215,7 @@ void Position::doMove(Move move) {
           assert (fromSq == SQ_E1);
           assert (getPiece(SQ_E1) == WHITE_KING);
           assert (getPiece(SQ_H1) == WHITE_ROOK);
-          assert (!(getOccupiedBB() & intermediateBB[SQ_E1][SQ_H1]));
+          assert (!(getOccupiedBB() & Bitboards::intermediateBB[SQ_E1][SQ_H1]));
           movePiece(fromSq, toSq); // King
           movePiece(SQ_H1, SQ_F1); // Rook
           zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
@@ -232,7 +229,7 @@ void Position::doMove(Move move) {
           assert (fromSq == SQ_E1);
           assert (getPiece(SQ_E1) == WHITE_KING);
           assert (getPiece(SQ_A1) == WHITE_ROOK);
-          assert (!(getOccupiedBB() & intermediateBB[SQ_E1][SQ_A1]));
+          assert (!(getOccupiedBB() & Bitboards::intermediateBB[SQ_E1][SQ_A1]));
           movePiece(fromSq, toSq); // King
           movePiece(SQ_A1, SQ_D1); // Rook
           zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
@@ -245,7 +242,7 @@ void Position::doMove(Move move) {
           assert (fromSq == SQ_E8);
           assert (getPiece(SQ_E8) == BLACK_KING);
           assert (getPiece(SQ_H8) == BLACK_ROOK);
-          assert (!(getOccupiedBB() & intermediateBB[SQ_E8][SQ_H8]));
+          assert (!(getOccupiedBB() & Bitboards::intermediateBB[SQ_E8][SQ_H8]));
           movePiece(fromSq, toSq); // King
           movePiece(SQ_H8, SQ_F8); // Rook
           zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
@@ -258,7 +255,7 @@ void Position::doMove(Move move) {
           assert (fromSq == SQ_E8);
           assert (getPiece(SQ_E8) == BLACK_KING);
           assert (getPiece(SQ_A8) == BLACK_ROOK);
-          assert (!(getOccupiedBB() & intermediateBB[SQ_E8][SQ_A8]));
+          assert (!(getOccupiedBB() & Bitboards::intermediateBB[SQ_E8][SQ_A8]));
           movePiece(fromSq, toSq); // King
           movePiece(SQ_A8, SQ_D8); // Rook
           zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
@@ -439,12 +436,12 @@ bool Position::isAttacked(Square attackedSquare, Color attackerColor) {
         && enPassantSquare + SOUTH == attackedSquare) {
       // left
       Square sq = attackedSquare + WEST;
-      if (distance(attackedSquare, sq) == 1 && getPiece(sq) == WHITE_PAWN) return true;
+      if (Bitboards::distance(attackedSquare, sq) == 1 && getPiece(sq) == WHITE_PAWN) return true;
       // right
       sq = attackedSquare + EAST;
-      return distance(attackedSquare, sq) == 1 && getPiece(sq) == WHITE_PAWN;
+      return Bitboards::distance(attackedSquare, sq) == 1 && getPiece(sq) == WHITE_PAWN;
     }
-    // black is attacker (assume not noColor)
+      // black is attacker (assume not noColor)
     else if (attackerColor == BLACK
              // white is target
              && getPiece(enPassantSquare + NORTH) == WHITE_PAWN
@@ -452,10 +449,10 @@ bool Position::isAttacked(Square attackedSquare, Color attackerColor) {
              && enPassantSquare + NORTH == attackedSquare) {
       // attack from left
       Square sq = attackedSquare + WEST;
-      if (distance(attackedSquare, sq) == 1 && getPiece(sq) == BLACK_PAWN) return true;
+      if (Bitboards::distance(attackedSquare, sq) == 1 && getPiece(sq) == BLACK_PAWN) return true;
       // right
       sq = attackedSquare + EAST;
-      return distance(attackedSquare, sq) == 1 && getPiece(sq) == BLACK_PAWN;
+      return Bitboards::distance(attackedSquare, sq) == 1 && getPiece(sq) == BLACK_PAWN;
     }
   }
   return false;
@@ -538,7 +535,7 @@ bool Position::hasCheckMate() {
   if (!hasCheck()) return false;
   if (hasMateFlag != FLAG_TBD) return (hasMateFlag == FLAG_TRUE);
   const bool hasLegalMove = mateCheckMG.hasLegalMove(this);
-   if (!hasLegalMove) {
+  if (!hasLegalMove) {
     hasMateFlag = FLAG_TRUE;
     return true;
   }
@@ -597,43 +594,56 @@ bool Position::checkInsufficientMaterial() {
     * one side has two knights against the bare king
     * both sides have a king and a bishop, the bishops being the same color
     */
-  if (popcount(piecesBB[WHITE][PAWN]) == 0 && popcount(piecesBB[BLACK][PAWN]) == 0
-      && popcount(piecesBB[WHITE][ROOK]) == 0 && popcount(piecesBB[BLACK][ROOK]) == 0
-      && popcount(piecesBB[WHITE][QUEEN]) == 0 && popcount(piecesBB[BLACK][QUEEN]) == 0) {
+  if (Bitboards::popcount(piecesBB[WHITE][PAWN]) == 0 &&
+      Bitboards::popcount(piecesBB[BLACK][PAWN]) == 0
+      && Bitboards::popcount(piecesBB[WHITE][ROOK]) == 0 &&
+      Bitboards::popcount(piecesBB[BLACK][ROOK]) == 0
+      && Bitboards::popcount(piecesBB[WHITE][QUEEN]) == 0 &&
+      Bitboards::popcount(piecesBB[BLACK][QUEEN]) == 0) {
 
     // white king bare KK*
-    if (popcount(piecesBB[WHITE][KNIGHT]) == 0 && popcount(piecesBB[WHITE][BISHOP]) == 0) {
+    if (Bitboards::popcount(piecesBB[WHITE][KNIGHT]) == 0 &&
+        Bitboards::popcount(piecesBB[WHITE][BISHOP]) == 0) {
 
       // both kings bare KK, KKN, KKNN
-      if (popcount(piecesBB[BLACK][KNIGHT]) <= 2 && popcount(piecesBB[BLACK][BISHOP]) == 0) {
+      if (Bitboards::popcount(piecesBB[BLACK][KNIGHT]) <= 2 &&
+          Bitboards::popcount(piecesBB[BLACK][BISHOP]) == 0) {
         return true;
       }
 
       // KKB
-      return popcount(piecesBB[BLACK][KNIGHT]) == 0 && popcount(piecesBB[BLACK][BISHOP]) == 1;
+      return Bitboards::popcount(piecesBB[BLACK][KNIGHT]) == 0 &&
+             Bitboards::popcount(piecesBB[BLACK][BISHOP]) == 1;
 
     }
       // only black king bare K*K
-    else if (popcount(piecesBB[BLACK][KNIGHT]) == 0 && popcount(piecesBB[BLACK][BISHOP]) == 0) {
+    else if (Bitboards::popcount(piecesBB[BLACK][KNIGHT]) == 0 &&
+             Bitboards::popcount(piecesBB[BLACK][BISHOP]) == 0) {
 
       // both kings bare KK, KNK, KNNK
-      if (popcount(piecesBB[WHITE][KNIGHT]) <= 2 && popcount(piecesBB[WHITE][BISHOP]) == 0) {
+      if (Bitboards::popcount(piecesBB[WHITE][KNIGHT]) <= 2 &&
+          Bitboards::popcount(piecesBB[WHITE][BISHOP]) == 0) {
         return true;
       }
 
       // KBK
-      return popcount(piecesBB[BLACK][KNIGHT]) == 0 && popcount(piecesBB[BLACK][BISHOP]) == 1;
+      return Bitboards::popcount(piecesBB[BLACK][KNIGHT]) == 0 &&
+             Bitboards::popcount(piecesBB[BLACK][BISHOP]) == 1;
     }
 
       // KBKB - B same field color
-    else if (popcount(piecesBB[BLACK][KNIGHT]) == 0 && popcount(piecesBB[BLACK][BISHOP]) == 1
-             && popcount(piecesBB[WHITE][KNIGHT]) == 0 && popcount(piecesBB[WHITE][BISHOP]) == 1) {
+    else if (Bitboards::popcount(piecesBB[BLACK][KNIGHT]) == 0 &&
+             Bitboards::popcount(piecesBB[BLACK][BISHOP]) == 1
+             && Bitboards::popcount(piecesBB[WHITE][KNIGHT]) == 0 &&
+             Bitboards::popcount(piecesBB[WHITE][BISHOP]) == 1) {
 
       // bishops on the same square color
       return (
-        ((whiteSquaresBB & piecesBB[WHITE][BISHOP]) && (whiteSquaresBB & piecesBB[BLACK][BISHOP]))
+        ((Bitboards::whiteSquaresBB & piecesBB[WHITE][BISHOP]) &&
+         (Bitboards::whiteSquaresBB & piecesBB[BLACK][BISHOP]))
         ||
-        ((blackSquaresBB & piecesBB[WHITE][BISHOP]) && (blackSquaresBB & piecesBB[BLACK][BISHOP])));
+        ((Bitboards::blackSquaresBB & piecesBB[WHITE][BISHOP]) &&
+         (Bitboards::blackSquaresBB & piecesBB[BLACK][BISHOP])));
     }
   }
   return false;
@@ -643,7 +653,7 @@ bool Position::givesCheck(Move move) {
 
   // opponents king square
   const Bitboard kingBB = piecesBB[~nextPlayer][KING];
-  const Square kingSquare = lsb(kingBB);
+  const Square kingSquare = Bitboards::lsb(kingBB);
   // fromSquare
   const Square fromSquare = getFromSquare(move);
   // target square
@@ -763,7 +773,7 @@ bool Position::givesCheck(Move move) {
   if (Bitboards::pseudoAttacks[ROOK][kingSquare] & rooks) {
     // iterate over all pieces
     while (rooks) {
-      const Square sq = popLSB(&rooks);
+      const Square sq = Bitboards::popLSB(&rooks);
       // if the square is not reachable from the piece's square we can skip this
       if ((Bitboards::pseudoAttacks[ROOK][sq] & kingSquare) == 0) continue;
       // if there are no occupied squares between the piece square and the
@@ -784,7 +794,7 @@ bool Position::givesCheck(Move move) {
   if ((Bitboards::pseudoAttacks[BISHOP][kingSquare] & bishops)) {
     // iterate over all pieces
     while (bishops) {
-      const Square sq = popLSB(&bishops);
+      const Square sq = Bitboards::popLSB(&bishops);
       // if the square is not reachable from the piece's square we can skip this
       if ((Bitboards::pseudoAttacks[BISHOP][sq] & kingSquare) == 0) continue;
       // if there are no occupied squares between the piece square and the
@@ -805,7 +815,7 @@ bool Position::givesCheck(Move move) {
   if ((Bitboards::pseudoAttacks[QUEEN][kingSquare] & queens)) {
     // iterate over all pieces
     while (queens) {
-      const Square sq = popLSB(&queens);
+      const Square sq = Bitboards::popLSB(&queens);
       // if the square is not reachable from the piece's square we can skip this
       if ((Bitboards::pseudoAttacks[QUEEN][sq] & kingSquare) == 0) continue;
       // if there are no occupied squares between the piece square and the
@@ -829,25 +839,25 @@ bool Position::givesCheck(Move move) {
 ///// TO STRING
 
 std::string Position::str() const {
-  ostringstream output;
+  std::ostringstream output;
   output << printBoard();
-  output << printFen() << endl;
+  output << printFen() << std::endl;
   output << "Check: "
          << (hasCheckFlag == FLAG_TBD ? "N/A" : hasCheckFlag == FLAG_TRUE ? "Check" : "No check");
   output << " Check Mate: "
          << (hasMateFlag == FLAG_TBD ? "N/A" : hasMateFlag == FLAG_TRUE ? "Mate" : "No mate")
-         << endl;
-  output << "Gamephase: " << gamePhase << endl;
-  output << "Material: white=" << material[WHITE] << " black=" << material[BLACK] << endl;
-  output << "PosValue: white=" << psqMidValue[WHITE] << " black=" << psqMidValue[BLACK] << endl;
-  output << "Zobrist Key: "<< zobristKey << endl;
+         << std::endl;
+  output << "Gamephase: " << gamePhase << std::endl;
+  output << "Material: white=" << material[WHITE] << " black=" << material[BLACK] << std::endl;
+  output << "PosValue: white=" << psqMidValue[WHITE] << " black=" << psqMidValue[BLACK] << std::endl;
+  output << "Zobrist Key: " << zobristKey << std::endl;
   return output.str();
 }
 
 std::string Position::printBoard() const {
   const std::string ptc = "KONBRQ  k*nbrq   ";
-  ostringstream output;
-  output << "  +---+---+---+---+---+---+---+---+" << endl;
+  std::ostringstream output;
+  output << "  +---+---+---+---+---+---+---+---+" << std::endl;
   for (Rank r = RANK_8; r >= RANK_1; --r) {
     output << (r + 1) << " |";
     for (File f = FILE_A; f <= FILE_H; ++f) {
@@ -855,19 +865,19 @@ std::string Position::printBoard() const {
       if (pc == PIECE_NONE) output << "   |";
       else output << " " << ptc[pc] << " |";
     }
-    output << endl;
-    output << "  +---+---+---+---+---+---+---+---+" << endl;
+    output << std::endl;
+    output << "  +---+---+---+---+---+---+---+---+" << std::endl;
   }
   output << "   ";
   for (File f = FILE_A; f <= FILE_H; ++f) {
     output << " " << char('A' + f) << "  ";
   }
-  output << endl << endl;
+  output << std::endl << std::endl;
   return output.str();
 }
 
 std::string Position::printFen() const {
-  ostringstream fen;
+  std::ostringstream fen;
 
   // pieces
   for (Rank r = RANK_8; r >= RANK_1; --r) {
@@ -878,14 +888,14 @@ std::string Position::printFen() const {
       if (pc == PIECE_NONE) emptySquares++;
       else {
         if (emptySquares) {
-          fen << to_string(emptySquares);
+          fen << std::to_string(emptySquares);
           emptySquares = 0;
         }
         fen << pieceToChar[pc];
       }
     }
     if (emptySquares) {
-      fen << to_string(emptySquares);
+      fen << std::to_string(emptySquares);
     }
     if (r > RANK_1) fen << "/";
   }
@@ -941,10 +951,10 @@ void Position::putPiece(Piece piece, Square square) {
   assert ((occupiedBB[color] & square) == 0);
   occupiedBB[color] |= square;
   // pre-rotated bb / expensive - ~30% hit
-  occupiedBBR90[color] |= rotateSquareR90(square);
-  occupiedBBL90[color] |= rotateSquareL90(square);
-  occupiedBBR45[color] |= rotateSquareR45(square);
-  occupiedBBL45[color] |= rotateSquareL45(square);
+  occupiedBBR90[color] |= Bitboards::rotateSquareR90(square);
+  occupiedBBL90[color] |= Bitboards::rotateSquareL90(square);
+  occupiedBBR45[color] |= Bitboards::rotateSquareR45(square);
+  occupiedBBL45[color] |= Bitboards::rotateSquareL45(square);
 
   // piece board
   assert (getPiece(square) == PIECE_NONE);
@@ -954,7 +964,7 @@ void Position::putPiece(Piece piece, Square square) {
   // zobrist
   zobristKey ^= Zobrist::pieces[piece][square];
   // game phase
-  gamePhase = min(GAME_PHASE_MAX, gamePhase + gamePhaseValue[pieceType]);
+  gamePhase = std::min(GAME_PHASE_MAX, gamePhase + gamePhaseValue[pieceType]);
   // material
   material[color] += pieceTypeValue[pieceType];
   // position value
@@ -975,17 +985,17 @@ Piece Position::removePiece(Square square) {
   assert (occupiedBB[color] & square);
   occupiedBB[color] ^= square;
   // pre-rotated bb / expensive - ~30% hit
-  occupiedBBR90[color] ^= rotateSquareR90(square);
-  occupiedBBL90[color] ^= rotateSquareL90(square);
-  occupiedBBR45[color] ^= rotateSquareR45(square);
-  occupiedBBL45[color] ^= rotateSquareL45(square);
+  occupiedBBR90[color] ^= Bitboards::rotateSquareR90(square);
+  occupiedBBL90[color] ^= Bitboards::rotateSquareL90(square);
+  occupiedBBR45[color] ^= Bitboards::rotateSquareR45(square);
+  occupiedBBL45[color] ^= Bitboards::rotateSquareL45(square);
 
   // piece list
   assert (getPiece(square) != PIECE_NONE);
   board[square] = PIECE_NONE;
   zobristKey ^= Zobrist::pieces[old][square];
   // game phase
-  gamePhase = max(0, gamePhase - gamePhaseValue[pieceType]);
+  gamePhase = std::max(0, gamePhase - gamePhaseValue[pieceType]);
   // material
   material[color] -= pieceTypeValue[pieceType];
   // position value
@@ -1074,6 +1084,7 @@ void Position::initializeBoard() {
 }
 
 void Position::setupBoard(const char *fen) {
+  // also sets defaults if fen is short
   initializeBoard();
 
   unsigned char token;
@@ -1087,18 +1098,11 @@ void Position::setupBoard(const char *fen) {
   while ((iss >> token) && !isspace(token)) {
     if (isdigit(token)) currentSquare += (token - '0') * EAST;
     else if (token == '/') currentSquare += 2 * SOUTH;
-    else if ((idx = string(pieceToChar).find(token)) != string::npos) {
+    else if ((idx = std::string(pieceToChar).find(token)) != std::string::npos) {
       putPiece(Piece(idx), currentSquare);
       ++currentSquare;
     }
   }
-
-  // defaults in case fen is shortened
-  nextPlayer = WHITE;
-  castlingRights = NO_CASTLING;
-  enPassantSquare = SQ_NONE;
-  halfMoveClock = 0;
-  nextHalfMoveNumber = 1;
 
   // next player
   if (iss >> token) {
@@ -1149,10 +1153,10 @@ void Position::setupBoard(const char *fen) {
   if (!(iss >> token)) return; // end of line
 
   // half move clock (50 moves rules)
-  iss >> skipws >> halfMoveClock;
+  iss >> std::skipws >> halfMoveClock;
 
   // game move number - to be converted into half move number (ply)
-  iss >> skipws >> nextHalfMoveNumber;
+  iss >> std::skipws >> nextHalfMoveNumber;
   nextHalfMoveNumber = 2 * nextHalfMoveNumber - (nextPlayer == WHITE);
 
 }

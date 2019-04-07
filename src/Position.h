@@ -69,8 +69,8 @@ class Position {
 
   // The zobrist key to use as a hash key in transposition tables
   // The zobrist key will be updated incrementally every time one of the the state variables change.
-  Key zobristKey;
-  Key zobristKey_History[MAX_HISTORY];
+  Key zobristKey{};
+  Key zobristKey_History[MAX_HISTORY]{};
 
   // **********************************************************
   // Board State START ----------------------------------------
@@ -78,19 +78,19 @@ class Position {
   // which is also not represented in a FEN string)
 
   // piece Board
-  Piece board[SQ_LENGTH];
+  Piece board[SQ_LENGTH]{};
 
   // Castling rights
   CastlingRights castlingRights;
-  CastlingRights castlingRights_History[MAX_HISTORY];
+  CastlingRights castlingRights_History[MAX_HISTORY]{};
 
   // en passant field
   Square enPassantSquare = SQ_NONE;
-  Square enPassantSquare_History[MAX_HISTORY];
+  Square enPassantSquare_History[MAX_HISTORY]{};
 
   // half move clock - number of half moves since last capture
   int halfMoveClock = 0;
-  int halfMoveClockHistory[MAX_HISTORY];
+  int halfMoveClockHistory[MAX_HISTORY]{};
   // has no zobrist key
 
   // next player color
@@ -104,46 +104,46 @@ class Position {
   // not necessary for a unique position
 
   // special for king squares
-  Square kingSquare[COLOR_LENGTH];
+  Square kingSquare[COLOR_LENGTH]{};
 
   // We can recreate the board through the last move - no need for history of board itself
   // with this we can also capture 3-fold repetition
-  Move moveHistory[MAX_HISTORY];
-  Piece fromPieceHistory[MAX_HISTORY];
-  Piece capturedPieceHistory[MAX_HISTORY];
+  Move moveHistory[MAX_HISTORY]{};
+  Piece fromPieceHistory[MAX_HISTORY]{};
+  Piece capturedPieceHistory[MAX_HISTORY]{};
 
   // half move number - the actual half move number to determine the full move number
   int nextHalfMoveNumber = 1;
 
   // piece bitboards
-  Bitboard piecesBB[COLOR_LENGTH][PT_LENGTH];
+  Bitboard piecesBB[COLOR_LENGTH][PT_LENGTH]{};
 
   // occupied bitboards with rotations
-  Bitboard occupiedBB[COLOR_LENGTH];
-  Bitboard occupiedBBR90[COLOR_LENGTH];
-  Bitboard occupiedBBL90[COLOR_LENGTH];
-  Bitboard occupiedBBR45[COLOR_LENGTH];
-  Bitboard occupiedBBL45[COLOR_LENGTH];
+  Bitboard occupiedBB[COLOR_LENGTH]{};
+  Bitboard occupiedBBR90[COLOR_LENGTH]{};
+  Bitboard occupiedBBL90[COLOR_LENGTH]{};
+  Bitboard occupiedBBR45[COLOR_LENGTH]{};
+  Bitboard occupiedBBL45[COLOR_LENGTH]{};
 
   // Extended Board State END ---------------------------------
   // **********************************************************
 
   // Material value will always be up to date
-  int material[COLOR_LENGTH];
+  int material[COLOR_LENGTH]{};
 
   // Positional value will always be up to date
-  int psqMidValue[COLOR_LENGTH];
-  int psqEndValue[COLOR_LENGTH];
+  int psqMidValue[COLOR_LENGTH]{};
+  int psqEndValue[COLOR_LENGTH]{};
 
   // Game phase value
-  int gamePhase;
+  int gamePhase{};
 
   // caches a hasCheck and hasMate Flag for the current position. Will be set after
   // a call to hasCheck() and reset to TBD every time a move is made or unmade.
   Flag hasCheckFlag = FLAG_TBD;
-  Flag hasCheckFlagHistory[MAX_HISTORY];
+  Flag hasCheckFlagHistory[MAX_HISTORY]{};
   Flag hasMateFlag = FLAG_TBD;
-  Flag hasMateFlagHistory[MAX_HISTORY];
+  Flag hasMateFlagHistory[MAX_HISTORY]{};
 
   // To be able to check for mate (no more moves) we need to include
   // a move generator instance
@@ -173,7 +173,7 @@ public:
    *
    * @param fen
    */
-  explicit Position(std::string fen);
+  explicit Position(const std::string& fen);
 
   /**
    * Copy constructor - creates a copy of the given Position
