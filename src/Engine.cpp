@@ -23,11 +23,10 @@
  *
  */
 
-#include "Engine.h"
-#include "SearchLimits.h"
 #include <map>
 
-using namespace std;
+#include "Engine.h"
+#include "SearchLimits.h"
 
 ////////////////////////////////////////////////
 ///// CONSTRUCTORS
@@ -43,7 +42,7 @@ std::ostream &operator<<(std::ostream &os, const Engine &engine) {
 }
 
 std::string Engine::str() const {
-  stringstream os;
+  std::stringstream os;
   for (const auto &it : optionMap) {
     UCI::Option o = it.second;
     os << "\noption name " << it.first << " type " << o.getTypeString();
@@ -63,24 +62,24 @@ void Engine::clearHash() {
   // TODO
 }
 
-void Engine::setOption(const string &name, const string &value) {
+void Engine::setOption(const std::string &name, const std::string &value) {
   println("Engine: Set option " + name + "=" + value);
   const auto pos = optionMap.find(name);
   if (pos != optionMap.end()) {
     pos->second.setCurrentValue(value);
   } else {
-    cerr << "No such option: " << name << endl;
+    std::cerr << "No such option: " << name << std::endl;
   }
   updateConfig();
 }
 
-string Engine::getOption(const string &name) {
+std::string Engine::getOption(const std::string &name) {
   println("Engine: Get option " + name);
   const auto pos = optionMap.find(name);
   if (pos != optionMap.end())
     return pos->second.getCurrentValue();
   else {
-    cerr << "No such option: " << name << endl;
+    std::cerr << "No such option: " << name << std::endl;
     return "";
   }
 }
@@ -90,17 +89,17 @@ void Engine::newGame() {
   // TODO
 }
 
-void Engine::setPosition(const string& fen) {
+void Engine::setPosition(const std::string& fen) {
   println("Engine: Set position to " + fen);
   position = Position(fen);
 }
 
-void Engine::doMove(const string& moveStr) {
+void Engine::doMove(const std::string& moveStr) {
   println("Engine: Do move " + moveStr);
 
   const Move move = createMove(moveStr.c_str());
   if (!isMove(move)) {
-    cerr << "Invalid move " << moveStr << endl;
+    std::cerr << "Invalid move " << moveStr << std::endl;
     return;
   }
   position.doMove(move);
@@ -149,7 +148,7 @@ void Engine::sendResult(Move bestMove, Move ponderMove) const {
   pUciHandler->sendResult(bestMove, ponderMove);
 }
 
-void Engine::sendInfo(const string &info) const {
+void Engine::sendInfo(const std::string &info) const {
   pUciHandler->send("info string " + info);
 }
 
@@ -173,23 +172,23 @@ void Engine::updateConfig() {
   // iterate through all UCI options and update config accordingly
   for (const auto &it : optionMap) {
     const UCI::Option &option = it.second;
-    const string &name = option.getNameID();
+    const std::string &name = option.getNameID();
 
     if (name == "Hash") config.hash = getInt(option.getCurrentValue());
     else if (name == "Ponder") config.ponder = option.getCurrentValue() == "true";
   }
 }
 
-int Engine::getInt(const string &value) const {
+int Engine::getInt(const std::string &value) const {
   int intValue = 0;
   try {
     intValue = stoi(value);
   }
-  catch (invalid_argument &e) {
-    cerr << "depth invalid - expected numeric value. Was " << value << endl;
+  catch (std::invalid_argument &e) {
+    std::cerr << "depth invalid - expected numeric value. Was " << value << std::endl;
   }
-  catch (out_of_range &e) {
-    cerr << "depth invalid - numeric value out of range of int. Was " << value << endl;
+  catch (std::out_of_range &e) {
+    std::cerr << "depth invalid - numeric value out of range of int. Was " << value << std::endl;
   }
   return intValue;
 }

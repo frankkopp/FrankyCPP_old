@@ -31,8 +31,6 @@
 
 #include "datatypes.h"
 
-using namespace std;
-
 typedef uint64_t Millisec;
 
 class SearchLimits {
@@ -80,7 +78,7 @@ public:
                bool perft);
 
   // output
-  friend ostream &operator<<(ostream &os, const SearchLimits &limits);
+  friend std::ostream &operator<<(std::ostream &os, const SearchLimits &limits);
 
 private:
   void setupLimits();

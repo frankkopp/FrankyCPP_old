@@ -36,7 +36,7 @@
 #include "Search.h"
 #include "SearchLimits.h"
 
-#define MAP(name, option) optionMap.insert(make_pair(name, option))
+#define MAP(name, option) optionMap.insert(std::make_pair(name, option))
 
 namespace UCI { class Handler; }
 
@@ -74,8 +74,8 @@ public:
   void registerUCIHandler(UCI::Handler *handler) { pUciHandler = handler; };
 
   // output
-  string str() const;
-  friend ostream &operator<<(std::ostream &os, const Engine &engine);
+  std::string str() const;
+  friend std::ostream &operator<<(std::ostream &os, const Engine &engine);
 
   // commands
   void clearHash();

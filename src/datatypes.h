@@ -39,7 +39,7 @@
 // convenience macros
 #define NEWLINE std::cout << std::endl
 #define printBB(bb) cout << Bitboards::print((bb)) << endl
-#define println(s) cout << (s) << endl
+#define println(s) std::cout << (s) << std::endl
 
 // Global constants
 inline const char *START_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";

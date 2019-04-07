@@ -29,8 +29,6 @@
 #include "Engine.h"
 #include "Search.h"
 
-using namespace std;
-
 ////////////////////////////////////////////////
 ///// CONSTRUCTORS
 
@@ -50,7 +48,7 @@ Search::~Search() {
 
 void Search::startSearch(Position pos, SearchLimits *limits) {
   if (running) {
-    cerr << "Search already running" << endl;
+    std::cerr << "Search already running" << std::endl;
     return;
   }
 
@@ -65,7 +63,7 @@ void Search::startSearch(Position pos, SearchLimits *limits) {
   // join() previous thread
   if (myThread.joinable()) myThread.join();
   // start search in a separate thread
-  myThread = thread(&Search::run, this);
+  myThread = std::thread(&Search::run, this);
   //myThread.detach();
   // wait until thread is initialized before returning to caller
   initSemaphore.getOrWait();
@@ -104,15 +102,15 @@ void Search::run() {
 
   // DEBUG / PROTOTYPE
 
-  cout << "Generate debug move\n";
+  std::cout << "Generate debug move\n";
   MoveGenerator moveGenerator;
-  cout << "Generate position\n";
-  cout << position.str() << endl;
-  cout << "Generate legal moves\n";
+  std::cout << "Generate position\n";
+  std::cout << position.str() << std::endl;
+  std::cout << "Generate legal moves\n";
   MoveList moves = moveGenerator.generateLegalMoves(GENALL, &position);
-  cout << "Legal Moves: " << moves << endl;
-  cout << "Send move\n";
-  ostringstream ss;
+  std::cout << "Legal Moves: " << moves << std::endl;
+  std::cout << "Send move\n";
+  std::ostringstream ss;
   ss << moves;
   pEngine->sendInfo(ss.str());
   pEngine->sendResult(moves.front(), NOMOVE);
