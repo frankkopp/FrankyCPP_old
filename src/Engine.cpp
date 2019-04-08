@@ -31,7 +31,9 @@
 ////////////////////////////////////////////////
 ///// CONSTRUCTORS
 
-Engine::Engine() { initOptions(); }
+Engine::Engine() {
+  initOptions();
+}
 
 ////////////////////////////////////////////////
 ///// PUBLIC
@@ -143,13 +145,14 @@ void Engine::ponderHit() {
 }
 
 void Engine::sendResult(Move bestMove, Move ponderMove) const {
-  println("Engine Result: Best Move = " + printMove(bestMove) +
-          " Ponder Move = " + printMove(ponderMove));
-  pUciHandler->sendResult(bestMove, ponderMove);
+  if (pUciHandler) pUciHandler->sendResult(bestMove, ponderMove);
+  else std::cerr << "No UCIHandler defined: Engine Result: Best Move = " << printMove(bestMove) <<
+                    " Ponder Move = " << printMove(ponderMove) << std::endl;
 }
 
 void Engine::sendInfo(const std::string &info) const {
-  pUciHandler->send("info string " + info);
+  if (pUciHandler) pUciHandler->send("info string " + info);
+  else std::cerr << "No UCIHandler defined: info string " << info << std::endl;
 }
 
 void Engine::waitWhileSearching() {

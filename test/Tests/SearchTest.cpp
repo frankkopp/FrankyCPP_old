@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 Frank Kopp
+ * Copyright (c) 2018 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,39 +26,23 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include "../../src/Search.h"
 #include "../../src/Engine.h"
 
 using testing::Eq;
 
-using namespace std;
-
-TEST(EngineTest, basic) {
-  Engine engine;
-  cout << "\nEngine" << engine << endl;
-}
-
-TEST(EngineTest, startSearch) {
+TEST(SearchTest, basic) {
+  NEWLINE;
   INIT::init();
-  
-  Engine engine;
-  UCISearchMode uciSearchMode;
-  uciSearchMode.infinite = true;
-  engine.startSearch(&uciSearchMode);
 
-  cout << "Start and Stop test..." << endl;
-  for (int i = 0; i < 5; ++i) {
-    sleep(3);
-    engine.stopSearch();
-    engine.waitWhileSearching();
+  Search search;
+  SearchLimits searchLimits;
+  Position position;
 
-    engine.startSearch(&uciSearchMode);
+  searchLimits.infinite = true;
 
-    sleep(3);
-    engine.stopSearch();
-    engine.waitWhileSearching();
-  }
-  cout << "...FINISHED" << endl;
+  println(searchLimits);
+
+  search.startSearch(position, &searchLimits);
 
 }
-
-

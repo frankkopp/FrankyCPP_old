@@ -32,6 +32,7 @@
 #include "SearchLimits.h"
 #include "SearchStats.h"
 #include "Semaphore.h"
+#include "Position.h"
 
 class Engine;
 
@@ -57,8 +58,8 @@ public:
   ///// CONSTRUCTORS
 
   /** Default constructor creates a board with a back reference to the engine */
+  Search();
   explicit Search(Engine *pEng);
-  Search() = delete;
   virtual ~Search();
 
   ////////////////////////////////////////////////

@@ -32,10 +32,12 @@
 ////////////////////////////////////////////////
 ///// CONSTRUCTORS
 
+Search::Search() {
+  pEngine = nullptr;
+}
+
 Search::Search(Engine *pEng) {
   pEngine = pEng;
-
-
 }
 
 Search::~Search() {
@@ -98,9 +100,22 @@ void Search::run() {
   // Initialize for new search
   searchStats = SearchStats();
 
-  initSemaphore.release();
 
   // DEBUG / PROTOTYPE
+
+  for (int i = 0; i < 2; ++i) {
+    std::cout << "Init SIMULATION: " << i << std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+  }
+  std::cout << "New Thread: Init done!\n";
+  initSemaphore.release();
+
+  std::cout << "New Thread: Start work...!\n";
+  for (int i = 0; i < 5; ++i) {
+    std::cout << "Search SIMULATION: " << i << std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    if (stopSearchFlag) break;
+  }
 
   std::cout << "Generate debug move\n";
   MoveGenerator moveGenerator;
@@ -112,8 +127,10 @@ void Search::run() {
   std::cout << "Send move\n";
   std::ostringstream ss;
   ss << moves;
-  pEngine->sendInfo(ss.str());
-  pEngine->sendResult(moves.front(), NOMOVE);
+  if (pEngine) {
+    pEngine->sendInfo(ss.str());
+    pEngine->sendResult(moves.front(), NOMOVE);
+  }
 
   // DEBUG / PROTOTYPE
 

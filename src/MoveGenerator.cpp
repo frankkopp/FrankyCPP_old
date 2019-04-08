@@ -413,6 +413,7 @@ MoveGenerator::generateKingMoves(GenMode genMode, const Position *pPosition, Mov
   const Piece piece = makePiece(nextPlayer, KING);
   const int gamePhase = pPosition->getGamePhase();
 
+
   Bitboard pieces = pPosition->getPieceBB(nextPlayer, KING);
   assert(Bitboards::popcount(pieces) == 1 && "More than one king not allowed!");
 

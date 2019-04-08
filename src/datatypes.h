@@ -38,7 +38,7 @@
 
 // convenience macros
 #define NEWLINE std::cout << std::endl
-#define printBB(bb) cout << Bitboards::print((bb)) << endl
+#define printBB(bb) std::cout << Bitboards::print((bb)) << std::endl
 #define println(s) std::cout << (s) << std::endl
 
 // Global constants

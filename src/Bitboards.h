@@ -316,8 +316,8 @@ namespace Bitboards {
     extern uint8_t PopCnt16[1 << 16];
     // nice trick to address 16-bit groups in a 64-bit int
     // @formatter:off
-  union { Bitboard bb; uint16_t u[4]; } v = {b};
-  // @formatter:on
+    union { Bitboard bb; uint16_t u[4]; } v = {b};
+    // @formatter:on
     // adding all 16-bit population counters referenced in the 64-bit union
     return PopCnt16[v.u[0]] + PopCnt16[v.u[1]] + PopCnt16[v.u[2]] + PopCnt16[v.u[3]];
   }

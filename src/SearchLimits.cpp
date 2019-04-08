@@ -108,11 +108,12 @@ void SearchLimits::setupLimits() {
   }
   else {
     // INVALID SearchMode
-    cerr << "SearchMode is invalid as no mode could be deducted from settings: " << this << endl;
+    std::cerr << "SearchMode is invalid as no mode could be deducted from settings: " << this
+              << std::endl;
   }
 }
 
-ostream &operator<<(ostream &os, const SearchLimits &limits) {
+std::ostream &operator<<(std::ostream &os, const SearchLimits &limits) {
   os << "whiteTime: " << limits.whiteTime << " blackTime: " << limits.blackTime << " whiteInc: "
      << limits.whiteInc << " blackInc: " << limits.blackInc << " moveTime: " << limits.moveTime
      << " movesToGo: " << limits.movesToGo << " depth: " << limits.depth << " nodes: "
