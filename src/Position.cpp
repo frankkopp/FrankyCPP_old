@@ -669,7 +669,7 @@ bool Position::givesCheck(Move move) {
   if (moveType == PROMOTION) {
     fromPt = promotionType(move);
   }
-    // Castling
+  // Castling
   else if (moveType == CASTLING) {
     // set the target square to the rook square and
     // piece type to ROOK. King can't give check

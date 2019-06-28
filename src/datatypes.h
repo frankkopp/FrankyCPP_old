@@ -155,8 +155,8 @@ enum Orientation : int {
 /// Additional operators to add a Direction to a Square
 constexpr Square operator+(Square s, Direction d) { return Square(int(s) + int(d)); }
 constexpr Square operator-(Square s, Direction d) { return Square(int(s) - int(d)); }
-inline Square &operator+=(Square &s, Direction d) { return s = s + d; }
-inline Square &operator-=(Square &s, Direction d) { return s = s - d; }
+constexpr Square &operator+=(Square &s, Direction d) { return s = s + d; }
+constexpr Square &operator-=(Square &s, Direction d) { return s = s - d; }
 
 ///////////////////////////////////
 //// PIECE TYPES
@@ -303,7 +303,7 @@ template<MoveType T = NORMAL>
 Move createMove(const char *move) {
   std::istringstream iss(move);
   iss >> std::noskipws;
-  unsigned char token;
+  unsigned char token = 0;
   Square from, to;
 
   // from

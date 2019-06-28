@@ -100,15 +100,9 @@ void Search::run() {
   // Initialize for new search
   searchStats = SearchStats();
 
+  initSemaphore.release();
 
   // DEBUG / PROTOTYPE
-
-  for (int i = 0; i < 2; ++i) {
-    std::cout << "Init SIMULATION: " << i << std::endl;
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-  }
-  std::cout << "New Thread: Init done!\n";
-  initSemaphore.release();
 
   std::cout << "New Thread: Start work...!\n";
   for (int i = 0; i < 5; ++i) {

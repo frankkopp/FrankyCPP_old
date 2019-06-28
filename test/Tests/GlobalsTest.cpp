@@ -116,6 +116,14 @@ TEST(MoveTest, moves) {
   buffer2 << move;
   ASSERT_EQ(buffer1.str(), buffer2.str());
   ASSERT_EQ("a7a8q (PROMOTION) (-15001)", printMove(move));
+
+  move = createMove<PROMOTION>("a7a8n");
+  ASSERT_TRUE(isMove(move));
+  ASSERT_EQ(SQ_A7, getFromSquare(move));
+  ASSERT_EQ(SQ_A8, getToSquare(move));
+  ASSERT_EQ(PROMOTION, typeOf(move));
+  ASSERT_EQ(KNIGHT, promotionType(move)); // not useful is not type PROMOTION
+
 }
 
 TEST(MoveTest, movesValue) {
