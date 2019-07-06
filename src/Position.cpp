@@ -653,7 +653,7 @@ bool Position::givesCheck(Move move) {
 
   // opponents king square
   const Bitboard kingBB = piecesBB[~nextPlayer][KING];
-  const Square kingSquare = Bitboards::lsb(kingBB);
+  const Square kingSq = Bitboards::lsb(kingBB);
   // fromSquare
   const Square fromSquare = getFromSquare(move);
   // target square
@@ -701,7 +701,7 @@ bool Position::givesCheck(Move move) {
   if (fromPt == QUEEN) {
     // if queen on same rank or same file then she acts like rook
     // otherwise like bishop
-    if (rankOf(toSquare) == rankOf(kingSquare) || fileOf(toSquare) == fileOf(kingSquare)) {
+    if (rankOf(toSquare) == rankOf(kingSq) || fileOf(toSquare) == fileOf(kingSq)) {
       fromPt = ROOK;
     }
     else {
@@ -720,18 +720,18 @@ bool Position::givesCheck(Move move) {
 
     case PAWN:
       // normal pawn direct chess include en passant captures
-      if (Bitboards::pawnAttacks[colorOf(fromPc)][toSquare] & kingSquare) return true;
+      if (Bitboards::pawnAttacks[colorOf(fromPc)][toSquare] & kingSq) return true;
       else break;
 
     case KNIGHT:
-      if (Bitboards::pseudoAttacks[KNIGHT][toSquare] & kingSquare) return true;
+      if (Bitboards::pseudoAttacks[KNIGHT][toSquare] & kingSq) return true;
       else break;
 
     case ROOK:
       // is attack even possible
-      if (Bitboards::pseudoAttacks[ROOK][toSquare] & kingSquare) {
+      if (Bitboards::pseudoAttacks[ROOK][toSquare] & kingSq) {
         // squares in between attacker and king
-        intermediate = Bitboards::intermediateBB[toSquare][kingSquare];
+        intermediate = Bitboards::intermediateBB[toSquare][kingSq];
         // adapt board by moving the piece on the bitboard
         assert(allOccupiedBitboard & fromSquare);
         boardAfterMove = allOccupiedBitboard ^ fromSquare;
@@ -742,9 +742,9 @@ bool Position::givesCheck(Move move) {
       break;
     case BISHOP:
       // is attack even possible
-      if (Bitboards::pseudoAttacks[BISHOP][toSquare] & kingSquare) {
+      if (Bitboards::pseudoAttacks[BISHOP][toSquare] & kingSq) {
         // squares in between attacker and king
-        intermediate = Bitboards::intermediateBB[toSquare][kingSquare];
+        intermediate = Bitboards::intermediateBB[toSquare][kingSq];
         // adapt board by moving the piece on the bitboard
         assert (allOccupiedBitboard & fromSquare);
         boardAfterMove = allOccupiedBitboard ^ fromSquare;
@@ -770,15 +770,15 @@ bool Position::givesCheck(Move move) {
   // rooks
   // Check if there are any rooks on possible attack squares
   Bitboard rooks = piecesBB[colorOf(fromPc)][ROOK];
-  if (Bitboards::pseudoAttacks[ROOK][kingSquare] & rooks) {
+  if (Bitboards::pseudoAttacks[ROOK][kingSq] & rooks) {
     // iterate over all pieces
     while (rooks) {
       const Square sq = Bitboards::popLSB(&rooks);
       // if the square is not reachable from the piece's square we can skip this
-      if ((Bitboards::pseudoAttacks[ROOK][sq] & kingSquare) == 0) continue;
+      if ((Bitboards::pseudoAttacks[ROOK][sq] & kingSq) == 0) continue;
       // if there are no occupied squares between the piece square and the
       // target square we have a check
-      intermediate = Bitboards::intermediateBB[sq][kingSquare];
+      intermediate = Bitboards::intermediateBB[sq][kingSq];
       // adapt board by moving the piece on the bitboard
       assert (allOccupiedBitboard & fromSquare);
       boardAfterMove = allOccupiedBitboard ^ fromSquare;
@@ -791,15 +791,15 @@ bool Position::givesCheck(Move move) {
 
   // Check if there are any bishops on possible attack squares
   Bitboard bishops = piecesBB[colorOf(fromPc)][BISHOP];
-  if ((Bitboards::pseudoAttacks[BISHOP][kingSquare] & bishops)) {
+  if ((Bitboards::pseudoAttacks[BISHOP][kingSq] & bishops)) {
     // iterate over all pieces
     while (bishops) {
       const Square sq = Bitboards::popLSB(&bishops);
       // if the square is not reachable from the piece's square we can skip this
-      if ((Bitboards::pseudoAttacks[BISHOP][sq] & kingSquare) == 0) continue;
+      if ((Bitboards::pseudoAttacks[BISHOP][sq] & kingSq) == 0) continue;
       // if there are no occupied squares between the piece square and the
       // target square we have a check
-      intermediate = Bitboards::intermediateBB[sq][kingSquare];
+      intermediate = Bitboards::intermediateBB[sq][kingSq];
       // adapt board by moving the piece on the bitboard
       assert (allOccupiedBitboard & fromSquare);
       boardAfterMove = allOccupiedBitboard ^ fromSquare;
@@ -812,15 +812,15 @@ bool Position::givesCheck(Move move) {
 
   // Check if there are any bishops on possible attack squares
   Bitboard queens = piecesBB[colorOf(fromPc)][QUEEN];
-  if ((Bitboards::pseudoAttacks[QUEEN][kingSquare] & queens)) {
+  if ((Bitboards::pseudoAttacks[QUEEN][kingSq] & queens)) {
     // iterate over all pieces
     while (queens) {
       const Square sq = Bitboards::popLSB(&queens);
       // if the square is not reachable from the piece's square we can skip this
-      if ((Bitboards::pseudoAttacks[QUEEN][sq] & kingSquare) == 0) continue;
+      if ((Bitboards::pseudoAttacks[QUEEN][sq] & kingSq) == 0) continue;
       // if there are no occupied squares between the piece square and the
       // target square we have a check
-      intermediate = Bitboards::intermediateBB[sq][kingSquare];
+      intermediate = Bitboards::intermediateBB[sq][kingSq];
       // adapt board by moving the piece on the bitboard
       assert (allOccupiedBitboard & fromSquare);
       boardAfterMove = allOccupiedBitboard ^ fromSquare;

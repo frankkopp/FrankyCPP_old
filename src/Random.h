@@ -57,7 +57,7 @@ class Random {
   }
 
 public:
-  Random(uint64_t seed) : s(seed) { assert(seed); }
+  explicit Random(uint64_t seed) : s(seed) { assert(seed); }
 
   template<typename T>
   T rand() { return T(rand64()); }

@@ -123,7 +123,7 @@ TEST(MoveTest, moves) {
   ASSERT_EQ(SQ_A8, getToSquare(move));
   ASSERT_EQ(PROMOTION, typeOf(move));
   ASSERT_EQ(KNIGHT, promotionType(move)); // not useful is not type PROMOTION
-
+  ASSERT_NE(QUEEN, promotionType(move)); // not useful is not type PROMOTION
 }
 
 TEST(MoveTest, movesValue) {

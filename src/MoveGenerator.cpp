@@ -256,7 +256,7 @@ MoveGenerator::generatePawnMoves(GenMode genMode, const Position *pPosition, Mov
     and ANDs it with the opponents pieces. With this we get all possible captures
     and can easily create the moves by using a loop over all captures and using
     the backward shift for the from-Square.
-    All move get sort values so that sort order should be:
+    All moves get sort values so that sort order should be:
      captures: most value victim least value attacker - promotion piece value
      non captures: killer (TBD), promotions, castling, normal moves (position value)
     */
