@@ -154,10 +154,10 @@ namespace Bitboards {
    * @return popcount16() counts the non-zero bits using SWAR-Popcount algorithm
    */
   unsigned popcount16(unsigned u) {
-    u -= (u >> 1) & 0x5555U;
-    u = ((u >> 2) & 0x3333U) + (u & 0x3333U);
-    u = ((u >> 4) + u) & 0x0F0FU;
-    return (u * 0x0101U) >> 8;
+    u -= (u >> 1U) & 0x5555U;
+    u = ((u >> 2U) & 0x3333U) + (u & 0x3333U);
+    u = ((u >> 4U) + u) & 0x0F0FU;
+    return (u * 0x0101U) >> 8U;
   }
 
   /**
@@ -166,14 +166,14 @@ namespace Bitboards {
   void init() {
 
     // pre-computes 16-bit population counter to use in popcount(64-bit)
-    for (unsigned i = 0; i < (1 << 16); ++i)
+    for (unsigned i = 0; i < (1U << 16U); ++i)
       PopCnt16[i] = (uint8_t) popcount16(i);
 
     // all squares
     for (Square sq = SQ_A1; sq <= SQ_H8; ++sq) {
 
       // square bitboard
-      squareBB[sq] = (ONE_BB << sq);
+      squareBB[sq] = ONE_BB << sq;
 
       // square diagonals
       if (DiagUpA8 & sq) squareDiagUpBB[sq] = DiagUpA8;
