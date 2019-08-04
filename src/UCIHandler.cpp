@@ -24,14 +24,11 @@
  */
 
 #include <iostream>
-#include <sstream>
-#include "unistd.h"
 
 #include "datatypes.h"
 
 #include "Engine.h"
 #include "UCIHandler.h"
-#include "Search.h"
 #include "UCISearchMode.h"
 
 namespace UCI {

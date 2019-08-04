@@ -261,7 +261,7 @@ inline const int MOVE_MASK = 0xFFFF;  // first 16-bit
 inline const int VALUE_MASK = 0xFFFF << VALUE_SHIFT; // second 16-bit
 
 /** A move is basically a 32-bit int */
-enum Move : int {
+enum Move : u_int32_t {
   NOMOVE
 };
 

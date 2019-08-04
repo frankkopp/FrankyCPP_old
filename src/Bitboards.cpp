@@ -24,7 +24,6 @@
  */
 
 #include <string>
-#include <iostream>
 
 #include "datatypes.h"
 #include "Bitboards.h"
@@ -75,7 +74,7 @@ namespace Bitboards {
   /**
    * Prints a bitboard a an 8x8 matrix for output on a console
    */
-  const string print(Bitboard b) {
+  string print(Bitboard b) {
     string s = "+---+---+---+---+---+---+---+---+\n";
     for (Rank r = RANK_8; r >= RANK_1; --r) {
       for (File f = FILE_A; f <= FILE_H; ++f) {
@@ -90,7 +89,7 @@ namespace Bitboards {
    * Prints a bitboard as a series of 0 and 1 grouped in 8 bits
    * beginning with the LSB (0) on the left and the MSB (63) on the right
    */
-  const string printFlat(Bitboard b) {
+  string printFlat(Bitboard b) {
     string s;
     for (int i = 0; i < 64; i++) {
       if (i > 0 && i % 8 == 0) s += ".";
@@ -479,9 +478,9 @@ namespace Bitboards {
       case SOUTH_EAST:
         return (b >> 7) & ~FileABB;
       case SOUTH_WEST:
-        return (b >> 9) & ~FileHBB;;
+        return (b >> 9) & ~FileHBB;
       case NORTH_WEST:
-        return (b << 7) & ~FileHBB;;
+        return (b << 7) & ~FileHBB;
     }
     assert(false);
     return b;
@@ -533,7 +532,6 @@ namespace Bitboards {
   Bitboard getMovesDiagUp(Square square, Bitboard content) {
     // content = the pieces currently on the board and maybe blocking the moves
     // rotate the content of the board to get all diagonals in a row
-    // cout << Bitboards::printFlat(content) << endl;
     return getMovesDiagUpR(square, rotateR45(content));
   }
 
@@ -549,10 +547,6 @@ namespace Bitboards {
     // which have not been erased by the shift
     Bitboard contentMasked = shifted & lengthDiagUpMask(sq);
     // retrieve all possible moves for this square with the current content
-    //    cout << Bitboards::printFlat(rotated) << endl;
-    //    cout << Bitboards::printFlat(shifted) << endl;
-    //    cout << Bitboards::printFlat(lengthDiagUpMask(sq)) << endl;
-    //    cout << Bitboards::printFlat(contentMasked) << endl;
     return movesDiagUp[sq][contentMasked];
   }
 
@@ -563,7 +557,6 @@ namespace Bitboards {
   Bitboard getMovesDiagDown(Square square, Bitboard content) {
     // content = the pieces currently on the board and maybe blocking the moves
     // rotate the content of the board to get all diagonals in a row
-    // cout << Bitboards::printFlat(content) << endl;
     return getMovesDiagDownR(square, rotateL45(content));
   }
 
@@ -579,10 +572,6 @@ namespace Bitboards {
     // which have not been erased by the shift
     Bitboard contentMasked = shifted & lengthDiagDownMask(sq);
     // retrieve all possible moves for this square with the current content
-    //    cout << Bitboards::printFlat(rotated) << endl;
-    //    cout << Bitboards::printFlat(shifted) << endl;
-    //    cout << Bitboards::printFlat(lengthDiagDownMask(sq)) << endl;
-    //    cout << Bitboards::printFlat(contentMasked) << endl;
     return movesDiagDown[sq][contentMasked];
   }
 }

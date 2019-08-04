@@ -31,8 +31,8 @@
 namespace Bitboards {
   void init();
 
-  const std::string print(Bitboard b);
-  const std::string printFlat(Bitboard b);
+  std::string print(Bitboard b);
+  std::string printFlat(Bitboard b);
 
   Bitboard shift(Direction d, Bitboard b);
   Bitboard rotateR90(Bitboard b);

@@ -24,10 +24,8 @@
  */
 
 #include <iostream>
-#include <sstream>
 
 #include "Random.h"
-#include "UCIHandler.h"
 #include "Position.h"
 #include "MoveGenerator.h"
 
@@ -531,6 +529,12 @@ bool Position::hasCheck() {
   return check;
 }
 
+/**
+ * TODO: This implmentation is violating encapsulation as it needs
+ *  a move generator to generate all possible moves to see if there are any
+ *  legal moves. The MoveGenerator also needs to know Position which leads to
+ *  a circle reference.
+ */
 bool Position::hasCheckMate() {
   if (!hasCheck()) return false;
   if (hasMateFlag != FLAG_TBD) return (hasMateFlag == FLAG_TRUE);
