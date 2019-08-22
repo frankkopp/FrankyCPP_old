@@ -530,7 +530,7 @@ bool Position::hasCheck() {
 }
 
 /**
- * TODO: This implmentation is violating encapsulation as it needs
+ * TODO: This implementation is violating encapsulation as it needs
  *  a move generator to generate all possible moves to see if there are any
  *  legal moves. The MoveGenerator also needs to know Position which leads to
  *  a circle reference.
@@ -814,7 +814,7 @@ bool Position::givesCheck(Move move) {
     }
   }
 
-  // Check if there are any bishops on possible attack squares
+  // Check if there are any queens on possible attack squares
   Bitboard queens = piecesBB[colorOf(fromPc)][QUEEN];
   if ((Bitboards::pseudoAttacks[QUEEN][kingSq] & queens)) {
     // iterate over all pieces

@@ -24,9 +24,7 @@
  */
 
 #include <gtest/gtest.h>
-#include <gmock/gmock.h>
 #include <chrono>
-#include <cstdarg>
 
 #include "../../src/Bitboards.h"
 #include "../../src/Position.h"
