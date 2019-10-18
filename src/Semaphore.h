@@ -62,7 +62,7 @@ template <typename Mutex, typename CondVar>
 basic_semaphore<Mutex, CondVar>::basic_semaphore(size_t count) : mCount{count} {}
 
 /**
- * Tries to get a semaphore at returns false if none available
+ * Tries to get a semaphore and returns false if none available
  * @tparam Mutex
  * @tparam CondVar
  * @return
