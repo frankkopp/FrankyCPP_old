@@ -129,6 +129,12 @@ MoveGenerator::getNextPseudoLegalMove(GenMode genMode, Position *pPosition) {
   }
 }
 
+void MoveGenerator::resetOnDemand() {
+  onDemandMoves.clear();
+  currentODStage = OD_NEW;
+  currentIteratorKey = 0;
+}
+
 bool
 MoveGenerator::hasLegalMove(Position *pPosition) {
 

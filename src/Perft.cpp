@@ -80,6 +80,86 @@ void Perft::perft(int maxDepth, bool onDemand) {
   std::cout << os.str();
 }
 
+void Perft::perft_divide(int maxDepth, bool onDemand) {
+  resetCounter();
+
+  Position position(fen);
+  MoveGenerator mg[MAX_PLY];
+  std::ostringstream os;
+  std::cout.imbue(digitLocale);
+  os.imbue(digitLocale);
+  os << std::setprecision(9);
+
+  os << "Testing at depth " << maxDepth << std::endl;
+  std::cout << os.str();
+  std::cout.flush();
+  os.str("");
+  os.clear();
+
+  long result = 0L;
+  auto start = std::chrono::high_resolution_clock::now();
+
+  // moves to search recursively
+  MoveList moves = mg[maxDepth].generatePseudoLegalMoves(GENALL, &position);
+  for (Move move : moves) {
+  //  Move move = createMove<PROMOTION>("c7c8n");
+    // Iterate over moves
+    long totalNodes = 0L;
+
+    if (maxDepth > 1) {
+      position.doMove(move);
+      // only go into recursion if move was legal
+      if (position.isLegalPosition()) {
+        if (onDemand) totalNodes = miniMaxOD(maxDepth-1, &position, mg);
+        else totalNodes = miniMax(maxDepth-1, &position, mg);
+        result += totalNodes;
+      }
+      position.undoMove();
+    }
+    else {
+      const bool cap = position.getPiece(getToSquare(move)) != PIECE_NONE;
+      const bool ep = typeOf(move) == ENPASSANT;
+      position.doMove(move);
+      if (position.isLegalPosition()) {
+        totalNodes++;
+        if (ep) {
+          enpassantCounter++;
+          captureCounter++;
+        }
+        if (cap) captureCounter++;
+        if (position.hasCheck()) checkCounter++;
+        if (position.hasCheckMate()) checkMateCounter++;
+        result += totalNodes;
+      }
+      position.undoMove();
+    }
+
+    os << printMove(move) << " (" << totalNodes << ")" << std::endl;
+    std::cout << os.str();
+    std::cout.flush();
+    os.str("");
+    os.clear();
+  }
+
+  auto finish = std::chrono::high_resolution_clock::now();
+  long duration = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start).count();
+
+  nodes = result;
+
+  os << "Leaf Nodes: " << nodes
+     << " Captures: " << captureCounter
+     << " EnPassant: " << enpassantCounter
+     << " Checks: " << checkCounter
+     << " Mates: " << checkMateCounter
+     << std::endl;
+
+  os << "Duration: " << duration << " ms" << std::endl;
+  os << "NPS: " << ((result * 1e3) / duration) << " nps" << std::endl;
+
+  std::cout << os.str();
+}
+
+
 void Perft::resetCounter() {
   nodes = 0;
   checkCounter = 0;
@@ -101,7 +181,11 @@ long Perft::miniMax(int depth, Position *pPosition, MoveGenerator *pMg) {
     if (depth > 1) {
       pPosition->doMove(move);
       // only go into recursion if move was legal
-      if (pPosition->isLegalPosition()) totalNodes += miniMax(depth - 1, pPosition, pMg);
+      if (pPosition->isLegalPosition()) {
+//        std::cout << depth << ": " << printMove(move) << " ==> " << pPosition->printFen() << std::endl;
+//        std::cout.flush();
+        totalNodes += miniMax(depth - 1, pPosition, pMg);
+      }
       pPosition->undoMove();
     }
     else {
@@ -109,6 +193,8 @@ long Perft::miniMax(int depth, Position *pPosition, MoveGenerator *pMg) {
       const bool ep = typeOf(move) == ENPASSANT;
       pPosition->doMove(move);
       if (pPosition->isLegalPosition()) {
+//        std::cout << depth << ": " << printMove(move) << " ==> " << pPosition->printFen() << std::endl;
+//        std::cout.flush();
         totalNodes++;
         if (ep) {
           enpassantCounter++;
@@ -125,6 +211,9 @@ long Perft::miniMax(int depth, Position *pPosition, MoveGenerator *pMg) {
 }
 
 long Perft::miniMaxOD(int depth, Position *pPosition, MoveGenerator *pMg) {
+
+  pMg[depth].resetOnDemand();
+
   // Iterate over moves
   long totalNodes = 0L;
 
@@ -140,7 +229,11 @@ long Perft::miniMaxOD(int depth, Position *pPosition, MoveGenerator *pMg) {
     if (depth > 1) {
       pPosition->doMove(move);
       // only go into recursion if move was legal
-      if (pPosition->isLegalPosition()) totalNodes += miniMaxOD(depth - 1, pPosition, pMg);
+      if (pPosition->isLegalPosition()) {
+//        std::cout << depth << ": " << printMove(move) << " ==> " << pPosition->printFen() << std::endl;
+//        std::cout.flush();
+        totalNodes += miniMaxOD(depth - 1, pPosition, pMg);
+      }
       pPosition->undoMove();
     }
     else {
@@ -148,6 +241,8 @@ long Perft::miniMaxOD(int depth, Position *pPosition, MoveGenerator *pMg) {
       const bool ep = typeOf(move) == ENPASSANT;
       pPosition->doMove(move);
       if (pPosition->isLegalPosition()) {
+//        std::cout << depth << ": " << printMove(move) << " ==> " << pPosition->printFen() << std::endl;
+//        std::cout.flush();
         totalNodes++;
         if (ep) {
           enpassantCounter++;

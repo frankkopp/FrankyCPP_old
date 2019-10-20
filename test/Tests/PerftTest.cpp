@@ -61,7 +61,7 @@ TEST(PerftTest, stdPerftOD) {
   };
   // @formatter:on
 
-  int maxDepth = 6;
+  int maxDepth = 8;
 
   for (int i = 1; i <= maxDepth; i++) {
     p.perft(i, true);
@@ -105,7 +105,7 @@ TEST(PerftTest, stdPerft) {
   };
   // @formatter:on
 
-  int maxDepth = 6;
+  int maxDepth = 8;
 
   for (int i = 1; i <= maxDepth; i++) {
     p.perft(i);
@@ -148,7 +148,7 @@ TEST(PerftTest, kiwiPetePerft) {
   int maxDepth = 5;
 
   for (int i = 1; i <= maxDepth; i++) {
-    p.perft(i);
+    p.perft(i, true);
     NEWLINE;
     ASSERT_EQ(results[i][1], p.getNodes());
     ASSERT_EQ(results[i][2], p.getCaptureCounter());
@@ -187,10 +187,10 @@ TEST(PerftTest, pos3Perft) {
   };
   // @formatter:on
 
-  int maxDepth = 6;
+  int maxDepth = 7;
 
   for (int i = 1; i <= maxDepth; i++) {
-    p.perft(i);
+    p.perft(i, true);
     NEWLINE;
     ASSERT_EQ(results[i][1], p.getNodes());
     ASSERT_EQ(results[i][2], p.getCaptureCounter());
@@ -228,10 +228,10 @@ TEST(PerftTest, pos4Perft) {
   };
   // @formatter:on
 
-  int maxDepth = 5;
+  int maxDepth = 6;
 
   for (int i = 1; i <= maxDepth; i++) {
-    p.perft(i);
+    p.perft(i, true);
     NEWLINE;
     ASSERT_EQ(results[i][1], p.getNodes());
     ASSERT_EQ(results[i][2], p.getCaptureCounter());
@@ -260,7 +260,7 @@ TEST(PerftTest, pos4Perft) {
   // @formatter:on
 
   for (int i = 1; i <= maxDepth; i++) {
-    p2.perft(i);
+    p2.perft(i, true);
     NEWLINE;
     ASSERT_EQ(results2[i][1], p2.getNodes());
     ASSERT_EQ(results2[i][2], p2.getCaptureCounter());
@@ -300,7 +300,7 @@ TEST(PerftTest, pos5Perft) {
   int maxDepth = 5;
 
   for (int i = 1; i <= maxDepth; i++) {
-    p.perft(i);
+    p.perft(i, true);
     NEWLINE;
     ASSERT_EQ(results[i][1], p.getNodes());
   }
@@ -372,6 +372,20 @@ TEST(PerftTest, Various) {
 
 }
 
+void debugPerft(const string &s, int depth, int result);
+TEST(PerftTest, DebugPerft) {
+  Position::init();
+  Bitboards::init();
+  NEWLINE;
+
+  variousPerftTests("n1n5/PPPk4/8/8/8/8/4Kppp/5N1N b - -", 6, 71179139);
+  //variousPerftTests("n1n5/PPPk4/8/8/8/8/4Kp1p/5n1N w - -", 5, 960124);
+  //variousPerftTests("nQn5/P1Pk4/8/8/8/8/4Kp1p/5n1N b - -", 4, 76472);
+  //variousPerftTests("nQ6/P1Pkn3/8/8/8/8/4Kp1p/5n1N w - -", 3, 7745);
+  //variousPerftTests("nQN5/P2kn3/8/8/8/8/4Kp1p/5n1N b - -", 3, 340);
+
+}
+
 void variousPerftTests(const string &s, int depth, int result) {
   println("Various PERFT Tests");
   println("==============================");
@@ -380,7 +394,7 @@ void variousPerftTests(const string &s, int depth, int result) {
   MoveGenerator mg;
   Position position;
   Perft p(s);
-  p.perft(depth);
+  p.perft(depth, true);
   println("Actual Result: " + to_string(p.getNodes()));
   ASSERT_EQ(result, p.getNodes());
   println("==============================\n");

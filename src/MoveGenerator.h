@@ -44,9 +44,9 @@ enum GenMode {
 
 class MoveGenerator {
 
-  MoveList pseudoLegalMoves;
-  MoveList legalMoves;
-  MoveList onDemandMoves;
+  MoveList pseudoLegalMoves = MoveList(256);
+  MoveList legalMoves = MoveList(256);;
+  MoveList onDemandMoves = MoveList(256);;
 
   enum onDemandStage : int { OD_NEW, OD1, OD2, OD3, OD4, OD5, OD6, OD7, OD_END };
   onDemandStage currentODStage = OD_NEW;
@@ -85,6 +85,11 @@ public:
    * @return
    */
   Move getNextPseudoLegalMove(GenMode genMode, Position *pPosition);
+
+  /**
+   * Resets the on demand move generator to start fresh
+   */
+  void resetOnDemand();
 
   /**
    * This method checks if the position has at least one legal move. It will mainly be used to

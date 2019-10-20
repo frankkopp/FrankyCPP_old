@@ -981,11 +981,9 @@ Piece Position::removePiece(Square square) {
   const Color color = colorOf(old);
   const PieceType pieceType = typeOf(old);
 
-  // piece board
+  // bitboards
   assert (piecesBB[color][pieceType] & square);
   piecesBB[color][pieceType] ^= square;
-
-  // bitboards
   assert (occupiedBB[color] & square);
   occupiedBB[color] ^= square;
   // pre-rotated bb / expensive - ~30% hit
@@ -994,9 +992,11 @@ Piece Position::removePiece(Square square) {
   occupiedBBR45[color] ^= Bitboards::rotateSquareR45(square);
   occupiedBBL45[color] ^= Bitboards::rotateSquareL45(square);
 
-  // piece list
+  // piece board
   assert (getPiece(square) != PIECE_NONE);
   board[square] = PIECE_NONE;
+
+  // zobrist
   zobristKey ^= Zobrist::pieces[old][square];
   // game phase
   gamePhase = std::max(0, gamePhase - gamePhaseValue[pieceType]);

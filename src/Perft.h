@@ -47,6 +47,7 @@ public:
 
   void perft(int maxDepth);
   void perft(int maxDepth, bool onDemand);
+  void perft_divide(int maxDepth, bool onDemand);
 
   long getNodes() const { return nodes; }
   long getCaptureCounter() const { return captureCounter; }
