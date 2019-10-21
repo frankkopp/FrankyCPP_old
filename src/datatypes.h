@@ -191,7 +191,7 @@ enum Piece : int {
 /** returns a char representing the piece. Upper case letters for white, lower case for black */
 inline const char *pieceToChar = "KPNBRQ  kpnbrq   ";
 
-/** creates hte piece given by color and piece type */
+/** creates the piece given by color and piece type */
 constexpr Piece makePiece(Color c, PieceType pt) { return Piece((c << 3) + pt); }
 /** returns the color of the given piece */
 constexpr Color colorOf(Piece p) { return Color(p >> 3); }
@@ -275,6 +275,7 @@ enum MoveType {
 
 /** Creates a move of type NORMAL */
 constexpr Move createMove(Square from, Square to) { return Move((from << FROM_SHIFT) + to); }
+
 /** Creates a move of type NORMAL with the given value */
 constexpr Move createMove(Square from, Square to, Value v) {
   return Move((Value(v - VALUE_NONE) << VALUE_SHIFT) + (from << FROM_SHIFT) + to);
@@ -357,6 +358,7 @@ Move createMove(const char *move) {
 
   return createMove<T>(from, to);
 }
+
 /** returns the square the move originates from */
 constexpr Square getFromSquare(Move m) { return Square((m >> FROM_SHIFT) & SQUARE_MASK); }
 /** returns the square the move goes to */

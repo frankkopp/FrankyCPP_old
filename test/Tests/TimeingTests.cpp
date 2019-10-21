@@ -79,9 +79,8 @@ TEST(TimingTests, doMoveUndoMove) {
     position.doMove(move3);
     position.doMove(move4);
     position.doMove(move5);
+
     position.undoMove();
-
-
     position.undoMove();
     position.undoMove();
     position.undoMove();
