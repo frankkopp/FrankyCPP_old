@@ -28,6 +28,7 @@
 #include <ostream>
 #include <string>
 
+#include "../../src/Bitboards.h"
 #include "../../src/Position.h"
 #include "../../src/MoveGenerator.h"
 

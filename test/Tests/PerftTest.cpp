@@ -27,7 +27,10 @@
 #include <ostream>
 #include <string>
 
+#include "../../src/Bitboards.h"
 #include "../../src/Perft.h"
+#include "../../src/Position.h"
+#include "../../src/MoveGenerator.h"
 
 using namespace std;
 

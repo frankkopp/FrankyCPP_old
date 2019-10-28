@@ -27,6 +27,8 @@
 #include <iomanip>
 
 #include "Perft.h"
+#include "Position.h"
+#include "MoveGenerator.h"
 
 Perft::Perft() {
   fen = START_POSITION_FEN;

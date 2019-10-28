@@ -26,7 +26,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "../../src/datatypes.h"
+#include "../../src/globals.h"
 #include "../../src/Bitboards.h"
 
 using namespace std;
@@ -229,5 +229,11 @@ TEST(MoveListTest, moveListPrint) {
   moveList.push_back(move2);
   moveList.push_back(move3);
 
-  cout << moveList << endl;
+  //cout << moveList << endl;
+
+  ostringstream ml;
+  ml << moveList;
+  string expected = "MoveList: size=3 [a1h1, a7a8, e1g1]\n";
+  ASSERT_EQ(expected, ml.str());
+
 }

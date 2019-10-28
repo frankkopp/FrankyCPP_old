@@ -26,7 +26,7 @@
 #ifndef FRANKYCPP_BITBOARDS_H
 #define FRANKYCPP_BITBOARDS_H
 
-#include "datatypes.h"
+#include "globals.h"
 
 namespace Bitboards {
   void init();

@@ -26,7 +26,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "../../src/datatypes.h"
+#include "../../src/globals.h"
 #include "../../src/UCIHandler.h"
 #include "../../src/Engine.h"
 

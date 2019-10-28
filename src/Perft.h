@@ -26,11 +26,13 @@
 #ifndef FRANKYCPP_PERFT_H
 #define FRANKYCPP_PERFT_H
 
-#include <string>
+// forward declared dependencies
+class Position;
+class MoveGenerator;
 
-#include "datatypes.h"
-#include "Position.h"
-#include "MoveGenerator.h"
+// included dependencies
+#include <string>
+#include "globals.h"
 
 class Perft {
 

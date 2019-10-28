@@ -26,15 +26,16 @@
 #ifndef FRANKYCPP_SEARCH_H
 #define FRANKYCPP_SEARCH_H
 
+// forward declared dependencies
+class SearchLimits;
+class Engine;
+
+// included dependencies
 #include <iostream>
 #include <thread>
-
-#include "SearchLimits.h"
 #include "SearchStats.h"
 #include "Semaphore.h"
 #include "Position.h"
-
-class Engine;
 
 class Search {
 
@@ -68,8 +69,7 @@ public:
   /** starts the search in a separate thread with the given search limits */
   void startSearch(Position position, SearchLimits *limits);
 
-  /** stops a running search gracefully - e.g. returns the best move found so
-   * far */
+  /** Stops a running search gracefully - e.g. returns the best move found so far */
   void stopSearch();
 
   /** checks if the search is already running */

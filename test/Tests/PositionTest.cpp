@@ -28,7 +28,8 @@
 #include <ostream>
 #include <string>
 
-#include "../../src/datatypes.h"
+#include "../../src/globals.h"
+#include "../../src/Values.h"
 #include "../../src/Position.h"
 #include "../../src/Bitboards.h"
 

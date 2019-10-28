@@ -29,9 +29,8 @@
 #include <cstdint>
 
 #include "../test/lib/googletest-master/googletest/include/gtest/gtest_prod.h"
-#include "datatypes.h"
-#include "Values.h"
-#include "Bitboards.h"
+
+#include "globals.h"
 #include "MoveGenerator.h"
 
 // circle reference between Position and MoveGenerator - this make it possible

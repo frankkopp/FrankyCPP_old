@@ -29,7 +29,7 @@
 #include <chrono>
 #include <ostream>
 
-#include "datatypes.h"
+#include "globals.h"
 
 typedef uint64_t Millisec;
 

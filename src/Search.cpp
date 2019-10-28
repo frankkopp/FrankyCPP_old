@@ -105,11 +105,6 @@ void Search::run() {
   // DEBUG / PROTOTYPE
 
   std::cout << "New Thread: Start work...!\n";
-  for (int i = 0; i < 5; ++i) {
-    std::cout << "Search SIMULATION: " << i << std::endl;
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    if (stopSearchFlag) break;
-  }
 
   std::cout << "Generate debug move\n";
   MoveGenerator moveGenerator;
@@ -118,6 +113,13 @@ void Search::run() {
   std::cout << "Generate legal moves\n";
   MoveList moves = moveGenerator.generateLegalMoves(GENALL, &position);
   std::cout << "Legal Moves: " << moves << std::endl;
+
+  for (int i = 0; i < 5; ++i) {
+    std::cout << "Search SIMULATION: " << i << std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    if (stopSearchFlag) break;
+  }
+
   std::cout << "Send move\n";
   std::ostringstream ss;
   ss << moves;

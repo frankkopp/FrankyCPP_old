@@ -26,8 +26,9 @@
 #include <iostream>
 
 #include "Random.h"
+#include "Bitboards.h"
+#include "Values.h"
 #include "Position.h"
-#include "MoveGenerator.h"
 
 Key Zobrist::pieces[PIECE_LENGTH][SQ_LENGTH];
 Key Zobrist::castlingRights[CR_LENGTH];

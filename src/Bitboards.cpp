@@ -25,7 +25,6 @@
 
 #include <string>
 
-#include "datatypes.h"
 #include "Bitboards.h"
 
 using namespace std;

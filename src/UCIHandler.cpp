@@ -25,7 +25,7 @@
 
 #include <iostream>
 
-#include "datatypes.h"
+#include "globals.h"
 
 #include "Engine.h"
 #include "UCIHandler.h"

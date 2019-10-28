@@ -29,8 +29,8 @@
 #include <vector>
 
 #include "../test/lib/googletest-master/googletest/include/gtest/gtest_prod.h"
-#include "datatypes.h"
-#include "Bitboards.h"
+
+#include "globals.h"
 
 // circle reference between Position and MoveGenerator - this make it possible
 class Position;

@@ -24,9 +24,11 @@
  */
 
 #include <algorithm>
-#include "MoveGenerator.h"
-#include "Position.h"
+
+#include "Bitboards.h"
 #include "Values.h"
+#include "Position.h"
+#include "MoveGenerator.h"
 
 // TODO
 //  - PV move

@@ -23,7 +23,6 @@
  *
  */
 
-#include "datatypes.h"
 #include "Engine.h"
 #include "UCIHandler.h"
 
