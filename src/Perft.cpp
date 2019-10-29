@@ -136,7 +136,7 @@ void Perft::perft_divide(int maxDepth, bool onDemand) {
       position.undoMove();
     }
 
-    os << printMove(move) << " (" << totalNodes << ")" << std::endl;
+    os << printMoveVerbose(move) << " (" << totalNodes << ")" << std::endl;
     std::cout << os.str();
     std::cout.flush();
     os.str("");

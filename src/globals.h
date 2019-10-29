@@ -391,13 +391,20 @@ constexpr void setValue(Move &m, Value v) {
 /** returns the value of the move */
 constexpr Value valueOf(Move m) { return Value(((m & VALUE_MASK) >> VALUE_SHIFT) + VALUE_NONE); }
 
+/** returns a short representation of the move as string */
+inline std::string printMove(const Move &move) {
+  std::string promotion = "";
+  if ((typeOf(move) == PROMOTION)) promotion = pieceTypeToChar[promotionType(move)];
+  return squareLabel(getFromSquare(move)) + squareLabel(getToSquare(move)) + promotion;
+}
+
 inline std::ostream &operator<<(std::ostream &os, const Move &move) {
-  os << squareLabel(getFromSquare(move)) << squareLabel(getToSquare(move));
+  os << printMove(move);
   return os;
 }
 
 /** returns a verbose representation of the move as string */
-inline std::string printMove(const Move &move) {
+inline std::string printMoveVerbose(const Move &move) {
   if (move == NOMOVE) return "NOMOVE";
   std::string tp;
   std::string promPt;

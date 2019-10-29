@@ -146,8 +146,9 @@ void Engine::ponderHit() {
 
 void Engine::sendResult(Move bestMove, Move ponderMove) const {
   if (pUciHandler) pUciHandler->sendResult(bestMove, ponderMove);
-  else std::cerr << "No UCIHandler defined: Engine Result: Best Move = " << printMove(bestMove) <<
-                    " Ponder Move = " << printMove(ponderMove) << std::endl;
+  else std::cerr << "No UCIHandler defined: Engine Result: Best Move = " << printMoveVerbose(
+      bestMove) <<
+                 " Ponder Move = " << printMoveVerbose(ponderMove) << std::endl;
 }
 
 void Engine::sendInfo(const std::string &info) const {

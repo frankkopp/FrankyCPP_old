@@ -115,7 +115,7 @@ TEST(MoveTest, moves) {
   buffer1 << "a7a8";
   buffer2 << move;
   ASSERT_EQ(buffer1.str(), buffer2.str());
-  ASSERT_EQ("a7a8q (PROMOTION) (-15001)", printMove(move));
+  ASSERT_EQ("a7a8q (PROMOTION) (-15001)", printMoveVerbose(move));
 
   move = createMove<PROMOTION>("a7a8n");
   ASSERT_TRUE(isMove(move));

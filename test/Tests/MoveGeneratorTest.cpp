@@ -38,7 +38,6 @@ using testing::Eq;
 
 /**
  * Test pawn move generation
- // TODO create real tests
  */
 TEST(MoveGenTest, pawnMoves) {
   INIT::init();
@@ -56,10 +55,22 @@ TEST(MoveGenTest, pawnMoves) {
 
   GenMode genMode = GENCAP;
   mg.generatePawnMoves(genMode, &position, &moves);
-  cout << "Moves CAP: " << moves.size() << endl;
+
+  ASSERT_EQ(10, moves.size());
+  string expected = "c2b1qc2b1rc2b1bc2b1na2b1qa2b1ra2b1ba2b1nf4g3f4e3";
+  string actual = "";
+  for (Move m : moves) actual.append(printMove(m));
+  ASSERT_EQ(expected, actual);
+
   sort(moves.begin(), moves.end());
+  expected = "a2b1qc2b1qa2b1nc2b1nf4g3f4e3a2b1rc2b1ra2b1bc2b1b";
+  actual = "";
+  for (Move m : moves) actual.append(printMove(m));
+  ASSERT_EQ(expected, actual);
+
+  cout << "Moves CAP: " << moves.size() << endl;
   for (Move m : moves) {
-    cout << printMove(m) << " (" << int(m) << ")" << endl;
+    cout << printMoveVerbose(m) << " (" << int(m) << ")" << endl;
   }
 
   NEWLINE;
@@ -67,14 +78,29 @@ TEST(MoveGenTest, pawnMoves) {
   moves.clear();
   genMode = GENNONCAP;
   mg.generatePawnMoves(genMode, &position, &moves);
-  cout << "Moves NONCAP: " << moves.size() << endl;
+
+  ASSERT_EQ(13, moves.size());
+  expected = "a2a1qa2a1ra2a1ba2a1nc2c1qc2c1rc2c1bc2c1nb7b5h7h5f4f3b7b6h7h6";
+  actual = "";
+  for (Move m : moves) actual.append(printMove(m));
+  ASSERT_EQ(expected, actual);
+
   sort(moves.begin(), moves.end());
+  expected = "a2a1qc2c1qa2a1nc2c1nf4f3h7h6b7b5h7h5b7b6a2a1bc2c1ba2a1rc2c1r";
+  actual = "";
+  for (Move m : moves) actual.append(printMove(m));
+  ASSERT_EQ(expected, actual);
+
+  cout << "Moves NONCAP: " << moves.size() << endl;
   for (Move m : moves) {
-    cout << printMove(m) << " (" << int(m) << ")" << endl;
+    cout << printMoveVerbose(m) << " (" << int(m) << ")" << endl;
   }
 
 }
 
+/**
+ * TODO create real tests
+ */
 TEST(MoveGenTest, kingMoves) {
   INIT::init();
   NEWLINE;
@@ -94,7 +120,7 @@ TEST(MoveGenTest, kingMoves) {
   cout << "Moves CAP: " << moves.size() << endl;
   sort(moves.begin(), moves.end());
   for (Move m : moves) {
-    cout << printMove(m) << " (" << int(m) << ")" << endl;
+    cout << printMoveVerbose(m) << " (" << int(m) << ")" << endl;
   }
 
   NEWLINE;
@@ -105,7 +131,7 @@ TEST(MoveGenTest, kingMoves) {
   cout << "Moves NONCAP: " << moves.size() << endl;
   sort(moves.begin(), moves.end());
   for (Move m : moves) {
-    cout << printMove(m) << " (" << int(m) << ")" << endl;
+    cout << printMoveVerbose(m) << " (" << int(m) << ")" << endl;
   }
 }
 
@@ -132,7 +158,7 @@ TEST(MoveGenTest, normalMoves) {
   cout << "Moves CAP: " << moves.size() << endl;
   sort(moves.begin(), moves.end());
   for (Move m : moves) {
-    cout << printMove(m) << " (" << int(m) << ")" << endl;
+    cout << printMoveVerbose(m) << " (" << int(m) << ")" << endl;
   }
 
   NEWLINE;
@@ -143,7 +169,7 @@ TEST(MoveGenTest, normalMoves) {
   cout << "Moves NONCAP: " << moves.size() << endl;
   sort(moves.begin(), moves.end());
   for (Move m : moves) {
-    cout << printMove(m) << " (" << int(m) << ")" << endl;
+    cout << printMoveVerbose(m) << " (" << int(m) << ")" << endl;
   }
 }
 
@@ -165,7 +191,7 @@ TEST(MoveGenTest, castlingMoves) {
   mg.generateCastling(genMode, &position, &moves);
   cout << "Moves CAP: " << moves.size() << endl;
   for (Move m : moves) {
-    cout << printMove(m) << endl;
+    cout << printMoveVerbose(m) << endl;
   }
 
   NEWLINE;
@@ -174,7 +200,7 @@ TEST(MoveGenTest, castlingMoves) {
   mg.generateCastling(genMode, &position, &moves);
   cout << "Moves NONCAP: " << moves.size() << endl;
   for (Move m : moves) {
-    cout << printMove(m) << endl;
+    cout << printMoveVerbose(m) << endl;
   }
 }
 
@@ -198,7 +224,7 @@ TEST(MoveGenTest, pseudoLegalMoves) {
   moves = mg.generatePseudoLegalMoves(genMode, &position);
   cout << "Moves ALL: " << moves.size() << endl;
   for (Move m : moves) {
-    cout << printMove(m) << " (" << int(m) << ")" << endl;
+    cout << printMoveVerbose(m) << " (" << int(m) << ")" << endl;
   }
   ASSERT_EQ(20, moves.size());
   NEWLINE;
@@ -213,7 +239,7 @@ TEST(MoveGenTest, pseudoLegalMoves) {
   moves = mg.generatePseudoLegalMoves(genMode, &position);
   cout << "Moves ALL: " << moves.size() << endl;
   for (Move m : moves) {
-    cout << printMove(m) << " (" << int(m) << ")" << endl;
+    cout << printMoveVerbose(m) << " (" << int(m) << ")" << endl;
   }
   ASSERT_EQ(86, moves.size());
   NEWLINE;
@@ -228,7 +254,7 @@ TEST(MoveGenTest, pseudoLegalMoves) {
   moves = mg.generatePseudoLegalMoves(genMode, &position);
   cout << "Moves CAP: " << moves.size() << endl;
   for (Move m : moves) {
-    cout << printMove(m) << " (" << int(m) << ")" << endl;
+    cout << printMoveVerbose(m) << " (" << int(m) << ")" << endl;
   }
   ASSERT_EQ(21, moves.size());
   NEWLINE;
@@ -242,7 +268,7 @@ TEST(MoveGenTest, pseudoLegalMoves) {
   moves = mg.generatePseudoLegalMoves(genMode, &position);
   cout << "Moves CAP: " << moves.size() << endl;
   for (Move m : moves) {
-    cout << printMove(m) << " (" << int(m) << ")" << endl;
+    cout << printMoveVerbose(m) << " (" << int(m) << ")" << endl;
   }
   ASSERT_EQ(26, moves.size());
   NEWLINE;
@@ -266,7 +292,7 @@ TEST(MoveGenTest, legalMoves) {
   moves = mg.generateLegalMoves(genMode, &position);
   cout << "Legal Moves: " << moves.size() << endl;
   for (Move m : moves) {
-    cout << printMove(m) << endl;
+    cout << printMoveVerbose(m) << endl;
   }
   ASSERT_EQ(20, moves.size());
   NEWLINE;
@@ -280,7 +306,7 @@ TEST(MoveGenTest, legalMoves) {
   moves = mg.generatePseudoLegalMoves(genMode, &position);
   cout << "Pseudo Legal Moves: " << moves.size() << endl;
   for (Move m : moves) {
-    cout << printMove(m) << endl;
+    cout << printMoveVerbose(m) << endl;
   }
   ASSERT_EQ(86, moves.size());
   NEWLINE;
@@ -290,7 +316,7 @@ TEST(MoveGenTest, legalMoves) {
   moves = mg.generateLegalMoves(genMode, &position);
   cout << "Legal Moves: " << moves.size() << endl;
   for (Move m : moves) {
-    cout << printMove(m) << endl;
+    cout << printMoveVerbose(m) << endl;
   }
   cout << moves << endl;
   ASSERT_FALSE(position.isLegalMove(createMove<CASTLING>(SQ_E8, SQ_G8)));
@@ -318,7 +344,7 @@ TEST(MoveGenTest, onDemandGen) {
   while (true) {
     move = mg.getNextPseudoLegalMove(genMode, &position);
     if (move == NOMOVE) break;
-    cout << printMove(move) << " (" << int(move) << ")" << endl;
+    cout << printMoveVerbose(move) << " (" << int(move) << ")" << endl;
     counter++;
   }
   println("Moves: " + to_string(counter));
@@ -335,7 +361,7 @@ TEST(MoveGenTest, onDemandGen) {
   while (true) {
     move = mg.getNextPseudoLegalMove(genMode, &position);
     if (move == NOMOVE) break;
-    cout << printMove(move) << " (" << int(move) << ")" << endl;
+    cout << printMoveVerbose(move) << " (" << int(move) << ")" << endl;
     counter++;
   }
   println("Moves: " + to_string(counter));
