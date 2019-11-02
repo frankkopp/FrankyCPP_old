@@ -398,11 +398,6 @@ inline std::string printMove(const Move &move) {
   return squareLabel(getFromSquare(move)) + squareLabel(getToSquare(move)) + promotion;
 }
 
-inline std::ostream &operator<<(std::ostream &os, const Move &move) {
-  os << printMove(move);
-  return os;
-}
-
 /** returns a verbose representation of the move as string */
 inline std::string printMoveVerbose(const Move &move) {
   if (move == NOMOVE) return "NOMOVE";
@@ -427,6 +422,10 @@ inline std::string printMoveVerbose(const Move &move) {
          + " (" + tp + ") (" + std::to_string(valueOf(move)) + ")";
 }
 
+inline std::ostream &operator<<(std::ostream &os, const Move &move) {
+  os << printMove(move);
+  return os;
+}
 
 ///////////////////////////////////
 //// MOVELIST
