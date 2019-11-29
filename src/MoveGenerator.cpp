@@ -131,7 +131,8 @@ MoveGenerator::getNextPseudoLegalMove(GenMode genMode, Position *pPosition) {
   }
 }
 
-void MoveGenerator::resetOnDemand() {
+void
+MoveGenerator::resetOnDemand() {
   onDemandMoves.clear();
   currentODStage = OD_NEW;
   currentIteratorKey = 0;
@@ -269,92 +270,56 @@ MoveGenerator::generatePawnMoves(GenMode genMode, const Position *pPosition, Mov
      non captures: killer (TBD), promotions, castling, normal moves (position value)
     */
 
-    // normal pawn captures to the west - promotions first
-    Bitboard tmpCaptures = Bitboards::shift(pawnDir[nextPlayer] + WEST, myPawns) & oppPieces;
-    Bitboard promCaptures = tmpCaptures & Bitboards::promotionRank[nextPlayer];
-    while (promCaptures) {
-      const Square toSquare = Bitboards::popLSB(&promCaptures);
-      const Square fromSquare = toSquare + pawnDir[~nextPlayer] + EAST;
-      // value is the delta of values from the two pieces involved minus the promotion value
-      const Value value =
-        valueOf(pPosition->getPiece(fromSquare)) - valueOf(pPosition->getPiece(toSquare));
-      pMoves->push_back(
-        createMove<PROMOTION>(fromSquare, toSquare, value - valueOf(QUEEN), QUEEN));
-      pMoves->push_back(
-        createMove<PROMOTION>(fromSquare, toSquare,
-                              value - valueOf(ROOK) + static_cast<Value>(2000), ROOK));
-      pMoves->push_back(
-        createMove<PROMOTION>(fromSquare, toSquare,
-                              value - valueOf(BISHOP) + static_cast<Value>(2000), BISHOP));
-      pMoves->push_back(
-        createMove<PROMOTION>(fromSquare, toSquare, value - valueOf(KNIGHT), KNIGHT));
-    }
-    tmpCaptures &= ~Bitboards::promotionRank[nextPlayer];
-    while (tmpCaptures) {
-      const Square toSquare = Bitboards::popLSB(&tmpCaptures);
-      const Square fromSquare = toSquare + pawnDir[~nextPlayer] + EAST;
-      // value is the delta of values from the two pieces involved
-      const Value value =
-        valueOf(pPosition->getPiece(fromSquare)) - valueOf(pPosition->getPiece(toSquare));
-      pMoves->push_back(createMove(fromSquare, toSquare, value));
-    }
+    Bitboard tmpCaptures;
+    Bitboard promCaptures;
 
-    // normal pawn captures to the east - promotions first
-    tmpCaptures = Bitboards::shift(pawnDir[nextPlayer] + EAST, myPawns) & oppPieces;
-    promCaptures = tmpCaptures & Bitboards::promotionRank[nextPlayer];
-    while (promCaptures) {
-      const Square toSquare = Bitboards::popLSB(&promCaptures);
-      const Square fromSquare = toSquare + pawnDir[~nextPlayer] + WEST;
-      // value is the delta of values from the two pieces involved minus the promotion value
-      const Value value =
-        valueOf(pPosition->getPiece(fromSquare)) - valueOf(pPosition->getPiece(toSquare));
-      pMoves->push_back(
-        createMove<PROMOTION>(fromSquare, toSquare, value - valueOf(QUEEN), QUEEN));
-      pMoves->push_back(
-        createMove<PROMOTION>(fromSquare, toSquare,
-                              value - valueOf(ROOK) + static_cast<Value>(2000), ROOK));
-      pMoves->push_back(
-        createMove<PROMOTION>(fromSquare, toSquare,
-                              value - valueOf(BISHOP) + static_cast<Value>(2000), BISHOP));
-      pMoves->push_back(
-        createMove<PROMOTION>(fromSquare, toSquare, value - valueOf(KNIGHT), KNIGHT));
-    }
-    tmpCaptures &= ~Bitboards::promotionRank[nextPlayer];
-    while (tmpCaptures) {
-      const Square toSquare = Bitboards::popLSB(&tmpCaptures);
-      const Square fromSquare = toSquare + pawnDir[~nextPlayer] + WEST;
-      // value is the delta of values from the two pieces involved
-      const Value value =
-        valueOf(pPosition->getPiece(fromSquare)) - valueOf(pPosition->getPiece(toSquare));
-      pMoves->push_back(createMove(fromSquare, toSquare, value));
+    for (Direction dir : {WEST, EAST}) {
+      // normal pawn captures - promotions first
+      tmpCaptures = Bitboards::shift(pawnDir[nextPlayer] + dir, myPawns) & oppPieces;
+      promCaptures = tmpCaptures & Bitboards::promotionRank[nextPlayer];
+      while (promCaptures) {
+        const Square toSquare = Bitboards::popLSB(&promCaptures);
+        const Square fromSquare = toSquare + pawnDir[~nextPlayer] - dir;
+        // value is the delta of values from the two pieces involved minus the promotion value
+        const Value value =
+          valueOf(pPosition->getPiece(fromSquare)) - valueOf(pPosition->getPiece(toSquare));
+        pMoves->push_back(
+          createMove<PROMOTION>(fromSquare, toSquare, value - valueOf(QUEEN), QUEEN));
+        pMoves->push_back(
+          createMove<PROMOTION>(fromSquare, toSquare,
+                                value - valueOf(ROOK) + static_cast<Value>(2000), ROOK));
+        pMoves->push_back(
+          createMove<PROMOTION>(fromSquare, toSquare,
+                                value - valueOf(BISHOP) + static_cast<Value>(2000), BISHOP));
+        pMoves->push_back(
+          createMove<PROMOTION>(fromSquare, toSquare, value - valueOf(KNIGHT), KNIGHT));
+      }
+      tmpCaptures &= ~Bitboards::promotionRank[nextPlayer];
+      while (tmpCaptures) {
+        const Square toSquare = Bitboards::popLSB(&tmpCaptures);
+        const Square fromSquare = toSquare + pawnDir[~nextPlayer] - dir;
+        // value is the delta of values from the two pieces involved
+        const Value value =
+          valueOf(pPosition->getPiece(fromSquare)) - valueOf(pPosition->getPiece(toSquare));
+        pMoves->push_back(createMove(fromSquare, toSquare, value));
+      }
+
     }
 
     // en passant captures
     const Square enPassantSquare = pPosition->getEnPassantSquare();
     if (enPassantSquare != SQ_NONE) {
-
-      // left
-      tmpCaptures =
-        Bitboards::shift(pawnDir[~nextPlayer] + WEST, Bitboards::squareBB[enPassantSquare]) &
-        myPawns;
-      if (tmpCaptures) {
-        Square fromSquare = Bitboards::lsb(tmpCaptures);
-        Square toSquare = fromSquare + pawnDir[nextPlayer] + EAST;
-
-        // value is the positional value of the piece at this gamephase
-        const Value value = Values::posValue[piece][toSquare][gamePhase];
-        pMoves->push_back(createMove<ENPASSANT>(fromSquare, toSquare, value));
-      }
-      // right
-      tmpCaptures =
-        Bitboards::shift(pawnDir[~nextPlayer] + EAST, Bitboards::squareBB[enPassantSquare]) & myPawns;
-      if (tmpCaptures) {
-        Square fromSquare = Bitboards::lsb(tmpCaptures);
-        Square toSquare = fromSquare + pawnDir[nextPlayer] + WEST;
-
-        // value is the positional value of the piece at this gamephase
-        const Value value = Values::posValue[piece][toSquare][gamePhase];
-        pMoves->push_back(createMove<ENPASSANT>(fromSquare, toSquare, value));
+      for (Direction dir : {WEST, EAST}) {
+        tmpCaptures =
+          Bitboards::shift(pawnDir[~nextPlayer] + dir, Bitboards::squareBB[enPassantSquare]) &
+          myPawns;
+        if (tmpCaptures) {
+          Square fromSquare = Bitboards::lsb(tmpCaptures);
+          Square toSquare = fromSquare + pawnDir[nextPlayer] - dir;
+          // value is the positional value of the piece at this gamephase
+          const Value value = Values::posValue[piece][toSquare][gamePhase];
+          pMoves->push_back(createMove<ENPASSANT>(fromSquare, toSquare, value));
+        }
       }
     }
   }
