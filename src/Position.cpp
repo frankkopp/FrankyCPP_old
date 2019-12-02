@@ -929,7 +929,7 @@ std::string Position::printFen() const {
   fen << halfMoveClock << " ";
 
   // full move number
-  fen << ((nextHalfMoveNumber + 1) / 2);
+  fen << (int)((nextHalfMoveNumber + 1) / 2);
 
   return fen.str();
 }
@@ -1071,6 +1071,8 @@ void Position::initializeBoard() {
 
   nextPlayer = WHITE;
 
+  nextHalfMoveNumber = 1;
+
   for (Color color = WHITE; color <= BLACK; ++color) { // foreach color
     occupiedBB[color] = Bitboards::EMPTY_BB;
     occupiedBBR90[color] = Bitboards::EMPTY_BB;
@@ -1115,6 +1117,7 @@ void Position::setupBoard(const char *fen) {
     if (token == 'b') {
       nextPlayer = BLACK;
       zobristKey ^= Zobrist::nextPlayer;
+      nextHalfMoveNumber++; // increase to 2 for black
     }
   }
   else return; // end of line
@@ -1160,9 +1163,11 @@ void Position::setupBoard(const char *fen) {
   // half move clock (50 moves rules)
   iss >> std::skipws >> halfMoveClock;
 
-  // game move number - to be converted into half move number (ply)
-  iss >> std::skipws >> nextHalfMoveNumber;
-  nextHalfMoveNumber = 2 * nextHalfMoveNumber - (nextPlayer == WHITE);
+  // game move number - to be converted into next half move number (ply)
+  int moveNumber = 0;
+  iss >> std::skipws >> moveNumber;
+  if (moveNumber == 0) moveNumber = 1;
+  nextHalfMoveNumber = 2 * moveNumber - (nextPlayer == WHITE);
 
 }
 

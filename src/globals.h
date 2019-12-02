@@ -261,7 +261,7 @@ inline const int MOVE_MASK = 0xFFFF;  // first 16-bit
 inline const int VALUE_MASK = 0xFFFF << VALUE_SHIFT; // second 16-bit
 
 /** A move is basically a 32-bit int */
-enum Move : u_int32_t {
+enum Move : uint32_t {
   NOMOVE
 };
 
@@ -391,7 +391,7 @@ constexpr void setValue(Move &m, Value v) {
 /** returns the value of the move */
 constexpr Value valueOf(Move m) { return Value(((m & VALUE_MASK) >> VALUE_SHIFT) + VALUE_NONE); }
 
-/** returns a short representation of the move as string */
+/** returns a short representation of the move as string (UCI protocal) */
 inline std::string printMove(const Move &move) {
   std::string promotion = "";
   if ((typeOf(move) == PROMOTION)) promotion = pieceTypeToChar[promotionType(move)];

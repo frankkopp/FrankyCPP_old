@@ -127,11 +127,14 @@ namespace UCI {
   void Handler::positionCommand(std::istringstream &inStream) {
     std::string token, startFen;
     inStream >> token;
-    if (token == "startpos") {
-      startFen = START_POSITION_FEN;
+
+    // default
+    startFen = START_POSITION_FEN;
+    if (token == "startpos") { // just keep default
       inStream >> token;
     }
     else if (token == "fen") {
+      startFen.clear(); // reset to empty
       while (inStream >> token && token != "moves") {
         startFen += token + " ";
       }

@@ -37,6 +37,9 @@ TEST(EngineTest, basic) {
   cout << "\nEngine" << engine << endl;
 }
 
+// TODO Test doMove command
+
+
 TEST(EngineTest, startSearch) {
   INIT::init();
   

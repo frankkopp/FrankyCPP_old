@@ -98,13 +98,15 @@ void Engine::setPosition(const std::string& fen) {
 
 void Engine::doMove(const std::string& moveStr) {
   println("Engine: Do move " + moveStr);
-
-  const Move move = createMove(moveStr.c_str());
-  if (!isMove(move)) {
-    std::cerr << "Invalid move " << moveStr << std::endl;
-    return;
+  MoveGenerator moveGenerator;
+  MoveList moves = moveGenerator.generateLegalMoves(GENALL, &position);
+  for (Move m : moves) {
+    if (printMove(m) == moveStr) {
+      position.doMove(m);
+      return;
+    }
   }
-  position.doMove(move);
+  std::cerr << "Invalid move " << moveStr << std::endl;
 }
 
 void Engine::startSearch(UCISearchMode *pSearchMode) {

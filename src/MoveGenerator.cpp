@@ -141,7 +141,12 @@ MoveGenerator::resetOnDemand() {
 bool
 MoveGenerator::hasLegalMove(Position *pPosition) {
 
-  // find KING, PAWN, KNIGHT, BISHOP, ROOK, QUEEN move
+  /*
+  To determine if we have at least one legal move we only have to find
+  on legal move. We search for any KING, PAWN, KNIGHT, BISHOP, ROOK, QUEEN move
+  and return immediately if we found one.
+  The order of our search is from approx. the most likely to the least likely
+  */
 
   const Color nextPlayer = pPosition->getNextPlayer();
   const Bitboard occupiedBB = pPosition->getOccupiedBB();
@@ -303,7 +308,6 @@ MoveGenerator::generatePawnMoves(GenMode genMode, const Position *pPosition, Mov
           valueOf(pPosition->getPiece(fromSquare)) - valueOf(pPosition->getPiece(toSquare));
         pMoves->push_back(createMove(fromSquare, toSquare, value));
       }
-
     }
 
     // en passant captures
