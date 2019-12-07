@@ -3,11 +3,11 @@ set(core_SRCS main.cpp globals.h Bitboards.h Bitboards.cpp UCIHandler.cpp UCIHan
 add_library(core ${core_SRCS})
 
 add_executable(
-        Franky
+        Franky_v0.1
         main.cpp
 )
 
 target_link_libraries(
-        Franky
+        Franky_v0.1
         core
 )
