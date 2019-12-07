@@ -80,7 +80,7 @@ class Position {
   Piece board[SQ_LENGTH]{};
 
   // Castling rights
-  CastlingRights castlingRights;
+  CastlingRights castlingRights{};
   CastlingRights castlingRights_History[MAX_HISTORY]{};
 
   // en passant field
@@ -162,29 +162,32 @@ public:
 
   /**
    * Creates a standard board position and initializes it with a fen position
-   *
    * @param fen
    */
   explicit Position(const char *fen);
 
   /**
    * Creates a standard board position and initializes it with a fen position
-   *
    * @param fen
    */
   explicit Position(const std::string& fen);
 
   /**
    * Copy constructor - creates a copy of the given Position
-   *
    * @param op
    */
-  Position(const Position &op);
+  Position(const Position &op) = default;
+
+  /**
+   * Copy assignment operator
+   * @param other
+   */
+  Position& operator=(const Position& other) = default;
 
   /**
    * Destructor
    */
-  ~Position();
+  ~Position() = default;
 
   /**
   * Returns a String representation of the chess position of this Position as a FEN String.

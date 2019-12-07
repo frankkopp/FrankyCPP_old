@@ -71,54 +71,6 @@ Position::Position(const char *fen) {
   setupBoard(fen);
 }
 
-/** Copy constructor creates a board as a deep copy from the given board */
-Position::Position(const Position &op) {
-  // piece list
-  std::copy(op.board, op.board + SQ_LENGTH, this->board);
-
-  // game state
-  this->zobristKey = op.zobristKey;
-  this->castlingRights = op.castlingRights;
-  this->enPassantSquare = op.enPassantSquare;
-  this->nextPlayer = op.nextPlayer;
-  this->halfMoveClock = op.halfMoveClock;
-  this->nextHalfMoveNumber = op.nextHalfMoveNumber;
-  this->gamePhase = op.gamePhase;
-  this->hasCheckFlag = op.hasCheckFlag;
-  this->hasMateFlag = op.hasMateFlag;
-  // color dependent
-  for (Color c = WHITE; c <= BLACK; ++c) {
-    std::copy(op.piecesBB[c],
-              op.piecesBB[c] + PT_LENGTH,
-              this->piecesBB[c]);
-    this->kingSquare[c] = op.kingSquare[c];
-    this->occupiedBB[c] = op.occupiedBB[c];
-    this->occupiedBBR90[c] = op.occupiedBBR90[c];
-    this->occupiedBBL90[c] = op.occupiedBBL90[c];
-    this->occupiedBBR45[c] = op.occupiedBBR45[c];
-    this->occupiedBBL45[c] = op.occupiedBBL45[c];
-
-    this->material[c] = op.material[c];
-    this->psqMidValue[c] = op.psqMidValue[c];
-  }
-  // necessary history b/o move repetition
-  this->historyCounter = op.historyCounter;
-  std::copy(op.moveHistory, op.moveHistory + MAX_HISTORY, this->moveHistory);
-  // history - maybe be not necessary - without we only loose undo move
-  std::copy(op.zobristKey_History, op.zobristKey_History + MAX_HISTORY, this->zobristKey_History);
-  std::copy(op.castlingRights_History, op.castlingRights_History + MAX_HISTORY,
-            this->castlingRights_History);
-  std::copy(op.enPassantSquare_History, op.enPassantSquare_History + MAX_HISTORY,
-            this->enPassantSquare_History);
-  std::copy(op.halfMoveClockHistory, op.halfMoveClockHistory + MAX_HISTORY,
-            this->halfMoveClockHistory);
-  std::copy(op.hasCheckFlagHistory, op.hasCheckFlagHistory + MAX_HISTORY,
-            this->hasCheckFlagHistory);
-  std::copy(op.hasMateFlagHistory, op.hasMateFlagHistory + MAX_HISTORY, this->hasMateFlagHistory);
-}
-
-Position::~Position() = default;
-
 ////////////////////////////////////////////////
 ///// PUBLIC
 
@@ -1170,6 +1122,8 @@ void Position::setupBoard(const char *fen) {
   nextHalfMoveNumber = 2 * moveNumber - (nextPlayer == WHITE);
 
 }
+
+
 
 
 

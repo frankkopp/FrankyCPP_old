@@ -95,6 +95,7 @@ TEST(PositionTest, Setup) {
   NEWLINE;
   string fen;
 
+  // Constructor (default)
   Position position;
   ASSERT_EQ(WHITE, position.getNextPlayer());
   ASSERT_EQ(BLACK, ~position.getNextPlayer());
@@ -109,6 +110,53 @@ TEST(PositionTest, Setup) {
   ASSERT_EQ(WHITE_KNIGHT, position.getPiece(SQ_B1));
   ASSERT_EQ(BLACK_KNIGHT, position.getPiece(SQ_B8));
 
+  // Copy constructor
+  Position position2 = Position(position);
+  ASSERT_EQ(WHITE, position2.getNextPlayer());
+  ASSERT_EQ(BLACK, ~position2.getNextPlayer());
+  ASSERT_EQ(position2.getMaterial(WHITE), position2.getMaterial(BLACK));
+  ASSERT_EQ(24, position2.getGamePhase());
+  ASSERT_FLOAT_EQ(1.0, position2.getGamePhaseFactor());
+  ASSERT_EQ(position2.getMidPosValue(WHITE), position2.getMidPosValue(BLACK));
+  ASSERT_EQ(-225, position2.getMidPosValue(WHITE));
+  ASSERT_EQ(-225, position2.getMidPosValue(BLACK));
+  ASSERT_EQ(WHITE_KING, position2.getPiece(SQ_E1));
+  ASSERT_EQ(BLACK_KING, position2.getPiece(SQ_E8));
+  ASSERT_EQ(WHITE_KNIGHT, position2.getPiece(SQ_B1));
+  ASSERT_EQ(BLACK_KNIGHT, position2.getPiece(SQ_B8));
+  
+  // Copy constructor
+  Position position3 = position;
+  ASSERT_EQ(WHITE, position3.getNextPlayer());
+  ASSERT_EQ(BLACK, ~position3.getNextPlayer());
+  ASSERT_EQ(position3.getMaterial(WHITE), position3.getMaterial(BLACK));
+  ASSERT_EQ(24, position3.getGamePhase());
+  ASSERT_FLOAT_EQ(1.0, position3.getGamePhaseFactor());
+  ASSERT_EQ(position3.getMidPosValue(WHITE), position3.getMidPosValue(BLACK));
+  ASSERT_EQ(-225, position3.getMidPosValue(WHITE));
+  ASSERT_EQ(-225, position3.getMidPosValue(BLACK));
+  ASSERT_EQ(WHITE_KING, position3.getPiece(SQ_E1));
+  ASSERT_EQ(BLACK_KING, position3.getPiece(SQ_E8));
+  ASSERT_EQ(WHITE_KNIGHT, position3.getPiece(SQ_B1));
+  ASSERT_EQ(BLACK_KNIGHT, position3.getPiece(SQ_B8));
+
+  // Copy assignment constructor
+  Position position4;
+  position4 = position3;
+  ASSERT_EQ(WHITE, position4.getNextPlayer());
+  ASSERT_EQ(BLACK, ~position4.getNextPlayer());
+  ASSERT_EQ(position4.getMaterial(WHITE), position4.getMaterial(BLACK));
+  ASSERT_EQ(24, position4.getGamePhase());
+  ASSERT_FLOAT_EQ(1.0, position4.getGamePhaseFactor());
+  ASSERT_EQ(position4.getMidPosValue(WHITE), position4.getMidPosValue(BLACK));
+  ASSERT_EQ(-225, position4.getMidPosValue(WHITE));
+  ASSERT_EQ(-225, position4.getMidPosValue(BLACK));
+  ASSERT_EQ(WHITE_KING, position4.getPiece(SQ_E1));
+  ASSERT_EQ(BLACK_KING, position4.getPiece(SQ_E8));
+  ASSERT_EQ(WHITE_KNIGHT, position4.getPiece(SQ_B1));
+  ASSERT_EQ(BLACK_KNIGHT, position4.getPiece(SQ_B8));
+
+  // Constructor  (with FEN)
   fen = string("r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3 10 113");
   position = Position(fen.c_str());
   ASSERT_EQ(fen, position.printFen());
@@ -125,6 +173,7 @@ TEST(PositionTest, Setup) {
   ASSERT_EQ(WHITE_ROOK, position.getPiece(SQ_G3));
   ASSERT_EQ(BLACK_QUEEN, position.getPiece(SQ_C6));
 
+  // Further constructor tests with FEN
   fen = string("r1bqkb1r/pppp1ppp/2n2n2/3Pp3/8/8/PPP1PPPP/RNBQKBNR w - e6 0 1");
   position = Position(fen.c_str());
   ASSERT_EQ(fen, position.printFen());

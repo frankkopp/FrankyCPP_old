@@ -51,6 +51,7 @@ TEST(TimingTests, popcount) {
   cout << os.str();
 }
 
+// Necessary because of function pointer use below.
 Position position;
 
 /**

@@ -95,7 +95,7 @@ TEST(UCITest, setoptionTest) {
   ASSERT_FALSE(engine.config.ponder);
 }
 
-TEST(UCITest, goTest) {
+TEST(UCITest, searchModeTest) {
   INIT::init();
   NEWLINE;
 
@@ -146,7 +146,6 @@ TEST(UCITest, goTest) {
 
 }
 
-// TODO Test Position command
 TEST(UCITest, positionTest) {
   INIT::init();
   NEWLINE;

@@ -54,9 +54,9 @@ void Search::startSearch(Position pos, SearchLimits *limits) {
     return;
   }
 
-  // // pos is a deep copy of the position parameter to not change
+  // pos is a deep copy of the position parameter to not change
   // the original position given
-  position = pos;
+  position = Position(pos);
   pSearchLimits = limits;
   stopSearchFlag = false;
 
