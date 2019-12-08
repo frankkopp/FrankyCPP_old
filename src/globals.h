@@ -440,7 +440,7 @@ inline std::string printMoveList(const MoveList &moveList) {
     os << m;
     if (m != moveList.back()) os << ", ";
   }
-  os << "]" << std::endl;
+  os << "]";
   return os.str();
 }
 

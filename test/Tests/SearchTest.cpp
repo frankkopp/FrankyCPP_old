@@ -50,8 +50,6 @@ TEST_F(SearchTest, basic) {
 
   searchLimits.infinite = true;
 
-  println(searchLimits);
-
   search.startSearch(position, &searchLimits);
 
 }

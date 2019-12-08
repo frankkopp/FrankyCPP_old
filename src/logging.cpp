@@ -43,6 +43,7 @@ namespace LOGGING {
 
     auto SEARCH_LOG = spdlog::stdout_color_mt("Search_Logger");
     SEARCH_LOG->set_level(spdlog::level::trace);
+    SEARCH_LOG->set_pattern("[%H:%M:%S:%f] [%n] [%l] [thread %t] %v");
 
     LOG->info("Logging initialized.");
     

@@ -38,6 +38,27 @@ class Engine;
 #include "Semaphore.h"
 #include "Position.h"
 
+class SearchResult {
+public:
+  Move bestMove = NOMOVE;
+  Move ponderMove = NOMOVE;
+  Value resultValue = VALUE_NONE;
+  int64_t time = -1;
+  int depth = 0;
+  int extraDepth = 0;
+
+  std::string str() const {
+    return "Best Move: " + printMove(bestMove) + " (" + std::to_string(resultValue) + ") "
+           + "Ponder Move: " + printMove(ponderMove) + " Depth: " + std::to_string(depth) + "/" +
+           std::to_string(extraDepth);
+  }
+};
+
+inline std::ostream &operator<<(std::ostream &os, const SearchResult &searchResult) {
+  os << searchResult.str();
+  return os;
+}
+
 class Search {
 
   std::shared_ptr<spdlog::logger> LOG = spdlog::get("Search_Logger");
@@ -46,7 +67,7 @@ class Search {
   Semaphore searchSemaphore; // used to block while searching
   std::thread myThread;
 
-  Engine *pEngine {nullptr};
+  Engine *pEngine{nullptr};
   SearchLimits *pSearchLimits{nullptr};
 
   SearchStats searchStats;
@@ -58,6 +79,9 @@ class Search {
 
   // search mode overrides
   bool PERFT = false;
+
+  // search result
+  SearchResult lastSearchResult;
 
 public:
   ////////////////////////////////////////////////
@@ -88,8 +112,9 @@ private:
   ///// PRIVATE
 
   void run();
-  void simulatedSearch();
+  SearchResult simulatedSearch(Position *pPosition);
 
+  SearchResult iterativeDeepening(Position *pPosition);
 };
 
 #endif // FRANKYCPP_SEARCH_H

@@ -99,15 +99,15 @@ void Search::waitWhileSearching() {
 ///// PRIVATE
 
 void Search::run() {
+
   // get the search lock
   searchSemaphore.getOrWait();
   running = true;
 
+  LOG->info("Search thread started.");
+
   // Initialize for new search
   searchStats = SearchStats();
-
-  initSemaphore.release();
-  LOG->info("Search thread started.");
 
   // search mode override
   if (PERFT || pSearchLimits->perft) {
@@ -115,26 +115,37 @@ void Search::run() {
     PERFT = true;
   }
 
-  // search mode info
   LOG->info("Search Mode: {}", pSearchLimits->str());
 
+  // initialization done
+  initSemaphore.release();
 
-  // DEBUG / PROTOTYPE
-  simulatedSearch();
+  // start iterative deepening
+  lastSearchResult = iterativeDeepening(&position);
+
+  LOG->info("Search Result: {}", lastSearchResult.str());
+  if (pEngine) {
+    pEngine->sendResult(lastSearchResult.bestMove, lastSearchResult.ponderMove);
+  }
 
   running = false;
   searchSemaphore.release();
   LOG->info("Search thread ended.");
 }
 
+SearchResult Search::iterativeDeepening(Position *pPosition) {
+  SPDLOG_TRACE(LOG, "Iterative deepening start.");
+  return simulatedSearch(pPosition);
+}
+
 // DEBUG / PROTOTYPE
-void Search::simulatedSearch() {
+SearchResult Search::simulatedSearch(Position *pPosition) {
   LOG->debug("Generate debug move");
   MoveGenerator moveGenerator;
   LOG->debug("Generate position");
-  LOG->debug(position.str());
+  LOG->debug("\n" + pPosition->str());
   LOG->debug("Generate legal moves");
-  MoveList moves = moveGenerator.generateLegalMoves(GENALL, &position);
+  MoveList moves = moveGenerator.generateLegalMoves(GENALL, pPosition);
   LOG->debug("Legal Moves: {}", printMoveList(moves));
 
   for (int i = 0; i < 5; ++i) {
@@ -143,10 +154,9 @@ void Search::simulatedSearch() {
     if (stopSearchFlag) break;
   }
 
-  LOG->info("Sending move: {}", printMove(moves.front()));
-  if (pEngine) {
-    pEngine->sendInfo(printMoveList(moves));
-    pEngine->sendResult(moves.front(), NOMOVE);
-  }
+  SearchResult searchResult;
+  searchResult.bestMove = moves.front();
+
+  return searchResult;
 }
 

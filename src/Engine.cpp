@@ -70,7 +70,8 @@ void Engine::setOption(const std::string &name, const std::string &value) {
   const auto pos = optionMap.find(name);
   if (pos != optionMap.end()) {
     pos->second.setCurrentValue(value);
-  } else {
+  }
+  else {
     LOG->warn("No such option: {}", name);
   }
   updateConfig();
@@ -93,12 +94,12 @@ void Engine::newGame() {
   LOG->error("Engine: New Game not implemented yet!");
 }
 
-void Engine::setPosition(const std::string& fen) {
+void Engine::setPosition(const std::string &fen) {
   LOG->info("Engine: Set position to {}", fen);
   position = Position(fen);
 }
 
-void Engine::doMove(const std::string& moveStr) {
+void Engine::doMove(const std::string &moveStr) {
   LOG->info("Engine: Do move {}", moveStr);
   MoveGenerator moveGenerator;
   MoveList moves = moveGenerator.generateLegalMoves(GENALL, &position);
