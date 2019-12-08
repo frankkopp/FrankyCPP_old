@@ -24,15 +24,26 @@
  */
 
 #include <gtest/gtest.h>
-#include <gmock/gmock.h>
-
+#include "../../src/logging.h"
 #include "../../src/Engine.h"
 
 using testing::Eq;
-
 using namespace std;
 
-TEST(EngineTest, basic) {
+class EngineTest : public ::testing::Test {
+public:
+  static void SetUpTestSuite() {
+    NEWLINE;
+    LOGGING::init();
+    INIT::init();
+    NEWLINE;
+  }
+protected:
+  void SetUp() override {}
+  void TearDown() override {}
+};
+
+TEST_F(EngineTest, basic) {
   Engine engine;
   cout << "\nEngine" << engine << endl;
 }
@@ -40,9 +51,7 @@ TEST(EngineTest, basic) {
 // TODO Test doMove command
 
 
-TEST(EngineTest, startSearch) {
-  INIT::init();
-  
+TEST_F(EngineTest, startSearch) {
   Engine engine;
   UCISearchMode uciSearchMode;
   uciSearchMode.infinite = true;

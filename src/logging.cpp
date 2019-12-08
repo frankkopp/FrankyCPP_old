@@ -28,6 +28,9 @@
 namespace LOGGING {
   void init() {
 
+    // test if already initialized
+    if (spdlog::get("Main_Logger")) return;
+    
     // Logger setup
     auto LOG = spdlog::stdout_color_mt("Main_Logger");
     LOG->set_level(spdlog::level::trace);
@@ -41,15 +44,16 @@ namespace LOGGING {
     auto SEARCH_LOG = spdlog::stdout_color_mt("Search_Logger");
     SEARCH_LOG->set_level(spdlog::level::trace);
 
+    LOG->info("Logging initialized.");
+    
     // Logger test
-    LOG->critical("CRITICAL");
-    LOG->error("ERROR");
-    LOG->warn("WARN");
-    LOG->info("INFO");
-    LOG->debug("DEBUG");
-    SPDLOG_DEBUG(LOG, "DEBUG {}", "MARCO");
-    LOG->trace("TRACE");
-    SPDLOG_TRACE(LOG, "TRACE {}", "MARCO");
-
+    //    LOG->critical("CRITICAL");
+    //    LOG->error("ERROR");
+    //    LOG->warn("WARN");
+    //    LOG->info("INFO");
+    //    LOG->debug("DEBUG");
+    //    SPDLOG_DEBUG(LOG, "DEBUG {}", "MARCO");
+    //    LOG->trace("TRACE");
+    //    SPDLOG_TRACE(LOG, "TRACE {}", "MARCO");
   }
 }

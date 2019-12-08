@@ -28,21 +28,31 @@
 #include <ostream>
 #include <string>
 
+#include "../../src/logging.h"
 #include "../../src/Bitboards.h"
 #include "../../src/Position.h"
 #include "../../src/MoveGenerator.h"
 
 using namespace std;
-
 using testing::Eq;
+
+class MoveGenTest : public ::testing::Test {
+public:
+  static void SetUpTestSuite() {
+    NEWLINE;
+    LOGGING::init();
+    INIT::init();
+    NEWLINE;
+  }
+protected:
+  void SetUp() override {}
+  void TearDown() override {}
+};
 
 /**
  * Test pawn move generation
  */
-TEST(MoveGenTest, pawnMoves) {
-  INIT::init();
-  NEWLINE;
-
+TEST_F(MoveGenTest, pawnMoves) {
   string fen;
   MoveGenerator mg;
 
@@ -101,10 +111,7 @@ TEST(MoveGenTest, pawnMoves) {
 /**
  * TODO create real tests
  */
-TEST(MoveGenTest, kingMoves) {
-  INIT::init();
-  NEWLINE;
-
+TEST_F(MoveGenTest, kingMoves) {
   string fen;
   MoveGenerator mg;
   GenMode genMode;
@@ -139,10 +146,7 @@ TEST(MoveGenTest, kingMoves) {
  * Test move generation
  // TODO create real tests
  */
-TEST(MoveGenTest, normalMoves) {
-  INIT::init();
-  NEWLINE;
-
+TEST_F(MoveGenTest, normalMoves) {
   string fen;
   MoveGenerator mg;
   GenMode genMode;
@@ -173,10 +177,7 @@ TEST(MoveGenTest, normalMoves) {
   }
 }
 
-TEST(MoveGenTest, castlingMoves) {
-  INIT::init();
-  NEWLINE;
-
+TEST_F(MoveGenTest, castlingMoves) {
   string fen;
   MoveGenerator mg;
   GenMode genMode;
@@ -204,10 +205,7 @@ TEST(MoveGenTest, castlingMoves) {
   }
 }
 
-TEST(MoveGenTest, pseudoLegalMoves) {
-  INIT::init();
-  NEWLINE;
-
+TEST_F(MoveGenTest, pseudoLegalMoves) {
   string fen;
   MoveGenerator mg;
   GenMode genMode;
@@ -274,10 +272,7 @@ TEST(MoveGenTest, pseudoLegalMoves) {
   NEWLINE;
 }
 
-TEST(MoveGenTest, legalMoves) {
-  INIT::init();
-  NEWLINE;
-
+TEST_F(MoveGenTest, legalMoves) {
   string fen;
   MoveGenerator mg;
   GenMode genMode;
@@ -324,10 +319,7 @@ TEST(MoveGenTest, legalMoves) {
   NEWLINE;
 }
 
-TEST(MoveGenTest, onDemandGen) {
-  INIT::init();
-  NEWLINE;
-
+TEST_F(MoveGenTest, onDemandGen) {
   string fen;
   MoveGenerator mg;
   GenMode genMode;
@@ -370,7 +362,7 @@ TEST(MoveGenTest, onDemandGen) {
 
 }
 
-TEST(MoveGenTest, hasLegalMoves) {
+TEST_F(MoveGenTest, hasLegalMoves) {
   Position::init();
   Bitboards::init();
   NEWLINE;

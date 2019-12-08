@@ -24,22 +24,31 @@
  */
 
 #include <gtest/gtest.h>
-#include <gmock/gmock.h>
 #include <ostream>
 #include <string>
 
+#include "../../src/logging.h"
 #include "../../src/globals.h"
-#include "../../src/Values.h"
 #include "../../src/Position.h"
 #include "../../src/Bitboards.h"
 
 using namespace std;
-
 using testing::Eq;
 
-TEST(PositionTest, ZobristTest) {
-  Position::init();
-  // NEWLINE  ;
+class PositionTest : public ::testing::Test {
+public:
+  static void SetUpTestSuite() {
+    NEWLINE;
+    LOGGING::init();
+    INIT::init();
+    NEWLINE;
+  }
+protected:
+  void SetUp() override {}
+  void TearDown() override {}
+};
+
+TEST_F(PositionTest, ZobristTest) {
   Key z = 0ULL;
 
   z ^= Zobrist::pieces[WHITE_KING][SQ_E1];
@@ -88,11 +97,7 @@ TEST(PositionTest, ZobristTest) {
   ASSERT_EQ(expected, z);
 }
 
-TEST(PositionTest, Setup) {
-  Bitboards::init();
-  Position::init();
-  Values::init();
-  NEWLINE;
+TEST_F(PositionTest, Setup) {
   string fen;
 
   // Constructor (default)
@@ -188,11 +193,7 @@ TEST(PositionTest, Setup) {
 
 }
 
-TEST(PositionTest, Output) {
-  Bitboards::init();
-  Position::init();
-  // NEWLINE  ;
-
+TEST_F(PositionTest, Output) {
   ostringstream expected;
   ostringstream actual;
 
@@ -233,12 +234,8 @@ TEST(PositionTest, Output) {
   ASSERT_EQ(fen, position.printFen());
 }
 
-TEST(PositionTest, Copy) {
-  Bitboards::init();
-  Position::init();
-  // NEWLINE  ;
-
-  string fen("r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3 10 113");
+TEST_F(PositionTest, Copy) {
+string fen("r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3 10 113");
   Position position(fen.c_str());
   Position copy(position);
   ASSERT_EQ(position.getZobristKey(), copy.getZobristKey());
@@ -250,12 +247,7 @@ TEST(PositionTest, Copy) {
   ASSERT_EQ(BLACK, copy.getNextPlayer());
 }
 
-TEST(PositionTest, PosValue) {
-  Bitboards::init();
-  Position::init();
-  Values::init();
-  // NEWLINE  ;
-
+TEST_F(PositionTest, PosValue) {
   Position position("8/8/8/8/8/8/8/8 w - - 0 1");
   //  cout << position.str() << endl;
 
@@ -272,11 +264,7 @@ TEST(PositionTest, PosValue) {
 }
 
 
-TEST(PositionTest, Bitboards) {
-  Bitboards::init();
-  Position::init();
-//  NEWLINE;
-
+TEST_F(PositionTest, Bitboards) {
   string fen("r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3 10 113");
   Position position(fen.c_str());
 
@@ -312,12 +300,7 @@ TEST(PositionTest, Bitboards) {
   ASSERT_EQ(expected, bb);
 }
 
-TEST(PositionTest, doUndoMoveNormal) {
-  Bitboards::init();
-  Position::init();
-  Values::init();
-  // NEWLINE  ;
-
+TEST_F(PositionTest, doUndoMoveNormal) {
   Position position;
   //  cout << position.str() << endl;
 
@@ -356,12 +339,7 @@ TEST(PositionTest, doUndoMoveNormal) {
   ASSERT_EQ(Position().printFen(), position.printFen());
 }
 
-TEST(PositionTest, doUndoMovePromotion) {
-  Bitboards::init();
-  Position::init();
-  Values::init();
-  // NEWLINE  ;
-
+TEST_F(PositionTest, doUndoMovePromotion) {
   Position position("6k1/P7/8/8/8/8/8/3K4 w - - 0 1");
   //  cout << position.str() << endl;
 
@@ -381,12 +359,7 @@ TEST(PositionTest, doUndoMovePromotion) {
   ASSERT_EQ("6k1/P7/8/8/8/8/8/3K4 w - - 0 1", position.printFen());
 }
 
-TEST(PositionTest, doUndoMoveEnPassantCapture) {
-  Bitboards::init();
-  Position::init();
-  Values::init();
-  // NEWLINE  ;
-
+TEST_F(PositionTest, doUndoMoveEnPassantCapture) {
   // do move
   Position position("rnbqkbnr/ppp1pppp/8/8/3pP3/2N2N2/PPPP1PPP/R1BQKB1R b KQkq e3 0 3");
   //  cout << position.str() << endl;
@@ -420,12 +393,7 @@ TEST(PositionTest, doUndoMoveEnPassantCapture) {
             position.printFen());
 }
 
-TEST(PositionTest, doMoveCastling) {
-  Bitboards::init();
-  Position::init();
-  Values::init();
-  // NEWLINE  ;
-
+TEST_F(PositionTest, doMoveCastling) {
   // do move
   Position position("r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQkq -");
   // cout << position.str() << endl;
@@ -457,7 +425,7 @@ TEST(PositionTest, doMoveCastling) {
   // cout << position.str() << endl;
   position.doMove(createMove<CASTLING>(SQ_E8, SQ_G8));
   // cout << position.str() << endl;
-  ASSERT_EQ("r4rk1/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQ - 1 1",
+  ASSERT_EQ("r4rk1/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQ - 1 2",
             position.printFen());
 
   // undo move
@@ -470,7 +438,7 @@ TEST(PositionTest, doMoveCastling) {
   // cout << position.str() << endl;
   position.doMove(createMove<CASTLING>(SQ_E8, SQ_C8));
   // cout << position.str() << endl;
-  ASSERT_EQ("2kr3r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQ - 1 1",
+  ASSERT_EQ("2kr3r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQ - 1 2",
             position.printFen());
 
   // undo move
@@ -509,7 +477,7 @@ TEST(PositionTest, doMoveCastling) {
   // cout << position.str() << endl;
   position.doMove(createMove<NORMAL>(SQ_A8, SQ_C8));
   // cout << position.str() << endl;
-  ASSERT_EQ("2r1k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQk - 1 1",
+  ASSERT_EQ("2r1k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQk - 1 2",
             position.printFen());
 
   // undo move
@@ -531,19 +499,14 @@ TEST(PositionTest, doMoveCastling) {
             position.printFen());
 }
 
-TEST(PositionTest, doNullMove) {
-  Bitboards::init();
-  Position::init();
-  Values::init();
-  NEWLINE;
-
+TEST_F(PositionTest, doNullMove) {
   // do move
   Position position("rnbqkbnr/ppp1pppp/8/8/3pP3/2N2N2/PPPP1PPP/R1BQKB1R b KQkq e3");
   cout << position.str() << endl;
 
   position.doNullMove();
   cout << position.str() << endl;
-  ASSERT_EQ("rnbqkbnr/ppp1pppp/8/8/3pP3/2N2N2/PPPP1PPP/R1BQKB1R w KQkq - 0 1",
+  ASSERT_EQ("rnbqkbnr/ppp1pppp/8/8/3pP3/2N2N2/PPPP1PPP/R1BQKB1R w KQkq - 0 2",
             position.printFen());
 
   position.undoNullMove();
@@ -552,11 +515,7 @@ TEST(PositionTest, doNullMove) {
             position.printFen());
 }
 
-TEST(PositionTest, repetitionSimple) {
-  Position::init();
-  Bitboards::init();
-  // NEWLINE;
-
+TEST_F(PositionTest, repetitionSimple) {
   Position position;
 
   position.doMove(createMove(SQ_E2, SQ_E4));
@@ -580,11 +539,7 @@ TEST(PositionTest, repetitionSimple) {
   ASSERT_TRUE(position.checkRepetitions(2));
 }
 
-TEST(PositionTest, repetitionAdvanced) {
-  Position::init();
-  Bitboards::init();
-  NEWLINE;
-
+TEST_F(PositionTest, repetitionAdvanced) {
   Position position("6k1/p3q2p/1n1Q2pB/8/5P2/6P1/PP5P/3R2K1 b - -");
 
   position.doMove(createMove(SQ_E7, SQ_E3));
@@ -607,11 +562,7 @@ TEST(PositionTest, repetitionAdvanced) {
   ASSERT_TRUE(position.checkRepetitions(2));
 }
 
-TEST(PositionTest, insufficientMaterial) {
-  Position::init();
-  Bitboards::init();
-  NEWLINE;
-
+TEST_F(PositionTest, insufficientMaterial) {
   string fen;
   Position position;
 
@@ -656,11 +607,7 @@ TEST(PositionTest, insufficientMaterial) {
   ASSERT_FALSE(position.checkInsufficientMaterial());
 }
 
-TEST(PositionTest, rotatedBB) {
-  Position::init();
-  Bitboards::init();
-  NEWLINE;
-
+TEST_F(PositionTest, rotatedBB) {
   string fen;
   Position position;
 
@@ -674,11 +621,7 @@ TEST(PositionTest, rotatedBB) {
 
 }
 
-TEST(PositionTest, hasCheck) {
-  Position::init();
-  Bitboards::init();
-  NEWLINE;
-
+TEST_F(PositionTest, hasCheck) {
   string fen;
   Position position;
 
@@ -689,11 +632,7 @@ TEST(PositionTest, hasCheck) {
   ASSERT_TRUE(position.hasCheck());
 }
 
-TEST(PositionTest, isAttacked) {
-  Position::init();
-  Bitboards::init();
-  NEWLINE;
-
+TEST_F(PositionTest, isAttacked) {
   string fen;
   Position position;
 
@@ -745,11 +684,7 @@ TEST(PositionTest, isAttacked) {
 
 }
 
-TEST(PositionTest, giveCheck) {
-  Position::init();
-  Bitboards::init();
-  NEWLINE;
-
+TEST_F(PositionTest, giveCheck) {
   string fen;
   Position position;
   Move move;
@@ -906,11 +841,7 @@ TEST(PositionTest, giveCheck) {
 }
 
 
-TEST(PositionTest, isLegalMove) {
-  Position::init();
-  Bitboards::init();
-  NEWLINE;
-
+TEST_F(PositionTest, isLegalMove) {
   string fen;
   Position position;
 
@@ -928,11 +859,7 @@ TEST(PositionTest, isLegalMove) {
 
 }
 
-TEST(PositionTest, isLegalPosition) {
-  Position::init();
-  Bitboards::init();
-  NEWLINE;
-
+TEST_F(PositionTest, isLegalPosition) {
   string fen;
   Position position;
 
@@ -959,6 +886,4 @@ TEST(PositionTest, isLegalPosition) {
   position.doMove(createMove<CASTLING>(SQ_E8, SQ_C8));
   ASSERT_FALSE(position.isLegalPosition());
   position.undoMove();
-
-
 }

@@ -26,21 +26,35 @@
 #include <gtest/gtest.h>
 #include <chrono>
 
+#include "../../src/logging.h"
 #include "../../src/Bitboards.h"
 #include "../../src/Position.h"
 
 using namespace std;
 using namespace Bitboards;
 
-void testTiming(ostringstream &os, int rounds, int iterations, int repetitions,
-                const vector<void (*)()> &tests);
+Position position;
 
-TEST(TimingTests, popcount) {
-  NEWLINE;
+class TimingTests : public ::testing::Test {
+public:
+  static void SetUpTestSuite() {
+    NEWLINE;
+    LOGGING::init();
+    INIT::init();
+    NEWLINE;
+  }
+protected:
+  void SetUp() override {}
+  void TearDown() override {}
+  // Necessary because of function pointer use below.
+  void testTiming(ostringstream &os, int rounds, int iterations, int repetitions,
+                  const vector<void (*)()> &tests);
+};
+
+TEST_F(TimingTests, popcount) {
   ostringstream os;
 
   //// TESTS START
-  Bitboards::init();
   auto f1 = []() { popcount(DiagUpA1); };
   vector<void (*)()> tests;
   tests.push_back(f1);
@@ -51,20 +65,13 @@ TEST(TimingTests, popcount) {
   cout << os.str();
 }
 
-// Necessary because of function pointer use below.
-Position position;
-
 /**
  * Test the absolute speed of doMove, undoMove
  */
-TEST(TimingTests, doMoveUndoMove) {
-  NEWLINE;
+TEST_F(TimingTests, doMoveUndoMove) {
   ostringstream os;
 
   //// TESTS START
-  Bitboards::init();
-  Position::init();
-
   position = Position("r3k2r/1ppqbppp/2n2n2/1B2p1B1/3p2b1/2NP1N2/1PPQPPPP/R3K2R w KQkq - 0 1");
   const Move move1 = createMove(SQ_E2, SQ_E4);
   const Move move2 = createMove(SQ_D4, SQ_E3);
@@ -103,14 +110,10 @@ TEST(TimingTests, doMoveUndoMove) {
  * Round  5 Test  1:  451.076.050 ns (  0,45107605 sec)
  * Round  5 Test  2:   17.723.886 ns ( 0,017723886 sec)
  */
-TEST(TimingTests, rotation) {
-  NEWLINE;
+TEST_F(TimingTests, rotation) {
   ostringstream os;
 
   //// TESTS START
-  Bitboards::init();
-  Position::init();
-
   position = Position("r3k2r/1ppqbppp/2n2n2/1B2p1B1/3p2b1/2NP1N2/1PPQPPPP/R3K2R w KQkq - 0 1");
 
   auto f1 = []() { Bitboards::getMovesDiagUp(SQ_D2, position.getOccupiedBB()); };
@@ -126,7 +129,7 @@ TEST(TimingTests, rotation) {
 }
 
 void
-testTiming(ostringstream &os, int rounds, int iterations, int repetitions,
+TimingTests::testTiming(ostringstream &os, int rounds, int iterations, int repetitions,
            const vector<void (*)()> &tests) {
 
   cout.imbue(digitLocale);

@@ -24,8 +24,7 @@
  */
 
 #include <gtest/gtest.h>
-#include <gmock/gmock.h>
-
+#include "../../src/logging.h"
 #include "../../src/Bitboards.h"
 #include "../../src/Position.h"
 
@@ -33,7 +32,20 @@ using namespace std;
 using namespace Bitboards;
 using testing::Eq;
 
-//TEST(BitboardsTest, print) {
+class BitboardsTest : public ::testing::Test {
+public:
+  static void SetUpTestSuite() {
+    NEWLINE;
+    LOGGING::init();
+    INIT::init();
+    NEWLINE;
+  }
+protected:
+  void SetUp() override {}
+  void TearDown() override {}
+};
+
+//TEST_F(BitboardsTest, print) {
 //
 //  // TODO do some asserts to really test
 //
@@ -66,9 +78,7 @@ using testing::Eq;
 //  std::cout << Bitboards::print(ALL_BB) << std::endl;
 //}
 
-TEST(BitboardsTest, BitboardSquareTest) {
-  Bitboards::init();
-
+TEST_F(BitboardsTest, BitboardSquareTest) {
   ASSERT_EQ(squareBB[SQ_E4], ALL_BB & SQ_E4);
   ASSERT_EQ(squareBB[SQ_A1], ALL_BB & SQ_A1);
   ASSERT_EQ(squareBB[SQ_H8], ALL_BB & SQ_H8);
@@ -76,9 +86,7 @@ TEST(BitboardsTest, BitboardSquareTest) {
   ASSERT_NE(squareBB[SQ_A8], ALL_BB & SQ_A1);
 }
 
-TEST(BitboardsTest, SquareDistanceTest) {
-  Bitboards::init();
-
+TEST_F(BitboardsTest, SquareDistanceTest) {
   ASSERT_EQ(6, distance(FILE_A, FILE_G));
   ASSERT_EQ(7, distance(RANK_1, RANK_8));
 
@@ -90,9 +98,7 @@ TEST(BitboardsTest, SquareDistanceTest) {
 }
 
 
-TEST(BitboardsTest, shiftTest) {
-  Bitboards::init();
-
+TEST_F(BitboardsTest, shiftTest) {
   Bitboard shifted = Bitboards::shift(EAST, FileABB);
   ASSERT_EQ(FileBBB, shifted);
 
@@ -122,9 +128,7 @@ TEST(BitboardsTest, shiftTest) {
 }
 
 
-TEST(BitboardsTest, Diagonals) {
-  Bitboards::init();
-
+TEST_F(BitboardsTest, Diagonals) {
   ASSERT_EQ(DiagUpA1, squareDiagUpBB[SQ_A1]);
   ASSERT_EQ(DiagUpA1, squareDiagUpBB[SQ_C3]);
   ASSERT_EQ(DiagUpA1, squareDiagUpBB[SQ_G7]);
@@ -136,9 +140,7 @@ TEST(BitboardsTest, Diagonals) {
   ASSERT_EQ(DiagDownH1, squareDiagDownBB[SQ_H1]);
 }
 
-TEST(BitboardsTest, bitScans) {
-  Bitboards::init();
-
+TEST_F(BitboardsTest, bitScans) {
   ASSERT_EQ(1, popcount(squareBB[SQ_D3]));
   ASSERT_EQ(2, popcount(squareBB[SQ_D3] | squareBB[SQ_H2]));
   ASSERT_EQ(8, popcount(DiagUpA1));
@@ -155,10 +157,7 @@ TEST(BitboardsTest, bitScans) {
   ASSERT_EQ(8, i);
 }
 
-TEST(BitboardsTest, R90) {
-  // NEWLINE;
-  Bitboards::init();
-
+TEST_F(BitboardsTest, R90) {
   const Bitboard bb = FileABB | Rank4BB;
   const string &actual = Bitboards::print(Bitboards::rotateR90(bb));
   //  cout << Bitboards::print(bb) << endl;
@@ -184,10 +183,7 @@ TEST(BitboardsTest, R90) {
   ASSERT_EQ(expected, actual);
 }
 
-TEST(BitboardsTest, L90) {
-  // NEWLINE;
-  Bitboards::init();
-
+TEST_F(BitboardsTest, L90) {
   const Bitboard bb = FileABB | Rank4BB;
   const string &actual = Bitboards::print(Bitboards::rotateL90(bb));
   //  cout << Bitboards::print(bb) << endl;
@@ -213,10 +209,7 @@ TEST(BitboardsTest, L90) {
   ASSERT_EQ(expected, actual);
 }
 
-TEST(BitboardsTest, R45) {
-  // NEWLINE;
-  Bitboards::init();
-
+TEST_F(BitboardsTest, R45) {
   const Bitboard bb = DiagUpA1;
   const string &actual = Bitboards::print(Bitboards::rotateR45(bb));
   //  cout << Bitboards::print(bb) << endl;
@@ -242,10 +235,7 @@ TEST(BitboardsTest, R45) {
   ASSERT_EQ(expected, actual);
 }
 
-TEST(BitboardsTest, L45) {
-  // NEWLINE;
-  Bitboards::init();
-
+TEST_F(BitboardsTest, L45) {
   const Bitboard bb = DiagDownH1;
   const string &actual = Bitboards::print(Bitboards::rotateL45(bb));
   //  cout << Bitboards::print(bb) << endl;
@@ -271,7 +261,7 @@ TEST(BitboardsTest, L45) {
   ASSERT_EQ(expected, actual);
 }
 
-//TEST(BitboardsTest, movesRank) {
+//TEST_F(BitboardsTest, movesRank) {
 //  // NEWLINE;
 //  Bitboards::init();
 //  for (Bitboard j = 0b0000'0000; j < 0b1111'1111; j++) {
@@ -301,7 +291,7 @@ TEST(BitboardsTest, L45) {
 //  }
 //}
 
-//TEST(BitboardsTest, movesFile) {
+//TEST_F(BitboardsTest, movesFile) {
 //  // NEWLINE;
 //  Bitboards::init();
 //  for (Bitboard j = 0b0000'0000; j < 0b1111'1111; j++) {
@@ -317,9 +307,7 @@ TEST(BitboardsTest, L45) {
 //  }
 //}
 
-TEST(BitboardsTest, movesRankTest) {
-  // NEWLINE;
-  Bitboards::init();
+TEST_F(BitboardsTest, movesRankTest) {
   string expected, actual;
 
   Position position("r1b1k2r/pp2ppbp/2n3p1/q7/3pP3/2P1BN2/P2Q1PPP/2R1KB1R w Kkq -");
@@ -369,9 +357,7 @@ TEST(BitboardsTest, movesRankTest) {
   ASSERT_EQ(expected, actual);
 }
 
-TEST(BitboardsTest, movesFileTest) {
-  // NEWLINE;
-  Bitboards::init();
+TEST_F(BitboardsTest, movesFileTest) {
   string expected, actual;
 
   Position position("r1b1k2r/pp2ppbp/2n3p1/q7/3pP3/2P1BN2/P2Q1PPP/2R1KB1R w Kkq -");
@@ -445,9 +431,7 @@ TEST(BitboardsTest, movesFileTest) {
   ASSERT_EQ(expected, actual);
 }
 
-TEST(BitboardsTest, movesDiagUpTest) {
-  // NEWLINE;
-  Bitboards::init();
+TEST_F(BitboardsTest, movesDiagUpTest) {
   string expected, actual;
 
   /// is pre-computed movesDiagUp correct?
@@ -575,9 +559,7 @@ TEST(BitboardsTest, movesDiagUpTest) {
   ASSERT_EQ(expected, actual);
 }
 
-TEST(BitboardsTest, movesDiagDownTest) {
-  // NEWLINE;
-  Bitboards::init();
+TEST_F(BitboardsTest, movesDiagDownTest) {
   string expected, actual;
 
   /// is pre-computed movesDiagDown correct?
@@ -706,9 +688,7 @@ TEST(BitboardsTest, movesDiagDownTest) {
 }
 
 
-TEST(BitboardsTest, indexRotation) {
-  // NEWLINE;
-  Bitboards::init();
+TEST_F(BitboardsTest, indexRotation) {
   string expected, actual;
 
   ASSERT_EQ(SQ_A8, rotateSquareR90(SQ_A1));
@@ -732,9 +712,7 @@ TEST(BitboardsTest, indexRotation) {
   ASSERT_EQ(63, rotateSquareL45(SQ_H8));
 }
 
-TEST(BitboardsTest, pawnAttacksMoves) {
-  NEWLINE;
-  init();
+TEST_F(BitboardsTest, pawnAttacksMoves) {
   string expected, actual;
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -864,9 +842,7 @@ TEST(BitboardsTest, pawnAttacksMoves) {
   ASSERT_EQ(expected, actual);
 }
 
-TEST(BitboardsTest, knightAttacks) {
-  NEWLINE;
-  init();
+TEST_F(BitboardsTest, knightAttacks) {
   string expected, actual;
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -887,7 +863,7 @@ TEST(BitboardsTest, knightAttacks) {
              "|   |   |   |   |   |   |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n";
   actual = print(pseudoAttacks[KNIGHT][SQ_E4]);
-  cout << actual;
+//  cout << actual;
   ASSERT_EQ(expected, actual);
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -908,13 +884,11 @@ TEST(BitboardsTest, knightAttacks) {
              "|   |   |   |   |   | X |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n";
   actual = print(pseudoAttacks[KNIGHT][SQ_H2]);
-  cout << actual;
+//  cout << actual;
   ASSERT_EQ(expected, actual);
 }
 
-TEST(BitboardsTest, kingAttacks) {
-  NEWLINE;
-  init();
+TEST_F(BitboardsTest, kingAttacks) {
   string expected, actual;
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -935,7 +909,7 @@ TEST(BitboardsTest, kingAttacks) {
              "|   |   |   |   |   |   |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n";
   actual = print(pseudoAttacks[KNIGHT][SQ_E4]);
-  cout << actual;
+//  cout << actual;
   ASSERT_EQ(expected, actual);
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -956,14 +930,12 @@ TEST(BitboardsTest, kingAttacks) {
              "|   |   |   |   |   |   | X | X |\n"
              "+---+---+---+---+---+---+---+---+\n";
   actual = print(pseudoAttacks[KING][SQ_H2]);
-  cout << actual;
+//  cout << actual;
   ASSERT_EQ(expected, actual);
 }
 
 
-TEST(BitboardsTest, slidingAttacks) {
-  NEWLINE;
-  init();
+TEST_F(BitboardsTest, slidingAttacks) {
   string expected, actual;
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -984,7 +956,7 @@ TEST(BitboardsTest, slidingAttacks) {
              "|   | X |   |   |   |   |   | X |\n"
              "+---+---+---+---+---+---+---+---+\n";
   actual = print(pseudoAttacks[BISHOP][SQ_E4]);
-  cout << actual;
+//  cout << actual;
   ASSERT_EQ(expected, actual);
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -1005,7 +977,7 @@ TEST(BitboardsTest, slidingAttacks) {
              "|   |   |   |   | X |   |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n";
   actual = print(pseudoAttacks[ROOK][SQ_E4]);
-  cout << actual;
+//  cout << actual;
   ASSERT_EQ(expected, actual);
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -1026,14 +998,12 @@ TEST(BitboardsTest, slidingAttacks) {
              "|   | X |   |   | X |   |   | X |\n"
              "+---+---+---+---+---+---+---+---+\n";
   actual = print(pseudoAttacks[QUEEN][SQ_E4]);
-  cout << actual;
+//  cout << actual;
   ASSERT_EQ(expected, actual);
   ASSERT_EQ(pseudoAttacks[QUEEN][SQ_E4], (pseudoAttacks[BISHOP][SQ_E4] | pseudoAttacks[ROOK][SQ_E4]));
 }
 
-TEST(BitboardsTest, masks) {
-  NEWLINE;
-  init();
+TEST_F(BitboardsTest, masks) {
   string expected, actual;
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -1054,7 +1024,7 @@ TEST(BitboardsTest, masks) {
              "| X | X | X | X |   |   |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n";
   actual = print(filesWestMask[SQ_E4]);
-  cout << actual;
+//  cout << actual;
   ASSERT_EQ(expected, actual);
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -1075,7 +1045,7 @@ TEST(BitboardsTest, masks) {
              "|   |   |   |   |   | X | X | X |\n"
              "+---+---+---+---+---+---+---+---+\n";
   actual = print(filesEastMask[SQ_E4]);
-  cout << actual;
+//  cout << actual;
   ASSERT_EQ(expected, actual);
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -1096,7 +1066,7 @@ TEST(BitboardsTest, masks) {
              "|   |   |   |   |   |   |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n";
   actual = print(ranksNorthMask[SQ_E4]);
-  cout << actual;
+//  cout << actual;
   ASSERT_EQ(expected, actual);
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -1117,13 +1087,11 @@ TEST(BitboardsTest, masks) {
              "| X | X | X | X | X | X | X | X |\n"
              "+---+---+---+---+---+---+---+---+\n";
   actual = print(ranksSouthMask[SQ_E4]);
-  cout << actual;
+//  cout << actual;
   ASSERT_EQ(expected, actual);
 }
 
-TEST(BitboardsTest, rays) {
-  NEWLINE;
-  init();
+TEST_F(BitboardsTest, rays) {
   string expected, actual;
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -1144,7 +1112,7 @@ TEST(BitboardsTest, rays) {
              "|   |   |   |   |   |   |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n";
   actual = print(rays[N][SQ_E4]);
-  cout << actual;
+//  cout << actual;
   ASSERT_EQ(expected, actual);
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -1165,13 +1133,11 @@ TEST(BitboardsTest, rays) {
              "|   |   |   |   |   |   |   | X |\n"
              "+---+---+---+---+---+---+---+---+\n";
   actual = print(rays[SE][SQ_E4]);
-  cout << actual;
+//  cout << actual;
   ASSERT_EQ(expected, actual);
 }
 
-TEST(BitboardsTest, intermediates) {
-  NEWLINE;
-  init();
+TEST_F(BitboardsTest, intermediates) {
   string expected, actual;
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -1192,7 +1158,7 @@ TEST(BitboardsTest, intermediates) {
              "|   |   |   |   |   |   |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n";
   actual = print(intermediateBB[SQ_C3][SQ_G7]);
-  cout << actual;
+//  cout << actual;
   ASSERT_EQ(expected, actual);
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -1213,7 +1179,7 @@ TEST(BitboardsTest, intermediates) {
              "|   |   |   |   |   |   |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n";
   actual = print(intermediateBB[SQ_A7][SQ_F2]);
-  cout << actual;
+//  cout << actual;
   ASSERT_EQ(expected, actual);
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -1234,7 +1200,7 @@ TEST(BitboardsTest, intermediates) {
              "|   |   |   |   |   |   |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n";
   actual = print(intermediateBB[SQ_A7][SQ_A2]);
-  cout << actual;
+//  cout << actual;
   ASSERT_EQ(expected, actual);
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -1255,7 +1221,7 @@ TEST(BitboardsTest, intermediates) {
              "|   |   |   |   |   |   |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n";
   actual = print(intermediateBB[SQ_A7][SQ_H1]);
-  cout << actual;
+//  cout << actual;
   ASSERT_EQ(expected, actual);
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -1276,15 +1242,13 @@ TEST(BitboardsTest, intermediates) {
              "|   |   |   |   |   |   |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n";
   actual = print(intermediateBB[SQ_H7][SQ_D7]);
-  cout << actual;
+//  cout << actual;
   ASSERT_EQ(expected, actual);
 
 
 }
 
-TEST(BitboardsTest, checkers) {
-  NEWLINE;
-  init();
+TEST_F(BitboardsTest, checkers) {
   string expected, actual;
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -1305,7 +1269,7 @@ TEST(BitboardsTest, checkers) {
              "|   | X |   | X |   | X |   | X |\n"
              "+---+---+---+---+---+---+---+---+\n";
   actual = print(whiteSquaresBB);
-  cout << actual;
+//  cout << actual;
   ASSERT_EQ(expected, actual);
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -1326,13 +1290,11 @@ TEST(BitboardsTest, checkers) {
              "| X |   | X |   | X |   | X |   |\n"
              "+---+---+---+---+---+---+---+---+\n";
   actual = print(blackSquaresBB);
-  cout << actual;
+//  cout << actual;
   ASSERT_EQ(expected, actual);
 }
 
-TEST(BitboardsTest, centerDistance) {
-  NEWLINE;
-  init();
+TEST_F(BitboardsTest, centerDistance) {
   ASSERT_EQ(2, centerDistance[SQ_C2]);
   ASSERT_EQ(3, centerDistance[SQ_B8]);
   ASSERT_EQ(3, centerDistance[SQ_H1]);

@@ -24,10 +24,7 @@
  */
 
 #include <gtest/gtest.h>
-#include <gmock/gmock.h>
-
 #include "../../src/globals.h"
-#include "../../src/Bitboards.h"
 
 using namespace std;
 using testing::Eq;
@@ -218,8 +215,6 @@ TEST(CastlingTest, castling) {
 //}
 
 TEST(MoveListTest, moveListPrint) {
-  INIT::init();
-  NEWLINE;
 
   Move move1 = createMove<NORMAL>(SQ_A1, SQ_H1);
   Move move2 = createMove<PROMOTION>(SQ_A7, SQ_A8, QUEEN);
@@ -229,11 +224,9 @@ TEST(MoveListTest, moveListPrint) {
   moveList.push_back(move2);
   moveList.push_back(move3);
 
-  //cout << moveList << endl;
-
   ostringstream ml;
   ml << moveList;
-  string expected = "MoveList: size=3 [a1h1, a7a8, e1g1]\n";
+  string expected = "MoveList: size=3 [a1h1, a7a8q, e1g1]\n";
   ASSERT_EQ(expected, ml.str());
 
 }

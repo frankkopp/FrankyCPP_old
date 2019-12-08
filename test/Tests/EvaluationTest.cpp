@@ -24,24 +24,31 @@
  */
 
 #include <gtest/gtest.h>
-#include <gmock/gmock.h>
 #include <ostream>
 #include <string>
 
+#include "../../src/logging.h"
 #include "../../src/globals.h"
-#include "../../src/Bitboards.h"
 #include "../../src/Values.h"
-#include "../../src/Position.h"
 
 using namespace std;
 using namespace Values;
 using testing::Eq;
 
-TEST(EvaluationTest, posValue) {
-  NEWLINE;
-  Values::init();
-  Position::init();
-  Bitboards::init();
+class EvaluationTest : public ::testing::Test {
+public:
+  static void SetUpTestSuite() {
+    NEWLINE;
+    LOGGING::init();
+    INIT::init();
+    NEWLINE;
+  }
+protected:
+  void SetUp() override {}
+  void TearDown() override {}
+};
+
+TEST_F(EvaluationTest, posValue) {
 
 //  for (Piece pc = WHITE_KING; pc < PIECE_NONE; ++pc) {
 //    for (Square sq = SQ_A1; sq <= SQ_H8; ++sq) {

@@ -24,8 +24,8 @@
  */
 
 #include <gtest/gtest.h>
-#include <gmock/gmock.h>
 
+#include "../../src/logging.h"
 #include "../../src/globals.h"
 #include "../../src/UCIHandler.h"
 #include "../../src/Engine.h"
@@ -33,9 +33,20 @@
 using namespace std;
 using testing::Eq;
 
-TEST(UCITest, uciTest) {
-  INIT::init();
-  NEWLINE;
+class UCITest : public ::testing::Test {
+public:
+  static void SetUpTestSuite() {
+    NEWLINE;
+    LOGGING::init();
+    INIT::init();
+    NEWLINE;
+  }
+protected:
+  void SetUp() override {}
+  void TearDown() override {}
+};
+
+TEST_F(UCITest, uciTest) {
 
   string command = "uci";
   string expectedStart = "id name";
@@ -54,10 +65,7 @@ TEST(UCITest, uciTest) {
   ASSERT_EQ(expectedEnd, result.substr(result.size()-6, result.size()));
 }
 
-TEST(UCITest, isreadyTest) {
-  INIT::init();
-  NEWLINE;
-
+TEST_F(UCITest, isreadyTest) {
   string command = "isready";
   string expected = "readyok\n";
 
@@ -71,10 +79,7 @@ TEST(UCITest, isreadyTest) {
   ASSERT_EQ(expected, os.str());
 }
 
-TEST(UCITest, setoptionTest) {
-  INIT::init();
-  NEWLINE;
-
+TEST_F(UCITest, setoptionTest) {
   ostringstream os;
   Engine engine;
 
@@ -95,9 +100,7 @@ TEST(UCITest, setoptionTest) {
   ASSERT_FALSE(engine.config.ponder);
 }
 
-TEST(UCITest, searchModeTest) {
-  INIT::init();
-  NEWLINE;
+TEST_F(UCITest, searchModeTest) {
 
   ostringstream os;
   Engine engine;
@@ -146,10 +149,7 @@ TEST(UCITest, searchModeTest) {
 
 }
 
-TEST(UCITest, positionTest) {
-  INIT::init();
-  NEWLINE;
-
+TEST_F(UCITest, positionTest) {
   ostringstream os;
   Engine engine;
 
@@ -231,10 +231,7 @@ TEST(UCITest, positionTest) {
   }
 }
 
-TEST(UCITest, moveTest) {
-  INIT::init();
-  NEWLINE;
-
+TEST_F(UCITest, moveTest) {
   ostringstream os;
   Engine engine;
 

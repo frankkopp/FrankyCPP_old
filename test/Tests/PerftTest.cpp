@@ -26,21 +26,28 @@
 #include <gtest/gtest.h>
 #include <ostream>
 #include <string>
-
+#include "../../src/logging.h"
 #include "../../src/Bitboards.h"
 #include "../../src/Perft.h"
 #include "../../src/Position.h"
 #include "../../src/MoveGenerator.h"
 
 using namespace std;
-
 using testing::Eq;
 
-TEST(PerftTest, stdPerftOD) {
-  Position::init();
-  Bitboards::init();
-  NEWLINE;
+class PerftTest : public ::testing::Test {
+public:
+  static void SetUpTestSuite() {
+    NEWLINE;
+    LOGGING::init();
+    INIT::init();
+    NEWLINE;
+  }
+protected:
+  void SetUp() override {}
+  void TearDown() override {}};
 
+TEST_F(PerftTest, stdPerftOD) {
   MoveGenerator mg;
   Position position;
   Perft p;
@@ -80,11 +87,7 @@ TEST(PerftTest, stdPerftOD) {
 }
 
 
-TEST(PerftTest, stdPerft) {
-  Position::init();
-  Bitboards::init();
-  NEWLINE;
-
+TEST_F(PerftTest, stdPerft) {
   MoveGenerator mg;
   Position position;
   Perft p;
@@ -123,11 +126,7 @@ TEST(PerftTest, stdPerft) {
 
 }
 
-TEST(PerftTest, kiwiPetePerft) {
-  Position::init();
-  Bitboards::init();
-  NEWLINE;
-
+TEST_F(PerftTest, kiwiPetePerft) {
   MoveGenerator mg;
   Position position;
 
@@ -163,11 +162,7 @@ TEST(PerftTest, kiwiPetePerft) {
 
 }
 
-TEST(PerftTest, pos3Perft) {
-  Position::init();
-  Bitboards::init();
-  NEWLINE;
-
+TEST_F(PerftTest, pos3Perft) {
   MoveGenerator mg;
   Position position;
 
@@ -205,11 +200,7 @@ TEST(PerftTest, pos3Perft) {
 
 }
 
-TEST(PerftTest, pos4Perft) {
-  Position::init();
-  Bitboards::init();
-  NEWLINE;
-
+TEST_F(PerftTest, pos4Perft) {
   MoveGenerator mg;
   Position position;
 
@@ -275,11 +266,7 @@ TEST(PerftTest, pos4Perft) {
 }
 
 
-TEST(PerftTest, pos5Perft) {
-  Position::init();
-  Bitboards::init();
-  NEWLINE;
-
+TEST_F(PerftTest, pos5Perft) {
   MoveGenerator mg;
   Position position;
 
@@ -345,11 +332,7 @@ TEST(PerftTest, pos5Perft) {
   *  * 8/8/2k5/5q2/5n2/8/5K2/8 b - - 0 1; perft 4 = 23527
   */
 void variousPerftTests(const string &s, int depth, int result);
-TEST(PerftTest, Various) {
-  Position::init();
-  Bitboards::init();
-  NEWLINE;
-
+TEST_F(PerftTest, Various) {
   variousPerftTests("3k4/3p4/8/K1P4r/8/8/8/8 b - - 0 1", 6, 1134888);
   variousPerftTests("8/8/4k3/8/2p5/8/B2P2K1/8 w - - 0 1", 6, 1015133);
   variousPerftTests("8/8/1k6/2b5/2pP4/8/5K2/8 b - d3 0 1", 6, 1440467);
@@ -376,11 +359,7 @@ TEST(PerftTest, Various) {
 }
 
 void debugPerft(const string &s, int depth, int result);
-TEST(PerftTest, DebugPerft) {
-  Position::init();
-  Bitboards::init();
-  NEWLINE;
-
+TEST_F(PerftTest, DebugPerft) {
   variousPerftTests("n1n5/PPPk4/8/8/8/8/4Kppp/5N1N b - -", 6, 71179139);
   //variousPerftTests("n1n5/PPPk4/8/8/8/8/4Kp1p/5n1N w - -", 5, 960124);
   //variousPerftTests("nQn5/P1Pk4/8/8/8/8/4Kp1p/5n1N b - -", 4, 76472);

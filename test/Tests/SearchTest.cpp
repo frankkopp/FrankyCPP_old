@@ -24,17 +24,26 @@
  */
 
 #include <gtest/gtest.h>
-#include <gmock/gmock.h>
-
+#include "../../src/logging.h"
 #include "../../src/Search.h"
 #include "../../src/Engine.h"
 
 using testing::Eq;
 
-TEST(SearchTest, basic) {
-  NEWLINE;
-  INIT::init();
+class SearchTest : public ::testing::Test {
+public:
+  static void SetUpTestSuite() {
+    NEWLINE;
+    LOGGING::init();
+    INIT::init();
+    NEWLINE;
+  }
+protected:
+  void SetUp() override {}
+  void TearDown() override {}
+};
 
+TEST_F(SearchTest, basic) {
   Search search;
   SearchLimits searchLimits;
   Position position;
