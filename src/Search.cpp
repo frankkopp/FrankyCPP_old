@@ -26,6 +26,8 @@
 #include <algorithm>
 #include <iostream>
 #include <chrono>
+#include <utility>
+#include <iomanip>
 #include "Search.h"
 #include "Engine.h"
 
@@ -48,7 +50,7 @@ Search::~Search() {
 ////////////////////////////////////////////////
 ///// PUBLIC
 
-void Search::startSearch(Position pos, SearchLimits *limits) {
+void Search::startSearch(const Position& pos, SearchLimits limits) {
   if (running) {
     LOG->error("Search already running");
     return;
@@ -56,8 +58,8 @@ void Search::startSearch(Position pos, SearchLimits *limits) {
 
   // pos is a deep copy of the position parameter to not change
   // the original position given
-  position = Position(pos);
-  pSearchLimits = limits;
+  position = pos;
+  searchLimits = std::move(limits);
   stopSearchFlag = false;
 
   // make sure we have a semaphore available
@@ -72,8 +74,8 @@ void Search::startSearch(Position pos, SearchLimits *limits) {
 
   // wait until thread is initialized before returning to caller
   initSemaphore.getOrWait();
-  LOG->info("Search started.");
   assert(running);
+  LOG->info("Search started.");
 }
 
 void Search::stopSearch() {
@@ -117,18 +119,18 @@ void Search::run() {
   }
 
   // search mode override
-  if (PERFT || pSearchLimits->perft) {
-    LOG->info("Search Mode: PERFT SEARCH ({})", pSearchLimits->maxDepth);
+  if (PERFT || searchLimits.perft) {
+    LOG->info("Search Mode: PERFT SEARCH ({})", searchLimits.maxDepth);
     PERFT = true;
   }
 
-  LOG->info("Search Mode: {}", pSearchLimits->str());
+  LOG->info("Search Mode: {}", searchLimits.str());
 
   // initialization done
   initSemaphore.release();
 
   // start iterative deepening
-  lastSearchResult = iterativeDeepening(&position);
+  lastSearchResult = iterativeDeepening();
 
   LOG->info("Search Result: {}", lastSearchResult.str());
   if (pEngine) {
@@ -140,9 +142,7 @@ void Search::run() {
   LOG->info("Search thread ended.");
 }
 
-SearchResult Search::iterativeDeepening(Position *pPosition) {
-  SPDLOG_TRACE(LOG, "Iterative deepening start.");
-
+SearchResult Search::iterativeDeepening() {
   // store the start time of the search
   startTime = std::chrono::high_resolution_clock::now();
 
@@ -161,10 +161,10 @@ SearchResult Search::iterativeDeepening(Position *pPosition) {
   }
 
   // start depth from searchMode
-  int depth = pSearchLimits->startDepth;
+  int depth = searchLimits.startDepth;
 
   // if time based game setup the soft and hard time limits
-  if (pSearchLimits->timeControl) configureTimeLimits();
+  if (searchLimits.timeControl) configureTimeLimits();
 
   // current search depth
   searchStats.currentSearchDepth = ROOT_PLY;
@@ -172,31 +172,92 @@ SearchResult Search::iterativeDeepening(Position *pPosition) {
 
   // generate all legal root moves, and set pv move if we got one from TT
   MoveList rootMoves = generateRootMoves(&position);
+  LOG->debug("Root moves: {}", printMoveList(rootMoves));
 
-  // PROTOTYPE / DEBUG
-  return simulatedSearch(pPosition);
+  // make sure we have a temporary best move
+  if (currentBestRootMove == NOMOVE) { // when using TT this will already be set
+    currentBestRootMove = rootMoves.front();
+  }
+
+  // print search setup for debugging
+  if (LOG->should_log(spdlog::level::debug)) {
+    LOG->debug("Searching in position: {}", position.printFen());
+    LOG->debug("Searching these moves: {}", printMoveList(rootMoves));
+    LOG->debug("Search mode: {}", searchLimits.str());
+    LOG->debug("Time Management: {} soft: {} hard: {}",
+               (searchLimits.timeControl ? "ON" : "OFF"),
+               "TBD", "TBD");
+    LOG->debug("Start Depth: {} Max Depth: {}", depth, searchLimits.maxDepth);
+    LOG->debug("Starting iterative deepening now...");
+  };
+
+  // check search requirements
+  assert (!rootMoves.empty() && "No root moves to search");
+  assert (currentBestRootMove != NOMOVE && "No initial best root move");
+  assert (depth > 0 && "depth <= 0");
+
+  // ###########################################
+  // ### BEGIN Iterative Deepening
+  do {
+    SPDLOG_TRACE(LOG, "Depth {} start", depth);
+    assert (currentBestRootMove != NOMOVE && "No  best root move");
+
+    searchStats.currentIterationDepth = depth;
+    searchStats.bestMoveChanges = 0;
+    searchStats.nodesVisited++; // root node is always first searched node
+
+    // ###########################################
+    // ### CALL SEARCH for depth
+    // ###
+
+    // ALPHA_BETA
+    Value value = simulatedSearch(&position, depth);// search(position, depth, ROOT_PLY,alpha, beta, PV_NODE, DO_NULL);
+
+    // ###
+    // ###########################################
+
+  } while (++depth <= searchLimits.maxDepth);
+  // ### ENDOF Iterative Deepening
+  // ###########################################
+
+
+  // create searchResult here
+  searchResult.bestMove = currentBestRootMove;
+  searchResult.resultValue = currentBestRootValue;
+  searchResult.depth = searchStats.currentSearchDepth;
+  searchResult.extraDepth = searchStats.currentExtraSearchDepth;
+
+  // search is finished - stop timer
+  stopTime = std::chrono::high_resolution_clock::now();
+  searchStats.lastSearchTime = std::chrono::duration_cast<std::chrono::nanoseconds>(
+    stopTime - startTime).count();
+
+  // print result of the search
+  if (LOG->should_log(spdlog::level::debug)) {
+    LOG->debug("Search statistics: {}", searchStats.str());
+    LOG->debug("Search Depth was {} ({})", searchStats.currentIterationDepth,
+             searchStats.currentExtraSearchDepth);
+    LOG->debug("Search took {}", fmt::format("{},{:09} sec",
+                               (searchStats.lastSearchTime % 1'000'000'000'000) / 1'000'000'000,
+                               (searchStats.lastSearchTime % 1'000'000'000)));
+  }
+
+  return searchResult;
 }
 
 // DEBUG / PROTOTYPE
-SearchResult Search::simulatedSearch(Position *pPosition) {
-  LOG->debug("Generate debug move");
+Value Search::simulatedSearch(Position *pPosition, int depth) {
   MoveGenerator moveGenerator;
-  LOG->debug("Generate position");
   LOG->debug("\n" + pPosition->str());
-  LOG->debug("Generate legal moves");
-  MoveList moves = moveGenerator.generateLegalMoves(GENALL, pPosition);
-  LOG->debug("Legal Moves: {}", printMoveList(moves));
-
-  for (int i = 0; i < 5; ++i) {
+  MoveList* moves = moveGenerator.generateLegalMoves(GENALL, pPosition);
+  for (int i = 0; i < depth; ++i) {
     LOG->debug("Search SIMULATION: {}", i);
     std::this_thread::sleep_for(std::chrono::seconds(1));
     if (stopSearchFlag) break;
   }
-
   SearchResult searchResult;
-  searchResult.bestMove = moves.front();
-
-  return searchResult;
+  searchResult.bestMove = moves->front();
+  return VALUE_NONE;
 }
 
 void Search::configureTimeLimits() {
@@ -204,8 +265,26 @@ void Search::configureTimeLimits() {
 }
 
 MoveList Search::generateRootMoves(Position *pPosition) {
-  MoveList legalMoves = moveGenerators[ROOT_PLY].generatePseudoLegalMoves(GENALL, pPosition);
-
-  return MoveList();
+  LOG->debug("Generating root moves");
+  MoveList* legalMoves = moveGenerators[ROOT_PLY].generatePseudoLegalMoves(GENALL, pPosition);
+  LOG->debug("All legal moves {}", printMoveList(*legalMoves));
+  MoveList rootMoves;
+  if (searchLimits.moves.empty()) {
+    LOG->debug("Adding all legal moves.");
+    for (auto legalMove : *legalMoves) {
+      rootMoves.push_back(legalMove);
+    }
+  } else {
+    LOG->debug("Adding UCI selected moves {}", printMoveList(searchLimits.moves));
+    for (auto legalMove : *legalMoves) {
+      for (auto move : searchLimits.moves) {
+        if (moveOf(move) == moveOf(legalMove)) {
+          LOG->debug("Adding move: {}", printMove(legalMove));
+          rootMoves.push_back(legalMove);
+        }
+      }
+    }
+  }
+  return rootMoves;
 }
 

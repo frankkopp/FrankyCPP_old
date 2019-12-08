@@ -82,6 +82,7 @@ public:
   int lmrReductions = 0;
   int deltaPrunings = 0;
 
+  std::string str() const;
   friend std::ostream &operator<<(std::ostream &os, const SearchStats &stats);
 
 };

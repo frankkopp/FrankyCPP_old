@@ -27,7 +27,6 @@
 #define FRANKYCPP_SEARCH_H
 
 // forward declared dependencies
-class SearchLimits;
 class Engine;
 
 // included dependencies
@@ -38,10 +37,7 @@ class Engine;
 #include "SearchStats.h"
 #include "Semaphore.h"
 #include "Position.h"
-
-// Constants
-static constexpr int MAX_SEARCH_DEPTH = 255;
-static constexpr int ROOT_PLY = 0;
+#include "SearchLimits.h"
 
 class SearchResult {
 public:
@@ -75,7 +71,7 @@ class Search {
   Engine *pEngine{nullptr};
 
   // search mode
-  SearchLimits *pSearchLimits{nullptr};
+  SearchLimits searchLimits;
   SearchStats searchStats;
 
   // current position
@@ -93,6 +89,8 @@ class Search {
 
   // search start time
   std::chrono::time_point<std::chrono::steady_clock> startTime;
+  std::chrono::time_point<std::chrono::steady_clock> stopTime;
+  
   // current best move
   Move currentBestRootMove;
 
@@ -114,7 +112,7 @@ public:
   ///// PUBLIC
 
   /** starts the search in a separate thread with the given search limits */
-  void startSearch(Position position, SearchLimits *limits);
+  void startSearch(const Position& position, SearchLimits limits);
 
   /** Stops a running search gracefully - e.g. returns the best move found so far */
   void stopSearch();
@@ -130,8 +128,8 @@ private:
   ///// PRIVATE
 
   void run();
-  SearchResult simulatedSearch(Position *pPosition);
-  SearchResult iterativeDeepening(Position *pPosition);
+  Value simulatedSearch(Position *pPosition, int depth);
+  SearchResult iterativeDeepening();
   void configureTimeLimits();
   MoveList generateRootMoves(Position *pPosition);
 };

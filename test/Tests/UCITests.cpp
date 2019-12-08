@@ -251,3 +251,24 @@ TEST_F(UCITest, moveTest) {
   cout << "SEARCH ENDED" << endl;
 
 }
+
+TEST_F(UCITest, moveTestDepth) {
+  ostringstream os;
+  Engine engine;
+
+  string command = "position startpos moves e2e4";
+  println("COMMAND: " + command);
+  istringstream is(command);
+  UCI::Handler uciHandler(&engine, &is, &os);
+  uciHandler.loop();
+
+  command = "go depth 5";
+  println("COMMAND: " + command);
+  is = istringstream(command);
+  uciHandler.loop(&is);
+
+  cout << "Waiting until search ends..." << endl;
+  engine.waitWhileSearching();
+  cout << "SEARCH ENDED" << endl;
+
+}

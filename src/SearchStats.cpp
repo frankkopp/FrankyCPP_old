@@ -23,33 +23,40 @@
  *
  */
 
+#include <sstream>
 #include "SearchStats.h"
 
 std::ostream &operator<<(std::ostream &os, const SearchStats &stats) {
-  os << "currentIterationDepth: " << stats.currentIterationDepth << " currentSearchDepth: "
-     << stats.currentSearchDepth << " currentExtraSearchDepth: " << stats.currentExtraSearchDepth
-     << " currentRootMove: " << stats.currentRootMove << " currentRootMoveNumber: "
-     << stats.currentRootMoveNumber << " lastSearchTime: " << stats.lastSearchTime
-     << " bestMoveChanges: " << stats.bestMoveChanges << " leafPositionsEvaluated: "
-     << stats.leafPositionsEvaluated << " nonLeafPositionsEvaluated: "
-     << stats.nonLeafPositionsEvaluated << " checkCounter: " << stats.checkCounter
-     << " checkMateCounter: " << stats.checkMateCounter << " captureCounter: "
-     << stats.captureCounter << " enPassantCounter: " << stats.enPassantCounter
-     << " aspirationResearches: " << stats.aspirationResearches << " prunings: " << stats.prunings
-     << " pvs_root_researches: " << stats.pvs_root_researches << " pvs_root_cutoffs: "
-     << stats.pvs_root_cutoffs << " pvs_researches: " << stats.pvs_researches << " pvs_cutoffs: "
-     << stats.pvs_cutoffs << " positionsNonQuiet: " << stats.positionsNonQuiet << " tt_Hits: "
-     << stats.tt_Hits << " tt_Misses: " << stats.tt_Misses << " tt_Cuts: " << stats.tt_Cuts
-     << " tt_Ignored: " << stats.tt_Ignored << " movesGenerated: " << stats.movesGenerated
-     << " nodesVisited: " << stats.nodesVisited << " minorPromotionPrunings: "
-     << stats.minorPromotionPrunings << " mateDistancePrunings: " << stats.mateDistancePrunings
-     << " rfpPrunings: " << stats.rfpPrunings << " nullMovePrunings: " << stats.nullMovePrunings
-     << " nullMoveVerifications: " << stats.nullMoveVerifications << " razorReductions: "
-     << stats.razorReductions << " iidSearches: " << stats.iidSearches << " lrReductions: "
-     << stats.lrReductions << " efpPrunings: " << stats.efpPrunings << " fpPrunings: "
-     << stats.fpPrunings << " qfpPrunings: " << stats.qfpPrunings << " lmpPrunings: "
-     << stats.lmpPrunings << " lmrReductions: " << stats.lmrReductions << " deltaPrunings: "
-     << stats.deltaPrunings;
+  os << stats.str();
   return os;
+}
+
+std::string SearchStats::str() const {
+  std::stringstream os;
+  os << "currentIterationDepth: " << currentIterationDepth << " currentSearchDepth: "
+     << currentSearchDepth << " currentExtraSearchDepth: " << currentExtraSearchDepth
+     << " currentRootMove: " << currentRootMove << " currentRootMoveNumber: "
+     << currentRootMoveNumber << " lastSearchTime: " << lastSearchTime
+     << " bestMoveChanges: " << bestMoveChanges << " leafPositionsEvaluated: "
+     << leafPositionsEvaluated << " nonLeafPositionsEvaluated: "
+     << nonLeafPositionsEvaluated << " checkCounter: " << checkCounter
+     << " checkMateCounter: " << checkMateCounter << " captureCounter: "
+     << captureCounter << " enPassantCounter: " << enPassantCounter
+     << " aspirationResearches: " << aspirationResearches << " prunings: " << prunings
+     << " pvs_root_researches: " << pvs_root_researches << " pvs_root_cutoffs: "
+     << pvs_root_cutoffs << " pvs_researches: " << pvs_researches << " pvs_cutoffs: "
+     << pvs_cutoffs << " positionsNonQuiet: " << positionsNonQuiet << " tt_Hits: "
+     << tt_Hits << " tt_Misses: " << tt_Misses << " tt_Cuts: " << tt_Cuts
+     << " tt_Ignored: " << tt_Ignored << " movesGenerated: " << movesGenerated
+     << " nodesVisited: " << nodesVisited << " minorPromotionPrunings: "
+     << minorPromotionPrunings << " mateDistancePrunings: " << mateDistancePrunings
+     << " rfpPrunings: " << rfpPrunings << " nullMovePrunings: " << nullMovePrunings
+     << " nullMoveVerifications: " << nullMoveVerifications << " razorReductions: "
+     << razorReductions << " iidSearches: " << iidSearches << " lrReductions: "
+     << lrReductions << " efpPrunings: " << efpPrunings << " fpPrunings: "
+     << fpPrunings << " qfpPrunings: " << qfpPrunings << " lmpPrunings: "
+     << lmpPrunings << " lmrReductions: " << lmrReductions << " deltaPrunings: "
+     << deltaPrunings;
+  return os.str();
 }
 

@@ -43,7 +43,7 @@ MoveGenerator::~MoveGenerator() = default;
 ////////////////////////////////////////////////
 ///// PUBLIC
 
-MoveList
+MoveList*
 MoveGenerator::generatePseudoLegalMoves(GenMode genMode, Position *pPosition) {
   pseudoLegalMoves.clear();
   generatePawnMoves(genMode, pPosition, &pseudoLegalMoves);
@@ -51,15 +51,15 @@ MoveGenerator::generatePseudoLegalMoves(GenMode genMode, Position *pPosition) {
   generateMoves(genMode, pPosition, &pseudoLegalMoves);
   generateKingMoves(genMode, pPosition, &pseudoLegalMoves);
   sort(pseudoLegalMoves.begin(), pseudoLegalMoves.end());
-  return pseudoLegalMoves;
+  return &pseudoLegalMoves;
 }
 
-MoveList
+MoveList*
 MoveGenerator::generateLegalMoves(GenMode genMode, Position *pPosition) {
   legalMoves.clear();
   generatePseudoLegalMoves(genMode, pPosition);
   for (Move m : pseudoLegalMoves) if (pPosition->isLegalMove(m)) legalMoves.push_back(m);
-  return legalMoves;
+  return &legalMoves;
 }
 
 Move

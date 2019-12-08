@@ -155,6 +155,12 @@ TEST(MoveTest, movesValue) {
   move = createMove<PROMOTION>(SQ_A1, SQ_H1, Value(-pieceTypeValue[QUEEN]), QUEEN);
   ASSERT_EQ(-pieceTypeValue[QUEEN], valueOf(move));
 
+  // test equality without value / pure move
+  move = createMove<NORMAL>(SQ_A1, SQ_H1, Value(100));
+  Move move2 = createMove<NORMAL>(SQ_A1, SQ_H1, Value(-100));
+  ASSERT_NE(move, move2);
+  ASSERT_EQ(moveOf(move), moveOf(move2));
+
 }
 
 TEST(CastlingTest, castling) {

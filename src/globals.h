@@ -42,16 +42,20 @@
 #define println(s) std::cout << (s) << std::endl
 
 // Global constants
-inline const char *START_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+constexpr const char *START_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 /** Max number of moves in a game to be used in arrays etc. */
-inline const int MAX_MOVES = 256;
+constexpr int MAX_MOVES = 256;
 
 /** Max number of search depths */
-inline const int MAX_PLY = 128;
+constexpr int MAX_PLY = 128;
+constexpr int MAX_SEARCH_DEPTH = MAX_PLY;
+
+/** the ply of the root move */
+constexpr int ROOT_PLY = 0;
 
 /** Game phase is 24 when all officers are present. 0 when no officer is present */
-inline const int GAME_PHASE_MAX = 24;
+constexpr int GAME_PHASE_MAX = 24;
 
 /** 64 bit Key for zobrist etc. */
 typedef uint64_t Key;
@@ -390,6 +394,9 @@ constexpr void setValue(Move &m, Value v) {
 }
 /** returns the value of the move */
 constexpr Value valueOf(Move m) { return Value(((m & VALUE_MASK) >> VALUE_SHIFT) + VALUE_NONE); }
+
+/** returns the move without value */
+constexpr Move moveOf(Move m) { return Move(m & MOVE_MASK); }
 
 /** returns a short representation of the move as string (UCI protocal) */
 inline std::string printMove(const Move &move) {

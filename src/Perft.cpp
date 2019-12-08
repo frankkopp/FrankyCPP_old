@@ -102,7 +102,7 @@ void Perft::perft_divide(int maxDepth, bool onDemand) {
   auto start = std::chrono::high_resolution_clock::now();
 
   // moves to search recursively
-  MoveList moves = mg[maxDepth].generatePseudoLegalMoves(GENALL, &position);
+  MoveList moves = *mg[maxDepth].generatePseudoLegalMoves(GENALL, &position);
   for (Move move : moves) {
   //  Move move = createMove<PROMOTION>("c7c8n");
     // Iterate over moves
@@ -178,7 +178,7 @@ long Perft::miniMax(int depth, Position *pPosition, MoveGenerator *pMg) {
   //println(pPosition->str())
 
   // moves to search recursively
-  MoveList moves = pMg[depth].generatePseudoLegalMoves(GENALL, pPosition);
+  MoveList moves = *pMg[depth].generatePseudoLegalMoves(GENALL, pPosition);
   for (Move move : moves) {
     if (depth > 1) {
       pPosition->doMove(move);

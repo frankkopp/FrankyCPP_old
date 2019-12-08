@@ -54,11 +54,11 @@ TEST_F(EngineTest, basic) {
 TEST_F(EngineTest, startSearch) {
   Engine engine;
   UCISearchMode uciSearchMode;
-  uciSearchMode.infinite = true;
+  uciSearchMode.depth = 3;
   engine.startSearch(&uciSearchMode);
 
   cout << "Start and Stop test..." << endl;
-  for (int i = 0; i < 5; ++i) {
+  for (int i = 0; i < 3; ++i) {
     sleep(3);
     engine.stopSearch();
     engine.waitWhileSearching();

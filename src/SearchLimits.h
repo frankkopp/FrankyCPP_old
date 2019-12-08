@@ -61,7 +61,7 @@ public:
   // state
   bool timeControl = false;
   int startDepth = 1;
-  int maxDepth = MAX_PLY;
+  int maxDepth = MAX_SEARCH_DEPTH;
 
   // Constructor
   SearchLimits();
@@ -73,7 +73,7 @@ public:
                int movesToGo,
                int depth,
                long nodes,
-               const MoveList &moves,
+               MoveList moves,
                int mate,
                bool ponder,
                bool infinite,
@@ -82,9 +82,9 @@ public:
   // output
   std::string str() const;
   friend std::ostream &operator<<(std::ostream &os, const SearchLimits &limits);
-
-private:
   void setupLimits();
+  
+private:
 
 };
 

@@ -25,6 +25,8 @@
 
 #include "SearchLimits.h"
 
+#include <utility>
+
 SearchLimits::SearchLimits() = default;
 
 SearchLimits::SearchLimits(MilliSec whiteTime,
@@ -35,7 +37,7 @@ SearchLimits::SearchLimits(MilliSec whiteTime,
                            int movesToGo,
                            int depth,
                            long nodes,
-                           const MoveList &moves,
+                           MoveList moves,
                            int mate,
                            bool ponder,
                            bool infinite,
@@ -43,7 +45,7 @@ SearchLimits::SearchLimits(MilliSec whiteTime,
   : whiteTime(whiteTime), blackTime(blackTime),
     whiteInc(whiteInc), blackInc(blackInc), moveTime(moveTime),
     movesToGo(movesToGo), depth(depth), nodes(nodes),
-    moves(moves), mate(mate), ponder(ponder),
+    moves(std::move(moves)), mate(mate), ponder(ponder),
     infinite(infinite), perft(perft) {
 
   setupLimits();
@@ -106,13 +108,12 @@ void SearchLimits::setupLimits() {
     // might be limited be depth as well
     maxDepth = depth ? depth : MAX_PLY;
   }
-  else {
-    // INVALID SearchMode
+  else { // invalid search mode - use default
     LOG->warn("SearchMode is invalid as no mode could be deducted from settings.");
     timeControl = false;
     startDepth = 1;
     maxDepth = 1;
-    LOG->warn("SearchMode set to depth {}");
+    LOG->warn("SearchMode set to depth {}", maxDepth);
   }
 }
 

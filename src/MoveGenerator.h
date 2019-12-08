@@ -65,7 +65,7 @@ public:
    * @param pPosition
    * @param moves - generated moves will be added to this list
    */
-  MoveList generatePseudoLegalMoves(GenMode genMode, Position *pPosition);
+  MoveList* generatePseudoLegalMoves(GenMode genMode, Position *pPosition);
 
   /**
   * Generates legal moves for the next player.
@@ -74,7 +74,7 @@ public:
   * @param pPosition
   * @param moves - generated moves will be added to this list
   */
-  MoveList generateLegalMoves(GenMode genMode, Position *pPosition);
+  MoveList* generateLegalMoves(GenMode genMode, Position *pPosition);
 
   /**
    * Returns the next move for the given position. Usually this would be used in a loop
