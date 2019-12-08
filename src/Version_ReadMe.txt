@@ -25,13 +25,13 @@ v 0.2 (plan)
 v 0.1 (in progress)
 ================================================================================
 - TODO:
-    - Logging
     - Basic search (AlphaBeta, no TT, no KillerMoves, etc.)
     - Basic evaluation
     - Search Modes (incl. basic time management for time based search)
     - Complete UCI Protocol
-    - 
+    -
 - DONE:
+    - Logging
     - UCI Protocol: Basics
     - PERFT
         - Foundation Datatypes such as Bitboards, Move etc.

@@ -108,17 +108,27 @@ void SearchLimits::setupLimits() {
   }
   else {
     // INVALID SearchMode
-   LOG->warn("SearchMode is invalid as no mode could be deducted from settings.");
+    LOG->warn("SearchMode is invalid as no mode could be deducted from settings.");
+    timeControl = false;
+    startDepth = 1;
+    maxDepth = 1;
+    LOG->warn("SearchMode set to depth {}");
   }
 }
 
 std::ostream &operator<<(std::ostream &os, const SearchLimits &limits) {
-  os << "whiteTime: " << limits.whiteTime << " blackTime: " << limits.blackTime << " whiteInc: "
-     << limits.whiteInc << " blackInc: " << limits.blackInc << " moveTime: " << limits.moveTime
-     << " movesToGo: " << limits.movesToGo << " depth: " << limits.depth << " nodes: "
-     << limits.nodes << " moves: " << limits.moves << " mate: " << limits.mate << " ponder: "
-     << limits.ponder << " infinite: " << limits.infinite << " perft: " << limits.perft
-     << " timeControl: " << limits.timeControl << " startDepth: " << limits.startDepth
-     << " maxDepth: " << limits.maxDepth;
+  os << limits.str();
   return os;
+}
+
+std::string SearchLimits::str() const {
+  std::stringstream os;
+  os << "whiteTime: " << whiteTime << " blackTime: " << blackTime << " whiteInc: "
+     << whiteInc << " blackInc: " << blackInc << " moveTime: " << moveTime
+     << " movesToGo: " << movesToGo << " depth: " << depth << " nodes: "
+     << nodes << " moves: " << moves << " mate: " << mate << " ponder: "
+     << ponder << " infinite: " << infinite << " perft: " << perft
+     << " timeControl: " << timeControl << " startDepth: " << startDepth
+     << " maxDepth: " << maxDepth;
+  return os.str();
 }

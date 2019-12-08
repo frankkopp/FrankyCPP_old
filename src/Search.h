@@ -56,6 +56,8 @@ class Search {
   bool running = false;
   bool stopSearchFlag = false;
 
+  // search mode overrides
+  bool PERFT = false;
 
 public:
   ////////////////////////////////////////////////

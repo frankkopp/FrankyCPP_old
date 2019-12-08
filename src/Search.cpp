@@ -109,6 +109,16 @@ void Search::run() {
   initSemaphore.release();
   LOG->info("Search thread started.");
 
+  // search mode override
+  if (PERFT || pSearchLimits->perft) {
+    LOG->info("Search Mode: PERFT SEARCH ({})", pSearchLimits->maxDepth);
+    PERFT = true;
+  }
+
+  // search mode info
+  LOG->info("Search Mode: {}", pSearchLimits->str());
+
+
   // DEBUG / PROTOTYPE
   simulatedSearch();
 

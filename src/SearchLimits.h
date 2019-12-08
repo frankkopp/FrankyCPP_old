@@ -80,6 +80,7 @@ public:
                bool perft);
 
   // output
+  std::string str() const;
   friend std::ostream &operator<<(std::ostream &os, const SearchLimits &limits);
 
 private:
