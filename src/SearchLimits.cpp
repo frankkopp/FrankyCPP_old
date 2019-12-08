@@ -27,11 +27,11 @@
 
 SearchLimits::SearchLimits() = default;
 
-SearchLimits::SearchLimits(Millisec whiteTime,
-                           Millisec blackTime,
-                           Millisec whiteInc,
-                           Millisec blackInc,
-                           Millisec moveTime,
+SearchLimits::SearchLimits(MilliSec whiteTime,
+                           MilliSec blackTime,
+                           MilliSec whiteInc,
+                           MilliSec blackInc,
+                           MilliSec moveTime,
                            int movesToGo,
                            int depth,
                            long nodes,
@@ -108,8 +108,7 @@ void SearchLimits::setupLimits() {
   }
   else {
     // INVALID SearchMode
-    std::cerr << "SearchMode is invalid as no mode could be deducted from settings: " << this
-              << std::endl;
+   LOG->warn("SearchMode is invalid as no mode could be deducted from settings.");
   }
 }
 

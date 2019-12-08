@@ -23,23 +23,13 @@
  *
  */
 
-#include "logging.h"
-#include "Engine.h"
-#include "UCIHandler.h"
+#ifndef FRANKYCPP_LOGGING_H
+#define FRANKYCPP_LOGGING_H
 
+#include "spdlog/spdlog.h"
 
-int main() {
-  // initializes and configures logging - only needed once in main()
-  LOGGING::init();
-
-  auto LOG = spdlog::get("Main_Logger");
-  
-  LOG->info("FrankyCPP STARTED");
-  INIT::init();
-  Engine engine;
-  UCI::Handler uci(&engine);
-  uci.loop();
-  LOG->info("FrankyCPP ENDED");
-
-  return 0;
+namespace LOGGING {
+  extern void init();
 }
+
+#endif //FRANKYCPP_LOGGING_H

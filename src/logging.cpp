@@ -24,22 +24,32 @@
  */
 
 #include "logging.h"
-#include "Engine.h"
-#include "UCIHandler.h"
 
+namespace LOGGING {
+  void init() {
 
-int main() {
-  // initializes and configures logging - only needed once in main()
-  LOGGING::init();
+    // Logger setup
+    auto LOG = spdlog::stdout_color_mt("Main_Logger");
+    LOG->set_level(spdlog::level::trace);
 
-  auto LOG = spdlog::get("Main_Logger");
-  
-  LOG->info("FrankyCPP STARTED");
-  INIT::init();
-  Engine engine;
-  UCI::Handler uci(&engine);
-  uci.loop();
-  LOG->info("FrankyCPP ENDED");
+    auto UCI_LOG = spdlog::stdout_color_mt("UCI_Logger");
+    UCI_LOG->set_level(spdlog::level::trace);
 
-  return 0;
+    auto ENGINE_LOG = spdlog::stdout_color_mt("Engine_Logger");
+    ENGINE_LOG->set_level(spdlog::level::trace);
+
+    auto SEARCH_LOG = spdlog::stdout_color_mt("Search_Logger");
+    SEARCH_LOG->set_level(spdlog::level::trace);
+
+    // Logger test
+    LOG->critical("CRITICAL");
+    LOG->error("ERROR");
+    LOG->warn("WARN");
+    LOG->info("INFO");
+    LOG->debug("DEBUG");
+    SPDLOG_DEBUG(LOG, "DEBUG {}", "MARCO");
+    LOG->trace("TRACE");
+    SPDLOG_TRACE(LOG, "TRACE {}", "MARCO");
+
+  }
 }

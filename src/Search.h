@@ -33,11 +33,14 @@ class Engine;
 // included dependencies
 #include <iostream>
 #include <thread>
+#include "logging.h"
 #include "SearchStats.h"
 #include "Semaphore.h"
 #include "Position.h"
 
 class Search {
+
+  std::shared_ptr<spdlog::logger> LOG = spdlog::get("Search_Logger");
 
   Semaphore initSemaphore; // used to block while initializing thread
   Semaphore searchSemaphore; // used to block while searching
@@ -83,6 +86,7 @@ private:
   ///// PRIVATE
 
   void run();
+  void simulatedSearch();
 
 };
 

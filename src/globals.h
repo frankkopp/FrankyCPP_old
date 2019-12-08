@@ -433,13 +433,19 @@ inline std::ostream &operator<<(std::ostream &os, const Move &move) {
 /** A collection of moves using a std::deque */
 typedef std::deque<Move> MoveList;
 
-inline std::ostream &operator<<(std::ostream &os, const MoveList &moveList) {
+inline std::string printMoveList(const MoveList &moveList) {
+  std::ostringstream os;
   os << "MoveList: size=" << moveList.size() << " [";
   for (Move m : moveList) {
-     os << m;
-     if (m != moveList.back()) os << ", ";
+    os << m;
+    if (m != moveList.back()) os << ", ";
   }
   os << "]" << std::endl;
+  return os.str();
+}
+
+inline std::ostream &operator<<(std::ostream &os, const MoveList &moveList) {
+  os << printMoveList(moveList);
   return os;
 }
 

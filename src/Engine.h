@@ -29,6 +29,7 @@
 #include <map>
 #include <ostream>
 
+#include "logging.h"
 #include "EngineConfig.h"
 #include "UCIOption.h"
 #include "UCIHandler.h"
@@ -41,6 +42,8 @@
 namespace UCI { class Handler; }
 
 class Engine {
+
+  std::shared_ptr<spdlog::logger> LOG = spdlog::get("Engine_Logger");
 
   // a map for the engine's available options
   std::map<const std::string, UCI::Option> optionMap;

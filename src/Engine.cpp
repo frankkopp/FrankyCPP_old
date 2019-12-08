@@ -60,44 +60,46 @@ std::string Engine::str() const {
 }
 
 void Engine::clearHash() {
-  println("Engine: Clear Hash");
+  LOG->info("Engine: Clear Hash");
   // TODO
+  LOG->error("Engine: Clear Hash not implemented yet!");
 }
 
 void Engine::setOption(const std::string &name, const std::string &value) {
-  println("Engine: Set option " + name + "=" + value);
+  LOG->info("Engine: Set option {} = {}", name, value);
   const auto pos = optionMap.find(name);
   if (pos != optionMap.end()) {
     pos->second.setCurrentValue(value);
   } else {
-    std::cerr << "No such option: " << name << std::endl;
+    LOG->warn("No such option: {}", name);
   }
   updateConfig();
 }
 
 std::string Engine::getOption(const std::string &name) {
-  println("Engine: Get option " + name);
+  LOG->info("Engine: Get option {}", name);
   const auto pos = optionMap.find(name);
   if (pos != optionMap.end())
     return pos->second.getCurrentValue();
   else {
-    std::cerr << "No such option: " << name << std::endl;
+    LOG->warn("No such option: {}", name);
     return "";
   }
 }
 
 void Engine::newGame() {
-  println("Engine: New Game");
+  LOG->info("Engine: New Game");
   // TODO
+  LOG->error("Engine: New Game not implemented yet!");
 }
 
 void Engine::setPosition(const std::string& fen) {
-  println("Engine: Set position to " + fen);
+  LOG->info("Engine: Set position to {}", fen);
   position = Position(fen);
 }
 
 void Engine::doMove(const std::string& moveStr) {
-  println("Engine: Do move " + moveStr);
+  LOG->info("Engine: Do move {}", moveStr);
   MoveGenerator moveGenerator;
   MoveList moves = moveGenerator.generateLegalMoves(GENALL, &position);
   for (Move m : moves) {
@@ -106,14 +108,15 @@ void Engine::doMove(const std::string& moveStr) {
       return;
     }
   }
-  std::cerr << "Invalid move " << moveStr << std::endl;
+  LOG->warn("Invalid move {}", moveStr);
 }
 
 void Engine::startSearch(UCISearchMode *pSearchMode) {
-  println("Engine: START Search Command received");
+  LOG->info("Engine: Start Search");
 
   if (search.isRunning()) {
     // Previous search was still running. Stopping to start new search!
+    LOG->warn("Egine was already searching. Stopping search to start new search.");
     search.stopSearch();
   }
 
@@ -121,11 +124,11 @@ void Engine::startSearch(UCISearchMode *pSearchMode) {
          pSearchMode->whiteInc >= 0 && pSearchMode->blackInc >= 0 &&
          pSearchMode->movetime >= 0);
 
-  searchLimits = SearchLimits(static_cast<Millisec>(pSearchMode->whiteTime),
-                              static_cast<Millisec>(pSearchMode->blackTime),
-                              static_cast<Millisec>(pSearchMode->whiteInc),
-                              static_cast<Millisec>(pSearchMode->blackInc),
-                              static_cast<Millisec>(pSearchMode->movetime),
+  searchLimits = SearchLimits(static_cast<MilliSec>(pSearchMode->whiteTime),
+                              static_cast<MilliSec>(pSearchMode->blackTime),
+                              static_cast<MilliSec>(pSearchMode->whiteInc),
+                              static_cast<MilliSec>(pSearchMode->blackInc),
+                              static_cast<MilliSec>(pSearchMode->movetime),
                               pSearchMode->movesToGo, pSearchMode->depth,
                               pSearchMode->nodes, pSearchMode->moves,
                               pSearchMode->mate, pSearchMode->ponder,
@@ -135,27 +138,28 @@ void Engine::startSearch(UCISearchMode *pSearchMode) {
 }
 
 void Engine::stopSearch() {
-  println("Engine: STOP Search Command received");
+  LOG->info("Engine: Stop Search");
   search.stopSearch();
 }
 
 bool Engine::isSearching() { return search.isRunning(); }
 
 void Engine::ponderHit() {
-  println("Engine: Ponder Hit Command received");
+  LOG->info("Engine: Ponder Hit");
   // TODO
+  LOG->error("Engine: Ponder Hit not implemented yet!");
 }
 
 void Engine::sendResult(Move bestMove, Move ponderMove) const {
   if (pUciHandler) pUciHandler->sendResult(bestMove, ponderMove);
-  else std::cerr << "No UCIHandler defined: Engine Result: Best Move = " << printMoveVerbose(
-      bestMove) <<
-                 " Ponder Move = " << printMoveVerbose(ponderMove) << std::endl;
+  else
+    LOG->warn("No UCIHandler defined: Engine Result: Best Move = {} Ponder Move = {}",
+              printMoveVerbose(bestMove), printMoveVerbose(ponderMove));
 }
 
 void Engine::sendInfo(const std::string &info) const {
   if (pUciHandler) pUciHandler->send("info string " + info);
-  else std::cerr << "No UCIHandler defined: info string " << info << std::endl;
+  else LOG->warn("No UCIHandler defined: info string {}", info);
 }
 
 void Engine::waitWhileSearching() {
@@ -191,10 +195,10 @@ int Engine::getInt(const std::string &value) const {
     intValue = stoi(value);
   }
   catch (std::invalid_argument &e) {
-    std::cerr << "depth invalid - expected numeric value. Was " << value << std::endl;
+    LOG->warn("depth invalid - expected numeric value. Was {}", value);
   }
   catch (std::out_of_range &e) {
-    std::cerr << "depth invalid - numeric value out of range of int. Was " << value << std::endl;
+    LOG->warn("depth invalid - numeric value out of range of int. Was {}", value);
   }
   return intValue;
 }

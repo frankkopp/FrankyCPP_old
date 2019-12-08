@@ -26,8 +26,8 @@
 #include <algorithm>
 #include <iostream>
 
-#include "Engine.h"
 #include "Search.h"
+#include "Engine.h"
 
 ////////////////////////////////////////////////
 ///// CONSTRUCTORS
@@ -50,7 +50,7 @@ Search::~Search() {
 
 void Search::startSearch(Position pos, SearchLimits *limits) {
   if (running) {
-    std::cerr << "Search already running" << std::endl;
+    LOG->error("Search already running");
     return;
   }
 
@@ -62,22 +62,28 @@ void Search::startSearch(Position pos, SearchLimits *limits) {
 
   // make sure we have a semaphore available
   searchSemaphore.release();
+
   // join() previous thread
   if (myThread.joinable()) myThread.join();
+
   // start search in a separate thread
+  LOG->info("Starting search in separate thread.");
   myThread = std::thread(&Search::run, this);
-  //myThread.detach();
+
   // wait until thread is initialized before returning to caller
   initSemaphore.getOrWait();
+  LOG->info("Search started.");
   assert(running);
 }
 
 void Search::stopSearch() {
   if (!running) return;
+  LOG->info("Stopping search.");
   // set stop flag - search needs to check regularly and stop accordingly
   stopSearchFlag = true;
   // Wait for the thread to die
   if (myThread.joinable()) myThread.join();
+  LOG->info("Search stopped.");
   assert(!running);
 }
 
@@ -101,36 +107,36 @@ void Search::run() {
   searchStats = SearchStats();
 
   initSemaphore.release();
+  LOG->info("Search thread started.");
 
   // DEBUG / PROTOTYPE
+  simulatedSearch();
 
-  std::cout << "New Thread: Start work...!\n";
+  running = false;
+  searchSemaphore.release();
+  LOG->info("Search thread ended.");
+}
 
-  std::cout << "Generate debug move\n";
+// DEBUG / PROTOTYPE
+void Search::simulatedSearch() {
+  LOG->debug("Generate debug move");
   MoveGenerator moveGenerator;
-  std::cout << "Generate position\n";
-  std::cout << position.str() << std::endl;
-  std::cout << "Generate legal moves\n";
+  LOG->debug("Generate position");
+  LOG->debug(position.str());
+  LOG->debug("Generate legal moves");
   MoveList moves = moveGenerator.generateLegalMoves(GENALL, &position);
-  std::cout << "Legal Moves: " << moves << std::endl;
+  LOG->debug("Legal Moves: {}", printMoveList(moves));
 
   for (int i = 0; i < 5; ++i) {
-    std::cout << "Search SIMULATION: " << i << std::endl;
+    LOG->debug("Search SIMULATION: {}", i);
     std::this_thread::sleep_for(std::chrono::seconds(1));
     if (stopSearchFlag) break;
   }
 
-  std::cout << "Send move\n";
-  std::ostringstream ss;
-  ss << moves;
+  LOG->info("Sending move: {}", printMove(moves.front()));
   if (pEngine) {
-    pEngine->sendInfo(ss.str());
+    pEngine->sendInfo(printMoveList(moves));
     pEngine->sendResult(moves.front(), NOMOVE);
   }
-
-  // DEBUG / PROTOTYPE
-
-  running = false;
-  searchSemaphore.release();
 }
 

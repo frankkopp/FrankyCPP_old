@@ -28,21 +28,23 @@
 
 #include <chrono>
 #include <ostream>
-
+#include "logging.h"
 #include "globals.h"
 
-typedef uint64_t Millisec;
+typedef uint64_t MilliSec;
 
 class SearchLimits {
+
+  std::shared_ptr<spdlog::logger> LOG = spdlog::get("Search_Logger");
 
 public:
 
   // defaults time control
-  Millisec whiteTime;
-  Millisec blackTime;
-  Millisec whiteInc;
-  Millisec blackInc;
-  Millisec moveTime;
+  MilliSec whiteTime;
+  MilliSec blackTime;
+  MilliSec whiteInc;
+  MilliSec blackInc;
+  MilliSec moveTime;
   int movesToGo;
 
   // extra limits
@@ -63,11 +65,11 @@ public:
 
   // Constructor
   SearchLimits();
-  SearchLimits(Millisec whiteTime,
-               Millisec blackTime,
-               Millisec whiteInc,
-               Millisec blackInc,
-               Millisec moveTime,
+  SearchLimits(MilliSec whiteTime,
+               MilliSec blackTime,
+               MilliSec whiteInc,
+               MilliSec blackInc,
+               MilliSec moveTime,
                int movesToGo,
                int depth,
                long nodes,

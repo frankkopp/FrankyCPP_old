@@ -28,7 +28,7 @@
 
 #include <thread>
 #include <iostream>
-
+#include "logging.h"
 #include "UCISearchMode.h"
 
 class Engine;
@@ -37,12 +37,14 @@ namespace UCI {
 
   class Handler {
 
+    std::shared_ptr<spdlog::logger> LOG = spdlog::get("UCI_Logger");
+
     Engine *pEngine;
 
     std::istream *pInputStream = &std::cin;
     std::ostream *pOutputStream = &std::cout;
 
-    // stores the last search mode we read in from UCI protocoll
+    // stores the last search mode we read in from UCI protocol
     UCISearchMode searchMode;
 
   public:
