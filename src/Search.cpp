@@ -25,7 +25,7 @@
 
 #include <algorithm>
 #include <iostream>
-
+#include <chrono>
 #include "Search.h"
 #include "Engine.h"
 
@@ -109,6 +109,13 @@ void Search::run() {
   // Initialize for new search
   searchStats = SearchStats();
 
+  // Initialize ply based data
+  // Each depth in search gets it own global field to avoid object creation
+  // during search.
+  for (int i = 0; i < MAX_SEARCH_DEPTH; i++) {
+    moveGenerators[i] = MoveGenerator();
+  }
+
   // search mode override
   if (PERFT || pSearchLimits->perft) {
     LOG->info("Search Mode: PERFT SEARCH ({})", pSearchLimits->maxDepth);
@@ -136,7 +143,35 @@ void Search::run() {
 SearchResult Search::iterativeDeepening(Position *pPosition) {
   SPDLOG_TRACE(LOG, "Iterative deepening start.");
 
-    
+  // store the start time of the search
+  startTime = std::chrono::high_resolution_clock::now();
+
+  // init best move and value
+  currentBestRootMove = NOMOVE;
+  currentBestRootValue = VALUE_NONE;
+
+  // prepare search result
+  SearchResult searchResult;
+
+  // no legal root moves - game already ended!
+  if (!moveGenerators[ROOT_PLY].hasLegalMove(&position)) {
+    if (position.hasCheck()) searchResult.resultValue = -VALUE_CHECKMATE;
+    else searchResult.resultValue = VALUE_DRAW;
+    return searchResult;
+  }
+
+  // start depth from searchMode
+  int depth = pSearchLimits->startDepth;
+
+  // if time based game setup the soft and hard time limits
+  if (pSearchLimits->timeControl) configureTimeLimits();
+
+  // current search depth
+  searchStats.currentSearchDepth = ROOT_PLY;
+  searchStats.currentExtraSearchDepth = ROOT_PLY;
+
+  // generate all legal root moves, and set pv move if we got one from TT
+  MoveList rootMoves = generateRootMoves(&position);
 
   // PROTOTYPE / DEBUG
   return simulatedSearch(pPosition);
@@ -162,5 +197,15 @@ SearchResult Search::simulatedSearch(Position *pPosition) {
   searchResult.bestMove = moves.front();
 
   return searchResult;
+}
+
+void Search::configureTimeLimits() {
+  // TODO
+}
+
+MoveList Search::generateRootMoves(Position *pPosition) {
+  MoveList legalMoves = moveGenerators[ROOT_PLY].generatePseudoLegalMoves(GENALL, pPosition);
+
+  return MoveList();
 }
 

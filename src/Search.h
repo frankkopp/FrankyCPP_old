@@ -33,10 +33,15 @@ class Engine;
 // included dependencies
 #include <iostream>
 #include <thread>
+#include <chrono>
 #include "logging.h"
 #include "SearchStats.h"
 #include "Semaphore.h"
 #include "Position.h"
+
+// Constants
+static constexpr int MAX_SEARCH_DEPTH = 255;
+static constexpr int ROOT_PLY = 0;
 
 class SearchResult {
 public:
@@ -63,14 +68,17 @@ class Search {
 
   std::shared_ptr<spdlog::logger> LOG = spdlog::get("Search_Logger");
 
+  // thread control
   Semaphore initSemaphore; // used to block while initializing thread
   Semaphore searchSemaphore; // used to block while searching
   std::thread myThread;
-
   Engine *pEngine{nullptr};
-  SearchLimits *pSearchLimits{nullptr};
 
+  // search mode
+  SearchLimits *pSearchLimits{nullptr};
   SearchStats searchStats;
+
+  // current position
   Position position;
 
   // search state
@@ -82,6 +90,16 @@ class Search {
 
   // search result
   SearchResult lastSearchResult;
+
+  // search start time
+  std::chrono::time_point<std::chrono::steady_clock> startTime;
+  // current best move
+  Move currentBestRootMove;
+
+  Value currentBestRootValue;
+
+  // prepared move generator instances for each depth
+  MoveGenerator moveGenerators[MAX_SEARCH_DEPTH];
 
 public:
   ////////////////////////////////////////////////
@@ -113,8 +131,9 @@ private:
 
   void run();
   SearchResult simulatedSearch(Position *pPosition);
-
   SearchResult iterativeDeepening(Position *pPosition);
+  void configureTimeLimits();
+  MoveList generateRootMoves(Position *pPosition);
 };
 
 #endif // FRANKYCPP_SEARCH_H
