@@ -135,6 +135,10 @@ void Search::run() {
 
 SearchResult Search::iterativeDeepening(Position *pPosition) {
   SPDLOG_TRACE(LOG, "Iterative deepening start.");
+
+    
+
+  // PROTOTYPE / DEBUG
   return simulatedSearch(pPosition);
 }
 
