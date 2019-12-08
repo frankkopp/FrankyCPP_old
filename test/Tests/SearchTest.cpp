@@ -55,7 +55,7 @@ TEST_F(SearchTest, selective_moves) {
   Search search;
   SearchLimits searchLimits;
   Position position;
-  searchLimits.infinite = true;
+  searchLimits.depth = 3;
   searchLimits.moves.push_back(createMove("e2e4"));
   search.startSearch(position, searchLimits);
 }

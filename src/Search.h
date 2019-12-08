@@ -88,8 +88,8 @@ class Search {
   SearchResult lastSearchResult;
 
   // search start time
-  std::chrono::time_point<std::chrono::steady_clock> startTime;
-  std::chrono::time_point<std::chrono::steady_clock> stopTime;
+  std::chrono::time_point<std::chrono::system_clock> startTime;
+  std::chrono::time_point<std::chrono::system_clock> stopTime;
   
   // current best move
   Move currentBestRootMove;
