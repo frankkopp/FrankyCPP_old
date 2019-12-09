@@ -160,12 +160,13 @@ TEST_F(UCITest, searchLimitsTest) {
     UCI::Handler uciHandler(&engine, &is, &os);
     uciHandler.loop();
     SearchLimits searchLimits = engine.getSearchLimits();
-    ASSERT_TRUE(searchLimits.perft);
-    ASSERT_EQ(4, searchLimits.maxDepth);
-    ASSERT_FALSE(searchLimits.timeControl);
-    ASSERT_FALSE(searchLimits.infinite);
     engine.stopSearch();
     engine.waitWhileSearching();
+    ASSERT_TRUE(searchLimits.perft);
+    ASSERT_FALSE(searchLimits.infinite);
+    ASSERT_FALSE(searchLimits.ponder);
+    ASSERT_FALSE(searchLimits.timeControl);
+    ASSERT_EQ(4, searchLimits.maxDepth);
   }
 
   { // infinite
@@ -175,12 +176,13 @@ TEST_F(UCITest, searchLimitsTest) {
     UCI::Handler uciHandler(&engine, &is, &os);
     uciHandler.loop();
     SearchLimits searchLimits = engine.getSearchLimits();
-    ASSERT_TRUE(searchLimits.infinite);
-    ASSERT_EQ(MAX_PLY, searchLimits.maxDepth);
-    ASSERT_FALSE(searchLimits.timeControl);
-    ASSERT_FALSE(searchLimits.perft);
     engine.stopSearch();
     engine.waitWhileSearching();
+    ASSERT_FALSE(searchLimits.perft);
+    ASSERT_TRUE(searchLimits.infinite);
+    ASSERT_FALSE(searchLimits.ponder);
+    ASSERT_FALSE(searchLimits.timeControl);
+    ASSERT_EQ(MAX_PLY, searchLimits.maxDepth);
   }
 
   { // ponder
@@ -190,15 +192,48 @@ TEST_F(UCITest, searchLimitsTest) {
     UCI::Handler uciHandler(&engine, &is, &os);
     uciHandler.loop();
     SearchLimits searchLimits = engine.getSearchLimits();
-    ASSERT_TRUE(searchLimits.ponder);
-    ASSERT_EQ(MAX_PLY, searchLimits.maxDepth);
-    ASSERT_FALSE(searchLimits.timeControl);
-    ASSERT_FALSE(searchLimits.perft);
-    ASSERT_FALSE(searchLimits.infinite);
     engine.stopSearch();
     engine.waitWhileSearching();
+    ASSERT_FALSE(searchLimits.perft);
+    ASSERT_FALSE(searchLimits.infinite);
+    ASSERT_TRUE(searchLimits.ponder);
+    ASSERT_FALSE(searchLimits.timeControl);
+    ASSERT_EQ(MAX_PLY, searchLimits.maxDepth);
   }
-  
+
+  { // mate infinite
+    string command = "go mate 4";
+    println("COMMAND: " + command);
+    istringstream is(command);
+    UCI::Handler uciHandler(&engine, &is, &os);
+    uciHandler.loop();
+    SearchLimits searchLimits = engine.getSearchLimits();
+    engine.stopSearch();
+    engine.waitWhileSearching();
+    ASSERT_FALSE(searchLimits.perft);
+    ASSERT_FALSE(searchLimits.infinite);
+    ASSERT_FALSE(searchLimits.ponder);
+    ASSERT_FALSE(searchLimits.timeControl);
+    ASSERT_EQ(4, searchLimits.mate);
+    ASSERT_EQ(MAX_PLY, searchLimits.maxDepth);
+  }
+
+  { // mate depth limited
+    string command = "go mate 4 depth 4";
+    println("COMMAND: " + command);
+    istringstream is(command);
+    UCI::Handler uciHandler(&engine, &is, &os);
+    uciHandler.loop();
+    SearchLimits searchLimits = engine.getSearchLimits();
+    engine.stopSearch();
+    engine.waitWhileSearching();
+    ASSERT_FALSE(searchLimits.perft);
+    ASSERT_FALSE(searchLimits.infinite);
+    ASSERT_FALSE(searchLimits.ponder);
+    ASSERT_FALSE(searchLimits.timeControl);
+    ASSERT_EQ(4, searchLimits.mate);
+    ASSERT_EQ(4, searchLimits.maxDepth);
+  }
 }
 
 TEST_F(UCITest, positionTest) {
