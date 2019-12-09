@@ -121,9 +121,9 @@ void Engine::startSearch(const UCISearchMode& uciSearchMode) {
     search.stopSearch();
   }
 
-  assert(uciSearchMode->whiteTime >= 0 && uciSearchMode->blackTime >= 0 &&
-         uciSearchMode->whiteInc >= 0 && uciSearchMode->blackInc >= 0 &&
-         uciSearchMode->movetime >= 0);
+  assert(uciSearchMode.whiteTime >= 0 && uciSearchMode.blackTime >= 0 &&
+         uciSearchMode.whiteInc >= 0 && uciSearchMode.blackInc >= 0 &&
+         uciSearchMode.movetime >= 0);
 
   searchLimits = SearchLimits(static_cast<MilliSec>(uciSearchMode.whiteTime),
                               static_cast<MilliSec>(uciSearchMode.blackTime),

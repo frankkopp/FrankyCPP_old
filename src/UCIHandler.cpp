@@ -159,7 +159,7 @@ namespace UCI {
     searchMode = UCISearchMode();
 
     while (inStream >> token) {
-      if (token == "moves") {
+      if (token == "searchmoves") {
         MoveList searchMoves;
         while (inStream >> token) {
           Move move = createMove(token.c_str());
@@ -241,6 +241,18 @@ namespace UCI {
         }
         catch (std::out_of_range &e) {
           LOG->warn("depth invalid - numeric value out of range of int. Was {}", token);
+        }
+      }
+      if (token == "nodes") {
+        inStream >> token;
+        try {
+          searchMode.nodes = std::stoi(token);
+        }
+        catch (std::invalid_argument &e) {
+          LOG->warn("nodes invalid - expected numeric value. Was {}", token);
+        }
+        catch (std::out_of_range &e) {
+          LOG->warn("nodes invalid - numeric value out of range of int. Was {}", token);
         }
       }
       if (token == "mate") {

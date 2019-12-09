@@ -59,42 +59,42 @@ void SearchLimits::setupLimits() {
     // no limits
     timeControl = false;
     startDepth = depth;
-    // might be limited be depth as well
+    // might be limited by depth as well
     maxDepth = depth > 0 ? depth : MAX_PLY;
   }
   else if (infinite) {
     // limited by depth only (identical to depth limit in this case)
     timeControl = false;
     startDepth = 1;
-    // might be limited be depth as well
+    // might be limited by depth as well
     maxDepth = depth > 0 ? depth : MAX_PLY;
   }
   else if (ponder) {
     // limits per depth only, start with 1
     timeControl = false;
     startDepth = 1;
-    // might be limited be depth as well
+    // might be limited by depth as well
     maxDepth = depth > 0 ? depth : MAX_PLY;
   }
   else if (mate) {
     // limits per mate depth and move time
     timeControl = moveTime != 0;
     startDepth = 1;
-    // might be limited be depth as well
+    // might be limited by depth as well
     maxDepth = depth > 0 ? depth : MAX_PLY;
   }
   else if (whiteTime && blackTime) {
     // normal game with time for each player
     timeControl = true;
     startDepth = 1;
-    // might be limited be depth as well
+    // might be limited by depth as well
     maxDepth = depth ? depth : MAX_PLY;
   }
   else if (moveTime) {
     // normal game with time for each move
     timeControl = true;
     startDepth = 1;
-    // might be limited be depth as well
+    // might be limited by depth as well
     maxDepth = depth ? depth : MAX_PLY;
   }
   else if (depth && !nodes) {
@@ -107,7 +107,7 @@ void SearchLimits::setupLimits() {
     // limited only by the number of nodes visited
     timeControl = false;
     startDepth = 1;
-    // might be limited be depth as well
+    // might be limited by depth as well
     maxDepth = depth ? depth : MAX_PLY;
   }
   else { // invalid search mode - use default
