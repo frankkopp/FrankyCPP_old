@@ -216,12 +216,12 @@ SearchResult Search::iterativeDeepening() {
     // ###
     // ###########################################
 
+    SPDLOG_TRACE(LOG, "Depth {} end", depth);
   } while (++depth <= searchLimits.maxDepth);
   // ### ENDOF Iterative Deepening
   // ###########################################
 
-
-  // create searchResult here
+  // update searchResult here
   searchResult.bestMove = currentBestRootMove;
   searchResult.resultValue = currentBestRootValue;
   searchResult.depth = searchStats.currentSearchDepth;

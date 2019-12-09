@@ -109,7 +109,7 @@ TEST(MoveTest, moves) {
   ASSERT_EQ(QUEEN, promotionType(move)); // not useful is not type PROMOTION
 
   stringstream buffer1, buffer2;
-  buffer1 << "a7a8";
+  buffer1 << "a7a8q";
   buffer2 << move;
   ASSERT_EQ(buffer1.str(), buffer2.str());
   ASSERT_EQ("a7a8q (PROMOTION) (-15001)", printMoveVerbose(move));
@@ -232,7 +232,7 @@ TEST(MoveListTest, moveListPrint) {
 
   ostringstream ml;
   ml << moveList;
-  string expected = "MoveList: size=3 [a1h1, a7a8q, e1g1]\n";
+  string expected = "MoveList: size=3 [a1h1, a7a8q, e1g1]";
   ASSERT_EQ(expected, ml.str());
 
 }
