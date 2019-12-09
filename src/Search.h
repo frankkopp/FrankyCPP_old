@@ -81,9 +81,6 @@ class Search {
   bool running = false;
   bool stopSearchFlag = false;
 
-  // search mode overrides
-  bool PERFT = false;
-
   // search result
   SearchResult lastSearchResult;
 
@@ -92,9 +89,8 @@ class Search {
   std::chrono::time_point<std::chrono::system_clock> stopTime;
   
   // current best move
-  Move currentBestRootMove;
-
-  Value currentBestRootValue;
+  Move currentBestRootMove = NOMOVE;
+  Value currentBestRootValue = VALUE_NONE;
 
   // prepared move generator instances for each depth
   MoveGenerator moveGenerators[MAX_SEARCH_DEPTH];

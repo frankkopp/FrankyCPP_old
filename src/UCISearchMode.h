@@ -50,6 +50,7 @@ public:
   bool infinite = false;
   bool perft    = false;
 
+  std::string str() const;
   friend std::ostream &operator<<(std::ostream &os, const UCISearchMode &mode);
 
 };

@@ -23,26 +23,7 @@
  *
  */
 
-#include "version.h"
-#include "logging.h"
-#include "Engine.h"
-#include "UCIHandler.h"
+#define FrankyCPP_VERSION_MAJOR @FrankyCPP_VERSION_MAJOR@
+#define FrankyCPP_VERSION_MINOR @FrankyCPP_VERSION_MINOR@
 
-int main() {
 
-  std::cout << "FrankCPP v" << FrankyCPP_VERSION_MAJOR << "." << FrankyCPP_VERSION_MINOR << std::endl;
-
-  // initializes and configures logging - only needed once in main()
-  LOGGING::init();
-
-  auto LOG = spdlog::get("Main_Logger");
-  
-  LOG->info("FrankyCPP STARTED");
-  INIT::init();
-  Engine engine;
-  UCI::Handler uci(&engine);
-  uci.loop();
-  LOG->info("FrankyCPP ENDED");
-
-  return 0;
-}

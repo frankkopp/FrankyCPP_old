@@ -112,7 +112,7 @@ void Engine::doMove(const std::string &moveStr) {
   LOG->warn("Invalid move {}", moveStr);
 }
 
-void Engine::startSearch(UCISearchMode *pSearchMode) {
+void Engine::startSearch(const UCISearchMode& uciSearchMode) {
   LOG->info("Engine: Start Search");
 
   if (search.isRunning()) {
@@ -121,19 +121,19 @@ void Engine::startSearch(UCISearchMode *pSearchMode) {
     search.stopSearch();
   }
 
-  assert(pSearchMode->whiteTime >= 0 && pSearchMode->blackTime >= 0 &&
-         pSearchMode->whiteInc >= 0 && pSearchMode->blackInc >= 0 &&
-         pSearchMode->movetime >= 0);
+  assert(uciSearchMode->whiteTime >= 0 && uciSearchMode->blackTime >= 0 &&
+         uciSearchMode->whiteInc >= 0 && uciSearchMode->blackInc >= 0 &&
+         uciSearchMode->movetime >= 0);
 
-  searchLimits = SearchLimits(static_cast<MilliSec>(pSearchMode->whiteTime),
-                              static_cast<MilliSec>(pSearchMode->blackTime),
-                              static_cast<MilliSec>(pSearchMode->whiteInc),
-                              static_cast<MilliSec>(pSearchMode->blackInc),
-                              static_cast<MilliSec>(pSearchMode->movetime),
-                              pSearchMode->movesToGo, pSearchMode->depth,
-                              pSearchMode->nodes, pSearchMode->moves,
-                              pSearchMode->mate, pSearchMode->ponder,
-                              pSearchMode->infinite, pSearchMode->perft);
+  searchLimits = SearchLimits(static_cast<MilliSec>(uciSearchMode.whiteTime),
+                              static_cast<MilliSec>(uciSearchMode.blackTime),
+                              static_cast<MilliSec>(uciSearchMode.whiteInc),
+                              static_cast<MilliSec>(uciSearchMode.blackInc),
+                              static_cast<MilliSec>(uciSearchMode.movetime),
+                              uciSearchMode.movesToGo, uciSearchMode.depth,
+                              uciSearchMode.nodes, uciSearchMode.moves,
+                              uciSearchMode.mate, uciSearchMode.ponder,
+                              uciSearchMode.infinite, uciSearchMode.perft);
 
   search.startSearch(position, searchLimits);
 }
@@ -203,5 +203,7 @@ int Engine::getInt(const std::string &value) const {
   }
   return intValue;
 }
+
+
 
 

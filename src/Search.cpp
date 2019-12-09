@@ -23,11 +23,9 @@
  *
  */
 
-#include <algorithm>
 #include <iostream>
 #include <chrono>
 #include <utility>
-#include <iomanip>
 #include "Search.h"
 #include "Engine.h"
 
@@ -114,17 +112,17 @@ void Search::run() {
   // Initialize ply based data
   // Each depth in search gets it own global field to avoid object creation
   // during search.
-  for (int i = 0; i < MAX_SEARCH_DEPTH; i++) {
-    moveGenerators[i] = MoveGenerator();
+  for (auto & moveGenerator : moveGenerators) {
+    moveGenerator = MoveGenerator();
   }
 
   // search mode override
-  if (PERFT || searchLimits.perft) {
+  if (searchLimits.perft) {
     LOG->info("Search Mode: PERFT SEARCH ({})", searchLimits.maxDepth);
-    PERFT = true;
   }
-
-  LOG->info("Search Mode: {}", searchLimits.str());
+  if (searchLimits.infinite) {
+    LOG->info("Search Mode: INFINITE SEARCH");
+  }
 
   // initialization done
   initSemaphore.release();
@@ -216,8 +214,12 @@ SearchResult Search::iterativeDeepening() {
     // ###
     // ###########################################
 
+    // break on stop signal
+    // TODO: time management
+    if (stopSearchFlag) break;
+
     SPDLOG_TRACE(LOG, "Depth {} end", depth);
-  } while (++depth <= searchLimits.maxDepth);
+  } while (++depth <= searchLimits.maxDepth );
   // ### ENDOF Iterative Deepening
   // ###########################################
 

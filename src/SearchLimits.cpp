@@ -53,6 +53,8 @@ SearchLimits::SearchLimits(MilliSec whiteTime,
 
 void SearchLimits::setupLimits() {
 
+  // the order of these statement also exclude contradictions
+  // e.g. if perft is set nothing else will checked. 
   if (perft) {
     // no limits
     timeControl = false;

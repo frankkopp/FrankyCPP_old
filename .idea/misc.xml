@@ -7,6 +7,7 @@
       <file path="$PROJECT_DIR$/test" />
     </sourceRoots>
     <excludeRoots>
+      <file path="$PROJECT_DIR$/cmake-build-release/src" />
       <file path="$PROJECT_DIR$/temp" />
     </excludeRoots>
   </component>

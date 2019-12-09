@@ -24,9 +24,8 @@
  */
 
 #include <iostream>
-
+#include "version.h"
 #include "globals.h"
-
 #include "Engine.h"
 #include "UCIHandler.h"
 #include "UCISearchMode.h"
@@ -91,7 +90,8 @@ namespace UCI {
   }
 
   void Handler::uciCommand() {
-    send("id name FrankyCPP");
+    send("id name FrankyCPP v"
+         + to_string(FrankyCPP_VERSION_MAJOR) + "." + to_string(FrankyCPP_VERSION_MINOR));
     send("id author Frank Kopp, Germany");
     send(pEngine->str());
     send("uciok");
@@ -155,9 +155,8 @@ namespace UCI {
   }
 
   void Handler::goCommand(std::istringstream &inStream) {
-    searchMode = UCISearchMode();
-
     std::string token, startFen;
+    searchMode = UCISearchMode();
 
     while (inStream >> token) {
       if (token == "moves") {
@@ -180,7 +179,7 @@ namespace UCI {
         catch (invalid_argument &e) {
           LOG->warn("wtime invalid - expected numeric value. Was {}", token);
         }
-        catch (out_of_range &e ) {
+        catch (out_of_range &e) {
           LOG->warn("wtime invalid - numeric value out of range of int. Was  {}", token);
         }
       }
@@ -192,7 +191,7 @@ namespace UCI {
         catch (invalid_argument &e) {
           LOG->warn("btime invalid - expected numeric value. Was {}", token);
         }
-        catch (out_of_range &e ) {
+        catch (out_of_range &e) {
           LOG->warn("btime invalid - numeric value out of range of int. Was {}", token);
         }
       }
@@ -204,7 +203,7 @@ namespace UCI {
         catch (std::invalid_argument &e) {
           LOG->warn("winc invalid - expected numeric value. Was {}", token);
         }
-        catch (std::out_of_range &e ) {
+        catch (std::out_of_range &e) {
           LOG->warn("winc invalid - numeric value out of range of int. Was {}", token);
         }
       }
@@ -216,7 +215,7 @@ namespace UCI {
         catch (std::invalid_argument &e) {
           LOG->warn("binc invalid - expected numeric value. Was {}", token);
         }
-        catch (std::out_of_range &e ) {
+        catch (std::out_of_range &e) {
           LOG->warn("binc invalid - numeric value out of range of int. Was {}", token);
         }
       }
@@ -228,7 +227,7 @@ namespace UCI {
         catch (std::invalid_argument &e) {
           LOG->warn("movestogo invalid - expected numeric value. Was {}", token);
         }
-        catch (out_of_range &e ) {
+        catch (out_of_range &e) {
           LOG->warn("movestogo invalid - numeric value out of range of int. Was {}", token);
         }
       }
@@ -240,7 +239,7 @@ namespace UCI {
         catch (std::invalid_argument &e) {
           LOG->warn("depth invalid - expected numeric value. Was {}", token);
         }
-        catch (std::out_of_range &e ) {
+        catch (std::out_of_range &e) {
           LOG->warn("depth invalid - numeric value out of range of int. Was {}", token);
         }
       }
@@ -252,7 +251,7 @@ namespace UCI {
         catch (std::invalid_argument &e) {
           LOG->warn("mate invalid - expected numeric value. Was {}", token);
         }
-        catch (std::out_of_range &e ) {
+        catch (std::out_of_range &e) {
           LOG->warn("mate invalid - numeric value out of range of int. Was {}", token);
         }
       }
@@ -264,7 +263,7 @@ namespace UCI {
         catch (std::invalid_argument &e) {
           LOG->warn("movetime invalid - expected numeric value. Was {}", token);
         }
-        catch (std::out_of_range &e ) {
+        catch (std::out_of_range &e) {
           LOG->warn("movetime invalid - numeric value out of range of int. Was {}", token);
         }
       }
@@ -277,7 +276,7 @@ namespace UCI {
     }
 
     // start search in engine
-    pEngine->startSearch(&searchMode);
+    pEngine->startSearch(searchMode);
   }
 
   void Handler::stopCommand() {
@@ -297,7 +296,7 @@ namespace UCI {
     LOG->warn("UCI Protocol Command: debug not implemented!");
   }
 
-  void Handler::send(const std::string& toSend) const {
+  void Handler::send(const std::string &toSend) const {
     *pOutputStream << toSend << endl;
   }
 

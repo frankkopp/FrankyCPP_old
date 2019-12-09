@@ -55,7 +55,7 @@ TEST_F(EngineTest, startSearch) {
   Engine engine;
   UCISearchMode uciSearchMode;
   uciSearchMode.depth = 3;
-  engine.startSearch(&uciSearchMode);
+  engine.startSearch(uciSearchMode);
 
   cout << "Start and Stop test..." << endl;
   for (int i = 0; i < 3; ++i) {
@@ -63,7 +63,7 @@ TEST_F(EngineTest, startSearch) {
     engine.stopSearch();
     engine.waitWhileSearching();
 
-    engine.startSearch(&uciSearchMode);
+    engine.startSearch(uciSearchMode);
 
     sleep(3);
     engine.stopSearch();

@@ -65,6 +65,8 @@ public:
   // configuration (public for convenience)
   Config config;
 
+  const SearchLimits &getSearchLimits() const { return searchLimits; };
+
   ////////////////////////////////////////////////
   ///// CONSTRUCTORS
 
@@ -88,7 +90,7 @@ public:
   void setPosition(const std::string& fen);
   Position *getPosition() { return &position; };
   void doMove(const std::string& moveStr);
-  void startSearch(UCISearchMode *pSearchMode);
+  void startSearch(const UCISearchMode& uciSearchMode);
   void stopSearch();
   bool isSearching();
   void ponderHit();
