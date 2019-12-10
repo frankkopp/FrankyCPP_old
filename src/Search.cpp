@@ -362,7 +362,7 @@ Value Search::qsearch(Position *pPosition, const int ply) {
 }
 
 Value Search::evaluate(Position *pPosition, const int ply) {
-  //LOG->trace("{}", printMoveList(currentVariation));
+  //  LOG->trace("Evaluate {}", printMoveList(currentVariation));
 
   // count all leaf nodes evaluated
   searchStats.leafPositionsEvaluated++;

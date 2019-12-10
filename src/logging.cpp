@@ -43,6 +43,9 @@ namespace LOGGING {
     auto LOG = spdlog::stdout_color_mt("Main_Logger");
     LOG->set_level(spdlog::level::trace);
 
+    auto TEST_LOG = spdlog::stdout_color_mt("Test_Logger");
+    TEST_LOG->set_level(spdlog::level::trace);
+
     auto UCI_LOG = spdlog::stdout_color_mt("UCI_Logger");
     UCI_LOG->set_level(spdlog::level::trace);
 

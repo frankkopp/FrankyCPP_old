@@ -40,7 +40,7 @@ public:
     // turn off info and below logging in the application
     spdlog::set_level(spdlog::level::trace);
   }
-  std::shared_ptr<spdlog::logger> LOG = spdlog::stdout_color_mt("Test_Logger");
+  std::shared_ptr<spdlog::logger> LOG = spdlog::get("Test_Logger");
 protected:
   void SetUp() override {
     LOG->set_level(spdlog::level::info);
