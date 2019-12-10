@@ -87,7 +87,10 @@ class Search {
   // search start time
   std::chrono::time_point<std::chrono::system_clock> startTime;
   std::chrono::time_point<std::chrono::system_clock> stopTime;
-  
+
+  // list of moves at the root
+  MoveList rootMoves;
+
   // current best move
   Move currentBestRootMove = NOMOVE;
   Value currentBestRootValue = VALUE_NONE;
@@ -128,7 +131,6 @@ private:
 
   
   void run();
-  Value simulatedSearch(Position *pPosition, int depth);
   SearchResult iterativeDeepening(Position *pPosition);
   void configureTimeLimits();
   MoveList generateRootMoves(Position *pPosition);
@@ -136,6 +138,7 @@ private:
   MoveList currentVariation;
   Value qsearch(Position *pPosition, const int ply);
   Value evaluate(Position *position, const int ply);
+
 };
 
 #endif // FRANKYCPP_SEARCH_H

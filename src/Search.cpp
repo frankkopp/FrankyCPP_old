@@ -186,8 +186,9 @@ SearchResult Search::iterativeDeepening(Position *pPosition) {
   searchStats.currentExtraSearchDepth = ROOT_PLY;
 
   // generate all legal root moves, and set pv move if we got one from TT
-  MoveList rootMoves = generateRootMoves(&position);
+  rootMoves = generateRootMoves(&position);
   LOG->debug("Root moves: {}", printMoveList(rootMoves));
+  // TODO: remove value from moves / reset to min?
 
   // make sure we have a temporary best move
   if (currentBestRootMove == NOMOVE) { // when using TT this will already be set
@@ -229,6 +230,11 @@ SearchResult Search::iterativeDeepening(Position *pPosition) {
 
     // ###
     // ###########################################
+
+    // we can only use the value if there has not been a stop
+    if (!stopSearchFlag) {
+      sort(rootMoves.begin(), rootMoves.end());
+    }
 
     // break on stop signal
     // TODO: time management
@@ -296,19 +302,27 @@ Value Search::search(Position *pPosition, const int depth, const int ply) {
 
   // TODO: check draw by repetition or 50moves rule
 
-  // moves to search recursively
-  Move move = NOMOVE;
   Value value = VALUE_NONE;
-  moveGenerators[ply].resetOnDemand();
-  while ((move = moveGenerators[ply].getNextPseudoLegalMove(GENALL, pPosition)) != NOMOVE) {
-    pPosition->doMove(move);
-    if (pPosition->isLegalPosition()) {
-      currentVariation.push_back(move);
-      value = search(&position, depth - 1, ply + 1);
-      currentVariation.pop_back();
+
+  // TODO: treat rootMoves separately
+  if (ply == ROOT_PLY) {
+    for (auto &move : rootMoves) {
+
     }
-    pPosition->undoMove();
+  } else {
+    Move move = NOMOVE;
+    moveGenerators[ply].resetOnDemand();
+    while ((move = moveGenerators[ply].getNextPseudoLegalMove(GENALL, pPosition)) != NOMOVE) {
+      pPosition->doMove(move);
+      if (pPosition->isLegalPosition()) {
+        currentVariation.push_back(move);
+        value = search(&position, depth - 1, ply + 1);
+        currentVariation.pop_back();
+      }
+      pPosition->undoMove();
+    }
   }
+  
 }
 
 Value Search::qsearch(Position *pPosition, const int ply) {
@@ -330,6 +344,7 @@ Value Search::evaluate(Position *pPosition, const int ply) {
 
   // PERFT stats
   if (searchLimits.perft) {
+    // TODO: more perft stats
     return VALUE_ONE;
   }
 
@@ -338,26 +353,26 @@ Value Search::evaluate(Position *pPosition, const int ply) {
 }
 
 void Search::configureTimeLimits() {
-  // TODO
+  // TODO: time management
 }
 
+/**
+ * Generates root moves and filters them according to the UCI searchmoves list
+ * @param pPosition
+ * @return UCI filtered root moves
+ */
 MoveList Search::generateRootMoves(Position *pPosition) {
-  LOG->debug("Generating root moves");
   MoveList *legalMoves = moveGenerators[ROOT_PLY].generatePseudoLegalMoves(GENALL, pPosition);
-  LOG->debug("All legal moves {}", printMoveList(*legalMoves));
   MoveList rootMoves;
-  if (searchLimits.moves.empty()) {
-    LOG->debug("Adding all legal moves.");
+  if (searchLimits.moves.empty()) { // if UCI searchmoves is empty then add all
     for (auto legalMove : *legalMoves) {
       rootMoves.push_back(legalMove);
     }
   }
-  else {
-    LOG->debug("Adding UCI selected moves {}", printMoveList(searchLimits.moves));
+  else { // only add if in the UCI searchmoves list
     for (auto legalMove : *legalMoves) {
       for (auto move : searchLimits.moves) {
         if (moveOf(move) == moveOf(legalMove)) {
-          LOG->debug("Adding move: {}", printMove(legalMove));
           rootMoves.push_back(legalMove);
         }
       }
