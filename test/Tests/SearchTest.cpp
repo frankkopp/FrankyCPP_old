@@ -83,10 +83,10 @@ TEST_F(SearchTest, perft) {
   searchLimits.setupLimits();
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
+  setlocale(LC_ALL, "de-DE");
+  LOG->info("nps: {0:n}", 1234567890);
   LOG->info("Leaf nodes: {}", search.getSearchStats().leafPositionsEvaluated);
-  std::locale loc(std::locale(), myLocale);
-  std::cout.imbue(digitLocale);
-  LOG->info("nps: {}", fmt::format(("{0:n}"), long(search.getSearchStats().leafPositionsEvaluated/(search.getSearchStats().lastSearchTime/1e9))));
+  LOG->info("nps: {0:n}", long(search.getSearchStats().leafPositionsEvaluated/(search.getSearchStats().lastSearchTime/1e9)));
   ASSERT_EQ(4'865'609, search.getSearchStats().leafPositionsEvaluated);
   // 4 = 197'281
   // 5 = 4'865'609

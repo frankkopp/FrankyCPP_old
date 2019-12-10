@@ -1,6 +1,10 @@
 # updates template file and replaces placeholder variables
 configure_file(version.h.in version.h)
 
+include_directories(
+        ${CMAKE_CURRENT_BINARY_DIR}
+)
+
 # set the name of the executable
 set(execname FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR})
 
@@ -10,9 +14,11 @@ add_library(core ${core_SRCS})
 
 # define executable
 add_executable(${execname} main.cpp)
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(${PROJECT_SOURCE_DIR}/fmt/include)
 
 # link executable with library
-target_link_libraries(${execname} core fmt)
+target_link_libraries(
+        ${execname}
+        core
+        #fmt::fmt
+        spdlog::spdlog)
 

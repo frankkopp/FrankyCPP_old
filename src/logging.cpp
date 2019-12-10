@@ -23,6 +23,7 @@
  *
  */
 
+#include <iostream>
 #include "logging.h"
 
 namespace LOGGING {
@@ -48,13 +49,16 @@ namespace LOGGING {
     LOG->info("Logging initialized.");
     
     // Logger test
-//    LOG->critical("CRITICAL");
-//    LOG->error("ERROR");
-//    LOG->warn("WARN");
-//    LOG->info("INFO");
-//    LOG->debug("DEBUG");
-//    SPDLOG_DEBUG(LOG, "DEBUG {}", "MARCO");
-//    LOG->trace("TRACE");
-//    SPDLOG_TRACE(LOG, "TRACE {}", "MARCO");
+    LOG->info("LOGGER TESTS:");
+    LOG->critical("CRITICAL");
+    LOG->error("ERROR");
+    LOG->warn("WARN");
+    LOG->info("INFO");
+    LOG->debug("DEBUG");
+    SPDLOG_DEBUG(LOG, "DEBUG {}", "MARCO");
+    LOG->trace("TRACE");
+    SPDLOG_TRACE(LOG, "TRACE {}", "MARCO");
+    LOG->info("INFO {}", 123456789);
+    LOG->info("INFO {0:n}", 123456789);
   }
 }

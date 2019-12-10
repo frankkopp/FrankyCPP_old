@@ -27,6 +27,7 @@
 #define FRANKYCPP_LOGGING_H
 
 #include "spdlog/spdlog.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
 
 namespace LOGGING {
   extern void init();

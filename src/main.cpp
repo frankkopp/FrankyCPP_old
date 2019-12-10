@@ -29,6 +29,19 @@
 #include "UCIHandler.h"
 
 int main() {
+  try {
+    std::locale::global(std::locale("de_DE.UTF-8"));
+  }
+  catch (...) {
+    std::cerr << "failed to set locale" << std::endl;
+  }
+  setlocale(LC_ALL, "de_DE.UTF-8");
+  setlocale(LC_NUMERIC, "de_DE.UTF-8");
+  std::cout << std::locale().name() << std::endl;
+  std::locale::global(std::locale(""));
+  std::cout << std::locale().name() << std::endl;
+  std::locale::global(std::locale("C"));
+  std::cout << std::locale().name() << std::endl;
 
   std::cout << "FrankCPP v" << FrankyCPP_VERSION_MAJOR << "." << FrankyCPP_VERSION_MINOR << std::endl;
 
