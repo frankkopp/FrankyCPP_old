@@ -16,8 +16,12 @@ set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 # Project name and version
 project(FrankyCPP VERSION 0.1)
 
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/fmt)
+
 # project sub directories - need to have their own CMakeList.txt
 add_subdirectory(src)
 add_subdirectory(test)
+add_subdirectory(fmt)
 
 
