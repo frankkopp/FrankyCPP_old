@@ -28,6 +28,8 @@
 #include <utility>
 
 SearchLimits::SearchLimits() = default;
+//  SearchLimits(0, 0, 0, 0, 0, 0,
+//               0, 0, MoveList(), 0, false, false, false) {};
 
 SearchLimits::SearchLimits(MilliSec whiteTime,
                            MilliSec blackTime,

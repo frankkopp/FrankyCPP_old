@@ -40,23 +40,23 @@ class SearchLimits {
 public:
 
   // defaults time control
-  MilliSec whiteTime;
-  MilliSec blackTime;
-  MilliSec whiteInc;
-  MilliSec blackInc;
-  MilliSec moveTime;
-  int movesToGo;
+  MilliSec whiteTime = 0;
+  MilliSec blackTime = 0;
+  MilliSec whiteInc = 0;
+  MilliSec blackInc = 0;
+  MilliSec moveTime = 0;
+  int movesToGo = 0;
 
   // extra limits
-  int depth;
-  long nodes;
-  MoveList moves;
+  int depth = 0;
+  long nodes = 0;
+  MoveList moves{};
 
   // no time control
-  int mate;
-  bool ponder;
-  bool infinite;
-  bool perft;
+  int mate = 0;
+  bool ponder = false;
+  bool infinite = false;
+  bool perft = false;
 
   // state
   bool timeControl = false;
@@ -83,7 +83,7 @@ public:
   std::string str() const;
   friend std::ostream &operator<<(std::ostream &os, const SearchLimits &limits);
   void setupLimits();
-  
+
 private:
 
 };

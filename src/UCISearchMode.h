@@ -44,7 +44,7 @@ public:
   long         nodes     = 0;
   int          mate      = 0;
   int          movetime  = 0;
-  MoveList     moves;
+  MoveList     moves{};
 
   bool ponder   = false;
   bool infinite = false;
