@@ -217,18 +217,15 @@ SearchResult Search::iterativeDeepening(Position *pPosition) {
   do {
     assert (currentBestRootMove != NOMOVE && "No  best root move");
 
+    LOG->trace("Searching depth {}", iterationDepth);
+
     searchStats.currentIterationDepth = iterationDepth;
     searchStats.bestMoveChanges = 0;
     searchStats.nodesVisited++; // root node is always first searched node
 
     // ###########################################
     // ### CALL SEARCH for iterationDepth
-    // ###
-
-    search(pPosition, iterationDepth, ROOT_PLY);
-    // TODO: search(position, iterationDepth, ROOT_PLY,alpha, beta, PV_NODE, DO_NULL);
-
-    // ###
+    searchRoot(pPosition, iterationDepth);
     // ###########################################
 
     // we can only use the value if there has not been a stop
@@ -270,67 +267,95 @@ SearchResult Search::iterativeDeepening(Position *pPosition) {
 }
 
 /**
- * The actual recursive search.
- * It includes sepcial cases for root moves as they needed to be treated
- * differently sometimes.
- *
+ * Called for root position as root moves are generated separately.
  * @param pPosition
  * @param depth
  * @param ply
- * @return value of best move
+ * @return
  */
-Value Search::search(Position *pPosition, const int depth, const int ply) {
+Value Search::searchRoot(Position *pPosition, const int depth) {
+
+  // TODO: check draw by repetition or 50moves rule / necessary here???
+
+  Value value = VALUE_NONE;
+  for (auto &move : rootMoves) {
+    LOG->trace("Root Move: {}", printMove(move));
+
+    value = searchMove(pPosition, depth, ROOT_PLY, move, true);
+
+    if (stopConditions()) {
+      stopSearchFlag = true;
+      return VALUE_NONE; // value does not matter because of top flag
+    }
+  }
+
+  return value;
+}
+
+/**
+ * Recursive search for all non root positions with on the fly move generation.
+ * @param pPosition
+ * @param depth
+ * @param ply
+ * @return
+ */
+Value Search::searchNonRoot(Position *pPosition, const int depth, const int ply) {
 
   // update current search depth stats
   searchStats.currentSearchDepth = std::max(searchStats.currentSearchDepth, ply);
   searchStats.currentExtraSearchDepth = std::max(searchStats.currentExtraSearchDepth, ply);
 
   // On leaf node call qsearch
-  // TODO: qsearch, evaluation
   if (depth <= 0 || ply >= MAX_SEARCH_DEPTH - 1) {
-   return qsearch(pPosition, ply);
-  }
-
-  // Check if we need to stop search - could be external or time or
-  // max allowed nodes.
-  // TODO: time limits
-  if (stopSearchFlag
-      || (searchLimits.nodes && searchStats.nodesVisited >= searchLimits.nodes)) {
-    stopSearchFlag = true;
-    return VALUE_NONE; // value does not matter because of top flag
+    return qsearch(pPosition, ply);
   }
 
   // TODO: check draw by repetition or 50moves rule
 
+  assert(ply != ROOT_PLY);
   Value value = VALUE_NONE;
+  Move move = NOMOVE;
+  moveGenerators[ply].resetOnDemand();
+  while ((move = moveGenerators[ply].getNextPseudoLegalMove(GENALL, pPosition)) != NOMOVE) {
 
-  // TODO: treat rootMoves separately
-  if (ply == ROOT_PLY) {
-    for (auto &move : rootMoves) {
+    value = searchMove(pPosition, depth, ply, move, false);
 
-    }
-  } else {
-    Move move = NOMOVE;
-    moveGenerators[ply].resetOnDemand();
-    while ((move = moveGenerators[ply].getNextPseudoLegalMove(GENALL, pPosition)) != NOMOVE) {
-      pPosition->doMove(move);
-      if (pPosition->isLegalPosition()) {
-        currentVariation.push_back(move);
-        value = search(&position, depth - 1, ply + 1);
-        currentVariation.pop_back();
-      }
-      pPosition->undoMove();
+    if (stopConditions()) {
+      stopSearchFlag = true;
+      return VALUE_NONE; // value does not matter because of top flag
     }
   }
-  
+  return value;
+}
+
+/**
+ * Called for each move of a position.
+ * @param pPosition
+ * @param depth
+ * @param ply
+ * @param move
+ * @param isRoot
+ * @return
+ */
+Value Search::searchMove(Position *pPosition, const int depth, const int ply, const Move &move,
+                         const bool isRoot) {
+  Value value = VALUE_NONE;
+  pPosition->doMove(move);
+  if (pPosition->isLegalPosition()) {
+    currentVariation.push_back(move);
+    value = searchNonRoot(&position, depth - 1, ply + 1);
+    currentVariation.pop_back();
+  }
+  pPosition->undoMove();
+  return value;
 }
 
 Value Search::qsearch(Position *pPosition, const int ply) {
   // update current search depth stats
   searchStats.currentExtraSearchDepth = std::max(searchStats.currentExtraSearchDepth, ply);
 
-  // if PERFT return with eval to count all captures etc.
-  if (searchLimits.perft) return evaluate(pPosition, ply);
+  // if PERFT or MAX SEARCH DEPTH reached return with eval to count all captures etc.
+  if (searchLimits.perft || ply >= MAX_SEARCH_DEPTH - 1) return evaluate(pPosition, ply);
 
   // TODO quiscence search
   return evaluate(pPosition, ply);
@@ -338,7 +363,7 @@ Value Search::qsearch(Position *pPosition, const int ply) {
 
 Value Search::evaluate(Position *pPosition, const int ply) {
   //LOG->trace("{}", printMoveList(currentVariation));
-  
+
   // count all leaf nodes evaluated
   searchStats.leafPositionsEvaluated++;
 
@@ -350,6 +375,13 @@ Value Search::evaluate(Position *pPosition, const int ply) {
 
   // TODO: evaluation
   return VALUE_DRAW;
+}
+
+inline bool Search::stopConditions() const {
+  // TODO: time management
+  return stopSearchFlag
+         || (searchLimits.nodes
+             && searchStats.nodesVisited >= searchLimits.nodes);
 }
 
 void Search::configureTimeLimits() {

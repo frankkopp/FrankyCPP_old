@@ -85,8 +85,8 @@ class Search {
   SearchResult lastSearchResult;
 
   // search start time
-  std::chrono::time_point<std::chrono::system_clock> startTime;
-  std::chrono::time_point<std::chrono::system_clock> stopTime;
+  std::chrono::time_point<std::chrono::steady_clock> startTime;
+  std::chrono::time_point<std::chrono::steady_clock> stopTime;
 
   // list of moves at the root
   MoveList rootMoves;
@@ -94,6 +94,9 @@ class Search {
   // current best move
   Move currentBestRootMove = NOMOVE;
   Value currentBestRootValue = VALUE_NONE;
+
+  // store the current variation
+  MoveList currentVariation;
 
   // prepared move generator instances for each depth
   MoveGenerator moveGenerators[MAX_SEARCH_DEPTH];
@@ -129,16 +132,19 @@ private:
   ////////////////////////////////////////////////
   ///// PRIVATE
 
-  
   void run();
+
   SearchResult iterativeDeepening(Position *pPosition);
-  void configureTimeLimits();
-  MoveList generateRootMoves(Position *pPosition);
-  Value search(Position *pPosition, const int depth, const int ply);
-  MoveList currentVariation;
+  Value searchRoot(Position *pPosition, const int depth);
+  Value searchNonRoot(Position *pPosition, const int depth, const int ply);
+  Value searchMove(Position *pPosition, const int depth, const int ply, const Move &move,
+                   const bool isRoot);
   Value qsearch(Position *pPosition, const int ply);
   Value evaluate(Position *position, const int ply);
 
+  MoveList generateRootMoves(Position *pPosition);
+  void configureTimeLimits();
+  inline bool stopConditions() const;
 };
 
 #endif // FRANKYCPP_SEARCH_H

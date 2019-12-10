@@ -54,15 +54,39 @@ TEST_F(SearchTest, basic) {
   Position position;
   searchLimits.infinite = true;
   search.startSearch(position, searchLimits);
+  sleep(2);
+  search.stopSearch();
+  search.waitWhileSearching();
 }
 
 TEST_F(SearchTest, selective_moves) {
   Search search;
   SearchLimits searchLimits;
   Position position;
-  searchLimits.depth = 3;
+  searchLimits.depth = 4;
   searchLimits.moves.push_back(createMove("e2e4"));
+  searchLimits.setupLimits();
   search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+  ASSERT_EQ(13781, search.getSearchStats().leafPositionsEvaluated);
+}
+
+TEST_F(SearchTest, perft) {
+  Search search;
+  SearchLimits searchLimits;
+  Position position;
+  searchLimits.perft = true;
+  searchLimits.depth = 6;
+  searchLimits.setupLimits();
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+  LOG->info("Nodes per sec: {:n}", long(search.getSearchStats().leafPositionsEvaluated/(search.getSearchStats().lastSearchTime/1e9)));
+  LOG->info("Leaf nodes:    {:n}", search.getSearchStats().leafPositionsEvaluated);
+  ASSERT_EQ(119'060'324, search.getSearchStats().leafPositionsEvaluated);
+  // 4 = 197'281
+  // 5 = 4'865'609
+  // 6 = 119'060'324
+  // 7 = 3'195'901'860
 }
 
 TEST_F(SearchTest, depth) {
@@ -72,23 +96,4 @@ TEST_F(SearchTest, depth) {
   searchLimits.depth = 3;
   searchLimits.setupLimits();
   search.startSearch(position, searchLimits);
-}
-
-TEST_F(SearchTest, perft) {
-  Search search;
-  SearchLimits searchLimits;
-  Position position;
-  searchLimits.perft = true;
-  searchLimits.depth = 5;
-  searchLimits.setupLimits();
-  search.startSearch(position, searchLimits);
-  search.waitWhileSearching();
-  setlocale(LC_ALL, "de-DE");
-  LOG->info("nps: {0:n}", 1234567890);
-  LOG->info("Leaf nodes: {}", search.getSearchStats().leafPositionsEvaluated);
-  LOG->info("nps: {0:n}", long(search.getSearchStats().leafPositionsEvaluated/(search.getSearchStats().lastSearchTime/1e9)));
-  ASSERT_EQ(4'865'609, search.getSearchStats().leafPositionsEvaluated);
-  // 4 = 197'281
-  // 5 = 4'865'609
-  // 6 = 119'060'324
 }

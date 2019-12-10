@@ -37,27 +37,24 @@ public:
     LOGGING::init();
     INIT::init();
     NEWLINE;
+    // turn off info and below logging in the application
+    spdlog::set_level(spdlog::level::trace);
   }
+  std::shared_ptr<spdlog::logger> LOG = spdlog::stdout_color_mt("Test_Logger");
 protected:
-  void SetUp() override {}
+  void SetUp() override {
+    LOG->set_level(spdlog::level::info);
+  }
   void TearDown() override {}
 };
-
-TEST_F(EngineTest, basic) {
-  Engine engine;
-  cout << "\nEngine" << engine << endl;
-}
-
-// TODO Test doMove command
-
 
 TEST_F(EngineTest, startSearch) {
   Engine engine;
   UCISearchMode uciSearchMode;
-  uciSearchMode.depth = 3;
+  uciSearchMode.depth = 8;
   engine.startSearch(uciSearchMode);
 
-  cout << "Start and Stop test..." << endl;
+  LOG->info("Start and Stop test...");
   for (int i = 0; i < 3; ++i) {
     sleep(3);
     engine.stopSearch();
@@ -69,8 +66,6 @@ TEST_F(EngineTest, startSearch) {
     engine.stopSearch();
     engine.waitWhileSearching();
   }
-  cout << "...FINISHED" << endl;
-
 }
 
 

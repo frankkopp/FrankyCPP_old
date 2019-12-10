@@ -29,6 +29,13 @@
 namespace LOGGING {
   void init() {
 
+    try {
+      std::locale::global(std::locale("de_DE.UTF-8"));
+    }
+    catch (...) {
+        std::cerr << "failed to set locale" << std::endl;
+    }
+
     // test if already initialized
     if (spdlog::get("Main_Logger")) return;
     
@@ -47,18 +54,21 @@ namespace LOGGING {
     SEARCH_LOG->set_pattern("[%H:%M:%S:%f] [%n] [%l] [thread %t] %v");
 
     LOG->info("Logging initialized.");
-    
+    LOG->info("Locale is set to: {}",std::locale().name());
+
     // Logger test
-    LOG->info("LOGGER TESTS:");
-    LOG->critical("CRITICAL");
-    LOG->error("ERROR");
-    LOG->warn("WARN");
-    LOG->info("INFO");
-    LOG->debug("DEBUG");
-    SPDLOG_DEBUG(LOG, "DEBUG {}", "MARCO");
-    LOG->trace("TRACE");
-    SPDLOG_TRACE(LOG, "TRACE {}", "MARCO");
-    LOG->info("INFO {}", 123456789);
-    LOG->info("INFO {0:n}", 123456789);
+    //    LOG->info("LOGGER TESTS:");
+    //    LOG->critical("CRITICAL");
+    //    LOG->error("ERROR");
+    //    LOG->warn("WARN");
+    //    LOG->info("INFO");
+    //    LOG->debug("DEBUG");
+    //    SPDLOG_DEBUG(LOG, "DEBUG {}", "MARCO");
+    //    LOG->trace("TRACE");
+    //    SPDLOG_TRACE(LOG, "TRACE {}", "MARCO");
+    //    LOG->info("INFO {}", 123456789);
+    //    LOG->info("INFO {:d}", 123456789);
+    //    LOG->info("INFO {:n}", 123456789);
+    //    LOG->info("INFO {:.5n}", double(123456789.12345));
   }
 }
