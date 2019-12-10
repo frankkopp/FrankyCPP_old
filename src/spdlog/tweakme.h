@@ -92,7 +92,7 @@
 // Uncomment to use your own copy of the fmt library instead of spdlog's copy.
 // In this case spdlog will try to include <fmt/format.h> so set your -I flag accordingly.
 //
-// #define SPDLOG_FMT_EXTERNAL
+//#define SPDLOG_FMT_EXTERNAL
 ///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////

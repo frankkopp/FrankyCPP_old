@@ -12,6 +12,7 @@
     <inspection_tool class="OCUnusedPropertyInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
     <inspection_tool class="OCUnusedStructInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
     <inspection_tool class="OCUnusedTemplateParameterInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
+    <inspection_tool class="PyInterpreterInspection" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="UnusedExpressionResult" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
     <inspection_tool class="UnusedIncludeDirective" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
     <inspection_tool class="UnusedLocalVariable" enabled="true" level="WEAK WARNING" enabled_by_default="true" />

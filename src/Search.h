@@ -119,15 +119,23 @@ public:
   /** wait while searching */
   void waitWhileSearching();
 
+  /** return search stats instance */
+  inline const SearchStats &getSearchStats() const { return searchStats; }
+
 private:
   ////////////////////////////////////////////////
   ///// PRIVATE
 
+  
   void run();
   Value simulatedSearch(Position *pPosition, int depth);
-  SearchResult iterativeDeepening();
+  SearchResult iterativeDeepening(Position *pPosition);
   void configureTimeLimits();
   MoveList generateRootMoves(Position *pPosition);
+  Value search(Position *pPosition, const int depth, const int ply);
+  MoveList currentVariation;
+  Value qsearch(Position *pPosition, const int ply);
+  Value evaluate(Position *position, const int ply);
 };
 
 #endif // FRANKYCPP_SEARCH_H

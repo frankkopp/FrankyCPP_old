@@ -35,17 +35,15 @@ using testing::Eq;
 
 class UCITest : public ::testing::Test {
 public:
-  shared_ptr<spdlog::logger> LOG = spdlog::stdout_color_mt("Test_Logger");
-
   static void SetUpTestSuite() {
     NEWLINE;
     LOGGING::init();
     INIT::init();
     NEWLINE;
-
     // turn off info and below logging in the application
     spdlog::set_level(spdlog::level::warn);
   }
+  shared_ptr<spdlog::logger> LOG = spdlog::stdout_color_mt("Test_Logger");
 protected:
   void SetUp() override {
     LOG->set_level(spdlog::level::info);

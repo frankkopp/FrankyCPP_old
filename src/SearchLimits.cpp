@@ -56,25 +56,19 @@ void SearchLimits::setupLimits() {
   // the order of these statement also exclude contradictions
   // e.g. if perft is set nothing else will checked. 
   if (perft) {
-    // no limits
     timeControl = false;
-    startDepth = depth;
-    // might be limited by depth as well
-    maxDepth = depth > 0 ? depth : MAX_PLY;
+    startDepth = depth > 0 ? depth : 1;;
+    maxDepth = depth > 0 ? depth : 1;
   }
   else if (infinite) {
-    // limited by depth only (identical to depth limit in this case)
     timeControl = false;
     startDepth = 1;
-    // might be limited by depth as well
-    maxDepth = depth > 0 ? depth : MAX_PLY;
+    maxDepth = MAX_PLY;
   }
   else if (ponder) {
-    // limits per depth only, start with 1
     timeControl = false;
     startDepth = 1;
-    // might be limited by depth as well
-    maxDepth = depth > 0 ? depth : MAX_PLY;
+    maxDepth = MAX_PLY;
   }
   else if (mate) {
     // limits per mate depth and move time

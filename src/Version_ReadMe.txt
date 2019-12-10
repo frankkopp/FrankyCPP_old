@@ -25,6 +25,7 @@ v 0.2 (plan)
 v 0.1 (in progress)
 ================================================================================
 - TODO:
+    - Perft traversing (minimax with counting)
     - Basic search (AlphaBeta, no TT, no KillerMoves, etc.)
     - Basic evaluation
     - Search Modes (incl. basic time management for time based search)
