@@ -185,7 +185,7 @@ SPDLOG_INLINE void logger::sink_it_(const details::log_msg &msg)
     {
         flush_();
     }
-}
+}                                          
 
 SPDLOG_INLINE void logger::flush_()
 {

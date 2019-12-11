@@ -30,11 +30,19 @@
 
 int main() {
 
-  std::cout << "FrankCPP v" << FrankyCPP_VERSION_MAJOR << "." << FrankyCPP_VERSION_MINOR << std::endl;
+  std::string appName = "FrankCPP v";
+  appName.append(std::to_string(FrankyCPP_VERSION_MAJOR))
+    .append(".")
+    .append(std::to_string(FrankyCPP_VERSION_MINOR));
+
+  std::cout << appName << std::endl;
 
   // initializes and configures logging - only needed once in main()
   LOGGING::init();
 
+  auto LOG = spdlog::get("Main_Logger");
+  LOG->info("Start {}", appName);
+  
   INIT::init();
   Engine engine;
   UCI::Handler uci(&engine);
