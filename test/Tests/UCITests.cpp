@@ -41,7 +41,9 @@ public:
     INIT::init();
     NEWLINE;
     // turn off info and below logging in the application
-    spdlog::set_level(spdlog::level::warn);
+    spdlog::set_level(spdlog::level::trace);
+    auto UCI_LOG = spdlog::get("UCI_Logger");
+    UCI_LOG->set_level(spdlog::level::info);
   }
   shared_ptr<spdlog::logger> LOG = spdlog::get("Test_Logger");
 protected:

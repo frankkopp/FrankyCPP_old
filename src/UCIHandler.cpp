@@ -52,7 +52,7 @@ namespace UCI {
   void Handler::loop(std::istream *pIstream) {
     std::string cmd, token;
     do {
-      LOG->info("UCI Handler waiting for command:");
+      LOG->debug("UCI Handler waiting for command:");
 
       // Block here waiting for input or EOF
       // only blocks on cin!!
@@ -60,14 +60,15 @@ namespace UCI {
       //  create the stream object
       std::istringstream inStream(cmd);
 
+      LOG->info("<< {}", inStream.str());
+      LOG->debug("UCI Handler received command: {}", inStream.str());
+
       // clear possible previous entries
       token.clear();
 
       // read word from stream delimiter is whitespace
       // to get line use inStream.str()
       inStream >> skipws >> token;
-
-      LOG->info("UCI Handler received command: {}", token);
 
       if (token == "quit") break;
       else if (token == "uci") uciCommand();
@@ -83,7 +84,7 @@ namespace UCI {
       else if (token == "noop") /* noop */;
       else LOG->warn("Unknown UCI command: {}", token);
 
-      LOG->info("UCI Handler processed command: {}", token);
+      LOG->debug("UCI Handler processed command: {}", token);
 
     } while (token != "quit");
 
@@ -309,13 +310,15 @@ namespace UCI {
   }
 
   void Handler::send(const std::string &toSend) const {
+    LOG->info(">> {}", toSend);
     *pOutputStream << toSend << endl;
   }
 
   void Handler::sendResult(Move bestMove, Move ponderMove) {
-    *pOutputStream << "bestmove " << bestMove;
-    if (isMove(ponderMove)) *pOutputStream << " ponderOption " << ponderMove;
-    *pOutputStream << endl;
+    std::string toSend = "bestmove " + printMove(bestMove);
+    if (isMove(ponderMove)) toSend += " ponderOption " + printMove(ponderMove);
+    LOG->info(">> {}", toSend);
+    *pOutputStream << toSend << endl;
   }
 
 }
