@@ -31,8 +31,6 @@
 #include "logging.h"
 #include "globals.h"
 
-typedef uint64_t MilliSec;
-
 class SearchLimits {
 
   std::shared_ptr<spdlog::logger> LOG = spdlog::get("Search_Logger");

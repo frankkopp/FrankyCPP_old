@@ -87,6 +87,12 @@ class Search {
   // search start time
   std::chrono::time_point<std::chrono::steady_clock> startTime;
   std::chrono::time_point<std::chrono::steady_clock> stopTime;
+  MilliSec softTimeLimit = 0;
+  MilliSec hardTimeLimit = 0;
+  MilliSec extraTime = 0;
+
+  // the color of the searching player
+  Color myColor = NOCOLOR;
 
   // list of moves at the root
   MoveList rootMoves;
@@ -144,7 +150,12 @@ private:
 
   MoveList generateRootMoves(Position *pPosition);
   void configureTimeLimits();
-  inline bool stopConditions() const;
+  inline bool stopConditions();
+  void addExtraTime(double d);
+  bool softTimeLimitReached();
+  bool hardTimeLimitReached();
+  MilliSec elapsedTime();
+  MilliSec elapsedTime(std::chrono::time_point<std::chrono::steady_clock> t);
 };
 
 #endif // FRANKYCPP_SEARCH_H

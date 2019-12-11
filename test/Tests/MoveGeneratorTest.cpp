@@ -363,10 +363,6 @@ TEST_F(MoveGenTest, onDemandGen) {
 }
 
 TEST_F(MoveGenTest, hasLegalMoves) {
-  Position::init();
-  Bitboards::init();
-  NEWLINE;
-
   string fen;
   MoveGenerator mg;
   MoveList moves;
@@ -380,5 +376,20 @@ TEST_F(MoveGenTest, hasLegalMoves) {
 
   ASSERT_EQ(0, moves.size());
   ASSERT_FALSE(expected);
+
+}
+
+TEST_F(MoveGenTest, debug) {
+  string fen;
+  MoveGenerator mg;
+  MoveList moves;
+
+  fen = "r1b1kbnr/ppp2ppp/8/4n3/8/4Q3/PP2PPPP/RNB1KBNR b KQkq - 1 7"; // e5d3
+  fen = "rn1qkbnr/ppp1pQpp/8/6N1/8/8/Pp1PPPP1/RNB1KB1R b KQkq - 0 6"; // b2a1q
+  Position position(fen);
+  println(position.str());
+
+  moves = *mg.generateLegalMoves(GENALL, &position);
+  println(printMoveList(moves));
 
 }

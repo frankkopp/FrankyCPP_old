@@ -27,6 +27,7 @@
 #define FRANKYCPP_SEARCHSTATS_H
 
 #include <ostream>
+#include "globals.h"
 
 /** data structure to cluster all search statistical values */
 class SearchStats {
@@ -42,8 +43,8 @@ public:
   int currentExtraSearchDepth = 0;
   int currentRootMove = 0;
   int currentRootMoveNumber = 0;
-  long lastSearchTime = 0;
   int bestMoveChanges = 0;
+  MilliSec lastSearchTime = 0;
 
   // PERFT Values
   long leafPositionsEvaluated = 0;

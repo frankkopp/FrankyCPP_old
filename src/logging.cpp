@@ -37,7 +37,7 @@ namespace LOGGING {
     }
 
     // test if already initialized
-    if (spdlog::get("Main_Logger")) return;
+    //if (spdlog::get("Main_Logger")) return;
     
     // Logger setup
     auto LOG = spdlog::stdout_color_mt("Main_Logger");
@@ -60,18 +60,18 @@ namespace LOGGING {
     LOG->info("Locale is set to: {}",std::locale().name());
 
     // Logger test
-    //    LOG->info("LOGGER TESTS:");
-    //    LOG->critical("CRITICAL");
-    //    LOG->error("ERROR");
-    //    LOG->warn("WARN");
-    //    LOG->info("INFO");
-    //    LOG->debug("DEBUG");
-    //    SPDLOG_DEBUG(LOG, "DEBUG {}", "MARCO");
-    //    LOG->trace("TRACE");
-    //    SPDLOG_TRACE(LOG, "TRACE {}", "MARCO");
-    //    LOG->info("INFO {}", 123456789);
-    //    LOG->info("INFO {:d}", 123456789);
-    //    LOG->info("INFO {:n}", 123456789);
-    //    LOG->info("INFO {:.5n}", double(123456789.12345));
+    LOG->info("LOGGER TESTS:");
+    LOG->critical("CRITICAL");
+    LOG->error("ERROR");
+    LOG->warn("WARN");
+    LOG->info("INFO");
+    LOG->debug("DEBUG");
+    SPDLOG_DEBUG(LOG, "DEBUG {}", "MARCO");
+    LOG->trace("TRACE");
+    SPDLOG_TRACE(LOG, "TRACE {}", "MARCO");
+    LOG->info("INFO {}", 123456789);
+    LOG->info("INFO {:d}", 123456789);
+    LOG->info("INFO {:n}", 123456789);
+    LOG->info("INFO {:.5n}", double(123456789.12345));
   }
 }

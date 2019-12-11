@@ -60,6 +60,9 @@ constexpr int GAME_PHASE_MAX = 24;
 /** 64 bit Key for zobrist etc. */
 typedef uint64_t Key;
 
+/** for time keeping */
+typedef uint64_t MilliSec;
+
 ///////////////////////////////////
 //// INITIALIZATION
 

@@ -57,14 +57,15 @@ void Search::startSearch(const Position &pos, SearchLimits limits) {
   // pos is a deep copy of the position parameter to not change
   // the original position given
   position = pos;
+  myColor = position.getNextPlayer();
   searchLimits = std::move(limits);
-  stopSearchFlag = false;
 
   // make sure we have a semaphore available
   searchSemaphore.release();
 
   // join() previous thread
   if (myThread.joinable()) myThread.join();
+  stopSearchFlag = false;
 
   // start search in a separate thread
   LOG->info("Starting search in separate thread.");
@@ -200,9 +201,9 @@ SearchResult Search::iterativeDeepening(Position *pPosition) {
     LOG->debug("Searching in position: {}", position.printFen());
     LOG->debug("Searching these moves: {}", printMoveList(rootMoves));
     LOG->debug("Search mode: {}", searchLimits.str());
-    LOG->debug("Time Management: {} soft: {} hard: {}",
+    LOG->debug("Time Management: {} soft: {:n} hard: {:n}",
                (searchLimits.timeControl ? "ON" : "OFF"),
-               "TBD", "TBD");
+               softTimeLimit, hardTimeLimit);
     LOG->debug("Start Depth: {} Max Depth: {}", iterationDepth, searchLimits.maxDepth);
     LOG->debug("Starting iterative deepening now...");
   };
@@ -234,8 +235,7 @@ SearchResult Search::iterativeDeepening(Position *pPosition) {
     }
 
     // break on stop signal
-    // TODO: time management
-    if (stopSearchFlag) break;
+    if (stopSearchFlag || softTimeLimitReached()) break;
 
   } while (++iterationDepth <= searchLimits.maxDepth);
   // ### ENDOF Iterative Deepening
@@ -249,7 +249,7 @@ SearchResult Search::iterativeDeepening(Position *pPosition) {
 
   // search is finished - stop timer
   stopTime = std::chrono::high_resolution_clock::now();
-  searchStats.lastSearchTime = std::chrono::duration_cast<std::chrono::nanoseconds>(
+  searchStats.lastSearchTime = std::chrono::duration_cast<std::chrono::milliseconds>(
     stopTime - startTime).count();
 
   // print result of the search
@@ -257,10 +257,10 @@ SearchResult Search::iterativeDeepening(Position *pPosition) {
     LOG->debug("Search statistics: {}", searchStats.str());
     LOG->debug("Search Depth was {} ({})", searchStats.currentIterationDepth,
                searchStats.currentExtraSearchDepth);
-    LOG->debug("Search took {}", fmt::format("{},{:09} sec",
-                                             (searchStats.lastSearchTime % 1'000'000'000'000) /
-                                             1'000'000'000,
-                                             (searchStats.lastSearchTime % 1'000'000'000)));
+    LOG->debug("Search took {}", fmt::format("{},{:03} sec",
+                                             (searchStats.lastSearchTime % 1'000'000) /
+                                             1'000,
+                                             (searchStats.lastSearchTime % 1'000)));
   }
 
   return searchResult;
@@ -283,10 +283,7 @@ Value Search::searchRoot(Position *pPosition, const int depth) {
 
     value = searchMove(pPosition, depth, ROOT_PLY, move, true);
 
-    if (stopConditions()) {
-      stopSearchFlag = true;
-      return VALUE_NONE; // value does not matter because of top flag
-    }
+    if (stopConditions()) return VALUE_NONE; // value does not matter because of top flag
   }
 
   return value;
@@ -320,10 +317,7 @@ Value Search::searchNonRoot(Position *pPosition, const int depth, const int ply)
 
     value = searchMove(pPosition, depth, ply, move, false);
 
-    if (stopConditions()) {
-      stopSearchFlag = true;
-      return VALUE_NONE; // value does not matter because of top flag
-    }
+    if (stopConditions()) return VALUE_NONE; // value does not matter because of top flag
   }
   return value;
 }
@@ -342,6 +336,7 @@ Value Search::searchMove(Position *pPosition, const int depth, const int ply, co
   Value value = VALUE_NONE;
   pPosition->doMove(move);
   if (pPosition->isLegalPosition()) {
+    searchStats.nodesVisited++;
     currentVariation.push_back(move);
     value = searchNonRoot(&position, depth - 1, ply + 1);
     currentVariation.pop_back();
@@ -377,15 +372,109 @@ Value Search::evaluate(Position *pPosition, const int ply) {
   return VALUE_DRAW;
 }
 
-inline bool Search::stopConditions() const {
-  // TODO: time management
-  return stopSearchFlag
-         || (searchLimits.nodes
-             && searchStats.nodesVisited >= searchLimits.nodes);
+inline bool Search::stopConditions() {
+  return stopSearchFlag = (stopSearchFlag
+                           || hardTimeLimitReached()
+                           || (searchLimits.nodes
+                               && searchStats.nodesVisited >= searchLimits.nodes));
 }
 
 void Search::configureTimeLimits() {
   // TODO: time management
+
+  if (searchLimits.moveTime > 0) { // mode time per move
+    softTimeLimit = hardTimeLimit = searchLimits.moveTime;
+  }
+  else { // remaining time - estimated time per move
+
+    // retrieve time left from search mode
+    assert ((searchLimits.whiteTime && searchLimits.blackTime) && "move times must be > 0");
+    MilliSec timeLeft = (myColor == WHITE) ? searchLimits.whiteTime : searchLimits.blackTime;
+
+    // Give some overhead time so that in games with very low available time we
+    // do not run outof time
+    timeLeft -= 1'000; // this should do
+
+    // when we know the move to go (until next time control) use them otherwise assume 40
+    int movesLeft = searchLimits.movesToGo > 0 ? searchLimits.movesToGo : 40;
+
+    // when we have a time increase per move we estimate the additional time we should have
+    if (myColor == WHITE) {
+      timeLeft += 40 * searchLimits.whiteInc;
+    }
+    else { // we assume it is black to safe the extra check
+      timeLeft += 40 * searchLimits.blackInc;
+    }
+
+    // for timed games with remaining time
+    hardTimeLimit = (MilliSec) (timeLeft / movesLeft);
+    softTimeLimit = (MilliSec) (hardTimeLimit * 0.8);
+  }
+
+  // limits for very short available time
+  if (hardTimeLimit < 100) {
+    addExtraTime(0.9);
+  }
+}
+
+/**
+ * Changes the time limit by the given factor and also sets the soft time limit
+ * to 0.8 of the hard time limit.
+ * Factor 1 is neutral. <1 shortens the time, >1 adds time<br/>
+ * Example: factor 0.8 is 20% less time. Factor 1.2 is 20% additional time
+ * Always calculated from the initial time budget.
+ *
+ * @param factor
+ */
+void Search::addExtraTime(double factor) {
+  if (searchLimits.moveTime == 0) {
+    extraTime += hardTimeLimit * (factor - 1);
+    LOG->debug("Time added {:n} ms to {:n} ms",
+               extraTime,
+               hardTimeLimit + extraTime);
+  }
+}
+
+/**
+ * Soft time limit is used in iterative deepening to decide if an new depth should even be
+ * started.
+ *
+ * @return true if soft time limit is reached, false otherwise
+ */
+bool Search::softTimeLimitReached() {
+  if (!searchLimits.timeControl) return false;
+  stopSearchFlag = elapsedTime() >= softTimeLimit + (extraTime * 0.8);
+  if (stopSearchFlag) LOG->trace("Soft time limit reached!");
+  return stopSearchFlag;
+}
+
+/**
+ * Hard time limit is used to check time regularily in the search to stop the search when
+ * time is out
+ * TODO instead of checking this regulary we could use a timer thread to set stopSearch to true.
+ *
+ * @return true if hard time limit is reached, false otherwise
+ */
+bool Search::hardTimeLimitReached() {
+  if (!searchLimits.timeControl) return false;
+  stopSearchFlag = elapsedTime() >= hardTimeLimit + extraTime;
+  if (stopSearchFlag) LOG->trace("Hard time limit reached!");
+  return stopSearchFlag;
+}
+
+/**
+ * @return the elapsed time in ms since the start of the search
+ */
+MilliSec Search::elapsedTime() {
+  return elapsedTime(std::chrono::high_resolution_clock::now());
+}
+
+/**
+ * @param t time point since the elapsed time
+ * @return the elapsed time from the start of the search to the given t
+ */
+MilliSec Search::elapsedTime(std::chrono::time_point<std::chrono::steady_clock> t) {
+  return std::chrono::duration_cast<std::chrono::milliseconds>(t - startTime).count();
 }
 
 /**
@@ -395,23 +484,24 @@ void Search::configureTimeLimits() {
  */
 MoveList Search::generateRootMoves(Position *pPosition) {
   MoveList *legalMoves = moveGenerators[ROOT_PLY].generatePseudoLegalMoves(GENALL, pPosition);
-  MoveList rootMoves;
+  MoveList moveList;
   if (searchLimits.moves.empty()) { // if UCI searchmoves is empty then add all
     for (auto legalMove : *legalMoves) {
-      rootMoves.push_back(legalMove);
+      moveList.push_back(legalMove);
     }
   }
   else { // only add if in the UCI searchmoves list
     for (auto legalMove : *legalMoves) {
       for (auto move : searchLimits.moves) {
         if (moveOf(move) == moveOf(legalMove)) {
-          rootMoves.push_back(legalMove);
+          moveList.push_back(legalMove);
         }
       }
     }
   }
-  return rootMoves;
+  return moveList;
 }
+
 
 
 

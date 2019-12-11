@@ -93,7 +93,57 @@ TEST_F(SearchTest, depth) {
   Search search;
   SearchLimits searchLimits;
   Position position;
-  searchLimits.depth = 3;
+  searchLimits.depth = 4;
   searchLimits.setupLimits();
   search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+  ASSERT_EQ(4, search.getSearchStats().currentExtraSearchDepth);
 }
+
+TEST_F(SearchTest, nodes) {
+  Search search;
+  SearchLimits searchLimits;
+  Position position;
+  searchLimits.nodes = 1'000'000;
+  searchLimits.setupLimits();
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+  ASSERT_EQ(1'000'000, search.getSearchStats().nodesVisited);
+}
+
+TEST_F(SearchTest, movetime) {
+  Search search;
+  SearchLimits searchLimits;
+  Position position;
+  searchLimits.moveTime = 2'000;
+  searchLimits.setupLimits();
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+  ASSERT_TRUE(search.getSearchStats().lastSearchTime < (searchLimits.moveTime + 100));
+}
+
+TEST_F(SearchTest, timewhite) {
+  Search search;
+  SearchLimits searchLimits;
+  Position position;
+  searchLimits.whiteTime = 60'000;
+  searchLimits.blackTime = 60'000;
+  searchLimits.setupLimits();
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+  ASSERT_TRUE(search.getSearchStats().lastSearchTime < (searchLimits.whiteTime/40));
+}
+
+TEST_F(SearchTest, timeblack) {
+  Search search;
+  SearchLimits searchLimits;
+  Position position;
+  position.doMove(createMove("e2e4"));
+  searchLimits.whiteTime = 60'000;
+  searchLimits.blackTime = 60'000;
+  searchLimits.setupLimits();
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+  ASSERT_TRUE(search.getSearchStats().lastSearchTime < (searchLimits.blackTime/40));
+}
+
