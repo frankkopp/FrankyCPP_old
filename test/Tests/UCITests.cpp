@@ -196,7 +196,7 @@ TEST_F(UCITest, searchLimitsTest) {
   Engine engine;
 
   { // perft
-    string command = "go perft depth 4";
+    string command = "go perft 4";
     LOG->info("COMMAND: " + command);
     istringstream is(command);
     UCI::Handler uciHandler(&engine, &is, &os);

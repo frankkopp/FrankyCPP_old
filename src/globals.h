@@ -405,6 +405,7 @@ constexpr Move moveOf(Move m) { return Move(m & MOVE_MASK); }
 /** returns a short representation of the move as string (UCI protocal) */
 inline std::string printMove(const Move &move) {
   std::string promotion = "";
+  if (move == NOMOVE) return "NOMOVE";
   if ((typeOf(move) == PROMOTION)) promotion = pieceTypeToChar[promotionType(move)];
   return squareLabel(getFromSquare(move)) + squareLabel(getToSquare(move)) + promotion;
 }

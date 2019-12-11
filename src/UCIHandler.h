@@ -37,7 +37,8 @@ namespace UCI {
 
   class Handler {
 
-    std::shared_ptr<spdlog::logger> LOG = spdlog::get("UCI_Logger");
+    std::shared_ptr<spdlog::logger> LOG = spdlog::get("UCIHandler_Logger");
+    std::shared_ptr<spdlog::logger> UCI_LOG = spdlog::get("UCI_Logger");
 
     Engine *pEngine;
 

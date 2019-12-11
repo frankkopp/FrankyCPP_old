@@ -40,31 +40,41 @@ namespace LOGGING {
 
     // Shared file sink
     auto sharedFileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("FrankyCPP.log");
+    sharedFileSink->set_level(spdlog::level::trace);
 
     // Main Logger
     auto MAIN_LOG = spdlog::stdout_color_mt("Main_Logger");
     MAIN_LOG->sinks().push_back(sharedFileSink);
     MAIN_LOG->set_level(spdlog::level::trace);
+    MAIN_LOG->flush_on(spdlog::level::trace);
 
     auto ENGINE_LOG = spdlog::stdout_color_mt("Engine_Logger");
     ENGINE_LOG->sinks().push_back(sharedFileSink);
     ENGINE_LOG->set_level(spdlog::level::trace);
+    ENGINE_LOG->flush_on(spdlog::level::trace);
 
     auto SEARCH_LOG = spdlog::stdout_color_mt("Search_Logger");
     SEARCH_LOG->sinks().push_back(sharedFileSink);
     SEARCH_LOG->set_level(spdlog::level::trace);
+    SEARCH_LOG->flush_on(spdlog::level::trace);
     //SEARCH_LOG->set_pattern("[%H:%M:%S:%f] [%n] [%l] [thread %t] %v");
+
+    auto UCIHANDLER_LOG = spdlog::stdout_color_mt("UCIHandler_Logger");
+    UCIHANDLER_LOG->sinks().push_back(sharedFileSink);
+    UCIHANDLER_LOG->set_level(spdlog::level::trace);
+    UCIHANDLER_LOG->flush_on(spdlog::level::trace);
 
     auto uciOutSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
     auto UCI_LOG = spdlog::basic_logger_mt("UCI_Logger", "FrankyCPP_uci.log");
     // UCI_LOG->sinks().push_back(uciOutSink);
     UCI_LOG->set_pattern("[%H:%M:%S:%f] %L %v");
-    UCI_LOG->flush_on(spdlog::level::trace);
     UCI_LOG->set_level(spdlog::level::info);
+    UCI_LOG->flush_on(spdlog::level::trace);
 
     // Logger for Unit Tests
     auto TEST_LOG = spdlog::stdout_color_mt("Test_Logger");
     TEST_LOG->set_level(spdlog::level::trace);
+    TEST_LOG->flush_on(spdlog::level::trace);
 
     MAIN_LOG->info("Logging initialized.");
     MAIN_LOG->info("Locale is set to: {}", std::locale().name());

@@ -25,13 +25,15 @@
 
 #include "version.h"
 #include "logging.h"
-#include "Engine.h"
 #include "UCIHandler.h"
+#include "Engine.h"
 
 int main() {
 
-  std::string appName = "FrankCPP v";
-  appName.append(std::to_string(FrankyCPP_VERSION_MAJOR))
+  std::string appName = "FrankCPP";
+  appName
+    .append(" v")
+    .append(std::to_string(FrankyCPP_VERSION_MAJOR))
     .append(".")
     .append(std::to_string(FrankyCPP_VERSION_MINOR));
 
@@ -42,7 +44,7 @@ int main() {
 
   auto LOG = spdlog::get("Main_Logger");
   LOG->info("Start {}", appName);
-  
+
   INIT::init();
   Engine engine;
   UCI::Handler uci(&engine);

@@ -52,7 +52,7 @@ namespace UCI {
   void Handler::loop(std::istream *pIstream) {
     std::string cmd, token;
     do {
-      LOG->debug("UCI Handler waiting for command:");
+      LOG->info("UCI Handler waiting for command:");
 
       // Block here waiting for input or EOF
       // only blocks on cin!!
@@ -60,8 +60,8 @@ namespace UCI {
       //  create the stream object
       std::istringstream inStream(cmd);
 
-      LOG->info("<< {}", inStream.str());
-      LOG->debug("UCI Handler received command: {}", inStream.str());
+      UCI_LOG->info("<< {}", inStream.str());
+      LOG->info("UCI Handler received command: {}", inStream.str());
 
       // clear possible previous entries
       token.clear();
@@ -84,7 +84,7 @@ namespace UCI {
       else if (token == "noop") /* noop */;
       else LOG->warn("Unknown UCI command: {}", token);
 
-      LOG->debug("UCI Handler processed command: {}", token);
+      LOG->info("UCI Handler processed command: {}", token);
 
     } while (token != "quit");
 
@@ -143,7 +143,9 @@ namespace UCI {
         startFen += token + " ";
       }
     }
+
     pEngine->setPosition(startFen);
+
     if (token == "moves") {
       std::vector<string> moves;
       while (inStream >> token) {
@@ -176,108 +178,108 @@ namespace UCI {
         inStream >> token;
         try {
           searchMode.whiteTime = stoi(token);
+        } catch (...) {
+          cerr << "PANIK";
         }
-        catch (invalid_argument &e) {
-          LOG->warn("wtime invalid - expected numeric value. Was {}", token);
-        }
-        catch (out_of_range &e) {
-          LOG->warn("wtime invalid - numeric value out of range of int. Was  {}", token);
+        if (searchMode.whiteTime <= 0) {
+          LOG->warn("Invalid wtime. Was '{}'", token);
+          return;
         }
       }
       if (token == "btime") {
         inStream >> token;
         try {
           searchMode.blackTime = stoi(token);
+        } catch (...) {
+          cerr << "PANIK";
         }
-        catch (invalid_argument &e) {
-          LOG->warn("btime invalid - expected numeric value. Was {}", token);
-        }
-        catch (out_of_range &e) {
-          LOG->warn("btime invalid - numeric value out of range of int. Was {}", token);
+        if (searchMode.blackTime <= 0) {
+          LOG->warn("Invalid btime. Was '{}'", token);
+          return;
         }
       }
       if (token == "winc") {
         inStream >> token;
         try {
           searchMode.whiteInc = std::stoi(token);
+        } catch (...) {
+          cerr << "PANIK";
         }
-        catch (std::invalid_argument &e) {
-          LOG->warn("winc invalid - expected numeric value. Was {}", token);
-        }
-        catch (std::out_of_range &e) {
-          LOG->warn("winc invalid - numeric value out of range of int. Was {}", token);
+        if (searchMode.whiteInc <= 0) {
+          LOG->warn("Invalid winc. Was '{}'", token);
+          return;
         }
       }
       if (token == "binc") {
         inStream >> token;
         try {
           searchMode.blackInc = std::stoi(token);
+        } catch (...) {
+          cerr << "PANIK";
         }
-        catch (std::invalid_argument &e) {
-          LOG->warn("binc invalid - expected numeric value. Was {}", token);
-        }
-        catch (std::out_of_range &e) {
-          LOG->warn("binc invalid - numeric value out of range of int. Was {}", token);
+        if (searchMode.blackInc <= 0) {
+          LOG->warn("Invalid binc. Was '{}'", token);
+          return;
         }
       }
       if (token == "movestogo") {
         inStream >> token;
         try {
           searchMode.movesToGo = std::stoi(token);
+        } catch (...) {
+          cerr << "PANIK";
         }
-        catch (std::invalid_argument &e) {
-          LOG->warn("movestogo invalid - expected numeric value. Was {}", token);
-        }
-        catch (out_of_range &e) {
-          LOG->warn("movestogo invalid - numeric value out of range of int. Was {}", token);
+        if (searchMode.movesToGo <= 0) {
+          LOG->warn("Invalid movestogo. Was '{}'", token);
+          return;
         }
       }
       if (token == "depth") {
         inStream >> token;
         try {
           searchMode.depth = std::stoi(token);
+        } catch (...) {
+          cerr << "PANIK";
         }
-        catch (std::invalid_argument &e) {
-          LOG->warn("depth invalid - expected numeric value. Was {}", token);
-        }
-        catch (std::out_of_range &e) {
-          LOG->warn("depth invalid - numeric value out of range of int. Was {}", token);
+        if (searchMode.depth <= 0 || searchMode.depth > MAX_PLY) {
+          LOG->warn("depth not between 1 and {}. Was '{}'", MAX_PLY, token);
+          return;
         }
       }
       if (token == "nodes") {
         inStream >> token;
         try {
           searchMode.nodes = std::stoi(token);
+        } catch (...) {
+          cerr << "PANIK";
         }
-        catch (std::invalid_argument &e) {
-          LOG->warn("nodes invalid - expected numeric value. Was {}", token);
-        }
-        catch (std::out_of_range &e) {
-          LOG->warn("nodes invalid - numeric value out of range of int. Was {}", token);
+        if (searchMode.nodes <= 0) {
+          LOG->warn("Invalid nodes. Was '{}'", token);
+          return;
         }
       }
       if (token == "mate") {
         inStream >> token;
         try {
           searchMode.mate = stoi(token);
+        } catch (...) {
+          cerr << "PANIK";
         }
-        catch (std::invalid_argument &e) {
-          LOG->warn("mate invalid - expected numeric value. Was {}", token);
-        }
-        catch (std::out_of_range &e) {
-          LOG->warn("mate invalid - numeric value out of range of int. Was {}", token);
+        if (searchMode.mate <= 0 || searchMode.mate > MAX_PLY) {
+          LOG->warn("mate not between 1 and {}. Was '{}'", MAX_PLY, token);
+          return;
         }
       }
       if (token == "movetime") {
         inStream >> token;
         try {
           searchMode.movetime = stoi(token);
+        } catch (...) {
+          cerr << "PANIK";
         }
-        catch (std::invalid_argument &e) {
-          LOG->warn("movetime invalid - expected numeric value. Was {}", token);
-        }
-        catch (std::out_of_range &e) {
-          LOG->warn("movetime invalid - numeric value out of range of int. Was {}", token);
+        if (searchMode.movetime <= 0) {
+          LOG->warn("Invalid movetime. Was '{}'", token);
+          return;
         }
       }
       if (token == "infinite") {
@@ -285,6 +287,16 @@ namespace UCI {
       }
       if (token == "perft") {
         searchMode.perft = true;
+        inStream >> token;
+        try {
+          searchMode.depth = stoi(token);
+        } catch (...) {
+          cerr << "PANIK";
+        }
+        if (searchMode.depth <= 0 || searchMode.depth > MAX_PLY) {
+          LOG->warn("perft depth not between 1 and {}. Was '{}'", MAX_PLY, token);
+          return;
+        }
       }
     }
 
@@ -302,22 +314,22 @@ namespace UCI {
   }
 
   void Handler::registerCommand() {
-    LOG->warn("UCI Protocol Command: register not implemented!");
+    UCI_LOG->warn("UCI Protocol Command: register not implemented!");
   }
 
   void Handler::debugCommand() {
-    LOG->warn("UCI Protocol Command: debug not implemented!");
+    UCI_LOG->warn("UCI Protocol Command: debug not implemented!");
   }
 
   void Handler::send(const std::string &toSend) const {
-    LOG->info(">> {}", toSend);
+    UCI_LOG->info(">> {}", toSend);
     *pOutputStream << toSend << endl;
   }
 
   void Handler::sendResult(Move bestMove, Move ponderMove) {
     std::string toSend = "bestmove " + printMove(bestMove);
     if (isMove(ponderMove)) toSend += " ponderOption " + printMove(ponderMove);
-    LOG->info(">> {}", toSend);
+    UCI_LOG->info(">> {}", toSend);
     *pOutputStream << toSend << endl;
   }
 
