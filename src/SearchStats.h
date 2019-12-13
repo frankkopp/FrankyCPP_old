@@ -41,7 +41,7 @@ public:
   int currentIterationDepth = 0;
   int currentSearchDepth = 0;
   int currentExtraSearchDepth = 0;
-  int currentRootMove = 0;
+  Move currentRootMove = NOMOVE;
   int currentRootMoveNumber = 0;
   int bestMoveChanges = 0;
   MilliSec lastSearchTime = 0;

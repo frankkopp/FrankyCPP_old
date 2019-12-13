@@ -93,11 +93,11 @@ TEST_F(SearchTest, depth) {
   Search search;
   SearchLimits searchLimits;
   Position position;
-  searchLimits.depth = 4;
+  searchLimits.depth = 6;
   searchLimits.setupLimits();
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
-  ASSERT_EQ(4, search.getSearchStats().currentExtraSearchDepth);
+  ASSERT_EQ(6, search.getSearchStats().currentExtraSearchDepth);
 }
 
 TEST_F(SearchTest, nodes) {

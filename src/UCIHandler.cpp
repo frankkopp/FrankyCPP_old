@@ -329,8 +329,35 @@ namespace UCI {
   void Handler::sendResult(Move bestMove, Move ponderMove) {
     std::string toSend = "bestmove " + printMove(bestMove);
     if (isMove(ponderMove)) toSend += " ponderOption " + printMove(ponderMove);
-    UCI_LOG->info(">> {}", toSend);
-    *pOutputStream << toSend << endl;
+    send(toSend);
   }
+
+  void Handler::sendCurrentLine(const MoveList &moveList) {
+    send(fmt::format("currline {}", printMoveList(moveList)));
+  }
+
+  void Handler::sendIterationEndInfo(int depth, int seldepth, int scoreInCP, int nodes, int nps,
+                                     MilliSec time, MoveList pv) {
+    // TODO: score needs special treatment
+    send(fmt::format(
+      "info depth {:d} seldepth {:d} multipv 1 {:d} nodes {:d} nps {:d} time {:d} pv {:s}",
+      depth, seldepth, scoreInCP, nodes, nps, time, printMoveListUCI(pv)
+    ));
+  }
+
+  void Handler::sendCurrentRootMove(Move currmove, int movenumber) {
+    send(fmt::format(
+      "currmove {:s} currmovenumber {:d}",
+      printMove(currmove),
+      movenumber));
+  }
+
+  void Handler::sendSearchUpdate(int depth, int seldepth, int nodes, int nps, MilliSec time,
+                                 int hashfull) {
+    send(fmt::format(
+      "depth {:d} seldepth {:d} nodes {:d} nps {:d} time {:d} hashfull {:d}",
+      depth, seldepth, nodes, nps, time, hashfull));
+  }
+
 
 }

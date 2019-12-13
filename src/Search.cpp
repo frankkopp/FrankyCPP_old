@@ -68,7 +68,7 @@ void Search::startSearch(const Position &pos, SearchLimits limits) {
   stopSearchFlag = false;
 
   // start search in a separate thread
-  LOG->info("Starting search in separate thread.");
+  LOG->debug("Starting search in separate thread.");
   myThread = std::thread(&Search::run, this);
 
   // wait until thread is initialized before returning to caller
@@ -114,9 +114,14 @@ void Search::run() {
   searchSemaphore.getOrWait();
   running = true;
 
-  LOG->info("Search thread started.");
+  LOG->debug("Search thread started.");
+
+  // store the start time of the search
+  startTime = lastUciUpdateTime = std::chrono::high_resolution_clock::now();
 
   // Initialize for new search
+  lastSearchResult = SearchResult();
+  softTimeLimit = hardTimeLimit = extraTime = 0;
   searchStats = SearchStats();
 
   // Initialize ply based data
@@ -126,7 +131,7 @@ void Search::run() {
     moveGenerator = MoveGenerator();
   }
 
-  // search mode override
+  // search mode
   if (searchLimits.perft) {
     LOG->info("Search Mode: PERFT SEARCH ({})", searchLimits.maxDepth);
   }
@@ -147,7 +152,7 @@ void Search::run() {
 
   running = false;
   searchSemaphore.release();
-  LOG->info("Search thread ended.");
+  LOG->debug("Search thread ended.");
 }
 
 /**
@@ -159,8 +164,6 @@ void Search::run() {
  * @return
  */
 SearchResult Search::iterativeDeepening(Position *pPosition) {
-  // store the start time of the search
-  startTime = std::chrono::high_resolution_clock::now();
 
   // init best move and value
   currentBestRootMove = NOMOVE;
@@ -213,12 +216,13 @@ SearchResult Search::iterativeDeepening(Position *pPosition) {
   assert (currentBestRootMove != NOMOVE && "No initial best root move");
   assert (iterationDepth > 0 && "iterationDepth <= 0");
 
+  // first iteration update before start
+  sendUCIIterationEndInfo();
+
   // ###########################################
   // ### BEGIN Iterative Deepening
   do {
     assert (currentBestRootMove != NOMOVE && "No  best root move");
-
-    LOG->trace("Searching depth {}", iterationDepth);
 
     searchStats.currentIterationDepth = iterationDepth;
     searchStats.bestMoveChanges = 0;
@@ -233,6 +237,8 @@ SearchResult Search::iterativeDeepening(Position *pPosition) {
     if (!stopSearchFlag) {
       sort(rootMoves.begin(), rootMoves.end());
     }
+
+    sendUCIIterationEndInfo();
 
     // break on stop signal
     if (stopSearchFlag || softTimeLimitReached()) break;
@@ -278,8 +284,13 @@ Value Search::searchRoot(Position *pPosition, const int depth) {
   // TODO: check draw by repetition or 50moves rule / necessary here???
 
   Value value = VALUE_NONE;
+  int i = 0;
   for (auto &move : rootMoves) {
-    LOG->trace("Root Move: {}", printMove(move));
+    //LOG->trace("Root Move: {}", printMove(move));
+
+    searchStats.currentRootMove = move;
+    searchStats.currentRootMoveNumber = ++i;
+    sendUCICurrentRootMove();
 
     value = searchMove(pPosition, depth, ROOT_PLY, move, true);
 
@@ -338,6 +349,7 @@ Value Search::searchMove(Position *pPosition, const int depth, const int ply, co
   if (pPosition->isLegalPosition()) {
     searchStats.nodesVisited++;
     currentVariation.push_back(move);
+    sendUCISearchUpdate();
     value = searchNonRoot(&position, depth - 1, ply + 1);
     currentVariation.pop_back();
   }
@@ -392,7 +404,7 @@ void Search::configureTimeLimits() {
     MilliSec timeLeft = (myColor == WHITE) ? searchLimits.whiteTime : searchLimits.blackTime;
 
     // Give some overhead time so that in games with very low available time we
-    // do not run outof time
+    // do not run out of time
     timeLeft -= 1'000; // this should do
 
     // when we know the move to go (until next time control) use them otherwise assume 40
@@ -466,7 +478,7 @@ bool Search::hardTimeLimitReached() {
  * @return the elapsed time in ms since the start of the search
  */
 MilliSec Search::elapsedTime() {
-  return elapsedTime(std::chrono::high_resolution_clock::now());
+  return elapsedTime(startTime);
 }
 
 /**
@@ -474,7 +486,8 @@ MilliSec Search::elapsedTime() {
  * @return the elapsed time from the start of the search to the given t
  */
 MilliSec Search::elapsedTime(std::chrono::time_point<std::chrono::steady_clock> t) {
-  return std::chrono::duration_cast<std::chrono::milliseconds>(t - startTime).count();
+  return std::chrono::duration_cast<std::chrono::milliseconds>(
+    std::chrono::high_resolution_clock::now() - t).count();
 }
 
 /**
@@ -483,7 +496,7 @@ MilliSec Search::elapsedTime(std::chrono::time_point<std::chrono::steady_clock> 
  * @return UCI filtered root moves
  */
 MoveList Search::generateRootMoves(Position *pPosition) {
-  MoveList *legalMoves = moveGenerators[ROOT_PLY].generatePseudoLegalMoves(GENALL, pPosition);
+  MoveList *legalMoves = moveGenerators[ROOT_PLY].generateLegalMoves(GENALL, pPosition);
   MoveList moveList;
   if (searchLimits.moves.empty()) { // if UCI searchmoves is empty then add all
     for (auto legalMove : *legalMoves) {
@@ -500,6 +513,81 @@ MoveList Search::generateRootMoves(Position *pPosition) {
     }
   }
   return moveList;
+}
+
+void Search::sendUCIIterationEndInfo() {
+
+  // DEBUG
+  MoveList pvList = MoveList();
+  pvList.push_back(currentBestRootMove);
+
+  std::string infoString =
+    fmt::format(
+      "depth {:d} seldepth {:d} multipv 1 {:d} nodes {:d} nps {:d} time {:d} pv {:s}",
+      searchStats.currentIterationDepth,
+      searchStats.currentExtraSearchDepth,
+      currentBestRootValue,
+      searchStats.nodesVisited,
+      getNps(),
+      elapsedTime(),
+      printMoveListUCI(pvList));
+
+  if (pEngine == nullptr) LOG->warn("<no engine> >> {}", infoString);
+  else
+    pEngine->sendIterationEndInfo(searchStats.currentIterationDepth,
+                                  searchStats.currentExtraSearchDepth,
+                                  currentBestRootValue,
+                                  searchStats.nodesVisited,
+                                  getNps(),
+                                  elapsedTime(),
+                                  pvList);
+}
+
+void Search::sendUCICurrentRootMove() {
+  std::string infoString =
+    fmt::format(
+      "currmove {:s} currmovenumber {:d}",
+      printMove(searchStats.currentRootMove),
+      searchStats.currentRootMoveNumber);
+
+  if (pEngine == nullptr) LOG->warn("<no engine> >> {}", infoString);
+  else
+    pEngine->sendCurrentRootMove(searchStats.currentRootMove,
+                                 searchStats.currentRootMoveNumber);
+}
+
+void Search::sendUCISearchUpdate() {
+  if (elapsedTime(lastUciUpdateTime) > UCI_UPDATE_INTERVAL) {
+    lastUciUpdateTime = std::chrono::high_resolution_clock::now();
+
+    std::string infoString = fmt::format(
+      "depth {:d} seldepth {:d} nodes {:d} nps {:d} time {:d} hashfull {:d}",
+      searchStats.currentIterationDepth,
+      searchStats.currentExtraSearchDepth,
+      searchStats.nodesVisited,
+      getNps(),
+      elapsedTime(),
+      0); // TODO
+
+    //(int) (1000 * ((float) transpositionTable.getNumberOfEntries() / transpositionTable.getMaxEntries())));
+    if (pEngine == nullptr) LOG->warn("<no engine>> {}", infoString);
+    else
+      pEngine->sendSearchUpdate(searchStats.currentIterationDepth,
+                                searchStats.currentExtraSearchDepth,
+                                searchStats.nodesVisited,
+                                getNps(),
+                                elapsedTime(),
+                                0);
+
+    infoString = fmt::format("currline {:s}",
+                             printMoveListUCI(currentVariation));
+    if (pEngine == nullptr) LOG->warn("<no engine> >> {}", infoString);
+    else pEngine->sendCurrentLine(currentVariation);
+  }
+}
+
+MilliSec Search::getNps() {
+  return 1000 * searchStats.nodesVisited / (1 + elapsedTime());
 }
 
 

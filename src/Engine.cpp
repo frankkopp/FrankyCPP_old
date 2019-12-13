@@ -112,7 +112,7 @@ void Engine::doMove(const std::string &moveStr) {
   LOG->warn("Invalid move {}", moveStr);
 }
 
-void Engine::startSearch(const UCISearchMode& uciSearchMode) {
+void Engine::startSearch(const UCISearchMode &uciSearchMode) {
   LOG->info("Engine: Start Search");
 
   if (search.isRunning()) {
@@ -151,16 +151,55 @@ void Engine::ponderHit() {
   LOG->error("Engine: Ponder Hit not implemented yet!");
 }
 
+void Engine::sendIterationEndInfo(int depth, int seldepth, int scoreInCP, int nodes, int nps,
+                                  MilliSec time, const MoveList &pv) const {
+  if (pUciHandler)
+    pUciHandler->sendIterationEndInfo(depth, seldepth, scoreInCP, nodes, nps, time, pv);
+  else
+    LOG->warn(
+      "<no uci handler>: Engine iteration end: depth {} seldepth {} multipv 1 {} nodes {} nps {} time {} pv {}",
+      depth,
+      seldepth,
+      scoreInCP,
+      nodes,
+      nps,
+      time,
+      printMoveListUCI(pv));
+}
+
+void Engine::sendCurrentRootMove(Move currmove, int movenumber) const {
+  if (pUciHandler) pUciHandler->sendCurrentRootMove(currmove, movenumber);
+  else
+    LOG->warn("<no uci handler>: Engine current move: currmove {} currmovenumber {}",
+              printMove(currmove),
+              movenumber);
+}
+
+void Engine::sendSearchUpdate(int depth, int seldepth, int nodes, int nps, MilliSec time,
+                              int hashfull) const {
+  if (pUciHandler) pUciHandler->sendSearchUpdate(depth, seldepth, nodes, nps, time, hashfull);
+  else
+    LOG->warn(
+      "<no uci handler>: Engine search update: depth {} seldepth {} nodes {} nps {} time {} hashfull {}",
+      depth,
+      seldepth,
+      nodes,
+      nps,
+      time,
+      hashfull);
+}
+
+void Engine::sendCurrentLine(const MoveList &moveList) const {
+  if (pUciHandler) pUciHandler->sendCurrentLine(moveList);
+  else
+    LOG->warn("<no uci handler>: Engine current line: {}", printMoveList(moveList));
+}
+
 void Engine::sendResult(Move bestMove, Move ponderMove) const {
   if (pUciHandler) pUciHandler->sendResult(bestMove, ponderMove);
   else
-    LOG->warn("No UCIHandler defined: Engine Result: Best Move = {} Ponder Move = {}",
+    LOG->warn("<no uci handler>: Engine Result: Best Move = {} Ponder Move = {}",
               printMoveVerbose(bestMove), printMoveVerbose(ponderMove));
-}
-
-void Engine::sendInfo(const std::string &info) const {
-  if (pUciHandler) pUciHandler->send("info string " + info);
-  else LOG->warn("No UCIHandler defined: info string {}", info);
 }
 
 void Engine::waitWhileSearching() {
@@ -203,6 +242,9 @@ int Engine::getInt(const std::string &value) const {
   }
   return intValue;
 }
+
+
+
 
 
 

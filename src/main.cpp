@@ -42,8 +42,8 @@ int main() {
   // initializes and configures logging - only needed once in main()
   LOGGING::init();
 
-  auto LOG = spdlog::get("Main_Logger");
-  LOG->info("Start {}", appName);
+//  auto LOG = spdlog::get("Main_Logger");
+//  LOG->info("Start {}", appName);
 
   INIT::init();
   Engine engine;

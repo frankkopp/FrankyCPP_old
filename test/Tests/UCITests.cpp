@@ -506,3 +506,25 @@ TEST_F(UCITest, moveTestDepth) {
   LOG->debug("SEARCH ENDED");
 
 }
+
+TEST_F(UCITest, testingBugs) {
+  ostringstream os;
+  Engine engine;
+
+  string command = "position startpos moves d2d4 d7d6 d4d5 c7c6 d5c6 b7c6 d1d6 d8d6 e2e4 b8a6 f1a6 c8a6 e4e5 d6e5";
+  LOG->info("COMMAND: " + command);
+  istringstream is(command);
+  UCI::Handler uciHandler(&engine, &is, &os);
+  uciHandler.loop();
+
+  command = "go wtime 48330 btime 49040 movestogo 33";
+  command = "go depth 4";
+  LOG->info("COMMAND: " + command);
+  is = istringstream(command);
+  uciHandler.loop(&is);
+
+  LOG->debug("Waiting until search ends...");
+  engine.waitWhileSearching();
+  LOG->debug("SEARCH ENDED");
+
+}

@@ -456,6 +456,15 @@ inline std::string printMoveList(const MoveList &moveList) {
   return os.str();
 }
 
+inline std::string printMoveListUCI(const MoveList &moveList) {
+  std::ostringstream os;
+  for (Move m : moveList) {
+    os << m;
+    if (m != moveList.back()) os << " ";
+  }
+  return os.str();
+}
+
 inline std::ostream &operator<<(std::ostream &os, const MoveList &moveList) {
   os << printMoveList(moveList);
   return os;

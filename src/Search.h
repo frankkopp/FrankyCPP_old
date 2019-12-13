@@ -64,6 +64,10 @@ class Search {
 
   std::shared_ptr<spdlog::logger> LOG = spdlog::get("Search_Logger");
 
+  // UCI related
+  constexpr static MilliSec UCI_UPDATE_INTERVAL = 1'000;
+  std::chrono::time_point<std::chrono::steady_clock> lastUciUpdateTime;
+  
   // thread control
   Semaphore initSemaphore; // used to block while initializing thread
   Semaphore searchSemaphore; // used to block while searching
@@ -156,6 +160,10 @@ private:
   bool hardTimeLimitReached();
   MilliSec elapsedTime();
   MilliSec elapsedTime(std::chrono::time_point<std::chrono::steady_clock> t);
+  void sendUCIIterationEndInfo();
+  void sendUCICurrentRootMove();
+  void sendUCISearchUpdate();
+  MilliSec getNps();
 };
 
 #endif // FRANKYCPP_SEARCH_H

@@ -49,7 +49,7 @@ class Engine {
   std::map<const std::string, UCI::Option> optionMap;
 
   // callback reference for sending responses to the uci ui
-  UCI::Handler *pUciHandler {nullptr};
+  UCI::Handler *pUciHandler{nullptr};
 
   // engine's search instance
   Search search = Search(this);
@@ -84,20 +84,26 @@ public:
 
   // commands
   void clearHash();
-  void setOption(const std::string& name, const std::string& value);
+  void setOption(const std::string &name, const std::string &value);
   std::string getOption(const std::string &name);
   void newGame();
-  void setPosition(const std::string& fen);
+  void setPosition(const std::string &fen);
   Position *getPosition() { return &position; };
-  void doMove(const std::string& moveStr);
-  void startSearch(const UCISearchMode& uciSearchMode);
+  void doMove(const std::string &moveStr);
+  void startSearch(const UCISearchMode &uciSearchMode);
   void stopSearch();
   bool isSearching();
   void ponderHit();
 
   // send to UCI
+  void
+  sendIterationEndInfo(int depth, int seldepth, int scoreInCP, int nodes, int nps, MilliSec time,
+                       const MoveList& pv) const;
+  void sendCurrentRootMove(Move currmove, int movenumber) const;
+  void
+  sendSearchUpdate(int depth, int seldepth, int nodes, int nps, MilliSec time, int hashfull) const;
+  void sendCurrentLine(const MoveList& moveList) const;
   void sendResult(Move bestMove, Move ponderMove) const;
-  void sendInfo(const std::string &info) const;
 
   // other
   void waitWhileSearching();
