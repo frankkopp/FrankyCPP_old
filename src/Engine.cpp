@@ -151,7 +151,7 @@ void Engine::ponderHit() {
   LOG->error("Engine: Ponder Hit not implemented yet!");
 }
 
-void Engine::sendIterationEndInfo(int depth, int seldepth, int scoreInCP, int nodes, int nps,
+void Engine::sendIterationEndInfo(int depth, int seldepth, int scoreInCP, long nodes, int nps,
                                   MilliSec time, const MoveList &pv) const {
   if (pUciHandler)
     pUciHandler->sendIterationEndInfo(depth, seldepth, scoreInCP, nodes, nps, time, pv);
@@ -175,7 +175,7 @@ void Engine::sendCurrentRootMove(Move currmove, int movenumber) const {
               movenumber);
 }
 
-void Engine::sendSearchUpdate(int depth, int seldepth, int nodes, int nps, MilliSec time,
+void Engine::sendSearchUpdate(int depth, int seldepth, long nodes, int nps, MilliSec time,
                               int hashfull) const {
   if (pUciHandler) pUciHandler->sendSearchUpdate(depth, seldepth, nodes, nps, time, hashfull);
   else

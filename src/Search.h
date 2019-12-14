@@ -38,6 +38,7 @@ class Engine;
 #include "Semaphore.h"
 #include "Position.h"
 #include "SearchLimits.h"
+#include "Evaluator.h"
 
 class SearchResult {
 public:
@@ -72,6 +73,8 @@ class Search {
   Semaphore initSemaphore; // used to block while initializing thread
   Semaphore searchSemaphore; // used to block while searching
   std::thread myThread;
+
+  // pointer to engine of available
   Engine *pEngine{nullptr};
 
   // search mode
@@ -111,6 +114,9 @@ class Search {
   // prepared move generator instances for each depth
   MoveGenerator moveGenerators[MAX_SEARCH_DEPTH];
 
+  // Evaluator
+  Evaluator evaluator = Evaluator();
+
 public:
   ////////////////////////////////////////////////
   ///// CONSTRUCTORS
@@ -145,12 +151,12 @@ private:
   void run();
 
   SearchResult iterativeDeepening(Position *pPosition);
-  Value searchRoot(Position *pPosition, const int depth);
-  Value searchNonRoot(Position *pPosition, const int depth, const int ply);
-  Value searchMove(Position *pPosition, const int depth, const int ply, const Move &move,
-                   const bool isRoot);
-  Value qsearch(Position *pPosition, const int ply);
-  Value evaluate(Position *position, const int ply);
+  Value searchRoot(Position *pPosition, int depth);
+  Value searchNonRoot(Position *pPosition, int depth, int ply);
+  Value searchMove(Position *pPosition, int depth, int ply, const Move &move,
+                   bool isRoot);
+  Value qsearch(Position *pPosition, int ply);
+  Value evaluate(Position *position, int ply);
 
   MoveList generateRootMoves(Position *pPosition);
   void configureTimeLimits();

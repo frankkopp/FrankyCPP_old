@@ -314,11 +314,11 @@ namespace UCI {
   }
 
   void Handler::registerCommand() {
-    UCI_LOG->warn("UCI Protocol Command: register not implemented!");
+    LOG->warn("UCI Protocol Command: register not implemented!");
   }
 
   void Handler::debugCommand() {
-    UCI_LOG->warn("UCI Protocol Command: debug not implemented!");
+    LOG->warn("UCI Protocol Command: debug not implemented!");
   }
 
   void Handler::send(const std::string &toSend) const {
@@ -327,37 +327,66 @@ namespace UCI {
   }
 
   void Handler::sendResult(Move bestMove, Move ponderMove) {
-    std::string toSend = "bestmove " + printMove(bestMove);
-    if (isMove(ponderMove)) toSend += " ponderOption " + printMove(ponderMove);
-    send(toSend);
+    send(
+      fmt::format(
+        "bestmove {}{}",
+        printMove(bestMove),
+        (isMove(ponderMove) ? " ponderOption " + printMove(ponderMove) : "")));
   }
 
   void Handler::sendCurrentLine(const MoveList &moveList) {
-    send(fmt::format("currline {}", printMoveList(moveList)));
+    send(
+      fmt::format(
+        "currline {}",
+        printMoveListUCI(moveList)));
   }
 
-  void Handler::sendIterationEndInfo(int depth, int seldepth, int scoreInCP, int nodes, int nps,
-                                     MilliSec time, MoveList pv) {
-    // TODO: score needs special treatment
+  void Handler::sendIterationEndInfo(int depth, int seldepth, int scoreInCP, long nodes, int nps,
+                                     MilliSec time, const MoveList &pv) {
     send(fmt::format(
-      "info depth {:d} seldepth {:d} multipv 1 {:d} nodes {:d} nps {:d} time {:d} pv {:s}",
-      depth, seldepth, scoreInCP, nodes, nps, time, printMoveListUCI(pv)
+      "info depth {} seldepth {} multipv 1 {} nodes {} nps {} time {} pv {}",
+      depth, seldepth, getScoreString(scoreInCP), nodes, nps, time, printMoveListUCI(pv)
     ));
   }
 
   void Handler::sendCurrentRootMove(Move currmove, int movenumber) {
     send(fmt::format(
-      "currmove {:s} currmovenumber {:d}",
-      printMove(currmove),
-      movenumber));
+      "currmove {} currmovenumber {}",
+      printMove(currmove), movenumber));
   }
 
-  void Handler::sendSearchUpdate(int depth, int seldepth, int nodes, int nps, MilliSec time,
+  void Handler::sendSearchUpdate(int depth, int seldepth, long nodes, int nps, MilliSec time,
                                  int hashfull) {
     send(fmt::format(
-      "depth {:d} seldepth {:d} nodes {:d} nps {:d} time {:d} hashfull {:d}",
+      "depth {} seldepth {} nodes {} nps {} time {} hashfull {}",
       depth, seldepth, nodes, nps, time, hashfull));
   }
 
+/**
+   * @param value
+   * @return a UCI compatible string for th score in cp or in mate in ply
+   * TODO add full protocoll (lowerbound, upperbound, etc.)
+   */
+  std::string Handler::getScoreString(int value) {
+    std::string scoreString;
+    if (isCheckMateValue(value)) {
+      scoreString = "score mate ";
+      scoreString += value < 0 ? "-" : "";
+      scoreString += std::to_string((VALUE_CHECKMATE - std::abs(value) + 1) / 2);
+    }
+    else {
+      scoreString = fmt::format("score cp {}", value);
+    }
+    return scoreString;
+  }
+
+  /**
+ * @param value
+ * @return true if absolute value is a mate value, false otherwise
+ */
+  bool Handler::isCheckMateValue(int value) {
+    int abs = std::abs(value);
+    return abs >= VALUE_CHECKMATE_THRESHOLD && abs <= VALUE_CHECKMATE;
+  }
 
 }

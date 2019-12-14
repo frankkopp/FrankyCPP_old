@@ -57,7 +57,11 @@ namespace LOGGING {
     SEARCH_LOG->sinks().push_back(sharedFileSink);
     SEARCH_LOG->set_level(spdlog::level::trace);
     SEARCH_LOG->flush_on(spdlog::level::trace);
-    //SEARCH_LOG->set_pattern("[%H:%M:%S:%f] [%n] [%l] [thread %t] %v");
+
+    auto EVAL_LOG = spdlog::stdout_color_mt("Eval_Logger");
+    EVAL_LOG->sinks().push_back(sharedFileSink);
+    EVAL_LOG->set_level(spdlog::level::trace);
+    EVAL_LOG->flush_on(spdlog::level::trace);
 
     auto UCIHANDLER_LOG = spdlog::stdout_color_mt("UCIHandler_Logger");
     UCIHANDLER_LOG->sinks().push_back(sharedFileSink);

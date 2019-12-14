@@ -97,11 +97,11 @@ public:
 
   // send to UCI
   void
-  sendIterationEndInfo(int depth, int seldepth, int scoreInCP, int nodes, int nps, MilliSec time,
+  sendIterationEndInfo(int depth, int seldepth, int scoreInCP, long nodes, int nps, MilliSec time,
                        const MoveList& pv) const;
   void sendCurrentRootMove(Move currmove, int movenumber) const;
   void
-  sendSearchUpdate(int depth, int seldepth, int nodes, int nps, MilliSec time, int hashfull) const;
+  sendSearchUpdate(int depth, int seldepth, long nodes, int nps, MilliSec time, int hashfull) const;
   void sendCurrentLine(const MoveList& moveList) const;
   void sendResult(Move bestMove, Move ponderMove) const;
 

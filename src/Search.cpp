@@ -88,7 +88,9 @@ void Search::stopSearch() {
   assert(!running);
 }
 
-bool Search::isRunning() { return running; }
+bool Search::isRunning() {
+  return running;
+}
 
 void Search::waitWhileSearching() {
   if (!running) return;
@@ -290,7 +292,7 @@ Value Search::searchRoot(Position *pPosition, const int depth) {
 
     searchStats.currentRootMove = move;
     searchStats.currentRootMoveNumber = ++i;
-    sendUCICurrentRootMove();
+    if (depth > 3) sendUCICurrentRootMove(); // avoid protocol flooding
 
     value = searchMove(pPosition, depth, ROOT_PLY, move, true);
 
@@ -369,8 +371,6 @@ Value Search::qsearch(Position *pPosition, const int ply) {
 }
 
 Value Search::evaluate(Position *pPosition, const int ply) {
-  //  LOG->trace("Evaluate {}", printMoveList(currentVariation));
-
   // count all leaf nodes evaluated
   searchStats.leafPositionsEvaluated++;
 
@@ -380,8 +380,7 @@ Value Search::evaluate(Position *pPosition, const int ply) {
     return VALUE_ONE;
   }
 
-  // TODO: evaluation
-  return VALUE_DRAW;
+  return evaluator.evaluate(pPosition);
 }
 
 inline bool Search::stopConditions() {
@@ -523,7 +522,7 @@ void Search::sendUCIIterationEndInfo() {
 
   std::string infoString =
     fmt::format(
-      "depth {:d} seldepth {:d} multipv 1 {:d} nodes {:d} nps {:d} time {:d} pv {:s}",
+      "depth {} seldepth {} multipv 1 {} nodes {} nps {} time {} pv {}",
       searchStats.currentIterationDepth,
       searchStats.currentExtraSearchDepth,
       currentBestRootValue,
@@ -546,7 +545,7 @@ void Search::sendUCIIterationEndInfo() {
 void Search::sendUCICurrentRootMove() {
   std::string infoString =
     fmt::format(
-      "currmove {:s} currmovenumber {:d}",
+      "currmove {} currmovenumber {}",
       printMove(searchStats.currentRootMove),
       searchStats.currentRootMoveNumber);
 
@@ -561,7 +560,7 @@ void Search::sendUCISearchUpdate() {
     lastUciUpdateTime = std::chrono::high_resolution_clock::now();
 
     std::string infoString = fmt::format(
-      "depth {:d} seldepth {:d} nodes {:d} nps {:d} time {:d} hashfull {:d}",
+      "depth {} seldepth {} nodes {} nps {} time {} hashfull {}",
       searchStats.currentIterationDepth,
       searchStats.currentExtraSearchDepth,
       searchStats.nodesVisited,
@@ -579,7 +578,7 @@ void Search::sendUCISearchUpdate() {
                                 elapsedTime(),
                                 0);
 
-    infoString = fmt::format("currline {:s}",
+    infoString = fmt::format("currline {}",
                              printMoveListUCI(currentVariation));
     if (pEngine == nullptr) LOG->warn("<no engine> >> {}", infoString);
     else pEngine->sendCurrentLine(currentVariation);
