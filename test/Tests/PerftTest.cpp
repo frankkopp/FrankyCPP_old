@@ -71,7 +71,7 @@ TEST_F(PerftTest, stdPerftOD) {
   };
   // @formatter:on
 
-  int maxDepth = 6;
+  int maxDepth = 5;
 
   for (int i = 1; i <= maxDepth; i++) {
     p.perft(i, true);

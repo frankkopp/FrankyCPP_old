@@ -106,13 +106,15 @@ class Search {
 
   // current best move
   Move currentBestRootMove = NOMOVE;
-  Value currentBestRootValue = VALUE_NONE;
 
   // store the current variation
   MoveList currentVariation;
 
+  // store the current principal variation
+  MoveList pv[MAX_SEARCH_DEPTH]{};
+
   // prepared move generator instances for each depth
-  MoveGenerator moveGenerators[MAX_SEARCH_DEPTH];
+  MoveGenerator moveGenerators[MAX_SEARCH_DEPTH]{};
 
   // Evaluator
   Evaluator evaluator = Evaluator();
@@ -151,7 +153,7 @@ private:
   void run();
 
   SearchResult iterativeDeepening(Position *pPosition);
-  Value searchRoot(Position *pPosition, int depth);
+  Move searchRoot(Position *pPosition, int depth);
   Value searchNonRoot(Position *pPosition, int depth, int ply);
   Value searchMove(Position *pPosition, int depth, int ply, const Move &move,
                    bool isRoot);
@@ -170,6 +172,7 @@ private:
   void sendUCICurrentRootMove();
   void sendUCISearchUpdate();
   MilliSec getNps();
+  void savePV(Move move, MoveList &src, MoveList &dest);
 };
 
 #endif // FRANKYCPP_SEARCH_H

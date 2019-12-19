@@ -49,7 +49,7 @@ constexpr int MAX_MOVES = 256;
 
 /** Max number of search depths */
 constexpr int MAX_PLY = 128;
-constexpr int MAX_SEARCH_DEPTH = MAX_PLY;
+constexpr int MAX_SEARCH_DEPTH = 128;
 
 /** the ply of the root move */
 constexpr int ROOT_PLY = 0;

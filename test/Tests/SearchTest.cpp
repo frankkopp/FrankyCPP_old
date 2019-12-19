@@ -80,7 +80,7 @@ TEST_F(SearchTest, perft) {
   searchLimits.setupLimits();
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
-  LOG->info("Nodes per sec: {:n}", long(search.getSearchStats().leafPositionsEvaluated/(search.getSearchStats().lastSearchTime/1e9)));
+  LOG->info("Nodes per sec: {:n}", long(search.getSearchStats().leafPositionsEvaluated/(search.getSearchStats().lastSearchTime/1e3)));
   LOG->info("Leaf nodes:    {:n}", search.getSearchStats().leafPositionsEvaluated);
   ASSERT_EQ(4'865'609, search.getSearchStats().leafPositionsEvaluated);
   // 4 = 197'281
@@ -93,6 +93,7 @@ TEST_F(SearchTest, depth) {
   Search search;
   SearchLimits searchLimits;
   Position position;
+  //position.doMove(createMove("e2e4"));
   searchLimits.depth = 6;
   searchLimits.setupLimits();
   search.startSearch(position, searchLimits);
@@ -145,5 +146,40 @@ TEST_F(SearchTest, timeblack) {
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
   ASSERT_TRUE(search.getSearchStats().lastSearchTime < (searchLimits.blackTime/40));
+}
+
+TEST_F(SearchTest, negamax) {
+  Search search;
+  Position position;
+  SearchLimits searchLimits;
+
+  spdlog::set_level(spdlog::level::debug);
+
+  position = Position("4k3/8/8/8/4p3/8/P7/3QK3 w - - 0 1");
+  searchLimits.depth = 3;
+  searchLimits.setupLimits();
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+
+  position = Position("4k3/8/8/8/4p3/8/P7/3QK3 b - - 0 1");
+  searchLimits.depth = 4;
+  searchLimits.setupLimits();
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+}
+
+
+TEST_F(SearchTest, profile) {
+  int i = 0;
+  while (++i < 1'000) {
+    Search search;
+    SearchLimits searchLimits;
+    Position position;
+    searchLimits.whiteTime = 600'000;
+    searchLimits.blackTime = 600'000;
+    searchLimits.setupLimits();
+    search.startSearch(position, searchLimits);
+    search.waitWhileSearching();
+  }
 }
 
