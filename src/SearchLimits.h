@@ -82,8 +82,9 @@ public:
   friend std::ostream &operator<<(std::ostream &os, const SearchLimits &limits);
   void setupLimits();
 
-private:
+  void ponderHit();
 
+  void ponderStop();
 };
 
 

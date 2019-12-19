@@ -70,9 +70,9 @@ namespace LOGGING {
 
     auto uciOutSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
     auto UCI_LOG = spdlog::basic_logger_mt("UCI_Logger", "FrankyCPP_uci.log");
-    // UCI_LOG->sinks().push_back(uciOutSink);
+    UCI_LOG->sinks().push_back(uciOutSink);
     UCI_LOG->set_pattern("[%H:%M:%S:%f] %L %v");
-    UCI_LOG->set_level(spdlog::level::info);
+    UCI_LOG->set_level(spdlog::level::debug);
     UCI_LOG->flush_on(spdlog::level::trace);
 
     // Logger for Unit Tests

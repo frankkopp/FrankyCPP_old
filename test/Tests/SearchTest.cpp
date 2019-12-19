@@ -76,13 +76,13 @@ TEST_F(SearchTest, perft) {
   SearchLimits searchLimits;
   Position position;
   searchLimits.perft = true;
-  searchLimits.depth = 5;
+  searchLimits.depth = 6;
   searchLimits.setupLimits();
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
-  LOG->info("Nodes per sec: {:n}", long(search.getSearchStats().leafPositionsEvaluated/(search.getSearchStats().lastSearchTime/1e3)));
+  LOG->info("Nodes per sec: {:n}", (search.getSearchStats().leafPositionsEvaluated*1'000)/search.getSearchStats().lastSearchTime);
   LOG->info("Leaf nodes:    {:n}", search.getSearchStats().leafPositionsEvaluated);
-  ASSERT_EQ(4'865'609, search.getSearchStats().leafPositionsEvaluated);
+  ASSERT_EQ(119'060'324, search.getSearchStats().leafPositionsEvaluated);
   // 4 = 197'281
   // 5 = 4'865'609
   // 6 = 119'060'324

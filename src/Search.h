@@ -44,13 +44,12 @@ class SearchResult {
 public:
   Move bestMove = NOMOVE;
   Move ponderMove = NOMOVE;
-  Value resultValue = VALUE_NONE;
   int64_t time = -1;
   int depth = 0;
   int extraDepth = 0;
 
   std::string str() const {
-    return "Best Move: " + printMove(bestMove) + " (" + std::to_string(resultValue) + ") "
+    return "Best Move: " + printMove(bestMove) + " (" + std::to_string(valueOf(bestMove)) + ") "
            + "Ponder Move: " + printMove(ponderMove) + " Depth: " + std::to_string(depth) + "/" +
            std::to_string(extraDepth);
   }
@@ -104,9 +103,6 @@ class Search {
   // list of moves at the root
   MoveList rootMoves;
 
-  // current best move
-  Move currentBestRootMove = NOMOVE;
-
   // store the current variation
   MoveList currentVariation;
 
@@ -146,6 +142,7 @@ public:
   /** return search stats instance */
   inline const SearchStats &getSearchStats() const { return searchStats; }
 
+  void ponderhit();
 private:
   ////////////////////////////////////////////////
   ///// PRIVATE
@@ -153,7 +150,7 @@ private:
   void run();
 
   SearchResult iterativeDeepening(Position *pPosition);
-  Move searchRoot(Position *pPosition, int depth);
+  void searchRoot(Position *pPosition, const int depth);
   Value searchNonRoot(Position *pPosition, int depth, int ply);
   Value searchMove(Position *pPosition, int depth, int ply, const Move &move,
                    bool isRoot);
@@ -173,6 +170,7 @@ private:
   void sendUCISearchUpdate();
   MilliSec getNps();
   void savePV(Move move, MoveList &src, MoveList &dest);
+  void sendUCIBestMove();
 };
 
 #endif // FRANKYCPP_SEARCH_H

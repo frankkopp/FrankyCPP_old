@@ -115,6 +115,15 @@ void SearchLimits::setupLimits() {
   }
 }
 
+void SearchLimits::ponderHit() {
+  ponder=false;
+  setupLimits();
+}
+
+void SearchLimits::ponderStop() {
+  ponder=false;
+}
+
 std::ostream &operator<<(std::ostream &os, const SearchLimits &limits) {
   os << limits.str();
   return os;
@@ -131,3 +140,5 @@ std::string SearchLimits::str() const {
      << " maxDepth: " << maxDepth;
   return os.str();
 }
+
+

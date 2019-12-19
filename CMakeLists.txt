@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 # some extra compiler flags
 set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 #set(CMAKE_CXX_FLAGS_DEBUG "-Og")
-#set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+#set(CMAKE_CXX_FLAGS_RELEASE "-Ofast")
 
 # some extra linker flags
 #set(CMAKE_EXE_LINKER_FLAGS "xxx")

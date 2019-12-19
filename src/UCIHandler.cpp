@@ -129,6 +129,8 @@ namespace UCI {
   }
 
   void Handler::positionCommand(std::istringstream &inStream) {
+
+    // retrieve additional command parameter
     std::string token, startFen;
     inStream >> token;
 
@@ -331,7 +333,7 @@ namespace UCI {
       fmt::format(
         "bestmove {}{}",
         printMove(bestMove),
-        (isMove(ponderMove) ? " ponderOption " + printMove(ponderMove) : "")));
+        (isMove(ponderMove) ? " ponder " + printMove(ponderMove) : "")));
   }
 
   void Handler::sendCurrentLine(const MoveList &moveList) {
@@ -362,7 +364,7 @@ namespace UCI {
       depth, seldepth, nodes, nps, time, hashfull));
   }
 
-/**
+  /**
    * @param value
    * @return a UCI compatible string for th score in cp or in mate in ply
    * TODO add full protocoll (lowerbound, upperbound, etc.)
@@ -381,9 +383,9 @@ namespace UCI {
   }
 
   /**
- * @param value
- * @return true if absolute value is a mate value, false otherwise
- */
+   * @param value
+   * @return true if absolute value is a mate value, false otherwise
+   */
   bool Handler::isCheckMateValue(int value) {
     int abs = std::abs(value);
     return abs >= VALUE_CHECKMATE_THRESHOLD && abs <= VALUE_CHECKMATE;

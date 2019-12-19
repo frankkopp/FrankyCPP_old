@@ -43,12 +43,12 @@ public:
     // turn off info and below logging in the application
     spdlog::set_level(spdlog::level::trace);
     auto UCI_LOG = spdlog::get("UCI_Logger");
-    UCI_LOG->set_level(spdlog::level::info);
+    UCI_LOG->set_level(spdlog::level::debug);
   }
   shared_ptr<spdlog::logger> LOG = spdlog::get("Test_Logger");
 protected:
   void SetUp() override {
-    LOG->set_level(spdlog::level::info);
+    LOG->set_level(spdlog::level::debug);
   }
   void TearDown() override {}
 };
@@ -95,8 +95,8 @@ TEST_F(UCITest, setoptionTest) {
   istringstream is(command);
   UCI::Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
-  ASSERT_EQ("2048", engine.getOption("Hash"));
-  ASSERT_EQ(2048, engine.config.hash);
+//  ASSERT_EQ("2048", engine.getOption("Hash"));
+//  ASSERT_EQ(2048, engine.config.hash);
 
   command = "setoption name Ponder value false";
   LOG->info("COMMAND: " + command);
@@ -195,272 +195,317 @@ TEST_F(UCITest, searchLimitsTest) {
   ostringstream os;
   Engine engine;
 
-  { // perft
-    string command = "go perft 4";
-    LOG->info("COMMAND: " + command);
-    istringstream is(command);
-    UCI::Handler uciHandler(&engine, &is, &os);
-    uciHandler.loop();
-    SearchLimits searchLimits = engine.getSearchLimits();
-    engine.stopSearch();
-    engine.waitWhileSearching();
-    ASSERT_TRUE(searchLimits.perft);
-    ASSERT_FALSE(searchLimits.infinite);
-    ASSERT_FALSE(searchLimits.ponder);
-    ASSERT_FALSE(searchLimits.timeControl);
-    ASSERT_EQ(4, searchLimits.maxDepth);
-  }
+  string command = "go perft 4";
+  LOG->info("COMMAND: " + command);
+  istringstream is(command);
+  UCI::Handler uciHandler(&engine, &is, &os);
+  uciHandler.loop();
+  SearchLimits searchLimits = engine.getSearchLimits();
+  engine.stopSearch();
+  engine.waitWhileSearching();
+  ASSERT_TRUE(searchLimits.perft);
+  ASSERT_FALSE(searchLimits.infinite);
+  ASSERT_FALSE(searchLimits.ponder);
+  ASSERT_FALSE(searchLimits.timeControl);
+  ASSERT_EQ(4, searchLimits.maxDepth);
+}
 
-  { // infinite
-    string command = "go infinite";
-    LOG->info("COMMAND: " + command);
-    istringstream is(command);
-    UCI::Handler uciHandler(&engine, &is, &os);
-    uciHandler.loop();
-    SearchLimits searchLimits = engine.getSearchLimits();
-    engine.stopSearch();
-    engine.waitWhileSearching();
-    ASSERT_FALSE(searchLimits.perft);
-    ASSERT_TRUE(searchLimits.infinite);
-    ASSERT_FALSE(searchLimits.ponder);
-    ASSERT_FALSE(searchLimits.timeControl);
-    ASSERT_EQ(MAX_PLY, searchLimits.maxDepth);
-  }
+TEST_F(UCITest, goInfinite) {
 
-  { // ponder
-    string command = "go ponder";
-    LOG->info("COMMAND: " + command);
-    istringstream is(command);
-    UCI::Handler uciHandler(&engine, &is, &os);
-    uciHandler.loop();
-    SearchLimits searchLimits = engine.getSearchLimits();
-    engine.stopSearch();
-    engine.waitWhileSearching();
-    ASSERT_FALSE(searchLimits.perft);
-    ASSERT_FALSE(searchLimits.infinite);
-    ASSERT_TRUE(searchLimits.ponder);
-    ASSERT_FALSE(searchLimits.timeControl);
-    ASSERT_EQ(MAX_PLY, searchLimits.maxDepth);
-  }
+  ostringstream os;
+  Engine engine;
 
-  { // mate infinite
-    string command = "go mate 4";
-    LOG->info("COMMAND: " + command);
-    istringstream is(command);
-    UCI::Handler uciHandler(&engine, &is, &os);
-    uciHandler.loop();
-    SearchLimits searchLimits = engine.getSearchLimits();
-    engine.stopSearch();
-    engine.waitWhileSearching();
-    ASSERT_FALSE(searchLimits.perft);
-    ASSERT_FALSE(searchLimits.infinite);
-    ASSERT_FALSE(searchLimits.ponder);
-    ASSERT_FALSE(searchLimits.timeControl);
-    ASSERT_EQ(4, searchLimits.mate);
-    ASSERT_EQ(MAX_PLY, searchLimits.maxDepth);
-  }
+  string command = "go infinite";
+  LOG->info("COMMAND: " + command);
+  istringstream is(command);
+  UCI::Handler uciHandler(&engine, &is, &os);
+  uciHandler.loop();
+  SearchLimits searchLimits = engine.getSearchLimits();
+  engine.stopSearch();
+  engine.waitWhileSearching();
+  ASSERT_FALSE(searchLimits.perft);
+  ASSERT_TRUE(searchLimits.infinite);
+  ASSERT_FALSE(searchLimits.ponder);
+  ASSERT_FALSE(searchLimits.timeControl);
+  ASSERT_EQ(MAX_PLY, searchLimits.maxDepth);
+}
 
-  { // mate depth limited
-    string command = "go mate 4 depth 4";
-    LOG->info("COMMAND: " + command);
-    istringstream is(command);
-    UCI::Handler uciHandler(&engine, &is, &os);
-    uciHandler.loop();
-    SearchLimits searchLimits = engine.getSearchLimits();
-    engine.stopSearch();
-    engine.waitWhileSearching();
-    ASSERT_FALSE(searchLimits.perft);
-    ASSERT_FALSE(searchLimits.infinite);
-    ASSERT_FALSE(searchLimits.ponder);
-    ASSERT_FALSE(searchLimits.timeControl);
-    ASSERT_EQ(4, searchLimits.mate);
-    ASSERT_EQ(4, searchLimits.maxDepth);
-  }
+TEST_F(UCITest, goPonder) {
+  ostringstream os;
+  Engine engine;
 
-  { // mate time limited
-    string command = "go mate 4 movetime 15";
-    LOG->info("COMMAND: " + command);
-    istringstream is(command);
-    UCI::Handler uciHandler(&engine, &is, &os);
-    uciHandler.loop();
-    SearchLimits searchLimits = engine.getSearchLimits();
-    engine.stopSearch();
-    engine.waitWhileSearching();
-    ASSERT_FALSE(searchLimits.perft);
-    ASSERT_FALSE(searchLimits.infinite);
-    ASSERT_FALSE(searchLimits.ponder);
-    ASSERT_TRUE(searchLimits.timeControl);
-    ASSERT_EQ(4, searchLimits.mate);
-    ASSERT_EQ(MAX_PLY, searchLimits.maxDepth);
-    ASSERT_EQ(15, searchLimits.moveTime);
-  }
+  string command = "go ponder movetime 10000";
+  LOG->info("COMMAND: " + command);
+  istringstream is(command);
+  UCI::Handler uciHandler(&engine, &is, &os);
+  uciHandler.loop();
 
-  { // mate depth and time limited
-    string command = "go mate 4 depth 4 movetime 15";
-    LOG->info("COMMAND: " + command);
-    istringstream is(command);
-    UCI::Handler uciHandler(&engine, &is, &os);
-    uciHandler.loop();
-    SearchLimits searchLimits = engine.getSearchLimits();
-    engine.stopSearch();
-    engine.waitWhileSearching();
-    ASSERT_FALSE(searchLimits.perft);
-    ASSERT_FALSE(searchLimits.infinite);
-    ASSERT_FALSE(searchLimits.ponder);
-    ASSERT_TRUE(searchLimits.timeControl);
-    ASSERT_EQ(4, searchLimits.mate);
-    ASSERT_EQ(4, searchLimits.maxDepth);
-    ASSERT_EQ(15, searchLimits.moveTime);
-  }
+  ASSERT_FALSE(engine.getSearchLimits().perft);
+  ASSERT_FALSE(engine.getSearchLimits().infinite);
+  ASSERT_TRUE(engine.getSearchLimits().ponder);
+  ASSERT_FALSE(engine.getSearchLimits().timeControl);
+  ASSERT_EQ(MAX_PLY, engine.getSearchLimits().maxDepth);
 
-  { // normal game with time for each player
-    string command = "go wtime 500001 btime 500002";
-    LOG->info("COMMAND: " + command);
-    istringstream is(command);
-    UCI::Handler uciHandler(&engine, &is, &os);
-    uciHandler.loop();
-    SearchLimits searchLimits = engine.getSearchLimits();
-    engine.stopSearch();
-    engine.waitWhileSearching();
-    ASSERT_FALSE(searchLimits.perft);
-    ASSERT_FALSE(searchLimits.infinite);
-    ASSERT_FALSE(searchLimits.ponder);
-    ASSERT_TRUE(searchLimits.timeControl);
-    ASSERT_EQ(MAX_PLY, searchLimits.maxDepth);
-    ASSERT_EQ(500'001, searchLimits.whiteTime);
-    ASSERT_EQ(500'002, searchLimits.blackTime);
-  }
+  sleep(1);
+  engine.stopSearch();
+  engine.waitWhileSearching();
+}
 
-  { // normal game with time for each player and remaining moves until time control
-    string command = "go wtime 300001 btime 300002 movestogo 20";
-    LOG->info("COMMAND: " + command);
-    istringstream is(command);
-    UCI::Handler uciHandler(&engine, &is, &os);
-    uciHandler.loop();
-    SearchLimits searchLimits = engine.getSearchLimits();
-    engine.stopSearch();
-    engine.waitWhileSearching();
-    ASSERT_FALSE(searchLimits.perft);
-    ASSERT_FALSE(searchLimits.infinite);
-    ASSERT_FALSE(searchLimits.ponder);
-    ASSERT_TRUE(searchLimits.timeControl);
-    ASSERT_EQ(MAX_PLY, searchLimits.maxDepth);
-    ASSERT_EQ(300'001, searchLimits.whiteTime);
-    ASSERT_EQ(300'002, searchLimits.blackTime);
-    ASSERT_EQ(20, searchLimits.movesToGo);
-  }
+TEST_F(UCITest, goMate) {
+  ostringstream os;
+  Engine engine;
 
-  { // normal game with time for each player and increases per move
-    string command = "go wtime 300001 btime 300002 winc 2001 binc 2002";
-    LOG->info("COMMAND: " + command);
-    istringstream is(command);
-    UCI::Handler uciHandler(&engine, &is, &os);
-    uciHandler.loop();
-    SearchLimits searchLimits = engine.getSearchLimits();
-    engine.stopSearch();
-    engine.waitWhileSearching();
-    ASSERT_FALSE(searchLimits.perft);
-    ASSERT_FALSE(searchLimits.infinite);
-    ASSERT_FALSE(searchLimits.ponder);
-    ASSERT_TRUE(searchLimits.timeControl);
-    ASSERT_EQ(MAX_PLY, searchLimits.maxDepth);
-    ASSERT_EQ(300'001, searchLimits.whiteTime);
-    ASSERT_EQ(300'002, searchLimits.blackTime);
-    ASSERT_EQ(2001, searchLimits.whiteInc);
-    ASSERT_EQ(2002, searchLimits.blackInc);
-  }
+  string command = "go mate 4";
+  LOG->info("COMMAND: " + command);
+  istringstream is(command);
+  UCI::Handler uciHandler(&engine, &is, &os);
+  uciHandler.loop();
+  SearchLimits searchLimits = engine.getSearchLimits();
+  engine.stopSearch();
+  engine.waitWhileSearching();
+  ASSERT_FALSE(searchLimits.perft);
+  ASSERT_FALSE(searchLimits.infinite);
+  ASSERT_FALSE(searchLimits.ponder);
+  ASSERT_FALSE(searchLimits.timeControl);
+  ASSERT_EQ(4, searchLimits.mate);
+  ASSERT_EQ(MAX_PLY, searchLimits.maxDepth);
+}
 
-  { // move time limited
-    string command = "go movetime 15";
-    LOG->info("COMMAND: " + command);
-    istringstream is(command);
-    UCI::Handler uciHandler(&engine, &is, &os);
-    uciHandler.loop();
-    SearchLimits searchLimits = engine.getSearchLimits();
-    engine.stopSearch();
-    engine.waitWhileSearching();
-    ASSERT_FALSE(searchLimits.perft);
-    ASSERT_FALSE(searchLimits.infinite);
-    ASSERT_FALSE(searchLimits.ponder);
-    ASSERT_TRUE(searchLimits.timeControl);
-    ASSERT_EQ(0, searchLimits.mate);
-    ASSERT_EQ(MAX_PLY, searchLimits.maxDepth);
-    ASSERT_EQ(15, searchLimits.moveTime);
-  }
+TEST_F(UCITest, goMateDepth) {
+  ostringstream os;
+  Engine engine;
 
-  { // depth only limited
-    string command = "go depth 5";
-    LOG->info("COMMAND: " + command);
-    istringstream is(command);
-    UCI::Handler uciHandler(&engine, &is, &os);
-    uciHandler.loop();
-    SearchLimits searchLimits = engine.getSearchLimits();
-    engine.stopSearch();
-    engine.waitWhileSearching();
-    ASSERT_FALSE(searchLimits.perft);
-    ASSERT_FALSE(searchLimits.infinite);
-    ASSERT_FALSE(searchLimits.ponder);
-    ASSERT_FALSE(searchLimits.timeControl);
-    ASSERT_EQ(1, searchLimits.startDepth);
-    ASSERT_EQ(5, searchLimits.maxDepth);
-    ASSERT_EQ(0, searchLimits.nodes);
-  }
+  string command = "go mate 4 depth 4";
+  LOG->info("COMMAND: " + command);
+  istringstream is(command);
+  UCI::Handler uciHandler(&engine, &is, &os);
+  uciHandler.loop();
+  SearchLimits searchLimits = engine.getSearchLimits();
+  engine.stopSearch();
+  engine.waitWhileSearching();
+  ASSERT_FALSE(searchLimits.perft);
+  ASSERT_FALSE(searchLimits.infinite);
+  ASSERT_FALSE(searchLimits.ponder);
+  ASSERT_FALSE(searchLimits.timeControl);
+  ASSERT_EQ(4, searchLimits.mate);
+  ASSERT_EQ(4, searchLimits.maxDepth);
+}
 
-  { // nodes only limited
-    string command = "go nodes 1000000";
-    LOG->info("COMMAND: " + command);
-    istringstream is(command);
-    UCI::Handler uciHandler(&engine, &is, &os);
-    uciHandler.loop();
-    SearchLimits searchLimits = engine.getSearchLimits();
-    engine.stopSearch();
-    engine.waitWhileSearching();
-    ASSERT_FALSE(searchLimits.perft);
-    ASSERT_FALSE(searchLimits.infinite);
-    ASSERT_FALSE(searchLimits.ponder);
-    ASSERT_FALSE(searchLimits.timeControl);
-    ASSERT_EQ(1, searchLimits.startDepth);
-    ASSERT_EQ(MAX_PLY, searchLimits.maxDepth);
-    ASSERT_EQ(1'000'000, searchLimits.nodes);
-  }
+TEST_F(UCITest, goMateTime) {
+  ostringstream os;
+  Engine engine;
 
-  { // nodes and depth limited
-    string command = "go nodes 1000000 depth 5";
-    LOG->info("COMMAND: " + command);
-    istringstream is(command);
-    UCI::Handler uciHandler(&engine, &is, &os);
-    uciHandler.loop();
-    SearchLimits searchLimits = engine.getSearchLimits();
-    engine.stopSearch();
-    engine.waitWhileSearching();
-    ASSERT_FALSE(searchLimits.perft);
-    ASSERT_FALSE(searchLimits.infinite);
-    ASSERT_FALSE(searchLimits.ponder);
-    ASSERT_FALSE(searchLimits.timeControl);
-    ASSERT_EQ(1, searchLimits.startDepth);
-    ASSERT_EQ(5, searchLimits.maxDepth);
-    ASSERT_EQ(1'000'000, searchLimits.nodes);
-  }
+  string command = "go mate 4 movetime 15";
+  LOG->info("COMMAND: " + command);
+  istringstream is(command);
+  UCI::Handler uciHandler(&engine, &is, &os);
+  uciHandler.loop();
+  SearchLimits searchLimits = engine.getSearchLimits();
+  engine.stopSearch();
+  engine.waitWhileSearching();
+  ASSERT_FALSE(searchLimits.perft);
+  ASSERT_FALSE(searchLimits.infinite);
+  ASSERT_FALSE(searchLimits.ponder);
+  ASSERT_TRUE(searchLimits.timeControl);
+  ASSERT_EQ(4, searchLimits.mate);
+  ASSERT_EQ(MAX_PLY, searchLimits.maxDepth);
+  ASSERT_EQ(15, searchLimits.moveTime);
+}
 
-  { // move time limited with a list of moves to search
-    string command = "go movetime 15 searchmoves d2d4 e2e4";
-    LOG->info("COMMAND: " + command);
-    istringstream is(command);
-    UCI::Handler uciHandler(&engine, &is, &os);
-    uciHandler.loop();
-    SearchLimits searchLimits = engine.getSearchLimits();
-    engine.stopSearch();
-    engine.waitWhileSearching();
-    ASSERT_FALSE(searchLimits.perft);
-    ASSERT_FALSE(searchLimits.infinite);
-    ASSERT_FALSE(searchLimits.ponder);
-    ASSERT_TRUE(searchLimits.timeControl);
-    ASSERT_EQ(0, searchLimits.mate);
-    ASSERT_EQ(MAX_PLY, searchLimits.maxDepth);
-    ASSERT_EQ(15, searchLimits.moveTime);
-    ASSERT_EQ(createMove("d2d4"), searchLimits.moves.front());
-    ASSERT_EQ(createMove("e2e4"), searchLimits.moves.back());
-  }
+TEST_F(UCITest, goMateDepthTime) {
+  ostringstream os;
+  Engine engine;
+
+  string command = "go mate 4 depth 4 movetime 15";
+  LOG->info("COMMAND: " + command);
+  istringstream is(command);
+  UCI::Handler uciHandler(&engine, &is, &os);
+  uciHandler.loop();
+  SearchLimits searchLimits = engine.getSearchLimits();
+  engine.stopSearch();
+  engine.waitWhileSearching();
+  ASSERT_FALSE(searchLimits.perft);
+  ASSERT_FALSE(searchLimits.infinite);
+  ASSERT_FALSE(searchLimits.ponder);
+  ASSERT_TRUE(searchLimits.timeControl);
+  ASSERT_EQ(4, searchLimits.mate);
+  ASSERT_EQ(4, searchLimits.maxDepth);
+  ASSERT_EQ(15, searchLimits.moveTime);
+}
+
+TEST_F(UCITest, goTimed) {
+  ostringstream os;
+  Engine engine;
+
+  string command = "go wtime 500001 btime 500002";
+  LOG->info("COMMAND: " + command);
+  istringstream is(command);
+  UCI::Handler uciHandler(&engine, &is, &os);
+  uciHandler.loop();
+  SearchLimits searchLimits = engine.getSearchLimits();
+  engine.stopSearch();
+  engine.waitWhileSearching();
+  ASSERT_FALSE(searchLimits.perft);
+  ASSERT_FALSE(searchLimits.infinite);
+  ASSERT_FALSE(searchLimits.ponder);
+  ASSERT_TRUE(searchLimits.timeControl);
+  ASSERT_EQ(MAX_PLY, searchLimits.maxDepth);
+  ASSERT_EQ(500'001, searchLimits.whiteTime);
+  ASSERT_EQ(500'002, searchLimits.blackTime);
+}
+
+TEST_F(UCITest, goMovestogo) {
+  ostringstream os;
+  Engine engine;
+
+  // normal game with time for each player and remaining moves until time control
+  string command = "go wtime 300001 btime 300002 movestogo 20";
+  LOG->info("COMMAND: " + command);
+  istringstream is(command);
+  UCI::Handler uciHandler(&engine, &is, &os);
+  uciHandler.loop();
+  SearchLimits searchLimits = engine.getSearchLimits();
+  engine.stopSearch();
+  engine.waitWhileSearching();
+  ASSERT_FALSE(searchLimits.perft);
+  ASSERT_FALSE(searchLimits.infinite);
+  ASSERT_FALSE(searchLimits.ponder);
+  ASSERT_TRUE(searchLimits.timeControl);
+  ASSERT_EQ(MAX_PLY, searchLimits.maxDepth);
+  ASSERT_EQ(300'001, searchLimits.whiteTime);
+  ASSERT_EQ(300'002, searchLimits.blackTime);
+  ASSERT_EQ(20, searchLimits.movesToGo);
+}
+
+TEST_F(UCITest, goInc) {
+  ostringstream os;
+  Engine engine;
+
+  // normal game with time for each player and increases per move
+  string command = "go wtime 300001 btime 300002 winc 2001 binc 2002";
+  LOG->info("COMMAND: " + command);
+  istringstream is(command);
+  UCI::Handler uciHandler(&engine, &is, &os);
+  uciHandler.loop();
+  SearchLimits searchLimits = engine.getSearchLimits();
+  engine.stopSearch();
+  engine.waitWhileSearching();
+  ASSERT_FALSE(searchLimits.perft);
+  ASSERT_FALSE(searchLimits.infinite);
+  ASSERT_FALSE(searchLimits.ponder);
+  ASSERT_TRUE(searchLimits.timeControl);
+  ASSERT_EQ(MAX_PLY, searchLimits.maxDepth);
+  ASSERT_EQ(300'001, searchLimits.whiteTime);
+  ASSERT_EQ(300'002, searchLimits.blackTime);
+  ASSERT_EQ(2001, searchLimits.whiteInc);
+  ASSERT_EQ(2002, searchLimits.blackInc);
+}
+
+TEST_F(UCITest, goMovetime) {
+  ostringstream os;
+  Engine engine;
+
+  // move time limited
+  string command = "go movetime 5000";
+  LOG->info("COMMAND: " + command);
+  istringstream is(command);
+  UCI::Handler uciHandler(&engine, &is, &os);
+  uciHandler.loop();
+  ASSERT_FALSE(engine.getSearchLimits().perft);
+  ASSERT_FALSE(engine.getSearchLimits().infinite);
+  ASSERT_FALSE(engine.getSearchLimits().ponder);
+  ASSERT_TRUE(engine.getSearchLimits().timeControl);
+  ASSERT_EQ(0, engine.getSearchLimits().mate);
+  ASSERT_EQ(MAX_PLY, engine.getSearchLimits().maxDepth);
+  ASSERT_EQ(5000, engine.getSearchLimits().moveTime);
+  engine.stopSearch();
+  engine.waitWhileSearching();
+}
+
+TEST_F(UCITest, goDepth) {
+  ostringstream os;
+  Engine engine;
+  // depth only limited
+  string command = "go depth 5";
+  LOG->info("COMMAND: " + command);
+  istringstream is(command);
+  UCI::Handler uciHandler(&engine, &is, &os);
+  uciHandler.loop();
+  SearchLimits searchLimits = engine.getSearchLimits();
+  engine.stopSearch();
+  engine.waitWhileSearching();
+  ASSERT_FALSE(searchLimits.perft);
+  ASSERT_FALSE(searchLimits.infinite);
+  ASSERT_FALSE(searchLimits.ponder);
+  ASSERT_FALSE(searchLimits.timeControl);
+  ASSERT_EQ(1, searchLimits.startDepth);
+  ASSERT_EQ(5, searchLimits.maxDepth);
+  ASSERT_EQ(0, searchLimits.nodes);
+}
+
+TEST_F(UCITest, goNodes) {
+  ostringstream os;
+  Engine engine;
+  // nodes only limited
+  string command = "go nodes 1000000";
+  LOG->info("COMMAND: " + command);
+  istringstream is(command);
+  UCI::Handler uciHandler(&engine, &is, &os);
+  uciHandler.loop();
+  SearchLimits searchLimits = engine.getSearchLimits();
+  engine.stopSearch();
+  engine.waitWhileSearching();
+  ASSERT_FALSE(searchLimits.perft);
+  ASSERT_FALSE(searchLimits.infinite);
+  ASSERT_FALSE(searchLimits.ponder);
+  ASSERT_FALSE(searchLimits.timeControl);
+  ASSERT_EQ(1, searchLimits.startDepth);
+  ASSERT_EQ(MAX_PLY, searchLimits.maxDepth);
+  ASSERT_EQ(1'000'000, searchLimits.nodes);
+}
+
+TEST_F(UCITest, goNodesDepth) {
+  ostringstream os;
+  Engine engine;
+  // nodes and depth limited
+  string command = "go nodes 1000000 depth 5";
+  LOG->info("COMMAND: " + command);
+  istringstream is(command);
+  UCI::Handler uciHandler(&engine, &is, &os);
+  uciHandler.loop();
+  SearchLimits searchLimits = engine.getSearchLimits();
+  engine.stopSearch();
+  engine.waitWhileSearching();
+  ASSERT_FALSE(searchLimits.perft);
+  ASSERT_FALSE(searchLimits.infinite);
+  ASSERT_FALSE(searchLimits.ponder);
+  ASSERT_FALSE(searchLimits.timeControl);
+  ASSERT_EQ(1, searchLimits.startDepth);
+  ASSERT_EQ(5, searchLimits.maxDepth);
+  ASSERT_EQ(1'000'000, searchLimits.nodes);
+}
+
+TEST_F(UCITest, goMoves) {
+  ostringstream os;
+  Engine engine;
+  // move time limited with a list of moves to search
+  string command = "go movetime 15 searchmoves d2d4 e2e4";
+  LOG->info("COMMAND: " + command);
+  istringstream is(command);
+  UCI::Handler uciHandler(&engine, &is, &os);
+  uciHandler.loop();
+  SearchLimits searchLimits = engine.getSearchLimits();
+  engine.stopSearch();
+  engine.waitWhileSearching();
+  ASSERT_FALSE(searchLimits.perft);
+  ASSERT_FALSE(searchLimits.infinite);
+  ASSERT_FALSE(searchLimits.ponder);
+  ASSERT_TRUE(searchLimits.timeControl);
+  ASSERT_EQ(0, searchLimits.mate);
+  ASSERT_EQ(MAX_PLY, searchLimits.maxDepth);
+  ASSERT_EQ(15, searchLimits.moveTime);
+  ASSERT_EQ(createMove("d2d4"), searchLimits.moves.front());
+  ASSERT_EQ(createMove("e2e4"), searchLimits.moves.back());
 }
 
 TEST_F(UCITest, moveTest) {
@@ -500,6 +545,78 @@ TEST_F(UCITest, moveTestDepth) {
   LOG->info("COMMAND: " + command);
   is = istringstream(command);
   uciHandler.loop(&is);
+
+  LOG->debug("Waiting until search ends...");
+  engine.waitWhileSearching();
+  LOG->debug("SEARCH ENDED");
+
+}
+
+TEST_F(UCITest, ponderMiss) {
+  ostringstream os;
+  Engine engine;
+
+  string command = "position startpos moves e2e4 e7e5";
+  LOG->info("COMMAND: " + command);
+  istringstream is(command);
+  UCI::Handler uciHandler(&engine, &is, &os);
+  uciHandler.loop();
+
+  command = "go ponder wtime 60000 btime 60000";
+  LOG->info("COMMAND: " + command);
+  is = istringstream(command);
+  uciHandler.loop(&is);
+
+  sleep(2);
+  ASSERT_TRUE(engine.isSearching());
+  ASSERT_TRUE(engine.getSearchLimits().ponder);
+  sleep(2);
+
+  command = "position startpos moves e2e4 e7e6";
+  LOG->info("COMMAND: " + command);
+  is = istringstream(command);
+  uciHandler.loop(&is);
+
+  sleep(1);
+  ASSERT_FALSE(engine.isSearching());
+
+  LOG->debug("Waiting until search ends...");
+  engine.waitWhileSearching();
+  LOG->debug("SEARCH ENDED");
+}
+
+TEST_F(UCITest, ponderHit) {
+  ostringstream os;
+  Engine engine;
+
+  string command = "setoption name Ponder value true";
+  LOG->info("COMMAND: " + command);
+  istringstream is = istringstream(command);
+  UCI::Handler uciHandler(&engine, &is, &os);
+  uciHandler.loop();
+
+  command = "position startpos moves e2e4 e7e5";
+  LOG->info("COMMAND: " + command);
+  is = istringstream(command);
+  uciHandler.loop();
+
+  command = "go ponder wtime 300000 btime 300000";
+  LOG->info("COMMAND: " + command);
+  is = istringstream(command);
+  uciHandler.loop(&is);
+
+  sleep(1);
+  ASSERT_TRUE(engine.isSearching());
+  ASSERT_TRUE(engine.getSearchLimits().ponder);
+  sleep(1);
+
+  command = "ponderhit";
+  LOG->info("COMMAND: " + command);
+  is = istringstream(command);
+  uciHandler.loop(&is);
+
+  sleep(1);
+  ASSERT_TRUE(engine.isSearching());
 
   LOG->debug("Waiting until search ends...");
   engine.waitWhileSearching();

@@ -90,12 +90,14 @@ std::string Engine::getOption(const std::string &name) {
 
 void Engine::newGame() {
   LOG->info("Engine: New Game");
-  // TODO
-  LOG->error("Engine: New Game not implemented yet!");
+  // stop any search - this is necessary in case of ponder miss
+  stopSearch();
 }
 
 void Engine::setPosition(const std::string &fen) {
   LOG->info("Engine: Set position to {}", fen);
+  // stop any search - this is necessary in case of ponder miss
+  stopSearch();
   position = Position(fen);
 }
 
@@ -117,7 +119,7 @@ void Engine::startSearch(const UCISearchMode &uciSearchMode) {
 
   if (search.isRunning()) {
     // Previous search was still running. Stopping to start new search!
-    LOG->warn("Egine was already searching. Stopping search to start new search.");
+    LOG->warn("Engine was already searching. Stopping search to start new search.");
     search.stopSearch();
   }
 
@@ -135,11 +137,17 @@ void Engine::startSearch(const UCISearchMode &uciSearchMode) {
                               uciSearchMode.mate, uciSearchMode.ponder,
                               uciSearchMode.infinite, uciSearchMode.perft);
 
+  // do not start pondering if not ponder option is set
+  if (searchLimits.ponder && !config.ponder) {
+    LOG->warn("Engine: go ponder command but ponder option is set to false.");
+    return;
+  }
+
   search.startSearch(position, searchLimits);
 }
 
 void Engine::stopSearch() {
-  LOG->info("Engine: Stop Search");
+  if (search.isRunning()) LOG->info("Engine: Stop Search");
   search.stopSearch();
 }
 
@@ -147,8 +155,7 @@ bool Engine::isSearching() { return search.isRunning(); }
 
 void Engine::ponderHit() {
   LOG->info("Engine: Ponder Hit");
-  // TODO
-  LOG->error("Engine: Ponder Hit not implemented yet!");
+  search.ponderhit();
 }
 
 void Engine::sendIterationEndInfo(int depth, int seldepth, int scoreInCP, long nodes, int nps,
@@ -211,8 +218,8 @@ void Engine::waitWhileSearching() {
 
 void Engine::initOptions() {
   // @formatter:off
-  MAP("Hash", UCI::Option("Hash", config.hash, 1, 8192)); // spin
-  MAP("Clear Hash", UCI::Option("Clear Hash"));           // button
+  // MAP("Hash", UCI::Option("Hash", config.hash, 1, 8192)); // spin
+  // MAP("Clear Hash", UCI::Option("Clear Hash"));           // button
   MAP("Ponder", UCI::Option("Ponder", config.ponder));    // check
   // @formatter:on
   updateConfig();

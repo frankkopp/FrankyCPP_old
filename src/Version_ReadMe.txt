@@ -15,23 +15,23 @@ v 0.3 (plan)
 v 0.2 (plan)
 ================================================================================
 - TODO:
+    - AlphaBeta search
     - Configuration Framework for Search and Evaluation
-    - Pondering
-    - TT
-    - SearchTreeSize Test
     - Quiescence Search
-    -   
+    - TT
+    -
 
 v 0.1 (in progress)
 ================================================================================
 - TODO:
-    - Perft traversing (minimax with counting)
-    - Basic search (AlphaBeta, no TT, no KillerMoves, etc.)
+    - Pondering
+    - TreeSize Test
+    - Complete UCI Protocol
+- DONE:
+    - Basic search (Minimax, no TT, no KillerMoves, etc.)
     - Basic evaluation
     - Search Modes (incl. basic time management for time based search)
-    - Complete UCI Protocol
-    -
-- DONE:
+    - Perft traversing (minimax with counting)
     - Logging
     - UCI Protocol: Basics
     - PERFT
