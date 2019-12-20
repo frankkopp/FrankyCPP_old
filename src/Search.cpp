@@ -599,7 +599,7 @@ inline MilliSec Search::elapsedTime() {
  * @param t time point since the elapsed time
  * @return the elapsed time from the start of the search to the given t
  */
-inline MilliSec Search::elapsedTime(clock_t t) {
+inline MilliSec Search::elapsedTime(MilliSec t) {
   return elapsedTime(t, now());
 }
 
@@ -608,7 +608,7 @@ inline MilliSec Search::elapsedTime(clock_t t) {
  * @param t2 Later time point
  * @return Duration between time points in milliseconds
  */
-inline MilliSec Search::elapsedTime(clock_t t1, clock_t t2) {
+inline MilliSec Search::elapsedTime(MilliSec t1, MilliSec t2) {
   return t2 - t1;
 }
 
@@ -617,7 +617,7 @@ inline MilliSec Search::elapsedTime(clock_t t1, clock_t t2) {
  * @return TimePoint for the current time
  */
 inline MilliSec Search::now() {
-  return clock() * 1000 / CLOCKS_PER_SEC;
+  return clock_gettime_nsec_np(CLOCK_MONOTONIC) / 1'000'000;
 }
 
 MilliSec Search::getNps() {

@@ -176,8 +176,8 @@ private:
   MilliSec getNps();
 
   inline MilliSec elapsedTime();
-  static inline MilliSec elapsedTime(clock_t t);
-  static inline MilliSec elapsedTime(clock_t t1, clock_t t2);
+  static inline MilliSec elapsedTime(MilliSec t);
+  static inline MilliSec elapsedTime(MilliSec t1, MilliSec t2);
   static inline MilliSec now();
 };
 
