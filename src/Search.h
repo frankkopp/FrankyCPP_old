@@ -32,14 +32,13 @@ class Engine;
 // included dependencies
 #include <iostream>
 #include <thread>
-#include <chrono>
+#include "time.h"
 #include "logging.h"
 #include "SearchStats.h"
 #include "Semaphore.h"
 #include "Position.h"
 #include "SearchLimits.h"
 #include "Evaluator.h"
-#include "time.h"
 
 struct SearchResult {
 public:
