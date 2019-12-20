@@ -80,7 +80,8 @@ TEST_F(SearchTest, perft) {
   searchLimits.setupLimits();
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
-  LOG->info("Nodes per sec: {:n}", (search.getSearchStats().leafPositionsEvaluated*1'000)/search.getSearchStats().lastSearchTime);
+  LOG->info("Nodes per sec: {:n}", (search.getSearchStats().leafPositionsEvaluated * 1'000) /
+                                   search.getSearchStats().lastSearchTime);
   LOG->info("Leaf nodes:    {:n}", search.getSearchStats().leafPositionsEvaluated);
   ASSERT_EQ(119'060'324, search.getSearchStats().leafPositionsEvaluated);
   // 4 = 197'281
@@ -132,7 +133,7 @@ TEST_F(SearchTest, timewhite) {
   searchLimits.setupLimits();
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
-  ASSERT_TRUE(search.getSearchStats().lastSearchTime < (searchLimits.whiteTime/40));
+  ASSERT_TRUE(search.getSearchStats().lastSearchTime < (searchLimits.whiteTime / 40));
 }
 
 TEST_F(SearchTest, timeblack) {
@@ -145,7 +146,7 @@ TEST_F(SearchTest, timeblack) {
   searchLimits.setupLimits();
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
-  ASSERT_TRUE(search.getSearchStats().lastSearchTime < (searchLimits.blackTime/40));
+  ASSERT_TRUE(search.getSearchStats().lastSearchTime < (searchLimits.blackTime / 40));
 }
 
 TEST_F(SearchTest, negamax) {
@@ -168,7 +169,6 @@ TEST_F(SearchTest, negamax) {
   search.waitWhileSearching();
 }
 
-
 TEST_F(SearchTest, profile) {
   int i = 0;
   while (++i < 1'000) {
@@ -181,5 +181,22 @@ TEST_F(SearchTest, profile) {
     search.startSearch(position, searchLimits);
     search.waitWhileSearching();
   }
+}
+
+TEST_F(SearchTest, npsTest) {
+
+  Search search;
+  SearchLimits searchLimits;
+  Position position;
+  searchLimits.moveTime = 60'000;
+  searchLimits.setupLimits();
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+
+  LOG->info("Nodes: {:n} Time: {:n} ms NPS: {:n}",
+            search.getSearchStats().nodesVisited,
+            search.getSearchStats().lastSearchTime,
+            (search.getSearchStats().nodesVisited * 1'000)
+            / search.getSearchStats().lastSearchTime);
 }
 

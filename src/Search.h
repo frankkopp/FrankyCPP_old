@@ -40,11 +40,11 @@ class Engine;
 #include "SearchLimits.h"
 #include "Evaluator.h"
 
-class SearchResult {
+struct SearchResult {
 public:
   Move bestMove = NOMOVE;
   Move ponderMove = NOMOVE;
-  int64_t time = -1;
+  int64_t time = 0;
   int depth = 0;
   int extraDepth = 0;
 
@@ -60,13 +60,17 @@ inline std::ostream &operator<<(std::ostream &os, const SearchResult &searchResu
   return os;
 }
 
+using Clock = std::chrono::high_resolution_clock;
+using TimePoint = std::chrono::time_point<Clock>;
+using Duration = std::chrono::duration<MilliSec , std::milli>;
+
 class Search {
 
   std::shared_ptr<spdlog::logger> LOG = spdlog::get("Search_Logger");
 
   // UCI related
-  constexpr static MilliSec UCI_UPDATE_INTERVAL = 1'000;
-  std::chrono::time_point<std::chrono::steady_clock> lastUciUpdateTime;
+  constexpr static Duration UCI_UPDATE_INTERVAL = Duration (1'000);
+  TimePoint lastUciUpdateTime {};
   
   // thread control
   Semaphore initSemaphore; // used to block while initializing thread
@@ -91,11 +95,11 @@ class Search {
   SearchResult lastSearchResult;
 
   // search start time
-  std::chrono::time_point<std::chrono::steady_clock> startTime;
-  std::chrono::time_point<std::chrono::steady_clock> stopTime;
-  MilliSec softTimeLimit = 0;
-  MilliSec hardTimeLimit = 0;
-  MilliSec extraTime = 0;
+  TimePoint startTime {};
+  TimePoint stopTime {};
+  Duration softTimeLimit {};
+  Duration hardTimeLimit {};
+  Duration extraTime {};
 
   // the color of the searching player
   Color myColor = NOCOLOR;
@@ -113,7 +117,7 @@ class Search {
   MoveGenerator moveGenerators[MAX_SEARCH_DEPTH]{};
 
   // Evaluator
-  Evaluator evaluator = Evaluator();
+  Evaluator evaluator;
 
 public:
   ////////////////////////////////////////////////
@@ -158,19 +162,26 @@ private:
   Value evaluate(Position *position, int ply);
 
   MoveList generateRootMoves(Position *pPosition);
+
   void configureTimeLimits();
   inline bool stopConditions();
   void addExtraTime(double d);
   bool softTimeLimitReached();
+  
+  static void savePV(Move move, MoveList &src, MoveList &dest);
+
   bool hardTimeLimitReached();
-  MilliSec elapsedTime();
-  MilliSec elapsedTime(std::chrono::time_point<std::chrono::steady_clock> t);
   void sendUCIIterationEndInfo();
   void sendUCICurrentRootMove();
   void sendUCISearchUpdate();
-  MilliSec getNps();
-  void savePV(Move move, MoveList &src, MoveList &dest);
+
   void sendUCIBestMove();
+  MilliSec getNps();
+
+  inline Duration elapsedTime();
+  static inline Duration elapsedTime(TimePoint t);
+  static inline Duration elapsedTime(TimePoint t1, TimePoint t2);
+  static inline TimePoint now();
 };
 
 #endif // FRANKYCPP_SEARCH_H

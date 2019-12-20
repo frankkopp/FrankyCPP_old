@@ -207,7 +207,7 @@ namespace UCI {
         } catch (...) {
           cerr << "PANIK";
         }
-        if (searchMode.whiteInc <= 0) {
+        if (searchMode.whiteInc < 0) {
           LOG->warn("Invalid winc. Was '{}'", token);
           return;
         }
@@ -219,7 +219,7 @@ namespace UCI {
         } catch (...) {
           cerr << "PANIK";
         }
-        if (searchMode.blackInc <= 0) {
+        if (searchMode.blackInc < 0) {
           LOG->warn("Invalid binc. Was '{}'", token);
           return;
         }

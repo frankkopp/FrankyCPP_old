@@ -190,24 +190,25 @@ TEST_F(UCITest, positionTest) {
   }
 }
 
-TEST_F(UCITest, searchLimitsTest) {
+TEST_F(UCITest, goPerft) {
 
   ostringstream os;
   Engine engine;
 
-  string command = "go perft 4";
+  string command = "go perft 6";
   LOG->info("COMMAND: " + command);
   istringstream is(command);
   UCI::Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
-  SearchLimits searchLimits = engine.getSearchLimits();
+
   engine.stopSearch();
   engine.waitWhileSearching();
-  ASSERT_TRUE(searchLimits.perft);
-  ASSERT_FALSE(searchLimits.infinite);
-  ASSERT_FALSE(searchLimits.ponder);
-  ASSERT_FALSE(searchLimits.timeControl);
-  ASSERT_EQ(4, searchLimits.maxDepth);
+
+  ASSERT_TRUE(engine.getSearchLimits().perft);
+  ASSERT_FALSE(engine.getSearchLimits().infinite);
+  ASSERT_FALSE(engine.getSearchLimits().ponder);
+  ASSERT_FALSE(engine.getSearchLimits().timeControl);
+  ASSERT_EQ(4, engine.getSearchLimits().maxDepth);
 }
 
 TEST_F(UCITest, goInfinite) {
@@ -220,14 +221,15 @@ TEST_F(UCITest, goInfinite) {
   istringstream is(command);
   UCI::Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
-  SearchLimits searchLimits = engine.getSearchLimits();
+
   engine.stopSearch();
   engine.waitWhileSearching();
-  ASSERT_FALSE(searchLimits.perft);
-  ASSERT_TRUE(searchLimits.infinite);
-  ASSERT_FALSE(searchLimits.ponder);
-  ASSERT_FALSE(searchLimits.timeControl);
-  ASSERT_EQ(MAX_PLY, searchLimits.maxDepth);
+
+  ASSERT_FALSE(engine.getSearchLimits().perft);
+  ASSERT_TRUE(engine.getSearchLimits().infinite);
+  ASSERT_FALSE(engine.getSearchLimits().ponder);
+  ASSERT_FALSE(engine.getSearchLimits().timeControl);
+  ASSERT_EQ(MAX_PLY, engine.getSearchLimits().maxDepth);
 }
 
 TEST_F(UCITest, goPonder) {
@@ -240,15 +242,14 @@ TEST_F(UCITest, goPonder) {
   UCI::Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
+  engine.stopSearch();
+  engine.waitWhileSearching();
+
   ASSERT_FALSE(engine.getSearchLimits().perft);
   ASSERT_FALSE(engine.getSearchLimits().infinite);
   ASSERT_TRUE(engine.getSearchLimits().ponder);
   ASSERT_FALSE(engine.getSearchLimits().timeControl);
   ASSERT_EQ(MAX_PLY, engine.getSearchLimits().maxDepth);
-
-  sleep(1);
-  engine.stopSearch();
-  engine.waitWhileSearching();
 }
 
 TEST_F(UCITest, goMate) {
@@ -260,15 +261,16 @@ TEST_F(UCITest, goMate) {
   istringstream is(command);
   UCI::Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
-  SearchLimits searchLimits = engine.getSearchLimits();
+
   engine.stopSearch();
   engine.waitWhileSearching();
-  ASSERT_FALSE(searchLimits.perft);
-  ASSERT_FALSE(searchLimits.infinite);
-  ASSERT_FALSE(searchLimits.ponder);
-  ASSERT_FALSE(searchLimits.timeControl);
-  ASSERT_EQ(4, searchLimits.mate);
-  ASSERT_EQ(MAX_PLY, searchLimits.maxDepth);
+
+  ASSERT_FALSE(engine.getSearchLimits().perft);
+  ASSERT_FALSE(engine.getSearchLimits().infinite);
+  ASSERT_FALSE(engine.getSearchLimits().ponder);
+  ASSERT_FALSE(engine.getSearchLimits().timeControl);
+  ASSERT_EQ(4, engine.getSearchLimits().mate);
+  ASSERT_EQ(MAX_PLY, engine.getSearchLimits().maxDepth);
 }
 
 TEST_F(UCITest, goMateDepth) {
@@ -280,15 +282,16 @@ TEST_F(UCITest, goMateDepth) {
   istringstream is(command);
   UCI::Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
-  SearchLimits searchLimits = engine.getSearchLimits();
+
   engine.stopSearch();
   engine.waitWhileSearching();
-  ASSERT_FALSE(searchLimits.perft);
-  ASSERT_FALSE(searchLimits.infinite);
-  ASSERT_FALSE(searchLimits.ponder);
-  ASSERT_FALSE(searchLimits.timeControl);
-  ASSERT_EQ(4, searchLimits.mate);
-  ASSERT_EQ(4, searchLimits.maxDepth);
+
+  ASSERT_FALSE(engine.getSearchLimits().perft);
+  ASSERT_FALSE(engine.getSearchLimits().infinite);
+  ASSERT_FALSE(engine.getSearchLimits().ponder);
+  ASSERT_FALSE(engine.getSearchLimits().timeControl);
+  ASSERT_EQ(4, engine.getSearchLimits().mate);
+  ASSERT_EQ(4, engine.getSearchLimits().maxDepth);
 }
 
 TEST_F(UCITest, goMateTime) {
@@ -300,16 +303,17 @@ TEST_F(UCITest, goMateTime) {
   istringstream is(command);
   UCI::Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
-  SearchLimits searchLimits = engine.getSearchLimits();
+
   engine.stopSearch();
   engine.waitWhileSearching();
-  ASSERT_FALSE(searchLimits.perft);
-  ASSERT_FALSE(searchLimits.infinite);
-  ASSERT_FALSE(searchLimits.ponder);
-  ASSERT_TRUE(searchLimits.timeControl);
-  ASSERT_EQ(4, searchLimits.mate);
-  ASSERT_EQ(MAX_PLY, searchLimits.maxDepth);
-  ASSERT_EQ(15, searchLimits.moveTime);
+
+  ASSERT_FALSE(engine.getSearchLimits().perft);
+  ASSERT_FALSE(engine.getSearchLimits().infinite);
+  ASSERT_FALSE(engine.getSearchLimits().ponder);
+  ASSERT_TRUE(engine.getSearchLimits().timeControl);
+  ASSERT_EQ(4, engine.getSearchLimits().mate);
+  ASSERT_EQ(MAX_PLY, engine.getSearchLimits().maxDepth);
+  ASSERT_EQ(15, engine.getSearchLimits().moveTime);
 }
 
 TEST_F(UCITest, goMateDepthTime) {
@@ -321,16 +325,18 @@ TEST_F(UCITest, goMateDepthTime) {
   istringstream is(command);
   UCI::Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
-  SearchLimits searchLimits = engine.getSearchLimits();
+
   engine.stopSearch();
   engine.waitWhileSearching();
-  ASSERT_FALSE(searchLimits.perft);
-  ASSERT_FALSE(searchLimits.infinite);
-  ASSERT_FALSE(searchLimits.ponder);
-  ASSERT_TRUE(searchLimits.timeControl);
-  ASSERT_EQ(4, searchLimits.mate);
-  ASSERT_EQ(4, searchLimits.maxDepth);
-  ASSERT_EQ(15, searchLimits.moveTime);
+
+  ASSERT_FALSE(engine.getSearchLimits().infinite);
+  ASSERT_FALSE(engine.getSearchLimits().ponder);
+  ASSERT_TRUE(engine.getSearchLimits().timeControl);
+  ASSERT_EQ(4, engine.getSearchLimits().mate);
+  ASSERT_EQ(4, engine.getSearchLimits().maxDepth);
+  ASSERT_EQ(15, engine.getSearchLimits().moveTime);
+  ASSERT_FALSE(engine.getSearchLimits().perft);
+
 }
 
 TEST_F(UCITest, goTimed) {
@@ -342,16 +348,17 @@ TEST_F(UCITest, goTimed) {
   istringstream is(command);
   UCI::Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
-  SearchLimits searchLimits = engine.getSearchLimits();
+
   engine.stopSearch();
   engine.waitWhileSearching();
-  ASSERT_FALSE(searchLimits.perft);
-  ASSERT_FALSE(searchLimits.infinite);
-  ASSERT_FALSE(searchLimits.ponder);
-  ASSERT_TRUE(searchLimits.timeControl);
-  ASSERT_EQ(MAX_PLY, searchLimits.maxDepth);
-  ASSERT_EQ(500'001, searchLimits.whiteTime);
-  ASSERT_EQ(500'002, searchLimits.blackTime);
+
+  ASSERT_FALSE(engine.getSearchLimits().perft);
+  ASSERT_FALSE(engine.getSearchLimits().infinite);
+  ASSERT_FALSE(engine.getSearchLimits().ponder);
+  ASSERT_TRUE(engine.getSearchLimits().timeControl);
+  ASSERT_EQ(MAX_PLY, engine.getSearchLimits().maxDepth);
+  ASSERT_EQ(500'001, engine.getSearchLimits().whiteTime);
+  ASSERT_EQ(500'002, engine.getSearchLimits().blackTime);
 }
 
 TEST_F(UCITest, goMovestogo) {
@@ -364,17 +371,18 @@ TEST_F(UCITest, goMovestogo) {
   istringstream is(command);
   UCI::Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
-  SearchLimits searchLimits = engine.getSearchLimits();
+
   engine.stopSearch();
   engine.waitWhileSearching();
-  ASSERT_FALSE(searchLimits.perft);
-  ASSERT_FALSE(searchLimits.infinite);
-  ASSERT_FALSE(searchLimits.ponder);
-  ASSERT_TRUE(searchLimits.timeControl);
-  ASSERT_EQ(MAX_PLY, searchLimits.maxDepth);
-  ASSERT_EQ(300'001, searchLimits.whiteTime);
-  ASSERT_EQ(300'002, searchLimits.blackTime);
-  ASSERT_EQ(20, searchLimits.movesToGo);
+
+  ASSERT_FALSE(engine.getSearchLimits().perft);
+  ASSERT_FALSE(engine.getSearchLimits().infinite);
+  ASSERT_FALSE(engine.getSearchLimits().ponder);
+  ASSERT_TRUE(engine.getSearchLimits().timeControl);
+  ASSERT_EQ(MAX_PLY, engine.getSearchLimits().maxDepth);
+  ASSERT_EQ(300'001, engine.getSearchLimits().whiteTime);
+  ASSERT_EQ(300'002, engine.getSearchLimits().blackTime);
+  ASSERT_EQ(20, engine.getSearchLimits().movesToGo);
 }
 
 TEST_F(UCITest, goInc) {
@@ -387,18 +395,19 @@ TEST_F(UCITest, goInc) {
   istringstream is(command);
   UCI::Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
-  SearchLimits searchLimits = engine.getSearchLimits();
+
   engine.stopSearch();
   engine.waitWhileSearching();
-  ASSERT_FALSE(searchLimits.perft);
-  ASSERT_FALSE(searchLimits.infinite);
-  ASSERT_FALSE(searchLimits.ponder);
-  ASSERT_TRUE(searchLimits.timeControl);
-  ASSERT_EQ(MAX_PLY, searchLimits.maxDepth);
-  ASSERT_EQ(300'001, searchLimits.whiteTime);
-  ASSERT_EQ(300'002, searchLimits.blackTime);
-  ASSERT_EQ(2001, searchLimits.whiteInc);
-  ASSERT_EQ(2002, searchLimits.blackInc);
+
+  ASSERT_FALSE(engine.getSearchLimits().perft);
+  ASSERT_FALSE(engine.getSearchLimits().infinite);
+  ASSERT_FALSE(engine.getSearchLimits().ponder);
+  ASSERT_TRUE(engine.getSearchLimits().timeControl);
+  ASSERT_EQ(MAX_PLY, engine.getSearchLimits().maxDepth);
+  ASSERT_EQ(300'001, engine.getSearchLimits().whiteTime);
+  ASSERT_EQ(300'002, engine.getSearchLimits().blackTime);
+  ASSERT_EQ(2001, engine.getSearchLimits().whiteInc);
+  ASSERT_EQ(2002, engine.getSearchLimits().blackInc);
 }
 
 TEST_F(UCITest, goMovetime) {
@@ -411,6 +420,10 @@ TEST_F(UCITest, goMovetime) {
   istringstream is(command);
   UCI::Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
+
+  engine.stopSearch();
+  engine.waitWhileSearching();
+
   ASSERT_FALSE(engine.getSearchLimits().perft);
   ASSERT_FALSE(engine.getSearchLimits().infinite);
   ASSERT_FALSE(engine.getSearchLimits().ponder);
@@ -418,8 +431,6 @@ TEST_F(UCITest, goMovetime) {
   ASSERT_EQ(0, engine.getSearchLimits().mate);
   ASSERT_EQ(MAX_PLY, engine.getSearchLimits().maxDepth);
   ASSERT_EQ(5000, engine.getSearchLimits().moveTime);
-  engine.stopSearch();
-  engine.waitWhileSearching();
 }
 
 TEST_F(UCITest, goDepth) {
@@ -431,16 +442,19 @@ TEST_F(UCITest, goDepth) {
   istringstream is(command);
   UCI::Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
-  SearchLimits searchLimits = engine.getSearchLimits();
+
   engine.stopSearch();
   engine.waitWhileSearching();
-  ASSERT_FALSE(searchLimits.perft);
-  ASSERT_FALSE(searchLimits.infinite);
-  ASSERT_FALSE(searchLimits.ponder);
-  ASSERT_FALSE(searchLimits.timeControl);
-  ASSERT_EQ(1, searchLimits.startDepth);
-  ASSERT_EQ(5, searchLimits.maxDepth);
-  ASSERT_EQ(0, searchLimits.nodes);
+
+  ASSERT_FALSE(engine.getSearchLimits().perft);
+  ASSERT_FALSE(engine.getSearchLimits().infinite);
+  ASSERT_FALSE(engine.getSearchLimits().ponder);
+  ASSERT_FALSE(engine.getSearchLimits().timeControl);
+  ASSERT_EQ(1, engine.getSearchLimits().startDepth);
+  ASSERT_EQ(5, engine.getSearchLimits().maxDepth);
+  ASSERT_EQ(0, engine.getSearchLimits().nodes);
+  engine.stopSearch();
+  engine.waitWhileSearching();
 }
 
 TEST_F(UCITest, goNodes) {
@@ -452,16 +466,17 @@ TEST_F(UCITest, goNodes) {
   istringstream is(command);
   UCI::Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
-  SearchLimits searchLimits = engine.getSearchLimits();
+
   engine.stopSearch();
   engine.waitWhileSearching();
-  ASSERT_FALSE(searchLimits.perft);
-  ASSERT_FALSE(searchLimits.infinite);
-  ASSERT_FALSE(searchLimits.ponder);
-  ASSERT_FALSE(searchLimits.timeControl);
-  ASSERT_EQ(1, searchLimits.startDepth);
-  ASSERT_EQ(MAX_PLY, searchLimits.maxDepth);
-  ASSERT_EQ(1'000'000, searchLimits.nodes);
+
+  ASSERT_FALSE(engine.getSearchLimits().perft);
+  ASSERT_FALSE(engine.getSearchLimits().infinite);
+  ASSERT_FALSE(engine.getSearchLimits().ponder);
+  ASSERT_FALSE(engine.getSearchLimits().timeControl);
+  ASSERT_EQ(1, engine.getSearchLimits().startDepth);
+  ASSERT_EQ(MAX_PLY, engine.getSearchLimits().maxDepth);
+  ASSERT_EQ(1'000'000, engine.getSearchLimits().nodes);
 }
 
 TEST_F(UCITest, goNodesDepth) {
@@ -473,16 +488,17 @@ TEST_F(UCITest, goNodesDepth) {
   istringstream is(command);
   UCI::Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
-  SearchLimits searchLimits = engine.getSearchLimits();
+
   engine.stopSearch();
   engine.waitWhileSearching();
-  ASSERT_FALSE(searchLimits.perft);
-  ASSERT_FALSE(searchLimits.infinite);
-  ASSERT_FALSE(searchLimits.ponder);
-  ASSERT_FALSE(searchLimits.timeControl);
-  ASSERT_EQ(1, searchLimits.startDepth);
-  ASSERT_EQ(5, searchLimits.maxDepth);
-  ASSERT_EQ(1'000'000, searchLimits.nodes);
+  
+  ASSERT_FALSE(engine.getSearchLimits().perft);
+  ASSERT_FALSE(engine.getSearchLimits().infinite);
+  ASSERT_FALSE(engine.getSearchLimits().ponder);
+  ASSERT_FALSE(engine.getSearchLimits().timeControl);
+  ASSERT_EQ(1, engine.getSearchLimits().startDepth);
+  ASSERT_EQ(5, engine.getSearchLimits().maxDepth);
+  ASSERT_EQ(1'000'000, engine.getSearchLimits().nodes);
 }
 
 TEST_F(UCITest, goMoves) {
@@ -494,18 +510,19 @@ TEST_F(UCITest, goMoves) {
   istringstream is(command);
   UCI::Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
-  SearchLimits searchLimits = engine.getSearchLimits();
+
   engine.stopSearch();
   engine.waitWhileSearching();
-  ASSERT_FALSE(searchLimits.perft);
-  ASSERT_FALSE(searchLimits.infinite);
-  ASSERT_FALSE(searchLimits.ponder);
-  ASSERT_TRUE(searchLimits.timeControl);
-  ASSERT_EQ(0, searchLimits.mate);
-  ASSERT_EQ(MAX_PLY, searchLimits.maxDepth);
-  ASSERT_EQ(15, searchLimits.moveTime);
-  ASSERT_EQ(createMove("d2d4"), searchLimits.moves.front());
-  ASSERT_EQ(createMove("e2e4"), searchLimits.moves.back());
+
+  ASSERT_FALSE(engine.getSearchLimits().perft);
+  ASSERT_FALSE(engine.getSearchLimits().infinite);
+  ASSERT_FALSE(engine.getSearchLimits().ponder);
+  ASSERT_TRUE(engine.getSearchLimits().timeControl);
+  ASSERT_EQ(0, engine.getSearchLimits().mate);
+  ASSERT_EQ(MAX_PLY, engine.getSearchLimits().maxDepth);
+  ASSERT_EQ(15, engine.getSearchLimits().moveTime);
+  ASSERT_EQ(createMove("d2d4"), engine.getSearchLimits().moves.front());
+  ASSERT_EQ(createMove("e2e4"), engine.getSearchLimits().moves.back());
 }
 
 TEST_F(UCITest, moveTest) {
@@ -518,7 +535,7 @@ TEST_F(UCITest, moveTest) {
   UCI::Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
-  command = "go wtime 60000 btime 60000 winc 0 binc 0 movestogo 40";
+  command = "go wtime 60000 btime 60000 winc 2000 binc 2000 movestogo 40";
   LOG->info("COMMAND: " + command);
   is = istringstream(command);
   uciHandler.loop(&is);

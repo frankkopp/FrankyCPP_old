@@ -32,8 +32,7 @@
 ////////////////////////////////////////////////
 ///// CONSTRUCTORS
 
-Search::Search() {
-  pEngine = nullptr;
+Search::Search() : Search(nullptr) {
 }
 
 Search::Search(Engine *pEng) {
@@ -102,8 +101,8 @@ void Search::stopSearch() {
   stopSearchFlag = true;
   // Wait for the thread to die
   if (myThread.joinable()) myThread.join();
-  LOG->info("Search stopped.");
   waitWhileSearching();
+  LOG->info("Search stopped.");
   assert(!running);
 }
 
@@ -123,14 +122,14 @@ void Search::ponderhit() {
     if (isRunning()) {
       LOG->info("Ponderhit when ponder search still running. Continue searching.");
       // store the start time of the search
-      startTime = std::chrono::high_resolution_clock::now();
+      startTime = now();
       searchLimits.ponderHit();
       // if time based game setup the time soft and hard time limits
       if (searchLimits.timeControl) {
         configureTimeLimits();
         LOG->debug("Time Management: {} soft: {:n} hard: {:n}",
                    (searchLimits.timeControl ? "ON" : "OFF"),
-                   softTimeLimit, hardTimeLimit);
+                   softTimeLimit.count(), hardTimeLimit.count());
       }
     }
     else {
@@ -167,11 +166,11 @@ void Search::run() {
   LOG->debug("Search thread started.");
 
   // store the start time of the search
-  startTime = lastUciUpdateTime = std::chrono::high_resolution_clock::now();
+  startTime = lastUciUpdateTime = now();
 
   // Initialize for new search
   lastSearchResult = SearchResult();
-  softTimeLimit = hardTimeLimit = extraTime = 0;
+  softTimeLimit = hardTimeLimit = extraTime = Duration(0);
   searchStats = SearchStats();
 
   // Initialize ply based data
@@ -265,10 +264,10 @@ SearchResult Search::iterativeDeepening(Position *pPosition) {
     LOG->debug("Search mode: {}", searchLimits.str());
     LOG->debug("Time Management: {} soft: {:n} hard: {:n}",
                (searchLimits.timeControl ? "ON" : "OFF"),
-               softTimeLimit, hardTimeLimit);
+               softTimeLimit.count(), hardTimeLimit.count());
     LOG->debug("Start Depth: {} Max Depth: {}", iterationDepth, searchLimits.maxDepth);
     LOG->debug("Starting iterative deepening now...");
-  };
+  }
 
   // check search requirements
   assert (!rootMoves.empty() && "No root moves to search");
@@ -314,9 +313,8 @@ SearchResult Search::iterativeDeepening(Position *pPosition) {
   searchResult.extraDepth = searchStats.currentExtraSearchDepth;
 
   // search is finished - stop timer
-  stopTime = std::chrono::high_resolution_clock::now();
-  searchStats.lastSearchTime = std::chrono::duration_cast<std::chrono::milliseconds>(
-    stopTime - startTime).count();
+  stopTime = now();
+  searchStats.lastSearchTime = elapsedTime(startTime, stopTime).count();
 
   // print result of the search
   if (LOG->should_log(spdlog::level::debug)) {
@@ -511,7 +509,7 @@ inline bool Search::stopConditions() {
 
 void Search::configureTimeLimits() {
   if (searchLimits.moveTime > 0) { // mode time per move
-    softTimeLimit = hardTimeLimit = searchLimits.moveTime;
+    softTimeLimit = hardTimeLimit = Duration(searchLimits.moveTime);
   }
   else { // remaining time - estimated time per move
 
@@ -535,12 +533,12 @@ void Search::configureTimeLimits() {
     }
 
     // for timed games with remaining time
-    hardTimeLimit = (MilliSec) (timeLeft / movesLeft);
-    softTimeLimit = (MilliSec) (hardTimeLimit * 0.8);
+    hardTimeLimit = Duration (timeLeft / movesLeft);
+    softTimeLimit = Duration (MilliSec (timeLeft * 0.8) / movesLeft);
   }
 
   // limits for very short available time
-  if (hardTimeLimit < 100) {
+  if (hardTimeLimit < Duration(100)) {
     addExtraTime(0.9);
   }
 }
@@ -556,10 +554,10 @@ void Search::configureTimeLimits() {
  */
 void Search::addExtraTime(double factor) {
   if (searchLimits.moveTime == 0) {
-    extraTime += hardTimeLimit * (factor - 1);
+    extraTime += Duration (MilliSec (hardTimeLimit.count() * (factor - 1)));
     LOG->debug("Time added {:n} ms to {:n} ms",
-               extraTime,
-               hardTimeLimit + extraTime);
+               extraTime.count(),
+               (hardTimeLimit + extraTime).count());
   }
 }
 
@@ -572,28 +570,26 @@ void Search::addExtraTime(double factor) {
 bool Search::softTimeLimitReached() {
   if (!searchLimits.timeControl) return false;
   stopSearchFlag = elapsedTime() >= softTimeLimit + (extraTime * 0.8);
-  if (stopSearchFlag) SPDLOG_TRACE("Soft time limit reached!");
   return stopSearchFlag;
 }
 
 /**
- * Hard time limit is used to check time regularily in the search to stop the search when
+ * Hard time limit is used to check time regularly in the search to stop the search when
  * time is out
- * TODO instead of checking this regulary we could use a timer thread to set stopSearch to true.
+ * TODO instead of checking this regularly we could use a timer thread to set stopSearch to true.
  *
  * @return true if hard time limit is reached, false otherwise
  */
 bool Search::hardTimeLimitReached() {
   if (!searchLimits.timeControl) return false;
   stopSearchFlag = elapsedTime() >= hardTimeLimit + extraTime;
-  if (stopSearchFlag) SPDLOG_TRACE("Hard time limit reached!");
   return stopSearchFlag;
 }
 
 /**
  * @return the elapsed time in ms since the start of the search
  */
-MilliSec Search::elapsedTime() {
+inline Duration Search::elapsedTime() {
   return elapsedTime(startTime);
 }
 
@@ -601,9 +597,25 @@ MilliSec Search::elapsedTime() {
  * @param t time point since the elapsed time
  * @return the elapsed time from the start of the search to the given t
  */
-MilliSec Search::elapsedTime(std::chrono::time_point<std::chrono::steady_clock> t) {
-  return std::chrono::duration_cast<std::chrono::milliseconds>(
-    std::chrono::high_resolution_clock::now() - t).count();
+inline Duration Search::elapsedTime(TimePoint t) {
+  return elapsedTime(t, now());
+}
+
+/**
+ * @param t1 Earlier time point
+ * @param t2 Later time point
+ * @return Duration between time points in milliseconds
+ */
+inline Duration Search::elapsedTime(TimePoint t1, TimePoint t2) {
+  return std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
+}
+
+/**
+ * Returns the current time as a time point
+ * @return TimePoint for the current time
+ */
+inline TimePoint Search::now() {
+  return std::chrono::high_resolution_clock::now();
 }
 
 /**
@@ -643,7 +655,7 @@ void Search::sendUCIIterationEndInfo() {
       valueOf(pv[ROOT_PLY].front()),
       searchStats.nodesVisited,
       getNps(),
-      elapsedTime(),
+      elapsedTime().count(),
       printMoveListUCI(pv[ROOT_PLY]));
 
   if (pEngine == nullptr) LOG->warn("<no engine> >> {}", infoString);
@@ -653,7 +665,7 @@ void Search::sendUCIIterationEndInfo() {
                                   valueOf(pv[ROOT_PLY].front()),
                                   searchStats.nodesVisited,
                                   getNps(),
-                                  elapsedTime(),
+                                  elapsedTime().count(),
                                   pv[ROOT_PLY]);
 }
 
@@ -672,7 +684,7 @@ void Search::sendUCICurrentRootMove() {
 
 void Search::sendUCISearchUpdate() {
   if (elapsedTime(lastUciUpdateTime) > UCI_UPDATE_INTERVAL) {
-    lastUciUpdateTime = std::chrono::high_resolution_clock::now();
+    lastUciUpdateTime = now();
 
     std::string infoString = fmt::format(
       "depth {} seldepth {} nodes {} nps {} time {} hashfull {}",
@@ -680,7 +692,7 @@ void Search::sendUCISearchUpdate() {
       searchStats.currentExtraSearchDepth,
       searchStats.nodesVisited,
       getNps(),
-      elapsedTime(),
+      elapsedTime().count(),
       0); // TODO
 
     //(int) (1000 * ((float) transpositionTable.getNumberOfEntries() / transpositionTable.getMaxEntries())));
@@ -690,7 +702,7 @@ void Search::sendUCISearchUpdate() {
                                 searchStats.currentExtraSearchDepth,
                                 searchStats.nodesVisited,
                                 getNps(),
-                                elapsedTime(),
+                                elapsedTime().count(),
                                 0);
 
     infoString = fmt::format("currline {}",
@@ -704,21 +716,23 @@ void Search::sendUCIBestMove() {
   std::string infoString =
     fmt::format(
       "Engine got Best Move: {} [Ponder {}]",
-      lastSearchResult.bestMove,
-      lastSearchResult.ponderMove);
+      printMove(lastSearchResult.bestMove),
+      printMove(lastSearchResult.ponderMove));
 
   if (pEngine == nullptr) LOG->warn("<no engine> >> {}", infoString);
   else pEngine->sendResult(lastSearchResult.bestMove, lastSearchResult.ponderMove);
 }
 
 MilliSec Search::getNps() {
-  return 1000 * searchStats.nodesVisited / (1 + elapsedTime());
+  return 1000 * searchStats.nodesVisited / (elapsedTime().count() + 1); // +1 to avoid division by zero
 }
 
 void Search::savePV(Move move, MoveList &src, MoveList &dest) {
   dest = src;
   dest.push_front(move);
 }
+
+
 
 
 

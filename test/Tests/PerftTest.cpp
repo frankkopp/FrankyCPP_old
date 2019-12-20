@@ -43,6 +43,7 @@ public:
     INIT::init();
     NEWLINE;
   }
+  shared_ptr<spdlog::logger> LOG = spdlog::get("Test_Logger");
 protected:
   void SetUp() override {}
   void TearDown() override {}};
