@@ -617,7 +617,7 @@ inline MilliSec Search::elapsedTime(MilliSec t1, MilliSec t2) {
  * @return TimePoint for the current time
  */
 inline MilliSec Search::now() {
-  return clock_gettime_nsec_np(CLOCK_MONOTONIC) / 1'000'000;
+  return clock_gettime_nsec_np(CLOCK_UPTIME_RAW_APPROX) / 1'000'000;
 }
 
 MilliSec Search::getNps() {
