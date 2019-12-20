@@ -39,6 +39,7 @@ class Engine;
 #include "Position.h"
 #include "SearchLimits.h"
 #include "Evaluator.h"
+#include "time.h"
 
 struct SearchResult {
 public:
@@ -60,17 +61,13 @@ inline std::ostream &operator<<(std::ostream &os, const SearchResult &searchResu
   return os;
 }
 
-using Clock = std::chrono::high_resolution_clock;
-using TimePoint = std::chrono::time_point<Clock>;
-using Duration = std::chrono::duration<MilliSec , std::milli>;
-
 class Search {
 
   std::shared_ptr<spdlog::logger> LOG = spdlog::get("Search_Logger");
 
   // UCI related
-  constexpr static Duration UCI_UPDATE_INTERVAL = Duration (1'000);
-  TimePoint lastUciUpdateTime {};
+  constexpr static MilliSec UCI_UPDATE_INTERVAL = 1'000;
+  MilliSec lastUciUpdateTime {};
   
   // thread control
   Semaphore initSemaphore; // used to block while initializing thread
@@ -95,11 +92,11 @@ class Search {
   SearchResult lastSearchResult;
 
   // search start time
-  TimePoint startTime {};
-  TimePoint stopTime {};
-  Duration softTimeLimit {};
-  Duration hardTimeLimit {};
-  Duration extraTime {};
+  MilliSec startTime {};
+  MilliSec stopTime {};
+  MilliSec softTimeLimit {};
+  MilliSec hardTimeLimit {};
+  MilliSec extraTime {};
 
   // the color of the searching player
   Color myColor = NOCOLOR;
@@ -178,10 +175,10 @@ private:
   void sendUCIBestMove();
   MilliSec getNps();
 
-  inline Duration elapsedTime();
-  static inline Duration elapsedTime(TimePoint t);
-  static inline Duration elapsedTime(TimePoint t1, TimePoint t2);
-  static inline TimePoint now();
+  inline MilliSec elapsedTime();
+  static inline MilliSec elapsedTime(clock_t t);
+  static inline MilliSec elapsedTime(clock_t t1, clock_t t2);
+  static inline MilliSec now();
 };
 
 #endif // FRANKYCPP_SEARCH_H

@@ -188,7 +188,7 @@ TEST_F(SearchTest, npsTest) {
   Search search;
   SearchLimits searchLimits;
   Position position;
-  searchLimits.moveTime = 60'000;
+  searchLimits.moveTime = 15'000;
   searchLimits.setupLimits();
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
