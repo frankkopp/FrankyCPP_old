@@ -147,7 +147,7 @@ void Engine::startSearch(const UCISearchMode &uciSearchMode) {
 }
 
 void Engine::stopSearch() {
-  if (search.isRunning()) LOG->info("Engine: Stop Search");
+  LOG->info("Engine: Stop Search");
   search.stopSearch();
 }
 

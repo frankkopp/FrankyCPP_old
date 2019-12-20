@@ -54,14 +54,14 @@ void Search::startSearch(const Position &pos, SearchLimits limits) {
     return;
   }
 
+  // make sure we have a semaphore available
+  searchSemaphore.release();
+
   // pos is a deep copy of the position parameter to not change
   // the original position given
   position = pos;
   myColor = position.getNextPlayer();
   searchLimits = std::move(limits);
-
-  // make sure we have a semaphore available
-  searchSemaphore.release();
 
   // join() previous thread
   if (myThread.joinable()) myThread.join();
@@ -118,7 +118,6 @@ void Search::waitWhileSearching() {
 }
 
 void Search::ponderhit() {
-  LOG->error("Search: Ponder Hit not implemented yet!");
   if (searchLimits.ponder) {
     LOG->info("****** PONDERHIT *******");
     if (isRunning()) {

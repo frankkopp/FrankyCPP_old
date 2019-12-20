@@ -308,7 +308,6 @@ namespace UCI {
 
   void Handler::stopCommand() {
     pEngine->stopSearch();
-
   }
 
   void Handler::ponderHitCommand() {
@@ -367,7 +366,7 @@ namespace UCI {
   /**
    * @param value
    * @return a UCI compatible string for th score in cp or in mate in ply
-   * TODO add full protocoll (lowerbound, upperbound, etc.)
+   * TODO add full protocol (lowerbound, upperbound, etc.)
    */
   std::string Handler::getScoreString(int value) {
     std::string scoreString;

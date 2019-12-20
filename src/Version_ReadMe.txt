@@ -24,10 +24,11 @@ v 0.2 (plan)
 v 0.1 (in progress)
 ================================================================================
 - TODO:
-    - Pondering
     - TreeSize Test
     - Complete UCI Protocol
+    - Testing & Debugging
 - DONE:
+    - Pondering
     - Basic search (Minimax, no TT, no KillerMoves, etc.)
     - Basic evaluation
     - Search Modes (incl. basic time management for time based search)
