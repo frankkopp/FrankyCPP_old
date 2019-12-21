@@ -584,10 +584,10 @@ TEST_F(UCITest, ponderMiss) {
   is = istringstream(command);
   uciHandler.loop(&is);
 
-  sleep(2);
+  //sleep(2);
   ASSERT_TRUE(engine.isSearching());
   ASSERT_TRUE(engine.getSearchLimits().ponder);
-  sleep(2);
+  //sleep(2);
 
   command = "position startpos moves e2e4 e7e6";
   LOG->info("COMMAND: " + command);

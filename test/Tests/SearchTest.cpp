@@ -205,6 +205,58 @@ TEST_F(SearchTest, mate2Search) {
   ASSERT_EQ(VALUE_CHECKMATE - 3, valueOf(search.getLastSearchResult().bestMove));
 }
 
+TEST_F(SearchTest, repetitionForce) {
+  Search search;
+  SearchLimits searchLimits;
+  Position position("8/p3Q1bk/1p4p1/5q2/P1N2p2/1P5p/2b4P/6K1 w - - 0 38");
+  // 1. Qh4+ Kg8 2. Qd8+ Kh7 3. Qh4+ Kg8 4. Qd8+ Kh7 5. Qh4+ 1/2-1/2
+  position.doMove(createMove("e7h4"));
+  position.doMove(createMove("h7g8"));
+  position.doMove(createMove("h4d8"));
+  position.doMove(createMove("g8h7"));
+  position.doMove(createMove("d8h4"));
+  position.doMove(createMove("h7g8"));
+  position.doMove(createMove("h4d8"));
+  position.doMove(createMove("g8h7"));
+  // next white move would be 3-fold draw
+
+  searchLimits.depth = 4;
+  searchLimits.setupLimits();
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+
+  LOG->info("Repetition move: {}", printMoveVerbose(search.getLastSearchResult().bestMove));
+  
+  ASSERT_EQ("d8h4", printMove(search.getLastSearchResult().bestMove));
+  ASSERT_EQ(VALUE_DRAW, valueOf(search.getLastSearchResult().bestMove));
+}
+
+TEST_F(SearchTest, repetitionAvoid) {
+  Search search;
+  SearchLimits searchLimits;
+  Position position("8/p3Q1bk/1p4p1/5q2/P1N2p2/1P5p/2b4P/6K1 w - - 0 38");
+  // 1. Qh4+ Kg8 2. Qd8+ Kh7 3. Qh4+ Kg8 4. Qd8+ Kh7 5. Qh4+ 1/2-1/2
+  position.doMove(createMove("e7h4"));
+  position.doMove(createMove("h7g8"));
+  position.doMove(createMove("h4d8"));
+  position.doMove(createMove("g8h7"));
+  position.doMove(createMove("d8h4"));
+  position.doMove(createMove("h7g8"));
+  position.doMove(createMove("h4d8"));
+  // black should not move Kg8h7 as this would enable white to  3-fold repetition
+  // although black is winning
+
+  searchLimits.depth = 4;
+  searchLimits.setupLimits();
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+
+  LOG->info("Repetition avoidance move: {}", printMoveVerbose(search.getLastSearchResult().bestMove));
+
+  ASSERT_NE("g8f7", printMove(search.getLastSearchResult().bestMove));
+  ASSERT_NE(VALUE_DRAW, valueOf(search.getLastSearchResult().bestMove));
+}
+
 TEST_F(SearchTest, npsTest) {
 
   Search search;

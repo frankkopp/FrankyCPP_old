@@ -251,7 +251,7 @@ inline bool isCheckmateValue(const Value &value) {
 
 /**
    * @param value
-   * @return a UCI compatible string for th score in cp or in mate in ply
+   * @return a UCI compatible string for the score in cp or in mate in ply
    * TODO add full protocol (lowerbound, upperbound, etc.)
    */
 inline std::string printValue(Value value) {

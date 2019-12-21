@@ -45,26 +45,31 @@ namespace LOGGING {
     // Main Logger
     auto MAIN_LOG = spdlog::stdout_color_mt("Main_Logger");
     MAIN_LOG->sinks().push_back(sharedFileSink);
+    MAIN_LOG->set_pattern("[%H:%M:%S:%e] [%n] [%L] [thread %t] %v");
     MAIN_LOG->set_level(spdlog::level::trace);
     MAIN_LOG->flush_on(spdlog::level::trace);
 
     auto ENGINE_LOG = spdlog::stdout_color_mt("Engine_Logger");
     ENGINE_LOG->sinks().push_back(sharedFileSink);
+    ENGINE_LOG->set_pattern("[%H:%M:%S:%e] [%n] [%L] [thread %t] %v");
     ENGINE_LOG->set_level(spdlog::level::trace);
     ENGINE_LOG->flush_on(spdlog::level::trace);
 
     auto SEARCH_LOG = spdlog::stdout_color_mt("Search_Logger");
     SEARCH_LOG->sinks().push_back(sharedFileSink);
+    SEARCH_LOG->set_pattern("[%H:%M:%S:%e] [%n] [%L] [thread %t] %v");
     SEARCH_LOG->set_level(spdlog::level::debug);
     SEARCH_LOG->flush_on(spdlog::level::trace);
 
     auto EVAL_LOG = spdlog::stdout_color_mt("Eval_Logger");
     EVAL_LOG->sinks().push_back(sharedFileSink);
+    EVAL_LOG->set_pattern("[%H:%M:%S:%e] [%n] [%L] [thread %t] %v");
     EVAL_LOG->set_level(spdlog::level::trace);
     EVAL_LOG->flush_on(spdlog::level::trace);
 
     auto UCIHANDLER_LOG = spdlog::stdout_color_mt("UCIHandler_Logger");
     UCIHANDLER_LOG->sinks().push_back(sharedFileSink);
+    UCIHANDLER_LOG->set_pattern("[%H:%M:%S:%e] [%n] [%L] [thread %t] %v");
     UCIHANDLER_LOG->set_level(spdlog::level::trace);
     UCIHANDLER_LOG->flush_on(spdlog::level::trace);
 
@@ -77,6 +82,7 @@ namespace LOGGING {
 
     // Logger for Unit Tests
     auto TEST_LOG = spdlog::stdout_color_mt("Test_Logger");
+    TEST_LOG->set_pattern("[%H:%M:%S:%f] %L %v");
     TEST_LOG->set_level(spdlog::level::trace);
     TEST_LOG->flush_on(spdlog::level::trace);
 

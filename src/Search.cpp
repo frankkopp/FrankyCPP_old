@@ -102,10 +102,13 @@ void Search::stopSearch() {
 
   // set stop flag - search needs to check regularly and stop accordingly
   stopSearchFlag = true;
+  LOG->debug("Stop flag has been set to: {}!", stopSearchFlag);
+
   // Wait for the thread to die
   if (myThread.joinable()) myThread.join();
   waitWhileSearching();
-  LOG->info("Search stopped.");
+
+  LOG->info("Search stopped.", running);
   assert(!running);
 }
 
@@ -114,9 +117,13 @@ bool Search::isRunning() {
 }
 
 void Search::waitWhileSearching() {
+  LOG->debug("Wait while searching");
   if (!running) return;
+  LOG->debug("Waiting for search semaphore");
   searchSemaphore.getOrWait();
+  LOG->debug("Got search semaphore");
   searchSemaphore.reset();
+  LOG->debug("Reset search semaphore");
 }
 
 void Search::ponderhit() {
@@ -347,8 +354,6 @@ SearchResult Search::iterativeDeepening(Position *pPosition) {
  */
 void Search::searchRoot(Position *pPosition, const int depth) {
 
-  // TODO: check draw by repetition or 50moves rule / necessary here???
-
   // prepare move loop
   Value bestNodeValue = VALUE_NONE;
   Value value = VALUE_NONE;
@@ -389,6 +394,11 @@ void Search::searchRoot(Position *pPosition, const int depth) {
  */
 Value Search::searchNonRoot(Position *pPosition, const int depth, const int ply) {
 
+  if (stopConditions()) return VALUE_NONE; // value does not matter because of top flag
+
+  // check for repetition ot 50-move-rule draws
+  if (checkDrawRepAnd50(pPosition)) return VALUE_DRAW;
+
   // update current search depth stats
   searchStats.currentSearchDepth = std::max(searchStats.currentSearchDepth, ply);
   searchStats.currentExtraSearchDepth = std::max(searchStats.currentExtraSearchDepth, ply);
@@ -397,8 +407,6 @@ Value Search::searchNonRoot(Position *pPosition, const int depth, const int ply)
   if (depth <= 0 || ply >= MAX_SEARCH_DEPTH - 1) {
     return qsearch(pPosition, ply);
   }
-
-  // TODO: check draw by repetition or 50moves rule
 
   // to detect mate situations
   int numberOfSearchedMoves = 0;
@@ -456,6 +464,20 @@ Value Search::searchNonRoot(Position *pPosition, const int depth, const int ply)
   return bestNodeValue;
 }
 
+bool Search::checkDrawRepAnd50(Position *pPosition) const {
+  if (pPosition->checkRepetitions(2)) {
+    this->LOG->debug("DRAW because of repetition for move {} in variation {}",
+                     printMove(pPosition->getLastMove()), printMoveListUCI(this->currentVariation));
+    return true;
+  }
+  if (pPosition->getHalfMoveClock() >= 100) {
+    this->LOG->debug("DRAW because 50-move rule",
+                     printMove(pPosition->getLastMove()), printMoveListUCI(this->currentVariation));
+    return true;
+  }
+  return false;
+}
+
 /**
  * Called for each move of a position.
  * @param pPosition
@@ -467,6 +489,9 @@ Value Search::searchNonRoot(Position *pPosition, const int depth, const int ply)
  */
 Value Search::searchMove(Position *pPosition, const int depth, const int ply, const Move &move,
                          const bool isRoot) {
+
+  if (isRoot) {}; // prevent warnings
+
   Value value = VALUE_NONE;
   pPosition->doMove(move);
   if (pPosition->isLegalPosition()) {
@@ -497,6 +522,8 @@ Value Search::qsearch(Position *pPosition, const int ply) {
 }
 
 Value Search::evaluate(Position *pPosition, const int ply) {
+  if (ply) {};
+
   // count all leaf nodes evaluated
   searchStats.leafPositionsEvaluated++;
 
@@ -512,10 +539,11 @@ Value Search::evaluate(Position *pPosition, const int ply) {
 }
 
 inline bool Search::stopConditions() {
-  return stopSearchFlag = (stopSearchFlag
-                           || hardTimeLimitReached()
-                           || (searchLimits.nodes
-                               && searchStats.nodesVisited >= searchLimits.nodes));
+  if (hardTimeLimitReached()
+      || (searchLimits.nodes
+          && searchStats.nodesVisited >= searchLimits.nodes))
+    stopSearchFlag = true;
+  return stopSearchFlag;
 }
 
 void Search::configureTimeLimits() {
@@ -580,7 +608,7 @@ void Search::addExtraTime(double factor) {
  */
 bool Search::softTimeLimitReached() {
   if (!searchLimits.timeControl) return false;
-  stopSearchFlag = elapsedTime(startTime) >= softTimeLimit + (extraTime * 0.8);
+  if (elapsedTime(startTime) >= softTimeLimit + (extraTime * 0.8)) stopSearchFlag = true;
   return stopSearchFlag;
 }
 
@@ -593,7 +621,7 @@ bool Search::softTimeLimitReached() {
  */
 bool Search::hardTimeLimitReached() {
   if (!searchLimits.timeControl) return false;
-  stopSearchFlag = elapsedTime(startTime) >= hardTimeLimit + extraTime;
+  if (elapsedTime(startTime) >= hardTimeLimit + extraTime) stopSearchFlag = true;
   return stopSearchFlag;
 }
 
@@ -703,6 +731,8 @@ void Search::sendUCICurrentRootMove() {
 void Search::sendUCISearchUpdate() {
   if (elapsedTime(lastUciUpdateTime) > UCI_UPDATE_INTERVAL) {
     lastUciUpdateTime = now();
+
+    LOG->debug("Stop flag = {}", stopSearchFlag);
 
     MilliSec result;
     result = elapsedTime(startTime);

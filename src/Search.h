@@ -84,8 +84,8 @@ class Search {
   Position position;
 
   // search state
-  bool running = false;
-  bool stopSearchFlag = false;
+  std::atomic_bool running = false;
+  std::atomic_bool stopSearchFlag = false;
 
   // search result
   SearchResult lastSearchResult;
@@ -173,17 +173,18 @@ private:
   inline bool stopConditions();
   void addExtraTime(double d);
   bool softTimeLimitReached();
-  
-  static void savePV(Move move, MoveList &src, MoveList &dest);
 
+  bool checkDrawRepAnd50(Position *pPosition) const;
+
+  static void savePV(Move move, MoveList &src, MoveList &dest);
   bool hardTimeLimitReached();
   void sendUCIIterationEndInfo();
   void sendUCICurrentRootMove();
+
   void sendUCISearchUpdate();
-
   void sendUCIBestMove();
-  MilliSec getNps();
 
+  MilliSec getNps();
   static inline MilliSec elapsedTime(MilliSec t);
   static inline MilliSec elapsedTime(MilliSec t1, MilliSec t2);
   static inline MilliSec now();

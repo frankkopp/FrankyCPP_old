@@ -24,10 +24,11 @@ v 0.2 (plan)
 v 0.1 (in progress)
 ================================================================================
 - TODO:
-    - TreeSize Test
-    - Complete UCI Protocol
+    - check draw by repetition or 50moves rule
     - Testing & Debugging
 - DONE:
+    - Complete UCI Protocol
+    - TreeSize Test
     - Pondering
     - Basic search (Minimax, no TT, no KillerMoves, etc.)
     - Basic evaluation
