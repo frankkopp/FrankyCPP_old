@@ -26,6 +26,7 @@
 #include <iostream>
 #include <utility>
 #include "Search.h"
+#include "SearchConfig.h"
 #include "Engine.h"
 
 ////////////////////////////////////////////////
@@ -53,7 +54,7 @@ void Search::startSearch(const Position &pos, SearchLimits limits) {
   }
 
   // make sure we have a semaphore available
-  searchSemaphore.release();
+  searchSemaphore.reset();
 
   // pos is a deep copy of the position parameter to not change
   // the original position given
@@ -115,7 +116,7 @@ bool Search::isRunning() {
 void Search::waitWhileSearching() {
   if (!running) return;
   searchSemaphore.getOrWait();
-  searchSemaphore.release();
+  searchSemaphore.reset();
 }
 
 void Search::ponderhit() {
@@ -218,7 +219,7 @@ void Search::run() {
   sendUCIBestMove();
 
   running = false;
-  searchSemaphore.release();
+  searchSemaphore.reset();
   LOG->debug("Search thread ended.");
 }
 
@@ -485,9 +486,12 @@ Value Search::qsearch(Position *pPosition, const int ply) {
   searchStats.currentExtraSearchDepth = std::max(searchStats.currentExtraSearchDepth, ply);
 
   // if PERFT or MAX SEARCH DEPTH reached return with eval to count all captures etc.
-  if (searchLimits.perft || ply >= MAX_SEARCH_DEPTH - 1) return evaluate(pPosition, ply);
+  if (searchLimits.perft
+      || ply >= MAX_SEARCH_DEPTH - 1
+      || !SearchConfig::USE_QUIESCENCE)
+    return evaluate(pPosition, ply);
 
-  // TODO quiscence search
+  // TODO: Implement quiescence search here
 
   return evaluate(pPosition, ply);
 }
@@ -620,7 +624,8 @@ inline MilliSec Search::now() {
 }
 
 MilliSec Search::getNps() {
-  return 1000 * searchStats.nodesVisited / (elapsedTime(startTime) + 1); // +1 to avoid division by zero
+  return 1000 * searchStats.nodesVisited /
+         (elapsedTime(startTime) + 1); // +1 to avoid division by zero
 }
 
 inline void Search::savePV(Move move, MoveList &src, MoveList &dest) {
@@ -739,6 +744,7 @@ void Search::sendUCIBestMove() {
   if (pEngine == nullptr) LOG->warn("<no engine> >> {}", infoString);
   else pEngine->sendResult(lastSearchResult.bestMove, lastSearchResult.ponderMove);
 }
+
 
 
 

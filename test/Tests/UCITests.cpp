@@ -104,7 +104,7 @@ TEST_F(UCITest, setoptionTest) {
   uciHandler = UCI::Handler(&engine, &is, &os);
   uciHandler.loop();
   ASSERT_EQ("false", engine.getOption("Ponder"));
-  ASSERT_FALSE(engine.config.ponder);
+  ASSERT_FALSE(EngineConfig::ponder);
 }
 
 

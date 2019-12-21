@@ -62,11 +62,6 @@ class Engine {
 
 public:
 
-  // configuration (public for convenience)
-  Config config;
-
-  const SearchLimits &getSearchLimits() const { return searchLimits; };
-
   ////////////////////////////////////////////////
   ///// CONSTRUCTORS
 
@@ -107,6 +102,9 @@ public:
 
   // other
   void waitWhileSearching();
+
+  // getter
+  inline const SearchLimits &getSearchLimits() const { return searchLimits; };
 
 private:
 

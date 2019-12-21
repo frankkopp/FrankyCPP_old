@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2019 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,11 +26,11 @@
 #ifndef FRANKYCPP_SEARCHCONFIG_H
 #define FRANKYCPP_SEARCHCONFIG_H
 
-namespace EngineConfig {
+namespace SearchConfig {
 
-  static int hash = 1024; // in MB
-  static bool ponder = true;
-  
-};
+  static bool USE_QUIESCENCE = false;
+
+
+}
 
 #endif //FRANKYCPP_SEARCHCONFIG_H

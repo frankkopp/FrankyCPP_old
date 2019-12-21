@@ -150,6 +150,9 @@ public:
   /** to signal the search that pondering was successful */
   void ponderhit();
 
+  /** return current pv */
+  const MoveList &getPV() { return pv[ROOT_PLY]; };
+  
 private:
   ////////////////////////////////////////////////
   ///// PRIVATE

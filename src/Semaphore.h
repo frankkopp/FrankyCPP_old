@@ -31,6 +31,7 @@ public:
   basic_semaphore& operator=(basic_semaphore&&) = delete;
 
   // methods
+  void reset();
   void release();
   void getOrWait();
   bool get();
@@ -63,8 +64,6 @@ basic_semaphore<Mutex, CondVar>::basic_semaphore(size_t count) : mCount{count} {
 
 /**
  * Tries to get a semaphore and returns false if none available
- * @tparam Mutex
- * @tparam CondVar
  * @return
  */
 template <typename Mutex, typename CondVar>
@@ -77,6 +76,18 @@ bool basic_semaphore<Mutex, CondVar>::get() {
     return true;
   }
   return false;
+}
+
+/**
+ * Reset the number of available semaphores to 1
+ */
+template <typename Mutex, typename CondVar>
+void basic_semaphore<Mutex, CondVar>::reset() {
+  // get the lock - will be released when exiting the block
+  // as it is set in the destructor of this class
+  std::lock_guard<Mutex> lock{mMutex};
+  mCount = 1;
+  mCv.notify_one();
 }
 
 /**
@@ -159,5 +170,6 @@ template <typename Mutex, typename CondVar>
 typename basic_semaphore<Mutex, CondVar>::native_handle_type basic_semaphore<Mutex, CondVar>::native_handle() {
   return mCv.native_handle();
 }
+
 
 #endif //FRANKYCPP_BASIC_SEMAPHORE_H

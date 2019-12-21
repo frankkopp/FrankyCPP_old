@@ -138,7 +138,7 @@ void Engine::startSearch(const UCISearchMode &uciSearchMode) {
                               uciSearchMode.infinite, uciSearchMode.perft);
 
   // do not start pondering if not ponder option is set
-  if (searchLimits.ponder && !config.ponder) {
+  if (searchLimits.ponder && !EngineConfig::ponder) {
     LOG->warn("Engine: go ponder command but ponder option is set to false.");
     return;
   }
@@ -220,7 +220,7 @@ void Engine::initOptions() {
   // @formatter:off
   // MAP("Hash", UCI::Option("Hash", config.hash, 1, 8192)); // spin
   // MAP("Clear Hash", UCI::Option("Clear Hash"));           // button
-  MAP("Ponder", UCI::Option("Ponder", config.ponder));    // check
+  MAP("Ponder", UCI::Option("Ponder", EngineConfig::ponder));    // check
   // @formatter:on
   updateConfig();
 }
@@ -231,8 +231,8 @@ void Engine::updateConfig() {
     const UCI::Option &option = it.second;
     const std::string &name = option.getNameID();
 
-    if (name == "Hash") config.hash = getInt(option.getCurrentValue());
-    else if (name == "Ponder") config.ponder = option.getCurrentValue() == "true";
+    if (name == "Hash") EngineConfig::hash = getInt(option.getCurrentValue());
+    else if (name == "Ponder") EngineConfig::ponder = option.getCurrentValue() == "true";
   }
 }
 
