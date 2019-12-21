@@ -158,16 +158,16 @@ void Engine::ponderHit() {
   search.ponderhit();
 }
 
-void Engine::sendIterationEndInfo(int depth, int seldepth, int scoreInCP, long nodes, int nps,
+void Engine::sendIterationEndInfo(int depth, int seldepth, Value value, long nodes, int nps,
                                   MilliSec time, const MoveList &pv) const {
   if (pUciHandler)
-    pUciHandler->sendIterationEndInfo(depth, seldepth, scoreInCP, nodes, nps, time, pv);
+    pUciHandler->sendIterationEndInfo(depth, seldepth, value, nodes, nps, time, pv);
   else
     LOG->warn(
       "<no uci handler>: Engine iteration end: depth {} seldepth {} multipv 1 {} nodes {} nps {} time {} pv {}",
       depth,
       seldepth,
-      scoreInCP,
+      value,
       nodes,
       nps,
       time,
@@ -205,8 +205,8 @@ void Engine::sendCurrentLine(const MoveList &moveList) const {
 void Engine::sendResult(Move bestMove, Move ponderMove) const {
   if (pUciHandler) pUciHandler->sendResult(bestMove, ponderMove);
   else
-    LOG->warn("<no uci handler>: Engine Result: Best Move = {} Ponder Move = {}",
-              printMoveVerbose(bestMove), printMoveVerbose(ponderMove));
+    LOG->warn("<no uci handler>: Engine Result: Best Move = {} ({}) Ponder Move = {}",
+              printMoveVerbose(bestMove), valueOf(bestMove), printMoveVerbose(ponderMove));
 }
 
 void Engine::waitWhileSearching() {

@@ -240,6 +240,33 @@ inline Value valueOf(const PieceType pt) { return pieceTypeValue[pt]; }
 /** returns the value of the given piece */
 inline Value valueOf(const Piece p) { return pieceTypeValue[typeOf(p)]; }
 
+/**
+ * Returns true if value is considered a checkmate
+ * @param value
+ * @return true if value is considered a checkmate
+ */
+inline bool isCheckmateValue(const Value &value) {
+  return abs(value) >= VALUE_CHECKMATE_THRESHOLD && abs(value) <= VALUE_CHECKMATE;
+}
+
+/**
+   * @param value
+   * @return a UCI compatible string for th score in cp or in mate in ply
+   * TODO add full protocol (lowerbound, upperbound, etc.)
+   */
+inline std::string printValue(Value value) {
+  std::string scoreString;
+  if (isCheckmateValue(value)) {
+    scoreString = "mate ";
+    scoreString += value < 0 ? "-" : "";
+    scoreString += std::to_string((VALUE_CHECKMATE - std::abs(value) + 1) / 2);
+  }
+  else {
+    scoreString = "cp " + std::to_string(value);
+  }
+  return scoreString;
+}
+
 ///////////////////////////////////
 //// MOVE
 
@@ -405,7 +432,7 @@ constexpr Move moveOf(Move m) { return Move(m & MOVE_MASK); }
 /** returns a short representation of the move as string (UCI protocal) */
 inline std::string printMove(const Move &move) {
   std::string promotion = "";
-  if (move == NOMOVE) return "NOMOVE";
+  if (moveOf(move) == NOMOVE) return "NOMOVE";
   if ((typeOf(move) == PROMOTION)) promotion = pieceTypeToChar[promotionType(move)];
   return squareLabel(getFromSquare(move)) + squareLabel(getToSquare(move)) + promotion;
 }

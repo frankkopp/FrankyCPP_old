@@ -79,14 +79,11 @@ namespace UCI {
     //// GETTER
     const UCISearchMode &getSearchMode() const { return searchMode; };
 
-    void sendIterationEndInfo(int depth, int seldepth, int scoreInCP, long nodes, int nps, MilliSec time, const MoveList& pv);
+    void sendIterationEndInfo(int depth, int seldepth, Value value, long nodes, int nps, MilliSec time, const MoveList& pv);
     void sendCurrentRootMove(Move currmove, int movenumber);
     void sendSearchUpdate(int depth, int seldepth, long nodes, int nps, MilliSec time, int hashfull);
     void sendCurrentLine(const MoveList& moveList);
     void sendResult(Move bestMove, Move ponderMove);
-
-    std::string getScoreString(int value);
-    bool isCheckMateValue(int value);
   };
 }
 

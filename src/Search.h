@@ -90,6 +90,8 @@ class Search {
   // search result
   SearchResult lastSearchResult;
 
+private:
+
   // search start time
   MilliSec startTime {};
   MilliSec stopTime {};
@@ -142,7 +144,12 @@ public:
   /** return search stats instance */
   inline const SearchStats &getSearchStats() const { return searchStats; }
 
+  /** return the last search result */
+  inline const SearchResult &getLastSearchResult() const { return lastSearchResult; };
+
+  /** to signal the search that pondering was successful */
   void ponderhit();
+
 private:
   ////////////////////////////////////////////////
   ///// PRIVATE
@@ -174,7 +181,6 @@ private:
   void sendUCIBestMove();
   MilliSec getNps();
 
-  inline MilliSec elapsedTime();
   static inline MilliSec elapsedTime(MilliSec t);
   static inline MilliSec elapsedTime(MilliSec t1, MilliSec t2);
   static inline MilliSec now();

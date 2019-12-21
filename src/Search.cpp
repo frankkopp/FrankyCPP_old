@@ -24,7 +24,6 @@
  */
 
 #include <iostream>
-#include <chrono>
 #include <utility>
 #include "Search.h"
 #include "Engine.h"
@@ -77,7 +76,10 @@ void Search::startSearch(const Position &pos, SearchLimits limits) {
 }
 
 void Search::stopSearch() {
-  if (!running) return;
+  if (!running) {
+    LOG->warn("Stop search called when search was not running");
+    return;
+  }
   LOG->info("Stopping search.");
 
   // stop pondering if we are
@@ -191,6 +193,9 @@ void Search::run() {
   }
   if (searchLimits.ponder) {
     LOG->info("Search Mode: PONDER SEARCH");
+  }
+  if (searchLimits.mate) {
+    LOG->info("Search Mode: MATE SEARCH ({})", searchLimits.mate);
   }
 
   // initialization done
@@ -571,7 +576,7 @@ void Search::addExtraTime(double factor) {
  */
 bool Search::softTimeLimitReached() {
   if (!searchLimits.timeControl) return false;
-  stopSearchFlag = elapsedTime() >= softTimeLimit + (extraTime * 0.8);
+  stopSearchFlag = elapsedTime(startTime) >= softTimeLimit + (extraTime * 0.8);
   return stopSearchFlag;
 }
 
@@ -584,15 +589,8 @@ bool Search::softTimeLimitReached() {
  */
 bool Search::hardTimeLimitReached() {
   if (!searchLimits.timeControl) return false;
-  stopSearchFlag = elapsedTime() >= hardTimeLimit + extraTime;
+  stopSearchFlag = elapsedTime(startTime) >= hardTimeLimit + extraTime;
   return stopSearchFlag;
-}
-
-/**
- * @return the elapsed time in ms since the start of the search
- */
-inline MilliSec Search::elapsedTime() {
-  return elapsedTime(startTime);
 }
 
 /**
@@ -613,18 +611,19 @@ inline MilliSec Search::elapsedTime(MilliSec t1, MilliSec t2) {
 }
 
 /**
- * Returns the current time as a time point
- * @return TimePoint for the current time
+ * Returns the current time in ms
+ * @return current time
  */
 inline MilliSec Search::now() {
+  // this C function is much faster than c++ chrono
   return clock_gettime_nsec_np(CLOCK_UPTIME_RAW_APPROX) / 1'000'000;
 }
 
 MilliSec Search::getNps() {
-  return 1000 * searchStats.nodesVisited / (elapsedTime() + 1); // +1 to avoid division by zero
+  return 1000 * searchStats.nodesVisited / (elapsedTime(startTime) + 1); // +1 to avoid division by zero
 }
 
-void Search::savePV(Move move, MoveList &src, MoveList &dest) {
+inline void Search::savePV(Move move, MoveList &src, MoveList &dest) {
   dest = src;
   dest.push_front(move);
 }
@@ -658,6 +657,8 @@ MoveList Search::generateRootMoves(Position *pPosition) {
 
 void Search::sendUCIIterationEndInfo() {
 
+  MilliSec result;
+  result = elapsedTime(startTime);
   std::string infoString =
     fmt::format(
       "depth {} seldepth {} multipv 1 {} nodes {} nps {} time {} pv {}",
@@ -666,18 +667,19 @@ void Search::sendUCIIterationEndInfo() {
       valueOf(pv[ROOT_PLY].front()),
       searchStats.nodesVisited,
       getNps(),
-      elapsedTime(),
+      result,
       printMoveListUCI(pv[ROOT_PLY]));
 
   if (pEngine == nullptr) LOG->warn("<no engine> >> {}", infoString);
-  else
+  else {
     pEngine->sendIterationEndInfo(searchStats.currentIterationDepth,
                                   searchStats.currentExtraSearchDepth,
                                   valueOf(pv[ROOT_PLY].front()),
                                   searchStats.nodesVisited,
                                   getNps(),
-                                  elapsedTime(),
+                                  elapsedTime(startTime),
                                   pv[ROOT_PLY]);
+  }
 }
 
 void Search::sendUCICurrentRootMove() {
@@ -697,24 +699,27 @@ void Search::sendUCISearchUpdate() {
   if (elapsedTime(lastUciUpdateTime) > UCI_UPDATE_INTERVAL) {
     lastUciUpdateTime = now();
 
+    MilliSec result;
+    result = elapsedTime(startTime);
     std::string infoString = fmt::format(
       "depth {} seldepth {} nodes {} nps {} time {} hashfull {}",
       searchStats.currentIterationDepth,
       searchStats.currentExtraSearchDepth,
       searchStats.nodesVisited,
       getNps(),
-      elapsedTime(),
+      result,
       0); // TODO
 
     //(int) (1000 * ((float) transpositionTable.getNumberOfEntries() / transpositionTable.getMaxEntries())));
     if (pEngine == nullptr) LOG->warn("<no engine> >> {}", infoString);
-    else
+    else {
       pEngine->sendSearchUpdate(searchStats.currentIterationDepth,
                                 searchStats.currentExtraSearchDepth,
                                 searchStats.nodesVisited,
                                 getNps(),
-                                elapsedTime(),
+                                elapsedTime(startTime),
                                 0);
+    }
 
     infoString = fmt::format("currline {}",
                              printMoveListUCI(currentVariation));
@@ -726,8 +731,9 @@ void Search::sendUCISearchUpdate() {
 void Search::sendUCIBestMove() {
   std::string infoString =
     fmt::format(
-      "Engine got Best Move: {} [Ponder {}]",
+      "Engine got Best Move: {} ({}) [Ponder {}]",
       printMove(lastSearchResult.bestMove),
+      printValue(valueOf(lastSearchResult.bestMove)),
       printMove(lastSearchResult.ponderMove));
 
   if (pEngine == nullptr) LOG->warn("<no engine> >> {}", infoString);

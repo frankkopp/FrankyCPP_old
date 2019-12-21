@@ -169,18 +169,40 @@ TEST_F(SearchTest, negamax) {
   search.waitWhileSearching();
 }
 
-TEST_F(SearchTest, profile) {
-  int i = 0;
-  while (++i < 1'000) {
-    Search search;
-    SearchLimits searchLimits;
-    Position position;
-    searchLimits.whiteTime = 600'000;
-    searchLimits.blackTime = 600'000;
-    searchLimits.setupLimits();
-    search.startSearch(position, searchLimits);
-    search.waitWhileSearching();
-  }
+TEST_F(SearchTest, mate0Search) {
+  Search search;
+  SearchLimits searchLimits;
+  Position position("8/8/8/8/8/6K1/8/R5k1 b - - 0 8");
+  searchLimits.mate = 0;
+  searchLimits.depth = 1;
+  searchLimits.setupLimits();
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+  ASSERT_EQ(-VALUE_CHECKMATE, valueOf(search.getLastSearchResult().bestMove));
+}
+
+TEST_F(SearchTest, mate1Search) {
+  Search search;
+  SearchLimits searchLimits;
+  Position position("8/8/8/8/8/6K1/R7/6k1 w - - 0 8");
+  searchLimits.mate = 1;
+  searchLimits.depth = 4;
+  searchLimits.setupLimits();
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+  ASSERT_EQ(VALUE_CHECKMATE - 1, valueOf(search.getLastSearchResult().bestMove));
+}
+
+TEST_F(SearchTest, mate2Search) {
+  Search search;
+  SearchLimits searchLimits;
+  Position position("8/8/8/8/8/5K2/R7/7k w - - 0 7");
+  searchLimits.mate = 2;
+  searchLimits.depth = 4;
+  searchLimits.setupLimits();
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+  ASSERT_EQ(VALUE_CHECKMATE - 3, valueOf(search.getLastSearchResult().bestMove));
 }
 
 TEST_F(SearchTest, npsTest) {

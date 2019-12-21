@@ -97,7 +97,7 @@ public:
 
   // send to UCI
   void
-  sendIterationEndInfo(int depth, int seldepth, int scoreInCP, long nodes, int nps, MilliSec time,
+  sendIterationEndInfo(int depth, int seldepth, Value value, long nodes, int nps, MilliSec time,
                        const MoveList& pv) const;
   void sendCurrentRootMove(Move currmove, int movenumber) const;
   void

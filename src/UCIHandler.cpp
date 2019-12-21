@@ -342,11 +342,11 @@ namespace UCI {
         printMoveListUCI(moveList)));
   }
 
-  void Handler::sendIterationEndInfo(int depth, int seldepth, int scoreInCP, long nodes, int nps,
+  void Handler::sendIterationEndInfo(int depth, int seldepth, Value value, long nodes, int nps,
                                      MilliSec time, const MoveList &pv) {
     send(fmt::format(
-      "info depth {} seldepth {} multipv 1 {} nodes {} nps {} time {} pv {}",
-      depth, seldepth, getScoreString(scoreInCP), nodes, nps, time, printMoveListUCI(pv)
+      "info depth {} seldepth {} multipv 1 score {} nodes {} nps {} time {} pv {}",
+      depth, seldepth, printValue(Value(value)), nodes, nps, time, printMoveListUCI(pv)
     ));
   }
 
@@ -361,33 +361,6 @@ namespace UCI {
     send(fmt::format(
       "depth {} seldepth {} nodes {} nps {} time {} hashfull {}",
       depth, seldepth, nodes, nps, time, hashfull));
-  }
-
-  /**
-   * @param value
-   * @return a UCI compatible string for th score in cp or in mate in ply
-   * TODO add full protocol (lowerbound, upperbound, etc.)
-   */
-  std::string Handler::getScoreString(int value) {
-    std::string scoreString;
-    if (isCheckMateValue(value)) {
-      scoreString = "score mate ";
-      scoreString += value < 0 ? "-" : "";
-      scoreString += std::to_string((VALUE_CHECKMATE - std::abs(value) + 1) / 2);
-    }
-    else {
-      scoreString = fmt::format("score cp {}", value);
-    }
-    return scoreString;
-  }
-
-  /**
-   * @param value
-   * @return true if absolute value is a mate value, false otherwise
-   */
-  bool Handler::isCheckMateValue(int value) {
-    int abs = std::abs(value);
-    return abs >= VALUE_CHECKMATE_THRESHOLD && abs <= VALUE_CHECKMATE;
   }
 
 }
