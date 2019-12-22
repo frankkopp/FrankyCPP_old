@@ -50,7 +50,7 @@ class MoveGenerator {
 
   enum onDemandStage : int { OD_NEW, OD1, OD2, OD3, OD4, OD5, OD6, OD7, OD_END };
   onDemandStage currentODStage = OD_NEW;
-  Key currentIteratorKey;
+  Key currentIteratorKey{};
 
 public:
 
