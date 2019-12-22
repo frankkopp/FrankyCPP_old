@@ -58,8 +58,8 @@ MoveGenerator::generateLegalMoves(GenMode genMode, Position *pPosition) {
   return &legalMoves;
 }
 
-Move
-MoveGenerator::getNextPseudoLegalMove(GenMode genMode, Position *pPosition) {
+
+Move MoveGenerator::getNextPseudoLegalMove(GenMode genMode, Position *pPosition) {
   // if the position changes during iteration the iteration will be reset and
   // generation will be restart with the new position.
   if (pPosition->getZobristKey() != currentIteratorKey) {

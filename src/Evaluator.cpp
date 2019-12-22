@@ -23,7 +23,11 @@
  *
  */
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCSimplifyInspection"
+
 #include "Evaluator.h"
+#include "EvaluatorConfig.h"
 #include "Position.h"
 
 Evaluator::Evaluator() = default;
@@ -33,16 +37,18 @@ Value Evaluator::evaluate(const Position *pPosition) {
   // Calculations are always from the view of the white player.
 
   // MATERIAL
-  int matEval = pPosition->getMaterial(WHITE)
-                - pPosition->getMaterial(BLACK);
+  int matEval = EvaluatorConfig::USE_MATERIAL
+                ? pPosition->getMaterial(WHITE) -
+                  pPosition->getMaterial(BLACK) : 0;
 
   // POSITION
-  int posEval = pPosition->getPosValue(WHITE)
-                - pPosition->getPosValue(BLACK);
+  int posEval = EvaluatorConfig::USE_POSITION
+                ? pPosition->getPosValue(WHITE) -
+                  pPosition->getPosValue(BLACK) : 0;
 
   auto value = Value(
-    matEval * MATERIAL_WEIGHT
-    + posEval * POSITION_WEIGHT
+    matEval * EvaluatorConfig::MATERIAL_WEIGHT
+    + posEval * EvaluatorConfig::POSITION_WEIGHT
   );
 
   // value is always from the view of the next player
@@ -50,3 +56,5 @@ Value Evaluator::evaluate(const Position *pPosition) {
 
   return value;
 }
+
+#pragma clang diagnostic pop

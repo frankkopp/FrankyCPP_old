@@ -162,7 +162,9 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
 
   // pure MiniMax
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "MINIMAX"));
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "TESTMINI"));
+
+  SearchConfig::USE_QUIESCENCE = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "MINIMAX_QS"));
 
   // ***********************************
 

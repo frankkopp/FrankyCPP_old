@@ -23,25 +23,16 @@
  *
  */
 
-#ifndef FRANKYCPP_EVALUATOR_H
-#define FRANKYCPP_EVALUATOR_H
+#ifndef FRANKYCPP_EVALUATORCONFIG_H
+#define FRANKYCPP_EVALUATORCONFIG_H
 
-#include "logging.h"
-#include "globals.h"
+namespace EvaluatorConfig {
 
-// forward declared dependencies
-class Position;
+  inline const bool USE_MATERIAL = true;
+  inline const int MATERIAL_WEIGHT = 1;
 
-class Evaluator {
-
-  std::shared_ptr<spdlog::logger> LOG = spdlog::get("Eval_Logger");
-
-public:
-  Evaluator();
-
-  Value evaluate(const Position *pPosition);
-
+  inline const int POSITION_WEIGHT = 1;
+  inline const bool USE_POSITION = true;
 };
 
-
-#endif //FRANKYCPP_EVALUATOR_H
+#endif //FRANKYCPP_EVALUATORCONFIG_H
