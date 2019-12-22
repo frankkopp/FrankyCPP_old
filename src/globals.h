@@ -592,6 +592,14 @@ ENABLE_INCR_OPERATORS_ON(CastlingRights)
 constexpr const char *boolStr(bool b) { return b ? "true" : "false"; };
 constexpr const char *boolStr(int b) { return b ? "true" : "false"; };
 
+inline bool to_bool(std::string str) {
+  std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+  std::istringstream is(str);
+  bool b;
+  is >> std::boolalpha >> b;
+  return b;
+}
+
 struct myLocale : std::numpunct<char> {
   char do_decimal_point() const override { return ','; }
   char do_thousands_sep() const override { return '.'; }

@@ -296,7 +296,7 @@ SearchResult Search::iterativeDeepening(Position *pPosition) {
   do {
     assert (pv[ROOT_PLY].front() != NOMOVE && "No  best root move");
 
-    SPDLOG_TRACE("Iteration Depth {} START", iterationDepth);
+    TRACE(LOG, "Iteration Depth {} START", iterationDepth);
 
     searchStats.currentIterationDepth = iterationDepth;
     searchStats.bestMoveChanges = 0;
@@ -315,7 +315,7 @@ SearchResult Search::iterativeDeepening(Position *pPosition) {
     // sort root moves based on value for the next iteration
     sort(rootMoves.begin(), rootMoves.end(), std::greater());
 
-    SPDLOG_TRACE("Iteration Depth={} END", iterationDepth);
+    TRACE(LOG, "Iteration Depth={} END", iterationDepth);
 
   } while (++iterationDepth <= searchLimits.maxDepth);
   // ### ENDOF Iterative Deepening
@@ -346,7 +346,8 @@ SearchResult Search::iterativeDeepening(Position *pPosition) {
 }
 
 /**
- * Called for root position as root moves are generated separately.
+ * Called for root position as root moves are generated separately and need to
+ * take care of best moves and sorting root moves.
  * @param pPosition
  * @param depth
  * @param ply
@@ -360,13 +361,13 @@ void Search::searchRoot(Position *pPosition, const int depth) {
 
   int i = 0;
   for (auto &move : rootMoves) {
-    SPDLOG_TRACE("Root Move {} START", printMove(move));
+    TRACE(LOG, "Root Move {} START", printMove(move));
 
     searchStats.currentRootMove = move;
     searchStats.currentRootMoveNumber = ++i;
     if (depth > 4) sendUCICurrentRootMove(); // avoid protocol flooding
 
-    value = -searchMove(pPosition, depth, ROOT_PLY, move, true);
+    value = searchMove(pPosition, depth, ROOT_PLY, move, true);
 
     if (stopConditions()) return;
 
@@ -379,9 +380,9 @@ void Search::searchRoot(Position *pPosition, const int depth) {
     if (value > bestNodeValue) {
       savePV(move, pv[1], pv[ROOT_PLY]);
       bestNodeValue = value;
-      SPDLOG_TRACE("NEW BEST ROOT move {} value {}", printMoveListUCI(pv[ROOT_PLY]), value);
+      TRACE(LOG, "NEW BEST ROOT move {} value {}", printMoveListUCI(pv[ROOT_PLY]), value);
     }
-    SPDLOG_TRACE("Root Move {} END", printMove(move));
+    TRACE(LOG, "Root Move {} END", printMove(move));
   }
 }
 
@@ -395,9 +396,6 @@ void Search::searchRoot(Position *pPosition, const int depth) {
 Value Search::searchNonRoot(Position *pPosition, const int depth, const int ply) {
 
   if (stopConditions()) return VALUE_NONE; // value does not matter because of top flag
-
-  // check for repetition ot 50-move-rule draws
-  if (checkDrawRepAnd50(pPosition)) return VALUE_DRAW;
 
   // update current search depth stats
   searchStats.currentSearchDepth = std::max(searchStats.currentSearchDepth, ply);
@@ -421,14 +419,14 @@ Value Search::searchNonRoot(Position *pPosition, const int depth, const int ply)
   // MOVE LOOP
   // Search all generated moves using the onDemand move generator.
   while ((move = moveGenerators[ply].getNextPseudoLegalMove(GENALL, pPosition)) != NOMOVE) {
-    SPDLOG_TRACE("{:>{}} Depth {} cv {} move {} START", " ", ply, ply,
+    TRACE(LOG, "{:>{}} Depth {} cv {} move {} START", " ", ply, ply,
                  printMoveListUCI(currentVariation), printMove(move));
 
-    value = -searchMove(pPosition, depth, ply, move, false);
+    value = searchMove(pPosition, depth, ply, move, false);
 
     if (stopConditions()) return VALUE_NONE; // value does not matter because of top flag
 
-    if (value == std::abs(VALUE_NONE)) continue; // was illegal move
+    if (value == -std::abs(VALUE_NONE)) continue; // was illegal move
 
     if (searchLimits.perft) continue; // In PERFT we can ignore values and pruning
 
@@ -439,11 +437,11 @@ Value Search::searchNonRoot(Position *pPosition, const int depth, const int ply)
     if (value > bestNodeValue) {
       savePV(move, pv[ply + 1], pv[ply]);
       bestNodeValue = value;
-      SPDLOG_TRACE("{:>{}} NEW BEST MOVE for node {}  move={} old best={} value={} pv={}",
+      TRACE(LOG, "{:>{}} NEW BEST MOVE for node {}  move={} old best={} value={} pv={}",
                    " ", ply, printMoveListUCI(currentVariation), printMove(move),
                    bestNodeValue, value, printMoveListUCI(pv[ROOT_PLY]));
     }
-    SPDLOG_TRACE("{:>{}} Depth {} cv {} move {} END", " ", ply, ply,
+    TRACE(LOG, "{:>{}} Depth {} cv {} move {} END", " ", ply, ply,
                  printMoveListUCI(currentVariation), printMove(move));
   }
   // ##### Iterate through all available moves
@@ -461,25 +459,13 @@ Value Search::searchNonRoot(Position *pPosition, const int depth, const int ply)
       bestNodeValue = VALUE_DRAW;
     }
   }
+
   return bestNodeValue;
 }
 
-bool Search::checkDrawRepAnd50(Position *pPosition) const {
-  if (pPosition->checkRepetitions(2)) {
-    this->LOG->debug("DRAW because of repetition for move {} in variation {}",
-                     printMove(pPosition->getLastMove()), printMoveListUCI(this->currentVariation));
-    return true;
-  }
-  if (pPosition->getHalfMoveClock() >= 100) {
-    this->LOG->debug("DRAW because 50-move rule",
-                     printMove(pPosition->getLastMove()), printMoveListUCI(this->currentVariation));
-    return true;
-  }
-  return false;
-}
-
 /**
- * Called for each move of a position.
+ * Executes the actual move on a position and does all the extra checks and cut offs which are
+ * usually identical for root and non root positions. Can handle root positions separately. 
  * @param pPosition
  * @param depth
  * @param ply
@@ -498,7 +484,14 @@ Value Search::searchMove(Position *pPosition, const int depth, const int ply, co
     searchStats.nodesVisited++;
     currentVariation.push_back(move);
     sendUCISearchUpdate();
-    value = searchNonRoot(&position, depth - 1, ply + 1);
+
+    // check for repetition ot 50-move-rule draws
+    if (checkDrawRepAnd50(pPosition))
+      value = VALUE_DRAW;
+    // recurse deeper into the search tree
+    else 
+      value = -searchNonRoot(&position, depth - 1, ply + 1);
+
     currentVariation.pop_back();
     assert ((value != VALUE_NONE || stopSearchFlag) && "Value should not be NONE at this point.");
   }
@@ -534,7 +527,7 @@ Value Search::evaluate(Position *pPosition, const int ply) {
   }
 
   Value value = evaluator.evaluate(pPosition);
-  SPDLOG_TRACE("{:>{}} Evaluation: {} {}", " ", ply, printMoveListUCI(currentVariation), value);
+  TRACE(LOG, "{:>{}} Evaluation: {} {}", " ", ply, printMoveListUCI(currentVariation), value);
   return value;
 }
 
@@ -544,6 +537,21 @@ inline bool Search::stopConditions() {
           && searchStats.nodesVisited >= searchLimits.nodes))
     stopSearchFlag = true;
   return stopSearchFlag;
+}
+
+
+bool Search::checkDrawRepAnd50(Position *pPosition) const {
+  if (pPosition->checkRepetitions(2)) {
+    this->LOG->debug("DRAW because of repetition for move {} in variation {}",
+                     printMove(pPosition->getLastMove()), printMoveListUCI(this->currentVariation));
+    return true;
+  }
+  if (pPosition->getHalfMoveClock() >= 100) {
+    this->LOG->debug("DRAW because 50-move rule",
+                     printMove(pPosition->getLastMove()), printMoveListUCI(this->currentVariation));
+    return true;
+  }
+  return false;
 }
 
 void Search::configureTimeLimits() {
@@ -732,8 +740,6 @@ void Search::sendUCISearchUpdate() {
   if (elapsedTime(lastUciUpdateTime) > UCI_UPDATE_INTERVAL) {
     lastUciUpdateTime = now();
 
-    LOG->debug("Stop flag = {}", stopSearchFlag);
-
     MilliSec result;
     result = elapsedTime(startTime);
     std::string infoString = fmt::format(
@@ -743,7 +749,7 @@ void Search::sendUCISearchUpdate() {
       searchStats.nodesVisited,
       getNps(),
       result,
-      0); // TODO
+      0); // TODO implement Hash
 
     //(int) (1000 * ((float) transpositionTable.getNumberOfEntries() / transpositionTable.getMaxEntries())));
     if (pEngine == nullptr) LOG->warn("<no engine> >> {}", infoString);

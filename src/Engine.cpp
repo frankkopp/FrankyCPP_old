@@ -61,7 +61,7 @@ std::string Engine::str() const {
 
 void Engine::clearHash() {
   LOG->info("Engine: Clear Hash");
-  // TODO
+  // TODO implement Hash
   LOG->error("Engine: Clear Hash not implemented yet!");
 }
 
@@ -232,7 +232,10 @@ void Engine::updateConfig() {
     const std::string &name = option.getNameID();
 
     if (name == "Hash") EngineConfig::hash = getInt(option.getCurrentValue());
-    else if (name == "Ponder") EngineConfig::ponder = option.getCurrentValue() == "true";
+    else
+      if (name == "Ponder") {
+        EngineConfig::ponder = to_bool(option.getCurrentValue());
+      }
   }
 }
 

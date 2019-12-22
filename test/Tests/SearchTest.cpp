@@ -43,7 +43,7 @@ public:
   std::shared_ptr<spdlog::logger> LOG = spdlog::get("Test_Logger");
 protected:
   void SetUp() override {
-    LOG->set_level(spdlog::level::info);
+    LOG->set_level(spdlog::level::trace);
   }
   void TearDown() override {}
 };
@@ -94,7 +94,6 @@ TEST_F(SearchTest, depth) {
   Search search;
   SearchLimits searchLimits;
   Position position;
-  //position.doMove(createMove("e2e4"));
   searchLimits.depth = 6;
   searchLimits.setupLimits();
   search.startSearch(position, searchLimits);

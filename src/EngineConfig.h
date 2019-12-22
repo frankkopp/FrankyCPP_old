@@ -28,9 +28,9 @@
 
 namespace EngineConfig {
 
-  static int hash = 1024; // in MB
-  static bool ponder = true;
-  
+  inline int hash = 1024; // in MB
+  inline bool ponder = true;
+
 };
 
 #endif //FRANKYCPP_SEARCHCONFIG_H

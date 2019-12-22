@@ -30,10 +30,6 @@
 #include "Position.h"
 #include "MoveGenerator.h"
 
-// TODO
-//  - PV move
-//  - Killer Moves
-
 ////////////////////////////////////////////////
 ///// CONSTRUCTORS
 

@@ -18,15 +18,17 @@ v 0.2 (plan)
     - AlphaBeta search
     - Configuration Framework for Search and Evaluation
     - Quiescence Search
+    - PV and Killer moves
     - TT
-    -
+    - Testing & Debugging
 
 v 0.1 (in progress)
 ================================================================================
 - TODO:
-    - check draw by repetition or 50moves rule
-    - Testing & Debugging
+    - CleanUp
 - DONE:
+    - Testing & Debugging
+    - check draw by repetition or 50moves rule
     - Complete UCI Protocol
     - TreeSize Test
     - Pondering

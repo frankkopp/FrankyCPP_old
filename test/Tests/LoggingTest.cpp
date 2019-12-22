@@ -59,7 +59,7 @@ TEST_F(LoggingTest, basic) {
   TEST_LOG->debug("DEBUG");
   SPDLOG_DEBUG(TEST_LOG, "DEBUG {}", "MARCO");
   TEST_LOG->trace("TRACE");
-  SPDLOG_TRACE(TEST_LOG, "TRACE {}", "MARCO");
+  TRACE(TEST_LOG, "TRACE {}", "MARCO");
   TEST_LOG->info("INFO {}", 123456789);
   TEST_LOG->info("INFO {:d}", 123456789);
   TEST_LOG->info("INFO {:n}", 123456789);
@@ -74,7 +74,7 @@ TEST_F(LoggingTest, basic) {
   MAIN_LOG->debug("DEBUG");
   SPDLOG_DEBUG(MAIN_LOG, "DEBUG {}", "MARCO");
   MAIN_LOG->trace("TRACE");
-  SPDLOG_TRACE(MAIN_LOG, "TRACE {}", "MARCO");
+  TRACE(MAIN_LOG, "TRACE {}", "MARCO");
   MAIN_LOG->info("INFO {}", 123456789);
   MAIN_LOG->info("INFO {:d}", 123456789);
   MAIN_LOG->info("INFO {:n}", 123456789);
@@ -89,7 +89,7 @@ TEST_F(LoggingTest, basic) {
   ENGINE_LOG->debug("DEBUG");
   SPDLOG_DEBUG(ENGINE_LOG, "DEBUG {}", "MARCO");
   ENGINE_LOG->trace("TRACE");
-  SPDLOG_TRACE(ENGINE_LOG, "TRACE {}", "MARCO");
+  TRACE(ENGINE_LOG, "TRACE {}", "MARCO");
   ENGINE_LOG->info("INFO {}", 123456789);
   ENGINE_LOG->info("INFO {:d}", 123456789);
   ENGINE_LOG->info("INFO {:n}", 123456789);
@@ -104,7 +104,7 @@ TEST_F(LoggingTest, basic) {
   SEARCH_LOG->debug("DEBUG");
   SPDLOG_DEBUG(SEARCH_LOG, "DEBUG {}", "MARCO");
   SEARCH_LOG->trace("TRACE");
-  SPDLOG_TRACE(SEARCH_LOG, "TRACE {}", "MARCO");
+  TRACE(SEARCH_LOG, "TRACE {}", "MARCO");
   SEARCH_LOG->info("INFO {}", 123456789);
   SEARCH_LOG->info("INFO {:d}", 123456789);
   SEARCH_LOG->info("INFO {:n}", 123456789);
@@ -119,7 +119,7 @@ TEST_F(LoggingTest, basic) {
   UCI_LOG->debug("DEBUG");
   SPDLOG_DEBUG(UCI_LOG, "DEBUG {}", "MARCO");
   UCI_LOG->trace("TRACE");
-  SPDLOG_TRACE(UCI_LOG, "TRACE {}", "MARCO");
+  TRACE(UCI_LOG, "TRACE {}", "MARCO");
   UCI_LOG->info("INFO {}", 123456789);
   UCI_LOG->info("INFO {:d}", 123456789);
   UCI_LOG->info("INFO {:n}", 123456789);

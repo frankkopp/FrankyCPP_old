@@ -208,7 +208,7 @@ TEST_F(UCITest, goPerft) {
   ASSERT_FALSE(engine.getSearchLimits().infinite);
   ASSERT_FALSE(engine.getSearchLimits().ponder);
   ASSERT_FALSE(engine.getSearchLimits().timeControl);
-  ASSERT_EQ(4, engine.getSearchLimits().maxDepth);
+  ASSERT_EQ(6, engine.getSearchLimits().maxDepth);
 }
 
 TEST_F(UCITest, goInfinite) {
@@ -573,21 +573,23 @@ TEST_F(UCITest, ponderMiss) {
   ostringstream os;
   Engine engine;
 
+  EngineConfig::ponder = true;
+
   string command = "position startpos moves e2e4 e7e5";
   LOG->info("COMMAND: " + command);
   istringstream is(command);
   UCI::Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
-  command = "go ponder wtime 60000 btime 60000";
+  command = "go ponder wtime 600000 btime 600000";
   LOG->info("COMMAND: " + command);
   is = istringstream(command);
   uciHandler.loop(&is);
 
-  //sleep(2);
+  sleep(1);
   ASSERT_TRUE(engine.isSearching());
   ASSERT_TRUE(engine.getSearchLimits().ponder);
-  //sleep(2);
+  sleep(1);
 
   command = "position startpos moves e2e4 e7e6";
   LOG->info("COMMAND: " + command);
@@ -605,6 +607,8 @@ TEST_F(UCITest, ponderMiss) {
 TEST_F(UCITest, ponderHit) {
   ostringstream os;
   Engine engine;
+
+  EngineConfig::ponder = true;
 
   string command = "setoption name Ponder value true";
   LOG->info("COMMAND: " + command);

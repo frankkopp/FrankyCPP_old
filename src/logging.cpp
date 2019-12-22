@@ -58,7 +58,7 @@ namespace LOGGING {
     auto SEARCH_LOG = spdlog::stdout_color_mt("Search_Logger");
     SEARCH_LOG->sinks().push_back(sharedFileSink);
     SEARCH_LOG->set_pattern("[%H:%M:%S:%e] [%n] [%L] [thread %t] %v");
-    SEARCH_LOG->set_level(spdlog::level::debug);
+    SEARCH_LOG->set_level(spdlog::level::trace);
     SEARCH_LOG->flush_on(spdlog::level::trace);
 
     auto EVAL_LOG = spdlog::stdout_color_mt("Eval_Logger");

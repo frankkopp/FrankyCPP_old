@@ -30,6 +30,17 @@
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/sinks/basic_file_sink.h"
 
+// uncomment this if tracing macros are needed.
+// #define MACRO_LOGGING
+
+#ifdef MACRO_LOGGING
+#define LOGGER_TRACE(logger, ...) SPDLOG_LOGGER_CALL(logger, spdlog::level::trace, __VA_ARGS__)
+#define TRACE(logger, ...) LOGGER_TRACE(logger, __VA_ARGS__)
+#else
+#define LOGGER_TRACE(logger, ...) (void)0
+#define TRACE(...) (void)0
+#endif
+
 namespace LOGGING {
   extern void init();
 }

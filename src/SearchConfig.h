@@ -28,7 +28,7 @@
 
 namespace SearchConfig {
 
-  static bool USE_QUIESCENCE = false;
+  inline bool USE_QUIESCENCE = false;
 
 
 }
