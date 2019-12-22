@@ -356,17 +356,6 @@ SearchResult Search::iterativeDeepening(Position *pPosition) {
  */
 template<Search::Search_Type ST>
 Value Search::search(Position *pPosition, int depth, int ply) {
-  switch (ST) {
-    case ROOT:
-      TRACE(LOG, "Search Type = ROOT");
-      break;
-    case NONROOT:
-      TRACE(LOG, "Search Type = NONROOT");
-      break;
-    case QUIESCENCE:
-      TRACE(LOG, "Search Type = QUIESCENCE");
-      break;
-  }
 
   if (stopConditions()) return VALUE_NONE; // value does not matter because of top flag
 
@@ -379,7 +368,7 @@ Value Search::search(Position *pPosition, int depth, int ply) {
   if (ST == NONROOT) {
     if (depth <= 0
         || ply >= MAX_SEARCH_DEPTH - 1) {
-      return search<QUIESCENCE>(pPosition, depth, ply);
+      return search<QUIESCENCE>(pPosition, depth, ply + 1);
     }
   }
   else if (ST == QUIESCENCE) {
@@ -428,9 +417,9 @@ Value Search::search(Position *pPosition, int depth, int ply) {
         // recurse deeper into the search tree
       else {
         if (ST == ROOT)
-          value = -search<NONROOT>(&position, depth - 1, ROOT_PLY + 1);
+          value = -search<NONROOT>(&position, depth - 1, ply + 1);
         else
-          value = -search<ST>(&position, depth - 1, ROOT_PLY + 1);
+          value = -search<ST>(&position, depth - 1, ply + 1);
       }
 
       currentVariation.pop_back();
@@ -442,7 +431,10 @@ Value Search::search(Position *pPosition, int depth, int ply) {
     if (stopConditions()) return VALUE_NONE;
 
     // In PERFT we can ignore values and pruning
-    if (searchLimits.perft) continue;
+    if (searchLimits.perft) {
+      move = getMove<ST>(pPosition, ply);
+      continue;
+    }
 
     // for root moves encode value into the move
     if (ST == ROOT) setValue(move, value);
@@ -456,8 +448,8 @@ Value Search::search(Position *pPosition, int depth, int ply) {
         TRACE(LOG, "{:>{}} NEW BEST MOVE for node {}  move={} old best={} value={} pv={}",
               " ", ply, printMoveListUCI(currentVariation), printMove(move),
               bestNodeValue, value, printMoveListUCI(pv[ROOT_PLY]));
-
     }
+
     if (ST == ROOT)
       TRACE(LOG, "Root Move {} END", printMove(move));
     else
@@ -496,20 +488,19 @@ Value Search::search(Position *pPosition, int depth, int ply) {
 template<Search::Search_Type ST>
 Move Search::getMove(Position *pPosition, int ply) {
   Move move = NOMOVE;
-  if (ST == ROOT) {
-    if (searchStats.currentRootMoveNumber < rootMoves.size()) { ;
-      move = rootMoves.at(searchStats.currentRootMoveNumber++);
-      searchStats.currentRootMove = move;
-    }
-  }
-  else if (ST == NONROOT) {
-    move = moveGenerators[ply].getNextPseudoLegalMove<MoveGenerator::GENALL>(pPosition);
-  }
-  else if (ST == QUIESCENCE) {
-    move = moveGenerators[ply].getNextPseudoLegalMove<MoveGenerator::GENCAP>(pPosition);
-  }
-  else {
-    this->LOG->critical("Unknown search type {}", ST);
+  switch (ST) {
+    case ROOT:
+      if (searchStats.currentRootMoveNumber < rootMoves.size()) { ;
+        move = rootMoves.at(searchStats.currentRootMoveNumber++);
+        searchStats.currentRootMove = move;
+      }
+      break;
+    case NONROOT:
+      move = moveGenerators[ply].getNextPseudoLegalMove<MoveGenerator::GENALL>(pPosition);
+      break;
+    case QUIESCENCE:
+      move = moveGenerators[ply].getNextPseudoLegalMove<MoveGenerator::GENCAP>(pPosition);
+      break;
   }
   return move;
 }
@@ -850,7 +841,8 @@ inline void Search::savePV(Move move, MoveList &src, MoveList &dest) {
  * @return UCI filtered root moves
  */
 MoveList Search::generateRootMoves(Position *pPosition) {
-  MoveList *legalMoves = moveGenerators[ROOT_PLY].generateLegalMoves<MoveGenerator::GENALL>(pPosition);
+  MoveList *legalMoves = moveGenerators[ROOT_PLY].generateLegalMoves<MoveGenerator::GENALL>(
+    pPosition);
   MoveList moveList;
   if (searchLimits.moves.empty()) { // if UCI searchmoves is empty then add all
     for (auto legalMove : *legalMoves) {
