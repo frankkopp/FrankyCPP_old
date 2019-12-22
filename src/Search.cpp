@@ -359,13 +359,10 @@ Value Search::search(Position *pPosition, int depth, int ply) {
 
   if (stopConditions()) return VALUE_NONE; // value does not matter because of top flag
 
-  // update current search depth stats
-  if (ST != QUIESCENCE)
-    searchStats.currentSearchDepth = std::max(searchStats.currentSearchDepth, ply);
-  searchStats.currentExtraSearchDepth = std::max(searchStats.currentExtraSearchDepth, ply);
-
   // Leaf node handling
   if (ST == NONROOT) {
+    searchStats.currentSearchDepth = std::max(searchStats.currentSearchDepth, ply);
+    searchStats.currentExtraSearchDepth = std::max(searchStats.currentExtraSearchDepth, ply);
     if (depth <= 0
         || ply >= MAX_SEARCH_DEPTH - 1) {
       return search<QUIESCENCE>(pPosition, depth, ply + 1);
@@ -374,9 +371,12 @@ Value Search::search(Position *pPosition, int depth, int ply) {
   else if (ST == QUIESCENCE) {
     if (searchLimits.perft
         || ply >= MAX_SEARCH_DEPTH - 1
-        || !SearchConfig::USE_QUIESCENCE)
+        || !SearchConfig::USE_QUIESCENCE) {
       return evaluate(pPosition, ply);
+    }
+    searchStats.currentExtraSearchDepth = std::max(searchStats.currentExtraSearchDepth, ply);
   }
+
 
   // to detect mate situations
   int numberOfSearchedMoves = 0;
@@ -488,7 +488,8 @@ Value Search::search(Position *pPosition, int depth, int ply) {
 template<Search::Search_Type ST>
 Move Search::getMove(Position *pPosition, int ply) {
   Move move = NOMOVE;
-  switch (ST) {
+  constexpr Search_Type type = ST;
+  switch (type) {
     case ROOT:
       if (searchStats.currentRootMoveNumber < rootMoves.size()) { ;
         move = rootMoves.at(searchStats.currentRootMoveNumber++);
