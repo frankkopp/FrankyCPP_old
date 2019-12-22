@@ -27,20 +27,11 @@
 #define FRANKYCPP_MOVEGENERATOR_H
 
 #include <vector>
-
 #include "../test/lib/googletest-master/googletest/include/gtest/gtest_prod.h"
-
 #include "globals.h"
 
 // circle reference between Position and MoveGenerator - this make it possible
 class Position;
-
-enum GenMode {
-  GENZERO,
-  GENCAP,
-  GENNONCAP = GENCAP << 1,
-  GENALL = GENCAP | GENNONCAP
-};
 
 class MoveGenerator {
 
@@ -50,12 +41,19 @@ class MoveGenerator {
 
   enum onDemandStage : int { OD_NEW, OD1, OD2, OD3, OD4, OD5, OD6, OD7, OD_END };
   onDemandStage currentODStage = OD_NEW;
-  Key currentIteratorKey;
+  Key currentIteratorKey {};
 
 public:
 
   MoveGenerator();
   ~MoveGenerator();
+
+  enum GenMode {
+    GENZERO,
+    GENCAP,
+    GENNONCAP = GENCAP << 1,
+    GENALL = GENCAP | GENNONCAP
+  };
 
   /**
    * Generates pseudo moves for the next player. Does not check if king is left in check or
@@ -65,7 +63,8 @@ public:
    * @param pPosition
    * @param moves - generated moves will be added to this list
    */
-  MoveList* generatePseudoLegalMoves(GenMode genMode, Position *pPosition);
+  template <GenMode GM>
+  MoveList* generatePseudoLegalMoves(Position *pPosition);
 
   /**
   * Generates legal moves for the next player.
@@ -74,7 +73,8 @@ public:
   * @param pPosition
   * @param moves - generated moves will be added to this list
   */
-  MoveList* generateLegalMoves(GenMode genMode, Position *pPosition);
+  template <GenMode GM>
+  MoveList* generateLegalMoves(Position *pPosition);
 
   /**
    * Returns the next move for the given position. Usually this would be used in a loop
@@ -84,7 +84,8 @@ public:
    * @param pPosition
    * @return
    */
-  Move getNextPseudoLegalMove(GenMode genMode, Position *pPosition);
+  template <GenMode GM> 
+  Move getNextPseudoLegalMove(Position *pPosition);
 
   /**
    * Resets the on demand move generator to start fresh
@@ -115,7 +116,8 @@ private:
    * @param pPosition
    * @param pMoves - generated moves will be added to this list
    */
-  void generatePawnMoves(GenMode genMode, const Position *pPosition, MoveList *pMoves);
+  template <GenMode GM>
+  void generatePawnMoves(const Position *pPosition, MoveList *pMoves);
 
   /**
    * Generates pseudo knight, bishop, rook and queen moves for the next player.
@@ -124,7 +126,8 @@ private:
    * @param pPosition
    * @param pMoves - generated moves will be added to this list
    */
-  void generateMoves(GenMode genMode, const Position *pPosition, MoveList *pMoves);
+  template <GenMode GM>
+  void generateMoves(const Position *pPosition, MoveList *pMoves);
 
   /**
    * Generates pseudo king moves for the next player. Does not check if king
@@ -133,7 +136,8 @@ private:
    * @param pPosition
    * @param pMoves - generated moves will be added to this list
    */
-  void generateKingMoves(GenMode genMode, const Position *pPosition, MoveList *pMoves);
+  template <GenMode GM>
+  void generateKingMoves(const Position *pPosition, MoveList *pMoves);
 
   /**
    * Generates pseudo castling move for the next player. Does not check if king passes or lands on an
@@ -142,7 +146,8 @@ private:
    * @param pPosition
    * @param pMoves - generated moves will be added to this list
    */
-  void generateCastling(GenMode genMode, const Position *pPosition, MoveList *pMoves);
+  template <GenMode GM>
+  void generateCastling(const Position *pPosition, MoveList *pMoves);
 
 };
 

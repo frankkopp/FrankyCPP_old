@@ -304,7 +304,7 @@ SearchResult Search::iterativeDeepening(Position *pPosition) {
 
     // ###########################################
     // ### CALL SEARCH for iterationDepth
-    searchRoot(pPosition, iterationDepth);
+    search<ROOT>(pPosition, iterationDepth, ROOT_PLY);
     // ###########################################
 
     sendUCIIterationEndInfo();
@@ -346,64 +346,47 @@ SearchResult Search::iterativeDeepening(Position *pPosition) {
 }
 
 /**
- * Called for root position as root moves are generated separately and need to
- * take care of best moves and sorting root moves.
+ * This is the templated search function for root, non-root and quiescence
+ * searches. Through the template the compiler will generate specialized
+ * versions of this method for each case.
+ * 
+ * @tparam T
  * @param pPosition
  * @param depth
- * @param ply
- * @return
  */
-void Search::searchRoot(Position *pPosition, const int depth) {
-
-  // prepare move loop
-  Value bestNodeValue = VALUE_NONE;
-  Value value = VALUE_NONE;
-
-  int i = 0;
-  for (auto &move : rootMoves) {
-    TRACE(LOG, "Root Move {} START", printMove(move));
-
-    searchStats.currentRootMove = move;
-    searchStats.currentRootMoveNumber = ++i;
-    if (depth > 4) sendUCICurrentRootMove(); // avoid protocol flooding
-
-    value = searchMove(pPosition, depth, ROOT_PLY, move, true);
-
-    if (stopConditions()) return;
-
-    // In PERFT we can ignore values and pruning
-    if (searchLimits.perft) continue;
-
-    // encode value into the move
-    setValue(move, value);
-
-    if (value > bestNodeValue) {
-      savePV(move, pv[1], pv[ROOT_PLY]);
-      bestNodeValue = value;
-      TRACE(LOG, "NEW BEST ROOT move {} value {}", printMoveListUCI(pv[ROOT_PLY]), value);
-    }
-    TRACE(LOG, "Root Move {} END", printMove(move));
+template<Search::Search_Type ST>
+Value Search::search(Position *pPosition, int depth, int ply) {
+  switch (ST) {
+    case ROOT:
+      TRACE(LOG, "Search Type = ROOT");
+      break;
+    case NONROOT:
+      TRACE(LOG, "Search Type = NONROOT");
+      break;
+    case QUIESCENCE:
+      TRACE(LOG, "Search Type = QUIESCENCE");
+      break;
   }
-}
-
-/**
- * Recursive search for all non root positions with on the fly move generation.
- * @param pPosition
- * @param depth
- * @param ply
- * @return
- */
-Value Search::searchNonRoot(Position *pPosition, const int depth, const int ply) {
 
   if (stopConditions()) return VALUE_NONE; // value does not matter because of top flag
 
   // update current search depth stats
-  searchStats.currentSearchDepth = std::max(searchStats.currentSearchDepth, ply);
+  if (ST != QUIESCENCE)
+    searchStats.currentSearchDepth = std::max(searchStats.currentSearchDepth, ply);
   searchStats.currentExtraSearchDepth = std::max(searchStats.currentExtraSearchDepth, ply);
 
-  // On leaf node call qsearch
-  if (depth <= 0 || ply >= MAX_SEARCH_DEPTH - 1) {
-    return qsearch(pPosition, ply);
+  // Leaf node handling
+  if (ST == NONROOT) {
+    if (depth <= 0
+        || ply >= MAX_SEARCH_DEPTH - 1) {
+      return search<QUIESCENCE>(pPosition, depth, ply);
+    }
+  }
+  else if (ST == QUIESCENCE) {
+    if (searchLimits.perft
+        || ply >= MAX_SEARCH_DEPTH - 1
+        || !SearchConfig::USE_QUIESCENCE)
+      return evaluate(pPosition, ply);
   }
 
   // to detect mate situations
@@ -415,40 +398,80 @@ Value Search::searchNonRoot(Position *pPosition, const int depth, const int ply)
   Move move = NOMOVE;
   moveGenerators[ply].resetOnDemand();
 
+  // get first move
+  if (ST == ROOT) searchStats.currentRootMoveNumber = 0;
+  move = getMove<ST>(pPosition, ply);
+
   // ###############################################
   // MOVE LOOP
-  // Search all generated moves using the onDemand move generator.
-  while ((move = moveGenerators[ply].getNextPseudoLegalMove(GENALL, pPosition)) != NOMOVE) {
-    TRACE(LOG, "{:>{}} Depth {} cv {} move {} START", " ", ply, ply,
-                 printMoveListUCI(currentVariation), printMove(move));
+  while (move != NOMOVE) {
+    if (ST == ROOT) {
+      TRACE(LOG, "Root Move {} START", printMove(move));
+      if (depth > 4) sendUCICurrentRootMove(); // avoid protocol flooding
+    }
+    else {
+      TRACE(LOG, "{:>{}} Depth {} cv {} move {} START",
+            " ", ply, ply, printMoveListUCI(currentVariation), printMove(move));
+    }
 
-    value = searchMove(pPosition, depth, ply, move, false);
+    // Execute move
+    pPosition->doMove(move);
+    if (pPosition->isLegalPosition()) {
+      numberOfSearchedMoves++; // legal move
+      searchStats.nodesVisited++;
+      currentVariation.push_back(move);
+      sendUCISearchUpdate();
 
-    if (stopConditions()) return VALUE_NONE; // value does not matter because of top flag
+      // check for repetition ot 50-move-rule draws
+      if (checkDrawRepAnd50(pPosition))
+        value = VALUE_DRAW;
+        // recurse deeper into the search tree
+      else {
+        if (ST == ROOT)
+          value = -search<NONROOT>(&position, depth - 1, ROOT_PLY + 1);
+        else
+          value = -search<ST>(&position, depth - 1, ROOT_PLY + 1);
+      }
 
-    if (value == -std::abs(VALUE_NONE)) continue; // was illegal move
+      currentVariation.pop_back();
+      assert ((value != VALUE_NONE || stopSearchFlag)
+              && "Value should not be NONE at this point.");
+    }
+    pPosition->undoMove();
 
-    if (searchLimits.perft) continue; // In PERFT we can ignore values and pruning
+    if (stopConditions()) return VALUE_NONE;
 
-    numberOfSearchedMoves++; // legal move
+    // In PERFT we can ignore values and pruning
+    if (searchLimits.perft) continue;
 
-    // Did we find a better move for this node?
-    // For the first move this is always the case.
+    // for root moves encode value into the move
+    if (ST == ROOT) setValue(move, value);
+
     if (value > bestNodeValue) {
       savePV(move, pv[ply + 1], pv[ply]);
       bestNodeValue = value;
-      TRACE(LOG, "{:>{}} NEW BEST MOVE for node {}  move={} old best={} value={} pv={}",
-                   " ", ply, printMoveListUCI(currentVariation), printMove(move),
-                   bestNodeValue, value, printMoveListUCI(pv[ROOT_PLY]));
+      if (ST == ROOT)
+        TRACE(LOG, "NEW BEST ROOT move {} value {}", printMoveListUCI(pv[ROOT_PLY]), value);
+      else
+        TRACE(LOG, "{:>{}} NEW BEST MOVE for node {}  move={} old best={} value={} pv={}",
+              " ", ply, printMoveListUCI(currentVariation), printMove(move),
+              bestNodeValue, value, printMoveListUCI(pv[ROOT_PLY]));
+
     }
-    TRACE(LOG, "{:>{}} Depth {} cv {} move {} END", " ", ply, ply,
-                 printMoveListUCI(currentVariation), printMove(move));
+    if (ST == ROOT)
+      TRACE(LOG, "Root Move {} END", printMove(move));
+    else
+      TRACE(LOG, "{:>{}} Depth {} cv {} move {} END", " ", ply, ply,
+            printMoveListUCI(currentVariation), printMove(move));
+
+    // get next move
+    move = getMove<ST>(pPosition, ply);
   }
   // ##### Iterate through all available moves
   // ##########################################################
 
   // if we did not have at least one legal move then we have a mate
-  if (numberOfSearchedMoves == 0 && !stopSearchFlag) {
+  if (ST != ROOT && numberOfSearchedMoves == 0 && !stopSearchFlag) {
     searchStats.nonLeafPositionsEvaluated++;
     if (position.hasCheck()) {
       // We have a check mate. Return a -CHECKMATE.
@@ -464,55 +487,207 @@ Value Search::searchNonRoot(Position *pPosition, const int depth, const int ply)
 }
 
 /**
- * Executes the actual move on a position and does all the extra checks and cut offs which are
- * usually identical for root and non root positions. Can handle root positions separately. 
- * @param pPosition
- * @param depth
- * @param ply
- * @param move
- * @param isRoot
- * @return
+ * This templated method returns the next move depending on the Search_Type.
+ * For ROOT it wil return the next pre generated root move.
+ * For NONROOT it will return the next move from the on demand move generator.
+ * For QUIESCENCE it will return only quiescence moves from the on demand
+ * generator.
  */
-Value Search::searchMove(Position *pPosition, const int depth, const int ply, const Move &move,
-                         const bool isRoot) {
-
-  if (isRoot) {}; // prevent warnings
-
-  Value value = VALUE_NONE;
-  pPosition->doMove(move);
-  if (pPosition->isLegalPosition()) {
-    searchStats.nodesVisited++;
-    currentVariation.push_back(move);
-    sendUCISearchUpdate();
-
-    // check for repetition ot 50-move-rule draws
-    if (checkDrawRepAnd50(pPosition))
-      value = VALUE_DRAW;
-    // recurse deeper into the search tree
-    else 
-      value = -searchNonRoot(&position, depth - 1, ply + 1);
-
-    currentVariation.pop_back();
-    assert ((value != VALUE_NONE || stopSearchFlag) && "Value should not be NONE at this point.");
+template<Search::Search_Type ST>
+Move Search::getMove(Position *pPosition, int ply) {
+  Move move = NOMOVE;
+  if (ST == ROOT) {
+    if (searchStats.currentRootMoveNumber < rootMoves.size()) { ;
+      move = rootMoves.at(searchStats.currentRootMoveNumber++);
+      searchStats.currentRootMove = move;
+    }
   }
-  pPosition->undoMove();
-  return value;
+  else if (ST == NONROOT) {
+    move = moveGenerators[ply].getNextPseudoLegalMove<MoveGenerator::GENALL>(pPosition);
+  }
+  else if (ST == QUIESCENCE) {
+    move = moveGenerators[ply].getNextPseudoLegalMove<MoveGenerator::GENCAP>(pPosition);
+  }
+  else {
+    this->LOG->critical("Unknown search type {}", ST);
+  }
+  return move;
 }
 
-Value Search::qsearch(Position *pPosition, const int ply) {
-  // update current search depth stats
-  searchStats.currentExtraSearchDepth = std::max(searchStats.currentExtraSearchDepth, ply);
+//
+///**
+// * Called for root position as root moves are generated separately and need to
+// * take care of best moves and sorting root moves.
+// * @param pPosition
+// * @param depth
+// * @param ply
+// * @return
+// */
+//void Search::searchRoot(Position *pPosition, const int depth) {
+//
+//  // prepare move loop
+//  Value bestNodeValue = VALUE_NONE;
+//  Value value = VALUE_NONE;
+//
+//  int i = 0;
+//  for (auto &move : rootMoves) {
+//    TRACE(LOG, "Root Move {} START", printMove(move));
+//
+//    searchStats.currentRootMove = move;
+//    searchStats.currentRootMoveNumber = ++i;
+//    if (depth > 4) sendUCICurrentRootMove(); // avoid protocol flooding
+//
+//    if (true) {}; // prevent warnings
+//
+//    Value value1 = VALUE_NONE;
+//    pPosition->doMove(move);
+//    if (pPosition->isLegalPosition()) {
+//      searchStats.nodesVisited++;
+//      currentVariation.push_back(move);
+//      sendUCISearchUpdate();
+//
+//      // check for repetition ot 50-move-rule draws
+//      if (checkDrawRepAnd50(pPosition))
+//        value1 = VALUE_DRAW;
+//        // recurse deeper into the search tree
+//      else
+//        value1 = -searchNonRoot(&position, depth - 1, ROOT_PLY + 1);
+//
+//      currentVariation.pop_back();
+//      assert (
+//        (value1 != VALUE_NONE || stopSearchFlag) && "Value should not be NONE at this point.");
+//    }
+//    pPosition->undoMove();
+//    value = value1;
+//
+//    if (stopConditions()) return;
+//
+//    // In PERFT we can ignore values and pruning
+//    if (searchLimits.perft) continue;
+//
+//    // encode value into the move
+//    setValue(move, value);
+//
+//    if (value > bestNodeValue) {
+//      savePV(move, pv[1], pv[ROOT_PLY]);
+//      bestNodeValue = value;
+//      TRACE(LOG, "NEW BEST ROOT move {} value {}", printMoveListUCI(pv[ROOT_PLY]), value);
+//    }
+//    TRACE(LOG, "Root Move {} END", printMove(move));
+//  }
+//}
+//
+///**
+// * Recursive search for all non root positions with on the fly move generation.
+// * @param pPosition
+// * @param depth
+// * @param ply
+// * @return
+// */
+//Value Search::searchNonRoot(Position *pPosition, const int depth, const int ply) {
+//
+//  if (stopConditions()) return VALUE_NONE; // value does not matter because of top flag
+//
+//  // update current search depth stats
+//  searchStats.currentSearchDepth = std::max(searchStats.currentSearchDepth, ply);
+//  searchStats.currentExtraSearchDepth = std::max(searchStats.currentExtraSearchDepth, ply);
+//
+//  // On leaf node call qsearch
+//  if (depth <= 0 || ply >= MAX_SEARCH_DEPTH - 1) {
+//    return qsearch(pPosition, ply);
+//  }
+//
+//  // to detect mate situations
+//  int numberOfSearchedMoves = 0;
+//
+//  // prepare move loop
+//  Value bestNodeValue = VALUE_NONE;
+//  Value value = VALUE_NONE;
+//  Move move = NOMOVE;
+//  moveGenerators[ply].resetOnDemand();
+//
+//  // ###############################################
+//  // MOVE LOOP
+//  // Search all generated moves using the onDemand move generator.
+//  while ((move = moveGenerators[ply].getNextPseudoLegalMove(GENALL, pPosition)) != NOMOVE) {
+//    TRACE(LOG, "{:>{}} Depth {} cv {} move {} START", " ", ply, ply,
+//          printMoveListUCI(currentVariation), printMove(move));
+//
+//    if (false) {}; // prevent warnings
+//
+//    Value value1 = VALUE_NONE;
+//    pPosition->doMove(move);
+//    if (pPosition->isLegalPosition()) {
+//      searchStats.nodesVisited++;
+//      currentVariation.push_back(move);
+//      sendUCISearchUpdate();
+//
+//      // check for repetition ot 50-move-rule draws
+//      if (checkDrawRepAnd50(pPosition))
+//        value1 = VALUE_DRAW;
+//        // recurse deeper into the search tree
+//      else
+//        value1 = -searchNonRoot(&position, depth - 1, ply + 1);
+//
+//      currentVariation.pop_back();
+//      assert (
+//        (value1 != VALUE_NONE || stopSearchFlag) && "Value should not be NONE at this point.");
+//    }
+//    pPosition->undoMove();
+//    value = value1;
+//
+//    if (stopConditions()) return VALUE_NONE; // value does not matter because of top flag
+//
+//    if (value == -std::abs(VALUE_NONE)) continue; // was illegal move
+//
+//    if (searchLimits.perft) continue; // In PERFT we can ignore values and pruning
+//
+//    numberOfSearchedMoves++; // legal move
+//
+//    // Did we find a better move for this node?
+//    // For the first move this is always the case.
+//    if (value > bestNodeValue) {
+//      savePV(move, pv[ply + 1], pv[ply]);
+//      bestNodeValue = value;
+//      TRACE(LOG, "{:>{}} NEW BEST MOVE for node {}  move={} old best={} value={} pv={}",
+//            " ", ply, printMoveListUCI(currentVariation), printMove(move),
+//            bestNodeValue, value, printMoveListUCI(pv[ROOT_PLY]));
+//    }
+//    TRACE(LOG, "{:>{}} Depth {} cv {} move {} END", " ", ply, ply,
+//          printMoveListUCI(currentVariation), printMove(move));
+//  }
+//  // ##### Iterate through all available moves
+//  // ##########################################################
+//
+//  // if we did not have at least one legal move then we have a mate
+//  if (numberOfSearchedMoves == 0 && !stopSearchFlag) {
+//    searchStats.nonLeafPositionsEvaluated++;
+//    if (position.hasCheck()) {
+//      // We have a check mate. Return a -CHECKMATE.
+//      bestNodeValue = static_cast<Value>(-VALUE_CHECKMATE + ply);
+//    }
+//    else {
+//      // We have a stale mate. Return the draw value.
+//      bestNodeValue = VALUE_DRAW;
+//    }
+//  }
+//
+//  return bestNodeValue;
+//}
 
-  // if PERFT or MAX SEARCH DEPTH reached return with eval to count all captures etc.
-  if (searchLimits.perft
-      || ply >= MAX_SEARCH_DEPTH - 1
-      || !SearchConfig::USE_QUIESCENCE)
-    return evaluate(pPosition, ply);
-
-  // TODO: Implement quiescence search here
-
-  return evaluate(pPosition, ply);
-}
+//Value Search::qsearch(Position *pPosition, const int ply) {
+//  // update current search depth stats
+//  searchStats.currentExtraSearchDepth = std::max(searchStats.currentExtraSearchDepth, ply);
+//
+//  // if PERFT or MAX SEARCH DEPTH reached return with eval to count all captures etc.
+//  if (searchLimits.perft
+//      || ply >= MAX_SEARCH_DEPTH - 1
+//      || !SearchConfig::USE_QUIESCENCE)
+//    return evaluate(pPosition, ply);
+//
+//
+//  return evaluate(pPosition, ply);
+//}
 
 Value Search::evaluate(Position *pPosition, const int ply) {
   if (ply) {};
@@ -675,7 +850,7 @@ inline void Search::savePV(Move move, MoveList &src, MoveList &dest) {
  * @return UCI filtered root moves
  */
 MoveList Search::generateRootMoves(Position *pPosition) {
-  MoveList *legalMoves = moveGenerators[ROOT_PLY].generateLegalMoves(GENALL, pPosition);
+  MoveList *legalMoves = moveGenerators[ROOT_PLY].generateLegalMoves<MoveGenerator::GENALL>(pPosition);
   MoveList moveList;
   if (searchLimits.moves.empty()) { // if UCI searchmoves is empty then add all
     for (auto legalMove : *legalMoves) {

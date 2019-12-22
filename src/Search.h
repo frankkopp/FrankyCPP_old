@@ -64,6 +64,8 @@ class Search {
 
   std::shared_ptr<spdlog::logger> LOG = spdlog::get("Search_Logger");
 
+  enum Search_Type {ROOT, NONROOT, QUIESCENCE};
+  
   // UCI related
   constexpr static MilliSec UCI_UPDATE_INTERVAL = 1'000;
   MilliSec lastUciUpdateTime {};
@@ -160,30 +162,35 @@ private:
   void run();
 
   SearchResult iterativeDeepening(Position *pPosition);
-  void searchRoot(Position *pPosition, const int depth);
-  Value searchNonRoot(Position *pPosition, int depth, int ply);
-  Value searchMove(Position *pPosition, int depth, int ply, const Move &move,
-                   bool isRoot);
-  Value qsearch(Position *pPosition, int ply);
+
+  template <Search_Type ST>
+  Value search(Position *pPosition, int depth, int ply);
+
+  template <Search_Type ST>
+  Move getMove(Position *pPosition, int ply);
+
+  //  void searchRoot(Position *pPosition, const int depth);
+  //  Value searchNonRoot(Position *pPosition, int depth, int ply);
+  // Value qsearch(Position *pPosition, int ply);
+
   Value evaluate(Position *position, int ply);
 
   MoveList generateRootMoves(Position *pPosition);
-
   void configureTimeLimits();
   inline bool stopConditions();
   void addExtraTime(double d);
+
   bool softTimeLimitReached();
 
   bool checkDrawRepAnd50(Position *pPosition) const;
-
   static void savePV(Move move, MoveList &src, MoveList &dest);
   bool hardTimeLimitReached();
   void sendUCIIterationEndInfo();
+
   void sendUCICurrentRootMove();
-
   void sendUCISearchUpdate();
-  void sendUCIBestMove();
 
+  void sendUCIBestMove();
   MilliSec getNps();
   static inline MilliSec elapsedTime(MilliSec t);
   static inline MilliSec elapsedTime(MilliSec t1, MilliSec t2);

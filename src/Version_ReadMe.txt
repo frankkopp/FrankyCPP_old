@@ -15,6 +15,7 @@ v 0.3 (plan)
 v 0.2 (plan)
 ================================================================================
 - TODO:
+    - Templated Search for Root, non-root and qsearch
     - Quiescence Search
     - AlphaBeta search
     - PV and Killer moves
