@@ -71,25 +71,6 @@ TEST_F(SearchTest, selective_moves) {
   ASSERT_EQ(13781, search.getSearchStats().leafPositionsEvaluated);
 }
 
-TEST_F(SearchTest, perft) {
-  Search search;
-  SearchLimits searchLimits;
-  Position position;
-  searchLimits.perft = true;
-  searchLimits.depth = 6;
-  searchLimits.setupLimits();
-  search.startSearch(position, searchLimits);
-  search.waitWhileSearching();
-  LOG->info("Nodes per sec: {:n}", (search.getSearchStats().leafPositionsEvaluated * 1'000) /
-                                   search.getSearchStats().lastSearchTime);
-  LOG->info("Leaf nodes:    {:n}", search.getSearchStats().leafPositionsEvaluated);
-  ASSERT_EQ(119'060'324, search.getSearchStats().leafPositionsEvaluated);
-  // 4 = 197'281
-  // 5 = 4'865'609
-  // 6 = 119'060'324
-  // 7 = 3'195'901'860
-}
-
 TEST_F(SearchTest, depth) {
   Search search;
   SearchLimits searchLimits;
@@ -254,6 +235,26 @@ TEST_F(SearchTest, repetitionAvoid) {
 
   ASSERT_NE("g8f7", printMove(search.getLastSearchResult().bestMove));
   ASSERT_NE(VALUE_DRAW, valueOf(search.getLastSearchResult().bestMove));
+}
+
+
+TEST_F(SearchTest, perft) {
+  Search search;
+  SearchLimits searchLimits;
+  Position position;
+  searchLimits.perft = true;
+  searchLimits.depth = 6;
+  searchLimits.setupLimits();
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+  LOG->info("Nodes per sec: {:n}", (search.getSearchStats().leafPositionsEvaluated * 1'000) /
+                                   search.getSearchStats().lastSearchTime);
+  LOG->info("Leaf nodes:    {:n}", search.getSearchStats().leafPositionsEvaluated);
+  ASSERT_EQ(119'060'324, search.getSearchStats().leafPositionsEvaluated);
+  // 4 = 197'281
+  // 5 = 4'865'609
+  // 6 = 119'060'324
+  // 7 = 3'195'901'860
 }
 
 TEST_F(SearchTest, npsTest) {

@@ -24,7 +24,6 @@
  */
 
 #include <gtest/gtest.h>
-#include <gmock/gmock.h>
 #include <ostream>
 #include <string>
 
@@ -63,8 +62,7 @@ TEST_F(MoveGenTest, pawnMoves) {
 
   cout << position.printBoard() << endl;
 
-  GenMode genMode = GENCAP;
-  mg.generatePawnMoves(genMode, &position, &moves);
+  mg.generatePawnMoves<MoveGenerator::GENCAP>(&position, &moves);
 
   ASSERT_EQ(10, moves.size());
   string expected = "c2b1qc2b1rc2b1bc2b1na2b1qa2b1ra2b1ba2b1nf4g3f4e3";
@@ -86,8 +84,7 @@ TEST_F(MoveGenTest, pawnMoves) {
   NEWLINE;
 
   moves.clear();
-  genMode = GENNONCAP;
-  mg.generatePawnMoves(genMode, &position, &moves);
+  mg.generatePawnMoves<MoveGenerator::GENNONCAP>(&position, &moves);
 
   ASSERT_EQ(13, moves.size());
   expected = "a2a1qa2a1ra2a1ba2a1nc2c1qc2c1rc2c1bc2c1nb7b5h7h5f4f3b7b6h7h6";
@@ -114,7 +111,6 @@ TEST_F(MoveGenTest, pawnMoves) {
 TEST_F(MoveGenTest, kingMoves) {
   string fen;
   MoveGenerator mg;
-  GenMode genMode;
   MoveList moves;
 
   fen = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3";
@@ -122,8 +118,7 @@ TEST_F(MoveGenTest, kingMoves) {
   cout << position.printBoard() << endl;
 
   moves.clear();
-  genMode = GENCAP;
-  mg.generateKingMoves(genMode, &position, &moves);
+  mg.generateKingMoves<MoveGenerator::GENCAP>(&position, &moves);
   cout << "Moves CAP: " << moves.size() << endl;
   sort(moves.begin(), moves.end());
   for (Move m : moves) {
@@ -133,8 +128,7 @@ TEST_F(MoveGenTest, kingMoves) {
   NEWLINE;
 
   moves.clear();
-  genMode = GENNONCAP;
-  mg.generateKingMoves(genMode, &position, &moves);
+  mg.generateKingMoves<MoveGenerator::GENNONCAP>(&position, &moves);
   cout << "Moves NONCAP: " << moves.size() << endl;
   sort(moves.begin(), moves.end());
   for (Move m : moves) {
@@ -149,7 +143,6 @@ TEST_F(MoveGenTest, kingMoves) {
 TEST_F(MoveGenTest, normalMoves) {
   string fen;
   MoveGenerator mg;
-  GenMode genMode;
   MoveList moves;
 
   fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3";
@@ -157,8 +150,7 @@ TEST_F(MoveGenTest, normalMoves) {
   cout << position.printBoard() << endl;
 
   moves.clear();
-  genMode = GENCAP;
-  mg.generateMoves(genMode, &position, &moves);
+  mg.generateMoves<MoveGenerator::GENCAP>(&position, &moves);
   cout << "Moves CAP: " << moves.size() << endl;
   sort(moves.begin(), moves.end());
   for (Move m : moves) {
@@ -168,8 +160,7 @@ TEST_F(MoveGenTest, normalMoves) {
   NEWLINE;
 
   moves.clear();
-  genMode = GENNONCAP;
-  mg.generateMoves(genMode, &position, &moves);
+  mg.generateMoves<MoveGenerator::GENNONCAP>(&position, &moves);
   cout << "Moves NONCAP: " << moves.size() << endl;
   sort(moves.begin(), moves.end());
   for (Move m : moves) {
@@ -180,7 +171,6 @@ TEST_F(MoveGenTest, normalMoves) {
 TEST_F(MoveGenTest, castlingMoves) {
   string fen;
   MoveGenerator mg;
-  GenMode genMode;
   MoveList moves;
 
   fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3";
@@ -188,8 +178,7 @@ TEST_F(MoveGenTest, castlingMoves) {
   cout << position.printBoard() << endl;
 
   moves.clear();
-  genMode = GENCAP;
-  mg.generateCastling(genMode, &position, &moves);
+  mg.generateCastling<MoveGenerator::GENCAP>(&position, &moves);
   cout << "Moves CAP: " << moves.size() << endl;
   for (Move m : moves) {
     cout << printMoveVerbose(m) << endl;
@@ -197,8 +186,7 @@ TEST_F(MoveGenTest, castlingMoves) {
 
   NEWLINE;
   moves.clear();
-  genMode = GENNONCAP;
-  mg.generateCastling(genMode, &position, &moves);
+  mg.generateCastling<MoveGenerator::GENNONCAP>(&position, &moves);
   cout << "Moves NONCAP: " << moves.size() << endl;
   for (Move m : moves) {
     cout << printMoveVerbose(m) << endl;
@@ -208,7 +196,6 @@ TEST_F(MoveGenTest, castlingMoves) {
 TEST_F(MoveGenTest, pseudoLegalMoves) {
   string fen;
   MoveGenerator mg;
-  GenMode genMode;
   MoveList moves;
   Position position;
 
@@ -218,8 +205,7 @@ TEST_F(MoveGenTest, pseudoLegalMoves) {
   cout << position.str() << endl;
 
   moves.clear();
-  genMode = GENALL;
-  moves = *mg.generatePseudoLegalMoves(genMode, &position);
+  moves = *mg.generatePseudoLegalMoves<MoveGenerator::GENALL>(&position);
   cout << "Moves ALL: " << moves.size() << endl;
   for (Move m : moves) {
     cout << printMoveVerbose(m) << " (" << int(m) << ")" << endl;
@@ -233,8 +219,7 @@ TEST_F(MoveGenTest, pseudoLegalMoves) {
   cout << position.str() << endl;
 
   moves.clear();
-  genMode = GENALL;
-  moves = *mg.generatePseudoLegalMoves(genMode, &position);
+  moves = *mg.generatePseudoLegalMoves<MoveGenerator::GENALL>(&position);
   cout << "Moves ALL: " << moves.size() << endl;
   for (Move m : moves) {
     cout << printMoveVerbose(m) << " (" << int(m) << ")" << endl;
@@ -248,8 +233,7 @@ TEST_F(MoveGenTest, pseudoLegalMoves) {
   moves.clear();
   cout << position.str() << endl;
 
-  genMode = GENALL;
-  moves = *mg.generatePseudoLegalMoves(genMode, &position);
+  moves = *mg.generatePseudoLegalMoves<MoveGenerator::GENALL>(&position);
   cout << "Moves CAP: " << moves.size() << endl;
   for (Move m : moves) {
     cout << printMoveVerbose(m) << " (" << int(m) << ")" << endl;
@@ -262,8 +246,7 @@ TEST_F(MoveGenTest, pseudoLegalMoves) {
   moves.clear();
   cout << position.str() << endl;
 
-  genMode = GENALL;
-  moves = *mg.generatePseudoLegalMoves(genMode, &position);
+  moves = *mg.generatePseudoLegalMoves<MoveGenerator::GENALL>(&position);
   cout << "Moves CAP: " << moves.size() << endl;
   for (Move m : moves) {
     cout << printMoveVerbose(m) << " (" << int(m) << ")" << endl;
@@ -275,7 +258,6 @@ TEST_F(MoveGenTest, pseudoLegalMoves) {
 TEST_F(MoveGenTest, legalMoves) {
   string fen;
   MoveGenerator mg;
-  GenMode genMode;
   MoveList moves;
   Position position;
 
@@ -283,8 +265,7 @@ TEST_F(MoveGenTest, legalMoves) {
   position = Position(START_POSITION_FEN);
   cout << position.printBoard() << endl;
 
-  genMode = GENALL;
-  moves = *mg.generateLegalMoves(genMode, &position);
+  moves = *mg.generateLegalMoves<MoveGenerator::GENALL>(&position);
   cout << "Legal Moves: " << moves.size() << endl;
   for (Move m : moves) {
     cout << printMoveVerbose(m) << endl;
@@ -297,8 +278,7 @@ TEST_F(MoveGenTest, legalMoves) {
   position = Position(fen);
   cout << position.printBoard() << endl;
 
-  genMode = GENALL;
-  moves = *mg.generatePseudoLegalMoves(genMode, &position);
+  moves = *mg.generatePseudoLegalMoves<MoveGenerator::GENALL>(&position);
   cout << "Pseudo Legal Moves: " << moves.size() << endl;
   for (Move m : moves) {
     cout << printMoveVerbose(m) << endl;
@@ -307,8 +287,7 @@ TEST_F(MoveGenTest, legalMoves) {
   NEWLINE;
 
   moves.clear();
-  genMode = GENALL;
-  moves = *mg.generateLegalMoves(genMode, &position);
+  moves = *mg.generateLegalMoves<MoveGenerator::GENALL>(&position);
   cout << "Legal Moves: " << moves.size() << endl;
   for (Move m : moves) {
     cout << printMoveVerbose(m) << endl;
@@ -322,7 +301,6 @@ TEST_F(MoveGenTest, legalMoves) {
 TEST_F(MoveGenTest, onDemandGen) {
   string fen;
   MoveGenerator mg;
-  GenMode genMode;
   MoveList moves;
 
   // 86 pseudo legal moves (incl. castling over attacked square)
@@ -330,11 +308,10 @@ TEST_F(MoveGenTest, onDemandGen) {
   Position position(fen);
   cout << position.str() << endl;
 
-  genMode = GENALL;
   Move move;
   int counter = 0;
   while (true) {
-    move = mg.getNextPseudoLegalMove(genMode, &position);
+    move = mg.getNextPseudoLegalMove<MoveGenerator::GENALL>(&position);
     if (move == NOMOVE) break;
     cout << printMoveVerbose(move) << " (" << int(move) << ")" << endl;
     counter++;
@@ -348,10 +325,9 @@ TEST_F(MoveGenTest, onDemandGen) {
   position = Position(fen);
   cout << position.str() << endl;
 
-  genMode = GENALL;
   counter = 0;
   while (true) {
-    move = mg.getNextPseudoLegalMove(genMode, &position);
+    move = mg.getNextPseudoLegalMove<MoveGenerator::GENALL>(&position);
     if (move == NOMOVE) break;
     cout << printMoveVerbose(move) << " (" << int(move) << ")" << endl;
     counter++;
@@ -371,7 +347,7 @@ TEST_F(MoveGenTest, hasLegalMoves) {
   Position position(fen);
   println(position.str());
 
-  moves = *mg.generateLegalMoves(GENALL, &position);
+  moves = *mg.generateLegalMoves<MoveGenerator::GENALL>(&position);
   const bool expected = mg.hasLegalMove(&position);
 
   ASSERT_EQ(0, moves.size());
@@ -389,7 +365,7 @@ TEST_F(MoveGenTest, debug) {
   Position position(fen);
   println(position.str());
 
-  moves = *mg.generateLegalMoves(GENALL, &position);
+  moves = *mg.generateLegalMoves<MoveGenerator::GENALL>(&position);
   println(printMoveList(moves));
 
 }

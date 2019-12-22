@@ -20,6 +20,8 @@ v 0.2 (plan)
     - PV and Killer moves
     - TT
     - Testing & Debugging
+- DONE:
+    - Templated Search for Root, non-root and qsearch
 
 v 0.1 (in progress)
 ================================================================================

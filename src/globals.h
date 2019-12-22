@@ -471,6 +471,7 @@ inline std::ostream &operator<<(std::ostream &os, const Move &move) {
 
 /** A collection of moves using a std::deque */
 typedef std::deque<Move> MoveList;
+typedef std::deque<Move, std::allocator<Move>>::iterator MoveListIter;
 
 inline std::string printMoveList(const MoveList &moveList) {
   std::ostringstream os;
