@@ -434,7 +434,8 @@ bool Position::isLegalMove(const Move move) {
     }
   }
   // make the move on the position
-  // TODO: can we make this more efficient??
+  // TODO: isLegalMove: can we make this more efficient??
+  //  this prevents this function from being const
   doMove(move);
   // check if the move leaves the king in check
   if (!isAttacked(kingSquare[~nextPlayer], nextPlayer)) {
@@ -475,7 +476,7 @@ bool Position::isLegalPosition() const {
   return !isAttacked(kingSquare[~nextPlayer], nextPlayer);
 }
 
-bool Position::hasCheck() {
+bool Position::hasCheck() const {
   if (hasCheckFlag != FLAG_TBD) return (hasCheckFlag == FLAG_TRUE);
   const bool check = isAttacked(kingSquare[nextPlayer], ~nextPlayer);
   hasCheckFlag = check ? FLAG_TRUE : FLAG_FALSE;
@@ -606,7 +607,7 @@ bool Position::checkInsufficientMaterial() const {
   return false;
 }
 
-bool Position::givesCheck(const Move move) {
+bool Position::givesCheck(const Move move) const {
 
   // opponents king square
   const Bitboard kingBB = piecesBB[~nextPlayer][KING];

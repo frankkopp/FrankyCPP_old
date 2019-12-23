@@ -139,9 +139,9 @@ class Position {
 
   // caches a hasCheck and hasMate Flag for the current position. Will be set after
   // a call to hasCheck() and reset to TBD every time a move is made or unmade.
-  Flag hasCheckFlag = FLAG_TBD;
+  mutable Flag hasCheckFlag = FLAG_TBD;
   Flag hasCheckFlagHistory[MAX_HISTORY]{};
-  Flag hasMateFlag = FLAG_TBD;
+  mutable Flag hasMateFlag = FLAG_TBD;
   Flag hasMateFlagHistory[MAX_HISTORY]{};
 
   // To be able to check for mate (no more moves) we need to include
@@ -247,7 +247,7 @@ public:
    *
    * @return true if current position has check for next player
    */
-  bool hasCheck();
+  bool hasCheck() const;
 
   /**
    * Tests for mate on this position. If true the next player has has no move and is in check.
@@ -272,7 +272,7 @@ public:
    * @param move
    * @return true if move is giving check to opponent
    */
-  bool givesCheck(const Move move);
+  bool givesCheck(const Move move) const;
 
   /**
   * This checks if a certain square is currently under attack by the player of the given color. It
