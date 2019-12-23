@@ -124,6 +124,7 @@ namespace Values {
                 static_cast<Value>(calcPosValueBlack(sq, gp, queenMidGame, queenEndGame));
               break;
             case PIECE_NONE:
+            case PIECE_LENGTH:
               break;
           }
         }

@@ -39,7 +39,9 @@ class MoveGenerator {
   MoveList legalMoves = MoveList(256);;
   MoveList onDemandMoves = MoveList(256);;
 
-  enum onDemandStage : int { OD_NEW, OD1, OD2, OD3, OD4, OD5, OD6, OD7, OD_END };
+  enum onDemandStage : int {
+    OD_NEW, OD1, OD2, OD3, OD4, OD5, OD6, OD7, OD_END
+  };
   onDemandStage currentODStage = OD_NEW;
   Key currentIteratorKey{};
 
@@ -63,8 +65,8 @@ public:
    * @param pPosition
    * @param moves - generated moves will be added to this list
    */
-  template <GenMode GM>
-  MoveList* generatePseudoLegalMoves(Position *pPosition);
+  template<GenMode GM>
+  const MoveList* generatePseudoLegalMoves(const Position* const pPosition);
 
   /**
   * Generates legal moves for the next player.
@@ -73,8 +75,8 @@ public:
   * @param pPosition
   * @param moves - generated moves will be added to this list
   */
-  template <GenMode GM>
-  MoveList* generateLegalMoves(Position *pPosition);
+  template<GenMode GM>
+  const MoveList* generateLegalMoves(Position* const pPosition);
 
   /**
    * Returns the next move for the given position. Usually this would be used in a loop
@@ -84,8 +86,8 @@ public:
    * @param pPosition
    * @return
    */
-  template <GenMode GM> 
-  Move getNextPseudoLegalMove(Position *pPosition);
+  template<GenMode GM>
+  Move getNextPseudoLegalMove(const Position* const pPosition);
 
   /**
    * Resets the on demand move generator to start fresh
@@ -101,7 +103,7 @@ public:
    *
    * @return true if there is at least one legal move
    */
-  bool hasLegalMove(Position *pPosition);
+  bool hasLegalMove(Position* const pPosition);
 
 private:
 
@@ -116,8 +118,8 @@ private:
    * @param pPosition
    * @param pMoves - generated moves will be added to this list
    */
-  template <GenMode GM>
-  void generatePawnMoves(const Position *pPosition, MoveList *pMoves);
+  template<GenMode GM>
+  void generatePawnMoves(const Position* const pPosition, MoveList* const pMoves);
 
   /**
    * Generates pseudo knight, bishop, rook and queen moves for the next player.
@@ -126,8 +128,8 @@ private:
    * @param pPosition
    * @param pMoves - generated moves will be added to this list
    */
-  template <GenMode GM>
-  void generateMoves(const Position *pPosition, MoveList *pMoves);
+  template<GenMode GM>
+  void generateMoves(const Position* const pPosition, MoveList* const pMoves);
 
   /**
    * Generates pseudo king moves for the next player. Does not check if king
@@ -136,8 +138,8 @@ private:
    * @param pPosition
    * @param pMoves - generated moves will be added to this list
    */
-  template <GenMode GM>
-  void generateKingMoves(const Position *pPosition, MoveList *pMoves);
+  template<GenMode GM>
+  void generateKingMoves(const Position* const pPosition, MoveList* const pMoves);
 
   /**
    * Generates pseudo castling move for the next player. Does not check if king passes or lands on an
@@ -146,8 +148,8 @@ private:
    * @param pPosition
    * @param pMoves - generated moves will be added to this list
    */
-  template <GenMode GM>
-  void generateCastling(const Position *pPosition, MoveList *pMoves);
+  template<GenMode GM>
+  void generateCastling(const Position* const pPosition, MoveList* const pMoves);
 
 };
 

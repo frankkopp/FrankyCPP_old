@@ -40,8 +40,8 @@ MoveGenerator::~MoveGenerator() = default;
 ///// PUBLIC
 
 template<MoveGenerator::GenMode GM>
-MoveList *
-MoveGenerator::generatePseudoLegalMoves(Position *pPosition) {
+const MoveList*
+MoveGenerator::generatePseudoLegalMoves(const Position *const pPosition) {
   pseudoLegalMoves.clear();
   generatePawnMoves<GM>(pPosition, &pseudoLegalMoves);
   generateCastling<GM>(pPosition, &pseudoLegalMoves);
@@ -52,8 +52,8 @@ MoveGenerator::generatePseudoLegalMoves(Position *pPosition) {
 }
 
 template<MoveGenerator::GenMode GM>
-MoveList *
-MoveGenerator::generateLegalMoves(Position *pPosition) {
+const MoveList*
+MoveGenerator::generateLegalMoves(Position *const pPosition) {
   legalMoves.clear();
   generatePseudoLegalMoves<GM>(pPosition);
   for (Move m : pseudoLegalMoves) if (pPosition->isLegalMove(m)) legalMoves.push_back(m);
@@ -61,7 +61,7 @@ MoveGenerator::generateLegalMoves(Position *pPosition) {
 }
 
 template<MoveGenerator::GenMode GM>
-Move MoveGenerator::getNextPseudoLegalMove(Position *pPosition) {
+Move MoveGenerator::getNextPseudoLegalMove(const Position *const pPosition) {
   // if the position changes during iteration the iteration will be reset and
   // generation will be restart with the new position.
   if (pPosition->getZobristKey() != currentIteratorKey) {
@@ -137,7 +137,7 @@ MoveGenerator::resetOnDemand() {
 }
 
 bool
-MoveGenerator::hasLegalMove(Position *pPosition) {
+MoveGenerator::hasLegalMove(Position *const pPosition) {
 
   /*
   To determine if we have at least one legal move we only have to find
@@ -252,7 +252,7 @@ MoveGenerator::hasLegalMove(Position *pPosition) {
 
 template<MoveGenerator::GenMode GM>
 void
-MoveGenerator::generatePawnMoves(const Position *pPosition, MoveList *pMoves) {
+MoveGenerator::generatePawnMoves(const Position *const pPosition, MoveList *const pMoves) {
 
   const Color nextPlayer = pPosition->getNextPlayer();
   const Bitboard myPawns = pPosition->getPieceBB(nextPlayer, PAWN);
@@ -382,7 +382,7 @@ MoveGenerator::generatePawnMoves(const Position *pPosition, MoveList *pMoves) {
 
 template<MoveGenerator::GenMode GM>
 void
-MoveGenerator::generateKingMoves(const Position *pPosition, MoveList *pMoves) {
+MoveGenerator::generateKingMoves(const Position* const pPosition, MoveList* const pMoves) {
   const Color nextPlayer = pPosition->getNextPlayer();
   const Bitboard occupiedBB = pPosition->getOccupiedBB();
   const Bitboard opponentBB = pPosition->getOccupiedBB(~nextPlayer);
@@ -424,7 +424,7 @@ MoveGenerator::generateKingMoves(const Position *pPosition, MoveList *pMoves) {
 
 template<MoveGenerator::GenMode GM>
 void
-MoveGenerator::generateMoves(const Position *pPosition, MoveList *pMoves) {
+MoveGenerator::generateMoves(const Position* const pPosition, MoveList * const pMoves) {
   const Color nextPlayer = pPosition->getNextPlayer();
   const Bitboard occupiedBB = pPosition->getOccupiedBB();
   const Bitboard opponentBB = pPosition->getOccupiedBB(~nextPlayer);
@@ -487,7 +487,7 @@ MoveGenerator::generateMoves(const Position *pPosition, MoveList *pMoves) {
 
 template<MoveGenerator::GenMode GM>
 void
-MoveGenerator::generateCastling(const Position *pPosition, MoveList *pMoves) {
+MoveGenerator::generateCastling(const Position* const pPosition, MoveList* const pMoves) {
   const Color nextPlayer = pPosition->getNextPlayer();
   const Bitboard occupiedBB = pPosition->getOccupiedBB();
 
@@ -537,32 +537,48 @@ MoveGenerator::generateCastling(const Position *pPosition, MoveList *pMoves) {
 }
 
 // explicitly instantiate all template definitions
-template MoveList *MoveGenerator::generatePseudoLegalMoves<MoveGenerator::GENCAP>(Position *pPosition);
-template MoveList *MoveGenerator::generatePseudoLegalMoves<MoveGenerator::GENNONCAP>(Position *pPosition);
-template MoveList *MoveGenerator::generatePseudoLegalMoves<MoveGenerator::GENALL>(Position *pPosition);
+template const MoveList* MoveGenerator::generatePseudoLegalMoves<MoveGenerator::GENCAP>(
+  const Position *const pPosition);
+template const MoveList* MoveGenerator::generatePseudoLegalMoves<MoveGenerator::GENNONCAP>(
+  const Position *const pPosition);
+template const MoveList* MoveGenerator::generatePseudoLegalMoves<MoveGenerator::GENALL>(
+  const Position *const pPosition);
 
-template MoveList *MoveGenerator::generateLegalMoves<MoveGenerator::GENCAP>(Position *pPosition);
-template MoveList *MoveGenerator::generateLegalMoves<MoveGenerator::GENNONCAP>(Position *pPosition);
-template MoveList *MoveGenerator::generateLegalMoves<MoveGenerator::GENALL>(Position *pPosition);
+template const MoveList* MoveGenerator::generateLegalMoves<MoveGenerator::GENCAP>(
+  Position *const pPosition);
+template const MoveList* MoveGenerator::generateLegalMoves<MoveGenerator::GENNONCAP>(
+  Position *const pPosition);
+template const MoveList* MoveGenerator::generateLegalMoves<MoveGenerator::GENALL>(
+  Position *const pPosition);
 
-template Move MoveGenerator::getNextPseudoLegalMove<MoveGenerator::GENCAP>(Position *pPosition);
-template Move MoveGenerator::getNextPseudoLegalMove<MoveGenerator::GENNONCAP>(Position *pPosition);
-template Move MoveGenerator::getNextPseudoLegalMove<MoveGenerator::GENALL>(Position *pPosition);
+template Move MoveGenerator::getNextPseudoLegalMove<MoveGenerator::GENCAP>(
+  const Position *const pPosition);
+template Move MoveGenerator::getNextPseudoLegalMove<MoveGenerator::GENNONCAP>(
+  const Position *const pPosition);
+template Move MoveGenerator::getNextPseudoLegalMove<MoveGenerator::GENALL>(
+  const Position *const pPosition);
 
-template void MoveGenerator::generatePawnMoves<MoveGenerator::GENCAP>(const Position *pPosition, MoveList *pMoves);
-template void MoveGenerator::generatePawnMoves<MoveGenerator::GENNONCAP>(const Position *pPosition, MoveList *pMoves);
-template void MoveGenerator::generatePawnMoves<MoveGenerator::GENALL>(const Position *pPosition, MoveList *pMoves);
+template void MoveGenerator::generatePawnMoves<MoveGenerator::GENCAP>(
+  const Position *const pPosition, MoveList *const pMoves);
+template void MoveGenerator::generatePawnMoves<MoveGenerator::GENNONCAP>(
+  const Position *const pPosition, MoveList *const pMoves);
+template void MoveGenerator::generatePawnMoves<MoveGenerator::GENALL>(
+  const Position *const pPosition, MoveList *const pMoves);
 
-template void MoveGenerator::generateMoves<MoveGenerator::GENCAP>(const Position *pPosition, MoveList *pMoves);
-template void MoveGenerator::generateMoves<MoveGenerator::GENNONCAP>(const Position *pPosition, MoveList *pMoves);
-template void MoveGenerator::generateMoves<MoveGenerator::GENALL>(const Position *pPosition, MoveList *pMoves);
+template void MoveGenerator::generateMoves<MoveGenerator::GENCAP>(const Position* const pPosition, MoveList* const pMoves);
+template void MoveGenerator::generateMoves<MoveGenerator::GENNONCAP>(const Position* const pPosition, MoveList* const pMoves);
+template void MoveGenerator::generateMoves<MoveGenerator::GENALL>(const Position* const pPosition, MoveList* const pMoves);
 
-template void MoveGenerator::generateKingMoves<MoveGenerator::GENCAP>(const Position *pPosition, MoveList *pMoves);
-template void MoveGenerator::generateKingMoves<MoveGenerator::GENNONCAP>(const Position *pPosition, MoveList *pMoves);
-template void MoveGenerator::generateKingMoves<MoveGenerator::GENALL>(const Position *pPosition, MoveList *pMoves);
+template void MoveGenerator::generateKingMoves<MoveGenerator::GENCAP>(
+  const Position* const pPosition, MoveList* const pMoves);
+template void MoveGenerator::generateKingMoves<MoveGenerator::GENNONCAP>(
+  const Position* const pPosition, MoveList* const pMoves);
+template void MoveGenerator::generateKingMoves<MoveGenerator::GENALL>(
+  const Position* const pPosition, MoveList* const pMoves);
 
-template void MoveGenerator::generateCastling<MoveGenerator::GENCAP>(const Position *pPosition, MoveList *pMoves);
-template void MoveGenerator::generateCastling<MoveGenerator::GENNONCAP>(const Position *pPosition, MoveList *pMoves);
-template void MoveGenerator::generateCastling<MoveGenerator::GENALL>(const Position *pPosition, MoveList *pMoves);
+template void MoveGenerator::generateCastling<MoveGenerator::GENCAP>(const Position* const pPosition, MoveList* const pMoves);
+template void MoveGenerator::generateCastling<MoveGenerator::GENNONCAP>(
+  const Position* const pPosition, MoveList* const pMoves);
+template void MoveGenerator::generateCastling<MoveGenerator::GENALL>(const Position* const pPosition, MoveList* const pMoves);
 
 

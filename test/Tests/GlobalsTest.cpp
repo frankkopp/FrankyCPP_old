@@ -29,6 +29,11 @@
 using namespace std;
 using testing::Eq;
 
+TEST(GlobalsTest, colors) {
+  ASSERT_EQ(WHITE, ~BLACK);
+  ASSERT_EQ(BLACK, ~WHITE);
+}
+
 TEST(GlobalsTest, labels) {
   // all squares and label of squares
   string actual;

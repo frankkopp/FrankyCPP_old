@@ -71,7 +71,7 @@ public:
   ///// PUBLIC
 
   // callback reference for sending responses to the uci ui
-  void registerUCIHandler(UCI::Handler *handler) { pUciHandler = handler; };
+  void registerUCIHandler(UCI::Handler* const handler) { pUciHandler = handler; };
 
   // output
   std::string str() const;
@@ -87,7 +87,7 @@ public:
   void doMove(const std::string &moveStr);
   void startSearch(const UCISearchMode &uciSearchMode);
   void stopSearch();
-  bool isSearching();
+  bool isSearching() const { return search.isRunning(); }
   void ponderHit();
 
   // send to UCI

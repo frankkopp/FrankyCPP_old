@@ -64,19 +64,21 @@ class Search {
 
   std::shared_ptr<spdlog::logger> LOG = spdlog::get("Search_Logger");
 
-  enum Search_Type {ROOT, NONROOT, QUIESCENCE};
-  
+  enum Search_Type {
+    ROOT, NONROOT, QUIESCENCE
+  };
+
   // UCI related
   constexpr static MilliSec UCI_UPDATE_INTERVAL = 1'000;
-  MilliSec lastUciUpdateTime {};
-  
+  MilliSec lastUciUpdateTime{};
+
   // thread control
   Semaphore initSemaphore; // used to block while initializing thread
   Semaphore searchSemaphore; // used to block while searching
   std::thread myThread;
 
   // pointer to engine of available
-  Engine *pEngine{nullptr};
+  Engine* pEngine{nullptr};
 
   // search mode
   SearchLimits searchLimits;
@@ -95,11 +97,11 @@ class Search {
 private:
 
   // search start time
-  MilliSec startTime {};
-  MilliSec stopTime {};
-  MilliSec softTimeLimit {};
-  MilliSec hardTimeLimit {};
-  MilliSec extraTime {};
+  MilliSec startTime{};
+  MilliSec stopTime{};
+  MilliSec softTimeLimit{};
+  MilliSec hardTimeLimit{};
+  MilliSec extraTime{};
 
   // the color of the searching player
   Color myColor = NOCOLOR;
@@ -125,20 +127,20 @@ public:
 
   /** Default constructor creates a board with a back reference to the engine */
   Search();
-  explicit Search(Engine *pEng);
+  explicit Search(Engine* pEng);
   virtual ~Search();
 
   ////////////////////////////////////////////////
   ///// PUBLIC
 
   /** starts the search in a separate thread with the given search limits */
-  void startSearch(const Position& position, SearchLimits limits);
+  void startSearch(const Position &position, SearchLimits limits);
 
   /** Stops a running search gracefully - e.g. returns the best move found so far */
   void stopSearch();
 
   /** checks if the search is already running */
-  bool isRunning();
+  bool isRunning() const;
 
   /** wait while searching */
   void waitWhileSearching();
@@ -153,46 +155,45 @@ public:
   void ponderhit();
 
   /** return current pv */
-  const MoveList &getPV() { return pv[ROOT_PLY]; };
-  
+  const MoveList &getPV() const { return pv[ROOT_PLY]; };
+
 private:
   ////////////////////////////////////////////////
   ///// PRIVATE
 
+  FRIEND_TEST(SearchTest, goodCapture);
+
   void run();
 
-  SearchResult iterativeDeepening(Position *pPosition);
+  SearchResult iterativeDeepening(Position* pPosition);
 
-  template <Search_Type ST>
-  Value search(Position *pPosition, int depth, int ply);
+  template<Search_Type ST>
+  Value search(Position* pPosition, int depth, int ply);
+  template<Search_Type ST>
+  Move getMove(Position* pPosition, int ply);
+  template<Search_Type ST>
+  bool checkDrawRepAnd50(Position* pPosition) const;
+  Value evaluate(Position* position, int ply);
 
-  template <Search_Type ST>
-  Move getMove(Position *pPosition, int ply);
+  MoveList generateRootMoves(Position* pPosition);
+  static bool goodCapture(Position* pPosition, Move move);
+  static void savePV(Move move, MoveList &src, MoveList &dest);
 
-  Value evaluate(Position *position, int ply);
-
-  MoveList generateRootMoves(Position *pPosition);
   void configureTimeLimits();
   inline bool stopConditions();
-  void addExtraTime(double d);
-
+  void addExtraTime(const double d);
   bool softTimeLimitReached();
-
-  template <Search_Type ST>
-  bool checkDrawRepAnd50(Position *pPosition) const;
-  static void savePV(Move move, MoveList &src, MoveList &dest);
   bool hardTimeLimitReached();
-  void sendUCIIterationEndInfo();
-
-  void sendUCICurrentRootMove();
-  void sendUCISearchUpdate();
-
-  void sendUCIBestMove();
-  MilliSec getNps();
-  static inline MilliSec elapsedTime(MilliSec t);
-  static inline MilliSec elapsedTime(MilliSec t1, MilliSec t2);
+  static inline MilliSec elapsedTime(const MilliSec t);
+  static inline MilliSec elapsedTime(const MilliSec t1, const MilliSec t2);
   static inline MilliSec now();
-  bool goodCapture(Position *pPosition, Move move);
+  inline MilliSec getNps() const;
+
+  void sendUCIIterationEndInfo() const;
+  void sendUCICurrentRootMove() const;
+  void sendUCISearchUpdate();
+  void sendUCIBestMove()const;
+
 };
 
 #endif // FRANKYCPP_SEARCH_H

@@ -26,6 +26,7 @@
 #include <gtest/gtest.h>
 #include "../../src/logging.h"
 #include "../../src/Search.h"
+#include "../../src/SearchConfig.h"
 #include "../../src/Engine.h"
 
 using testing::Eq;
@@ -206,7 +207,7 @@ TEST_F(SearchTest, repetitionForce) {
   search.waitWhileSearching();
 
   LOG->info("Repetition move: {}", printMoveVerbose(search.getLastSearchResult().bestMove));
-  
+
   ASSERT_EQ("d8h4", printMove(search.getLastSearchResult().bestMove));
   ASSERT_EQ(VALUE_DRAW, valueOf(search.getLastSearchResult().bestMove));
 }
@@ -231,12 +232,90 @@ TEST_F(SearchTest, repetitionAvoid) {
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 
-  LOG->info("Repetition avoidance move: {}", printMoveVerbose(search.getLastSearchResult().bestMove));
+  LOG->info("Repetition avoidance move: {}",
+            printMoveVerbose(search.getLastSearchResult().bestMove));
 
   ASSERT_NE("g8f7", printMove(search.getLastSearchResult().bestMove));
   ASSERT_NE(VALUE_DRAW, valueOf(search.getLastSearchResult().bestMove));
 }
 
+
+TEST_F(SearchTest, goodCapture) {
+  Search search;
+  Position position;
+
+  // no capture
+  position = Position();
+  ASSERT_FALSE(search.goodCapture(&position, createMove("e2e4")));
+
+  // TODO goodCapture Tests
+  // 2q1r1k1/rppb4/3p1Pp1/p4n1p/2P1n1PN/7P/PP3Q1K/2BRRB2 b - - 0 2
+  //    +---+---+---+---+---+---+---+---+
+  // 8 |   |   | q |   | r |   | k |   |
+  //   +---+---+---+---+---+---+---+---+
+  // 7 | r | * | * | b |   |   |   |   |
+  //   +---+---+---+---+---+---+---+---+
+  // 6 |   |   |   | * |   | O | * |   |
+  //   +---+---+---+---+---+---+---+---+
+  // 5 | * |   |   |   |   | n |   | * |
+  //   +---+---+---+---+---+---+---+---+
+  // 4 |   |   | O |   | n |   | O | N |
+  //   +---+---+---+---+---+---+---+---+
+  // 3 |   |   |   |   |   |   |   | O |
+  //   +---+---+---+---+---+---+---+---+
+  // 2 | O | O |   |   |   | Q |   | K |
+  //   +---+---+---+---+---+---+---+---+
+  // 1 |   |   | B | R | R | B |   |   |
+  //   +---+---+---+---+---+---+---+---+
+  //     A   B   C   D   E   F   G   H
+
+  position = Position("2q1r1k1/rppb4/3p1Pp1/p4n1p/2P1n1PN/7P/PP3Q1K/2BRRB2 w - -");
+  ASSERT_TRUE(search.goodCapture(&position, createMove("g4f5"))); // pawn capture
+  ASSERT_TRUE(search.goodCapture(&position, createMove("g4h5"))); // pawn capture
+  ASSERT_TRUE(search.goodCapture(&position, createMove("f2a7"))); // not defended
+  ASSERT_TRUE(search.goodCapture(&position, createMove("h4g6"))); // not defended
+  ASSERT_FALSE(search.goodCapture(&position, createMove("h4f5"))); // Nxn
+  ASSERT_FALSE(search.goodCapture(&position, createMove("e1e4"))); // Rxn
+  ASSERT_FALSE(search.goodCapture(&position, createMove("f2f5"))); // Qxn
+  ASSERT_FALSE(search.goodCapture(&position, createMove("d1d6"))); // Rxp
+
+  position = Position("2q1r1k1/rpp5/3p1Pp1/p4n1p/b1P1n1PN/5Q1P/PP5K/2BRRB2 w - -");
+  position.doMove(createMove("e1e4"));
+  ASSERT_TRUE(search.goodCapture(&position, createMove("e8e4"))); // recapture
+  ASSERT_TRUE(search.goodCapture(&position, createMove("a4d1"))); // bxR
+  ASSERT_TRUE(search.goodCapture(&position, createMove("f5h4"))); // nor defended
+  ASSERT_TRUE(search.goodCapture(&position, createMove("h5g4"))); // pawn
+
+  ASSERT_FALSE(search.goodCapture(&position, createMove("h4f5"))); // Nxn
+
+}
+
+TEST_F(SearchTest, quiescenceTest) {
+
+  Search search;
+  SearchLimits searchLimits;
+  Position position;
+  searchLimits.depth = 4;
+  searchLimits.setupLimits();
+
+  SearchConfig::USE_QUIESCENCE = false;
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+  auto nodes1 = search.getSearchStats().nodesVisited;
+  auto extra1 = search.getSearchStats().currentExtraSearchDepth;
+
+  SearchConfig::USE_QUIESCENCE = true;
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+  auto nodes2 = search.getSearchStats().nodesVisited;
+  auto extra2 = search.getSearchStats().currentExtraSearchDepth;
+
+  LOG->info("Nodes with Quiescence: {:n} Nodes with Quiescence: {:n}", nodes1, nodes2);
+  LOG->info("Extra with Quiescence: {:n} Extra with Quiescence: {:n}", extra1, extra2);
+
+  ASSERT_GT(nodes2, nodes1);
+  ASSERT_GT(extra2, extra1);
+}
 
 TEST_F(SearchTest, perft) {
   Search search;

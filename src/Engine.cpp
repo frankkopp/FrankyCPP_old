@@ -151,8 +151,6 @@ void Engine::stopSearch() {
   search.stopSearch();
 }
 
-bool Engine::isSearching() { return search.isRunning(); }
-
 void Engine::ponderHit() {
   LOG->info("Engine: Ponder Hit");
   search.ponderhit();

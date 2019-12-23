@@ -35,7 +35,7 @@
 Search::Search() : Search(nullptr) {
 }
 
-Search::Search(Engine *pEng) {
+Search::Search(Engine* pEng) {
   pEngine = pEng;
 }
 
@@ -112,7 +112,7 @@ void Search::stopSearch() {
   assert(!running);
 }
 
-bool Search::isRunning() {
+bool Search::isRunning() const {
   return running;
 }
 
@@ -238,7 +238,7 @@ void Search::run() {
  * @param pPosition
  * @return
  */
-SearchResult Search::iterativeDeepening(Position *pPosition) {
+SearchResult Search::iterativeDeepening(Position* pPosition) {
 
   // prepare search result
   SearchResult searchResult = SearchResult();
@@ -300,7 +300,6 @@ SearchResult Search::iterativeDeepening(Position *pPosition) {
 
     searchStats.currentIterationDepth = iterationDepth;
     searchStats.bestMoveChanges = 0;
-    searchStats.nodesVisited++; // root node is always first searched node
 
     // ###########################################
     // ### CALL SEARCH for iterationDepth
@@ -355,9 +354,11 @@ SearchResult Search::iterativeDeepening(Position *pPosition) {
  * @param depth
  */
 template<Search::Search_Type ST>
-Value Search::search(Position *pPosition, int depth, int ply) {
+Value Search::search(Position* pPosition, int depth, int ply) {
+  if (stopConditions()) return VALUE_NONE;
 
-  if (stopConditions()) return VALUE_NONE; // value does not matter because of top flag
+  // each call to search represents a node visited
+  searchStats.nodesVisited++;
 
   // Leaf node handling
   if (ST == NONROOT) {
@@ -376,7 +377,6 @@ Value Search::search(Position *pPosition, int depth, int ply) {
     }
     searchStats.currentExtraSearchDepth = std::max(searchStats.currentExtraSearchDepth, ply);
   }
-
 
   // to detect mate situations
   int numberOfSearchedMoves = 0;
@@ -403,16 +403,25 @@ Value Search::search(Position *pPosition, int depth, int ply) {
             " ", ply, ply, printMoveListUCI(currentVariation), printMove(move));
     }
 
+    // reduce number of moves searched in quiescence
+    // by looking at good captures only
+    if (ST == QUIESCENCE) {
+      if (!goodCapture(pPosition, move)) {
+        // get next move
+        move = getMove<QUIESCENCE>(pPosition, ply);
+        continue;
+      }
+    }
+
     // Execute move
     pPosition->doMove(move);
     if (pPosition->isLegalPosition()) {
       numberOfSearchedMoves++; // legal move
-      searchStats.nodesVisited++;
       currentVariation.push_back(move);
       sendUCISearchUpdate();
 
       // check for repetition ot 50-move-rule draws
-      if (checkDrawRepAnd50(pPosition))
+      if (checkDrawRepAnd50<ST>(pPosition))
         value = VALUE_DRAW;
         // recurse deeper into the search tree
       else {
@@ -486,7 +495,7 @@ Value Search::search(Position *pPosition, int depth, int ply) {
  * generator.
  */
 template<Search::Search_Type ST>
-Move Search::getMove(Position *pPosition, int ply) {
+Move Search::getMove(Position* pPosition, int ply) {
   Move move = NOMOVE;
   constexpr Search_Type type = ST;
   switch (type) {
@@ -500,10 +509,40 @@ Move Search::getMove(Position *pPosition, int ply) {
       move = moveGenerators[ply].getNextPseudoLegalMove<MoveGenerator::GENALL>(pPosition);
       break;
     case QUIESCENCE:
-      move = moveGenerators[ply].getNextPseudoLegalMove<MoveGenerator::GENCAP>(pPosition);
+      if (pPosition->hasCheck()) { // if in check look at all moves in quiescence
+        move = moveGenerators[ply].getNextPseudoLegalMove<MoveGenerator::GENALL>(pPosition);
+      }
+      else { // if not in check only look at captures
+        move = moveGenerators[ply].getNextPseudoLegalMove<MoveGenerator::GENCAP>(pPosition);
+      }
       break;
   }
+  searchStats.movesGenerated++;
   return move;
+}
+
+/**
+ * Simple good capture determination
+ * TODO: Improve, add SEE
+ */
+bool Search::goodCapture(Position* pPosition, Move move) {
+  return
+    // only captures
+    pPosition->getPiece(getToSquare(move)) != PIECE_NONE
+    // all pawn captures - they never loose material
+    && (typeOf(pPosition->getPiece(getFromSquare(move))) == PAWN
+        // Lower value piece captures higher value piece
+        // With a margin to also look at Bishop x Knight
+        || (valueOf(pPosition->getPiece(getFromSquare(move))) + 50) <=
+           valueOf(pPosition->getPiece(getToSquare(move)))
+        // all recaptures should be looked at
+        || (pPosition->getLastMove() != NOMOVE
+            && getToSquare(pPosition->getLastMove()) == getToSquare(move)
+            && pPosition->getLastCapturedPiece() != PIECE_NONE)
+        // undefended pieces captures are good
+        // If the defender is "behind" the attacker this will not be recognized here
+        // This is not too bad as it only adds a move to qsearch which we could otherwise ignore
+        || !pPosition->isAttacked(getToSquare(move), ~pPosition->getNextPlayer()));
 }
 
 //
@@ -681,7 +720,7 @@ Move Search::getMove(Position *pPosition, int ply) {
 //  return evaluate(pPosition, ply);
 //}
 
-Value Search::evaluate(Position *pPosition, const int ply) {
+Value Search::evaluate(Position* pPosition, const int ply) {
   if (ply) {};
 
   // count all leaf nodes evaluated
@@ -706,9 +745,12 @@ inline bool Search::stopConditions() {
   return stopSearchFlag;
 }
 
-
-bool Search::checkDrawRepAnd50(Position *pPosition) const {
-  if (pPosition->checkRepetitions(2)) {
+template<Search::Search_Type ST>
+bool Search::checkDrawRepAnd50(Position* pPosition) const {
+  // for quiescence search we stop at 1 repetition already which should not
+  // loose too much precision
+  constexpr int allowedRepetitions = (ST == QUIESCENCE ? 1 : 2);
+  if (pPosition->checkRepetitions(allowedRepetitions)) {
     this->LOG->debug("DRAW because of repetition for move {} in variation {}",
                      printMove(pPosition->getLastMove()), printMoveListUCI(this->currentVariation));
     return true;
@@ -764,11 +806,11 @@ void Search::configureTimeLimits() {
  * Example: factor 0.8 is 20% less time. Factor 1.2 is 20% additional time
  * Always calculated from the initial time budget.
  *
- * @param factor
+ * @param d
  */
-void Search::addExtraTime(double factor) {
+void Search::addExtraTime(const double d) {
   if (searchLimits.moveTime == 0) {
-    extraTime += hardTimeLimit * (factor - 1);
+    extraTime += hardTimeLimit * (d - 1);
     LOG->debug("Time added {:n} ms to {:n} ms",
                extraTime,
                hardTimeLimit + extraTime);
@@ -804,7 +846,7 @@ bool Search::hardTimeLimitReached() {
  * @param t time point since the elapsed time
  * @return the elapsed time from the start of the search to the given t
  */
-inline MilliSec Search::elapsedTime(MilliSec t) {
+inline MilliSec Search::elapsedTime(const MilliSec t) {
   return elapsedTime(t, now());
 }
 
@@ -813,7 +855,7 @@ inline MilliSec Search::elapsedTime(MilliSec t) {
  * @param t2 Later time point
  * @return Duration between time points in milliseconds
  */
-inline MilliSec Search::elapsedTime(MilliSec t1, MilliSec t2) {
+inline MilliSec Search::elapsedTime(const MilliSec t1, const MilliSec t2) {
   return t2 - t1;
 }
 
@@ -826,9 +868,10 @@ inline MilliSec Search::now() {
   return clock_gettime_nsec_np(CLOCK_UPTIME_RAW_APPROX) / 1'000'000;
 }
 
-MilliSec Search::getNps() {
-  return 1000 * searchStats.nodesVisited /
-         (elapsedTime(startTime) + 1); // +1 to avoid division by zero
+inline MilliSec Search::getNps() const {
+  return
+    1000 * searchStats.nodesVisited /
+    (elapsedTime(startTime) + 1); // +1 to avoid division by zero};
 }
 
 inline void Search::savePV(Move move, MoveList &src, MoveList &dest) {
@@ -841,8 +884,8 @@ inline void Search::savePV(Move move, MoveList &src, MoveList &dest) {
  * @param pPosition
  * @return UCI filtered root moves
  */
-MoveList Search::generateRootMoves(Position *pPosition) {
-  MoveList *legalMoves = moveGenerators[ROOT_PLY].generateLegalMoves<MoveGenerator::GENALL>(
+MoveList Search::generateRootMoves(Position* pPosition) {
+  const MoveList* const legalMoves = moveGenerators[ROOT_PLY].generateLegalMoves<MoveGenerator::GENALL>(
     pPosition);
   MoveList moveList;
   if (searchLimits.moves.empty()) { // if UCI searchmoves is empty then add all
@@ -864,7 +907,7 @@ MoveList Search::generateRootMoves(Position *pPosition) {
   return moveList;
 }
 
-void Search::sendUCIIterationEndInfo() {
+void Search::sendUCIIterationEndInfo() const {
 
   MilliSec result;
   result = elapsedTime(startTime);
@@ -891,7 +934,7 @@ void Search::sendUCIIterationEndInfo() {
   }
 }
 
-void Search::sendUCICurrentRootMove() {
+void Search::sendUCICurrentRootMove() const {
   std::string infoString =
     fmt::format(
       "currmove {} currmovenumber {}",
@@ -937,7 +980,7 @@ void Search::sendUCISearchUpdate() {
   }
 }
 
-void Search::sendUCIBestMove() {
+void Search::sendUCIBestMove() const {
   std::string infoString =
     fmt::format(
       "Engine got Best Move: {} ({}) [Ponder {}]",
@@ -948,6 +991,8 @@ void Search::sendUCIBestMove() {
   if (pEngine == nullptr) LOG->warn("<no engine> >> {}", infoString);
   else pEngine->sendResult(lastSearchResult.bestMove, lastSearchResult.ponderMove);
 }
+
+
 
 
 

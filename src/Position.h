@@ -61,7 +61,7 @@ class Position {
     FLAG_TBD, FLAG_FALSE, FLAG_TRUE
   };
 
-  static const int MAX_HISTORY = 256;
+  static constexpr int MAX_HISTORY = 256;
 
   // history counter
   int historyCounter = 0;
@@ -164,7 +164,7 @@ public:
    * Creates a standard board position and initializes it with a fen position
    * @param fen
    */
-  explicit Position(const char *fen);
+  explicit Position(const char* fen);
 
   /**
    * Creates a standard board position and initializes it with a fen position
@@ -223,7 +223,7 @@ public:
   *
   * @param move the move
   */
-  void doMove(Move move);
+  void doMove(const Move move);
 
   /**
    * Takes back the last move from the board
@@ -272,7 +272,7 @@ public:
    * @param move
    * @return true if move is giving check to opponent
    */
-  bool givesCheck(Move move);
+  bool givesCheck(const Move move);
 
   /**
   * This checks if a certain square is currently under attack by the player of the given color. It
@@ -284,19 +284,19 @@ public:
   * @param attackerColor
   * @return true if under attack
   */
-  bool isAttacked(Square sq, Color byColor);
+  bool isAttacked(const Square sq, const Color byColor) const;
 
   /**
    * This checks if the  move is legal by checking if it leaves the king in check or if it
    * would pass an attacked square when castling.
    */
-  bool isLegalMove(Move move);
+  bool isLegalMove(const Move move);
 
   /**
    * This checks if the last move was legal by checking if it left the king in check or if
    * the king has passed an attacked square during castling
    */
-  bool isLegalPosition();
+  bool isLegalPosition() const;
 
   /**
    * The fifty-move rule if during the previous 50 moves no pawn has been moved and no capture has
@@ -305,7 +305,7 @@ public:
    * @return true if during the previous 50 moves no pawn has been moved and no capture has been
    * made
    */
-  bool check50MovesRule() { return halfMoveClock >= 100; };
+  bool check50MovesRule() const { return halfMoveClock >= 100; };
 
   /**
   * Repetition of a position:.
@@ -319,56 +319,56 @@ public:
   *
   * @return true if this position has been played reps times before
   */
-  bool checkRepetitions(int reps);
+  bool checkRepetitions(int reps) const;
 
   /**
   * Determines the repetitions of a position.
   *
   * @return number of repetitions
   */
-  int countRepetitions();
+  int countRepetitions() const;
 
   /**
    * FIDE Draws - Evaluation might define some more draw values.
    *
    * @return true if neither side can win
    */
-  bool checkInsufficientMaterial();
+  bool checkInsufficientMaterial() const;
 
   /**
   * Returns the last move. Returns Move.NOMOVE if there is no last move.
   *
   * @return int representing a move
   */
-  Move getLastMove() { return historyCounter > 0 ? moveHistory[historyCounter - 1] : NOMOVE; };
-
+  Move getLastMove() const {
+    return historyCounter > 0 ? moveHistory[historyCounter - 1] : NOMOVE;
+  };
 
   ////////////////////////////////////////////////
   ///// GETTER / SETTER
-  Piece getPiece(Square square) const { return board[square]; }
+  Piece getPiece(const Square square) const { return board[square]; }
   Key getZobristKey() const { return zobristKey; }
   Color getNextPlayer() const { return nextPlayer; }
   Square getEnPassantSquare() const { return enPassantSquare; }
   Square getKingSquare(const Color color) const { return kingSquare[color]; };
 
-  Bitboard getPieceBB(Color c, PieceType pt) const { return piecesBB[c][pt]; }
+  Bitboard getPieceBB(const Color c, const PieceType pt) const { return piecesBB[c][pt]; }
   Bitboard getOccupiedBB() const { return occupiedBB[WHITE] | occupiedBB[BLACK]; }
-  Bitboard getOccupiedBB(Color c) const { return occupiedBB[c]; }
+  Bitboard getOccupiedBB(const Color c) const { return occupiedBB[c]; }
   Bitboard getOccupiedBBR90() const { return occupiedBBR90[WHITE] | occupiedBBR90[BLACK]; }
-  Bitboard getOccupiedBBR90(Color c) const { return occupiedBBR90[c]; }
+  Bitboard getOccupiedBBR90(const Color c) const { return occupiedBBR90[c]; }
   Bitboard getOccupiedBBL90() const { return occupiedBBL90[WHITE] | occupiedBBL90[BLACK]; }
-  Bitboard getOccupiedBBL90(Color c) const { return occupiedBBL90[c]; }
+  Bitboard getOccupiedBBL90(const Color c) const { return occupiedBBL90[c]; }
   Bitboard getOccupiedBBR45() const { return occupiedBBR45[WHITE] | occupiedBBR45[BLACK]; }
-  Bitboard getOccupiedBBR45(Color c) const { return occupiedBBR45[c]; }
+  Bitboard getOccupiedBBR45(const Color c) const { return occupiedBBR45[c]; }
   Bitboard getOccupiedBBL45() const { return occupiedBBL45[WHITE] | occupiedBBL45[BLACK]; }
-  Bitboard getOccupiedBBL45(Color c) const { return occupiedBBL45[c]; }
+  Bitboard getOccupiedBBL45(const Color c) const { return occupiedBBL45[c]; }
 
-  int getMaterial(Color c) const { return material[c]; }
-  int getMidPosValue(Color c) const { return psqMidValue[c]; }
-  int getEndPosValue(Color c) const { return psqEndValue[c]; }
-  int getPosValue(Color c) const {
-    return static_cast<int>(
-      getGamePhaseFactor() * psqMidValue[c] + (1 - getGamePhaseFactor()) * psqEndValue[c]);
+  int getMaterial(const Color c) const { return material[c]; }
+  int getMidPosValue(const Color c) const { return psqMidValue[c]; }
+  int getEndPosValue(const Color c) const { return psqEndValue[c]; }
+  int getPosValue(const Color c) const {
+    return getGamePhaseFactor() * psqMidValue[c] + (1 - getGamePhaseFactor()) * psqEndValue[c];
   }
   int getGamePhase() const { return gamePhase; }
   float getGamePhaseFactor() const { return float(gamePhase) / GAME_PHASE_MAX; }
@@ -388,11 +388,11 @@ private:
   FRIEND_TEST(PositionTest, PosValue);
 
   void initializeBoard();
-  void setupBoard(const char *fen);
-  void movePiece(Square from, Square to);
-  void putPiece(Piece piece, Square square);
-  Piece removePiece(Square square);
-  void invalidateCastlingRights(Square from, Square to);
+  void setupBoard(const char* fen);
+  void movePiece(const Square from, const Square to);
+  void putPiece(const Piece piece, const Square square);
+  Piece removePiece(const Square square);
+  void invalidateCastlingRights(const Square from, const Square to);
   void clearEnPassant();
 };
 
