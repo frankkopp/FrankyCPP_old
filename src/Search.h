@@ -169,10 +169,6 @@ private:
   template <Search_Type ST>
   Move getMove(Position *pPosition, int ply);
 
-  //  void searchRoot(Position *pPosition, const int depth);
-  //  Value searchNonRoot(Position *pPosition, int depth, int ply);
-  // Value qsearch(Position *pPosition, int ply);
-
   Value evaluate(Position *position, int ply);
 
   MoveList generateRootMoves(Position *pPosition);
@@ -182,6 +178,7 @@ private:
 
   bool softTimeLimitReached();
 
+  template <Search_Type ST>
   bool checkDrawRepAnd50(Position *pPosition) const;
   static void savePV(Move move, MoveList &src, MoveList &dest);
   bool hardTimeLimitReached();
@@ -195,6 +192,7 @@ private:
   static inline MilliSec elapsedTime(MilliSec t);
   static inline MilliSec elapsedTime(MilliSec t1, MilliSec t2);
   static inline MilliSec now();
+  bool goodCapture(Position *pPosition, Move move);
 };
 
 #endif // FRANKYCPP_SEARCH_H

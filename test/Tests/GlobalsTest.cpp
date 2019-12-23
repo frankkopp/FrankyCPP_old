@@ -42,6 +42,30 @@ TEST(GlobalsTest, labels) {
   ASSERT_EQ(expected, actual);
 }
 
+TEST(GlobalsTest, pieceTypeLabels) {
+  ASSERT_EQ('k', pieceTypeToChar[KING]);
+  ASSERT_EQ('q', pieceTypeToChar[QUEEN]);
+  ASSERT_EQ('r', pieceTypeToChar[ROOK]);
+  ASSERT_EQ('b', pieceTypeToChar[BISHOP]);
+  ASSERT_EQ('n', pieceTypeToChar[KNIGHT]);
+  ASSERT_EQ('p', pieceTypeToChar[PAWN]);
+}
+
+TEST(GlobalsTest, pieceLabels) {
+  ASSERT_EQ('K', pieceToChar[WHITE_KING]);
+  ASSERT_EQ('Q', pieceToChar[WHITE_QUEEN]);
+  ASSERT_EQ('R', pieceToChar[WHITE_ROOK]);
+  ASSERT_EQ('B', pieceToChar[WHITE_BISHOP]);
+  ASSERT_EQ('N', pieceToChar[WHITE_KNIGHT]);
+  ASSERT_EQ('P', pieceToChar[WHITE_PAWN]);
+  ASSERT_EQ('k', pieceToChar[BLACK_KING]);
+  ASSERT_EQ('q', pieceToChar[BLACK_QUEEN]);
+  ASSERT_EQ('r', pieceToChar[BLACK_ROOK]);
+  ASSERT_EQ('b', pieceToChar[BLACK_BISHOP]);
+  ASSERT_EQ('n', pieceToChar[BLACK_KNIGHT]);
+  ASSERT_EQ('p', pieceToChar[BLACK_PAWN]);
+}
+
 TEST(GlobalsTest, filesAndRanks) {
   // all squares and label of squares
   string actual;
@@ -77,6 +101,7 @@ TEST(GlobalsTest, pieces) {
   ASSERT_EQ(QUEEN, typeOf(BLACK_QUEEN));
   ASSERT_EQ(PAWN, typeOf(BLACK_PAWN));
   ASSERT_EQ(ROOK, typeOf(BLACK_ROOK));
+  ASSERT_EQ(PIECETYPE_NONE, typeOf(PIECE_NONE));
 }
 
 TEST(GlobalsTest, operators) {

@@ -170,7 +170,7 @@ public:
    * Creates a standard board position and initializes it with a fen position
    * @param fen
    */
-  explicit Position(const std::string& fen);
+  explicit Position(const std::string &fen);
 
   /**
    * Copy constructor - creates a copy of the given Position
@@ -182,7 +182,7 @@ public:
    * Copy assignment operator
    * @param other
    */
-  Position& operator=(const Position& other) = default;
+  Position &operator=(const Position &other) = default;
 
   /**
    * Destructor
@@ -375,6 +375,10 @@ public:
   CastlingRights getCastlingRights() const { return castlingRights; }
   int getHalfMoveClock() const { return halfMoveClock; }
   int getNextHalfMoveNumber() const { return nextHalfMoveNumber; }
+  Piece getLastCapturedPiece() const {
+    return historyCounter > 0
+           ? capturedPieceHistory[historyCounter - 1] : PIECE_NONE;
+  };
 
 private:
 

@@ -169,34 +169,35 @@ constexpr Square &operator-=(Square &s, Direction d) { return s = s - d; }
 //// PIECE TYPES
 
 enum PieceType : int {
-  KING, PAWN, KNIGHT, BISHOP, ROOK, QUEEN, PIECETYPE_NONE, PT_LENGTH = 7
-  // non sliding ---  sliding -----------
+  PIECETYPE_NONE, KING, PAWN, KNIGHT, BISHOP, ROOK, QUEEN, PT_LENGTH = 7
+  //             |non sliding ------ |sliding -----------
 };
 
 /** returns a char representing the piece type - "kpnbrq" */
-inline const char *pieceTypeToChar = "kpnbrq";
+inline const char *pieceTypeToChar = " kpnbrq";
 
 /** Game phase values */
 inline const int gamePhaseValue[] = {
+  0, // notype
   0, // king
-  0,  // pawn
-  1,  // knight
-  1,  // bishop
-  2,  // rook
-  4,  // queen
-  0   // notype
+  0, // pawn
+  1, // knight
+  1, // bishop
+  2, // rook
+  4  // queen
+
 };
 
 /** Pieces */
 enum Piece : int {
-  WHITE_KING = 0, WHITE_PAWN, WHITE_KNIGHT, WHITE_BISHOP, WHITE_ROOK, WHITE_QUEEN, // 0x0 - 0x5
-  BLACK_KING = 8, BLACK_PAWN, BLACK_KNIGHT, BLACK_BISHOP, BLACK_ROOK, BLACK_QUEEN, // 0x8 - 0XD
-  PIECE_NONE = 16, // 0x10
+  PIECE_NONE,
+  WHITE_KING = 1, WHITE_PAWN, WHITE_KNIGHT, WHITE_BISHOP, WHITE_ROOK, WHITE_QUEEN,
+  BLACK_KING = 9, BLACK_PAWN, BLACK_KNIGHT, BLACK_BISHOP, BLACK_ROOK, BLACK_QUEEN,
   PIECE_LENGTH = 16
 };
 
 /** returns a char representing the piece. Upper case letters for white, lower case for black */
-inline const char *pieceToChar = "KPNBRQ  kpnbrq   ";
+inline const char *pieceToChar = " KPNBRQ  kpnbrq   ";
 
 /** creates the piece given by color and piece type */
 constexpr Piece makePiece(Color c, PieceType pt) { return Piece((c << 3) + pt); }
@@ -226,13 +227,13 @@ inline std::ostream &operator<<(std::ostream &os, const Value &v) {
 
 /** PieceType values */
 inline const Value pieceTypeValue[] = {
+  Value(0),     // notype
   Value(2000), // king
   Value(100),  // pawn
   Value(320),  // knight
   Value(330),  // bishop
   Value(500),  // rook
   Value(900),  // queen
-  Value(0)     // notype
 };
 
 /** returns the value of the given piece type */

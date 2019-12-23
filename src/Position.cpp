@@ -42,7 +42,7 @@ void Position::init() {
 
   // Zobrist Key initialization
   Random random(1070372);
-  for (Piece pc = WHITE_KING; pc < PIECE_LENGTH; ++pc) {
+  for (Piece pc = PIECE_NONE; pc < PIECE_LENGTH; ++pc) {
     for (Square sq = SQ_A1; sq < SQ_LENGTH; ++sq) {
       Zobrist::pieces[pc][sq] = random.rand<Key>();
     }
@@ -812,7 +812,7 @@ std::string Position::str() const {
 }
 
 std::string Position::printBoard() const {
-  const std::string ptc = "KONBRQ  k*nbrq   ";
+  const std::string ptc = " KONBRQ  k*nbrq   ";
   std::ostringstream output;
   output << "  +---+---+---+---+---+---+---+---+" << std::endl;
   for (Rank r = RANK_8; r >= RANK_1; --r) {

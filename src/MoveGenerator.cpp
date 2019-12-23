@@ -430,7 +430,7 @@ MoveGenerator::generateMoves(const Position *pPosition, MoveList *pMoves) {
   const Bitboard opponentBB = pPosition->getOccupiedBB(~nextPlayer);
   const int gamePhase = pPosition->getGamePhase();
 
-  for (PieceType pt = KNIGHT; pt < PIECETYPE_NONE; ++pt) {
+  for (PieceType pt = KNIGHT; pt <= QUEEN; ++pt) {
     Bitboard pieces = pPosition->getPieceBB(nextPlayer, pt);
     const Piece piece = makePiece(nextPlayer, pt);
 

@@ -330,7 +330,8 @@ namespace Bitboards {
 
     // @formatter:off
     // steps for kings, pawns, knight for WHITE - negate to get BLACK
-    int steps[][5] = { { NORTH_WEST, NORTH, NORTH_EAST, EAST }, // king
+    int steps[][5] = { {},
+                       { NORTH_WEST, NORTH, NORTH_EAST, EAST }, // king
                        { NORTH_WEST, NORTH_EAST }, // pawn
                        { WEST+NORTH_WEST,          // knight
                          EAST+NORTH_EAST,
@@ -340,7 +341,7 @@ namespace Bitboards {
 
     // knight and king attacks
     for (Color c = WHITE; c <= BLACK; ++c) {
-      for (PieceType pt : { KING, PAWN, KNIGHT}) {
+      for (PieceType pt : {KING, PAWN, KNIGHT}) {
         for (Square s = SQ_A1; s <= SQ_H8; ++s) {
           for (int i = 0; steps[pt][i]; ++i) {
             Square to = s + Direction(c == WHITE ? steps[pt][i] : -steps[pt][i]);

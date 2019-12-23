@@ -57,7 +57,7 @@ TEST_F(PositionTest, ZobristTest) {
   z ^= Zobrist::enPassantFile[FILE_NONE];
   Key expected = z;
   // cout << "Zobrist= " << z << std::endl;
-  ASSERT_EQ(3127863183353006913, z);
+  ASSERT_EQ(8408280106960045251, z);
 
   z ^= Zobrist::pieces[WHITE_KING][SQ_E1];
   z ^= Zobrist::pieces[WHITE_KING][SQ_E2];
@@ -219,6 +219,8 @@ TEST_F(PositionTest, Output) {
               "  +---+---+---+---+---+---+---+---+\n"
               "    A   B   C   D   E   F   G   H  \n\n";
   actual << position.printBoard();
+  cout << expected.str() << endl; NEWLINE;
+  cout << actual.str() << endl;
   ASSERT_EQ(expected.str(), actual.str());
 
   string fen("r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3 10 113");
