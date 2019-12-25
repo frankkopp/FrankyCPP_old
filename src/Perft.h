@@ -32,7 +32,7 @@ class MoveGenerator;
 
 // included dependencies
 #include <string>
-#include "globals.h"
+#include "types.h"
 
 class Perft {
 

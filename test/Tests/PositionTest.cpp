@@ -28,7 +28,7 @@
 #include <string>
 
 #include "../../src/logging.h"
-#include "../../src/globals.h"
+#include "../../src/types.h"
 #include "../../src/Position.h"
 #include "../../src/Bitboards.h"
 

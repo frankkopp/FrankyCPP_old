@@ -29,7 +29,7 @@
 #include <chrono>
 #include <ostream>
 #include "logging.h"
-#include "globals.h"
+#include "types.h"
 
 class SearchLimits {
 

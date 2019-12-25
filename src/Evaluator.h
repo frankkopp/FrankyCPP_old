@@ -27,7 +27,7 @@
 #define FRANKYCPP_EVALUATOR_H
 
 #include "logging.h"
-#include "globals.h"
+#include "types.h"
 
 // forward declared dependencies
 class Position;

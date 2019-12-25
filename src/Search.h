@@ -99,8 +99,7 @@ private:
   // search start time
   MilliSec startTime{};
   MilliSec stopTime{};
-  MilliSec softTimeLimit{};
-  MilliSec hardTimeLimit{};
+  MilliSec timeLimit{};
   MilliSec extraTime{};
 
   // the color of the searching player
@@ -135,7 +134,7 @@ public:
   ///// PUBLIC
 
   /** starts the search in a separate thread with the given search limits */
-  void startSearch(const Position &position, SearchLimits limits);
+  void startSearch(const Position &position, SearchLimits &limits);
 
   /** Stops a running search gracefully - e.g. returns the best move found so far */
   void stopSearch();
@@ -183,17 +182,16 @@ private:
   void configureTimeLimits();
   inline bool stopConditions();
   void addExtraTime(const double d);
-  bool softTimeLimitReached();
   bool hardTimeLimitReached();
   static inline MilliSec elapsedTime(const MilliSec t);
   static inline MilliSec elapsedTime(const MilliSec t1, const MilliSec t2);
   static inline MilliSec now();
   inline MilliSec getNps() const;
 
-  void sendUCIIterationEndInfo() const;
-  void sendUCICurrentRootMove() const;
-  void sendUCISearchUpdate();
-  void sendUCIBestMove()const;
+  void sendIterationEndInfoToEngine() const;
+  void sendCurrentRootMoveToEngine() const;
+  void sendSearchUpdateToEngine();
+  void sendResultToEngine()const;
 
 };
 

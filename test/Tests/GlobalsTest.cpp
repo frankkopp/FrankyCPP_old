@@ -24,7 +24,7 @@
  */
 
 #include <gtest/gtest.h>
-#include "../../src/globals.h"
+#include "../../src/types.h"
 
 using namespace std;
 using testing::Eq;

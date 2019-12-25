@@ -24,7 +24,6 @@
  */
 
 #include <iostream>
-#include <utility>
 #include "Search.h"
 #include "SearchConfig.h"
 #include "Engine.h"
@@ -47,7 +46,7 @@ Search::~Search() {
 ////////////////////////////////////////////////
 ///// PUBLIC
 
-void Search::startSearch(const Position &pos, SearchLimits limits) {
+void Search::startSearch(const Position &pos, SearchLimits &limits) {
   if (running) {
     LOG->error("Search already running");
     return;
@@ -59,8 +58,8 @@ void Search::startSearch(const Position &pos, SearchLimits limits) {
   // pos is a deep copy of the position parameter to not change
   // the original position given
   position = pos;
+  searchLimits = limits;
   myColor = position.getNextPlayer();
-  searchLimits = std::move(limits);
 
   // join() previous thread
   if (myThread.joinable()) myThread.join();
@@ -92,7 +91,7 @@ void Search::stopSearch() {
         "Pondering has been stopped after ponder search has finished. Send obsolete result");
       LOG->info("Search result was: {} PV {}", lastSearchResult.str(),
                 printMoveListUCI(pv[ROOT_PLY]));
-      sendUCIBestMove();
+      sendResultToEngine();
     }
     else {
       LOG->info("Pondering has been stopped. Ponder Miss!");
@@ -137,10 +136,9 @@ void Search::ponderhit() {
       // if time based game setup the time soft and hard time limits
       if (searchLimits.timeControl) {
         configureTimeLimits();
-        LOG->debug("Time Management: {} soft: {:n} hard: {:n}",
+        LOG->debug("Time Management: {} time limit: {:n}",
                    (searchLimits.timeControl ? "ON" : "OFF"),
-                   softTimeLimit,
-                   hardTimeLimit);
+                   timeLimit);
       }
     }
     else {
@@ -181,7 +179,7 @@ void Search::run() {
 
   // Initialize for new search
   lastSearchResult = SearchResult();
-  softTimeLimit = hardTimeLimit = extraTime = 0;
+  timeLimit = extraTime = 0;
   searchStats = SearchStats();
 
   // Initialize ply based data
@@ -222,8 +220,8 @@ void Search::run() {
     LOG->info("Ponder Search finished! Waiting for Ponderhit to send result");
     return;
   }
-
-  sendUCIBestMove();
+  
+  sendResultToEngine();
 
   running = false;
   searchSemaphore.reset();
@@ -236,7 +234,7 @@ void Search::run() {
  * <p>
  * Detects mate if started on a mate position.
  * @param pPosition
- * @return
+ * @return a SearchResult
  */
 SearchResult Search::iterativeDeepening(Position* pPosition) {
 
@@ -256,7 +254,6 @@ SearchResult Search::iterativeDeepening(Position* pPosition) {
     return searchResult;
   }
 
-  // start iterationDepth from searchMode
   int iterationDepth = searchLimits.startDepth;
 
   // current search iterationDepth
@@ -265,7 +262,6 @@ SearchResult Search::iterativeDeepening(Position* pPosition) {
 
   // generate all legal root moves
   rootMoves = generateRootMoves(&position);
-  LOG->debug("Root moves: {}", printMoveList(rootMoves));
 
   // make sure we have a temporary best move
   // when using TT this will already be set
@@ -273,13 +269,13 @@ SearchResult Search::iterativeDeepening(Position* pPosition) {
 
   // print search setup for debugging
   if (LOG->should_log(spdlog::level::debug)) {
+    LOG->debug("Root moves: {}", printMoveList(rootMoves));
     LOG->debug("Searching in position: {}", position.printFen());
     LOG->debug("Searching these moves: {}", printMoveList(rootMoves));
     LOG->debug("Search mode: {}", searchLimits.str());
-    LOG->debug("Time Management: {} soft: {:n} hard: {:n}",
+    LOG->debug("Time Management: {} time limit: {:n}",
                (searchLimits.timeControl ? "ON" : "OFF"),
-               softTimeLimit,
-               hardTimeLimit);
+               timeLimit);
     LOG->debug("Start Depth: {} Max Depth: {}", iterationDepth, searchLimits.maxDepth);
     LOG->debug("Starting iterative deepening now...");
   }
@@ -293,12 +289,12 @@ SearchResult Search::iterativeDeepening(Position* pPosition) {
   assert (iterationDepth > 0 && "iterationDepth <= 0");
 
   // first iteration update before start
-  sendUCIIterationEndInfo();
+  sendIterationEndInfoToEngine();
 
   // ###########################################
   // ### BEGIN Iterative Deepening
   do {
-    assert (pv[ROOT_PLY].front() != NOMOVE && "No  best root move");
+    assert (pv[ROOT_PLY].front() != NOMOVE && "No best root move");
 
     TRACE(LOG, "Iteration Depth {} START", iterationDepth);
 
@@ -306,22 +302,18 @@ SearchResult Search::iterativeDeepening(Position* pPosition) {
     searchStats.bestMoveChanges = 0;
     searchStats.nodesVisited++;
 
-
-
     // ###########################################
     // ### CALL SEARCH for iterationDepth
-    // for (Move m : rootMoves) TRACE(LOG, "before: {} {}", printMoveVerbose(m), m);
     search<ROOT>(pPosition, iterationDepth, ROOT_PLY, alpha, beta);
     // ###########################################
+  
+    sendIterationEndInfoToEngine();
 
-    sendUCIIterationEndInfo();
-
-    // break on stop signal
-    if (stopSearchFlag || softTimeLimitReached()) break;
+    // break on stop signal or time
+    if (stopConditions()) break;
 
     // sort root moves based on value for the next iteration
     std::stable_sort(rootMoves.begin(), rootMoves.end(), std::greater());
-    //for (Move m : rootMoves) TRACE(LOG, "after:  {} {}", printMoveVerbose(m), m);
 
     TRACE(LOG, "Iteration Depth={} END", iterationDepth);
 
@@ -428,7 +420,7 @@ Value Search::search(Position* pPosition, int depth, int ply, int alpha, int bet
 
     if (root) {
       TRACE(LOG, "Root Move {} START", printMove(move));
-      if (depth > 4) sendUCICurrentRootMove(); // avoid protocol flooding
+      if (depth > 4) sendCurrentRootMoveToEngine(); // avoid protocol flooding
     }
     else {
       TRACE(LOG, "{:>{}}Depth {} cv {} move {} START",
@@ -449,7 +441,7 @@ Value Search::search(Position* pPosition, int depth, int ply, int alpha, int bet
       currentVariation.push_back(move);
       searchStats.nodesVisited++;
       movesSearched++;
-      sendUCISearchUpdate();
+      sendSearchUpdateToEngine();
 
       // check for repetition ot 50-move-rule draws
       if (checkDrawRepAnd50<ST>(pPosition))
@@ -843,7 +835,7 @@ bool Search::checkDrawRepAnd50(Position* pPosition) const {
 
 void Search::configureTimeLimits() {
   if (searchLimits.moveTime > 0) { // mode time per move
-    softTimeLimit = hardTimeLimit = searchLimits.moveTime;
+    timeLimit = searchLimits.moveTime;
   }
   else { // remaining time - estimated time per move
 
@@ -867,12 +859,11 @@ void Search::configureTimeLimits() {
     }
 
     // for timed games with remaining time
-    hardTimeLimit = timeLeft / movesLeft;
-    softTimeLimit = MilliSec(timeLeft * 0.8) / movesLeft;
+    timeLimit = timeLeft / movesLeft;
   }
 
   // limits for very short available time
-  if (hardTimeLimit < 100) {
+  if (timeLimit < 100) {
     addExtraTime(0.9);
   }
 }
@@ -888,23 +879,11 @@ void Search::configureTimeLimits() {
  */
 void Search::addExtraTime(const double d) {
   if (searchLimits.moveTime == 0) {
-    extraTime += hardTimeLimit * (d - 1);
+    extraTime += timeLimit * (d - 1);
     LOG->debug("Time added {:n} ms to {:n} ms",
                extraTime,
-               hardTimeLimit + extraTime);
+               timeLimit + extraTime);
   }
-}
-
-/**
- * Soft time limit is used in iterative deepening to decide if an new depth should even be
- * started.
- *
- * @return true if soft time limit is reached, false otherwise
- */
-bool Search::softTimeLimitReached() {
-  if (!searchLimits.timeControl) return false;
-  if (elapsedTime(startTime) >= softTimeLimit + (extraTime * 0.8)) stopSearchFlag = true;
-  return stopSearchFlag;
 }
 
 /**
@@ -916,7 +895,7 @@ bool Search::softTimeLimitReached() {
  */
 bool Search::hardTimeLimitReached() {
   if (!searchLimits.timeControl) return false;
-  if (elapsedTime(startTime) >= hardTimeLimit + extraTime) stopSearchFlag = true;
+  if (elapsedTime(startTime) >= timeLimit + extraTime) stopSearchFlag = true;
   return stopSearchFlag;
 }
 
@@ -986,7 +965,7 @@ MoveList Search::generateRootMoves(Position* pPosition) {
   return moveList;
 }
 
-void Search::sendUCIIterationEndInfo() const {
+void Search::sendIterationEndInfoToEngine() const {
 
   MilliSec result;
   result = elapsedTime(startTime);
@@ -1013,7 +992,7 @@ void Search::sendUCIIterationEndInfo() const {
   }
 }
 
-void Search::sendUCICurrentRootMove() const {
+void Search::sendCurrentRootMoveToEngine() const {
   std::string infoString =
     fmt::format(
       "currmove {} currmovenumber {}",
@@ -1026,7 +1005,7 @@ void Search::sendUCICurrentRootMove() const {
                                  currentMoveIndex + 1);
 }
 
-void Search::sendUCISearchUpdate() {
+void Search::sendSearchUpdateToEngine() {
   if (elapsedTime(lastUciUpdateTime) > UCI_UPDATE_INTERVAL) {
     lastUciUpdateTime = now();
 
@@ -1059,7 +1038,7 @@ void Search::sendUCISearchUpdate() {
   }
 }
 
-void Search::sendUCIBestMove() const {
+void Search::sendResultToEngine() const {
   std::string infoString =
     fmt::format(
       "Engine got Best Move: {} ({}) [Ponder {}]",

@@ -25,7 +25,7 @@
 
 #include <iostream>
 #include "version.h"
-#include "globals.h"
+#include "types.h"
 #include "Engine.h"
 #include "UCIHandler.h"
 #include "UCISearchMode.h"

@@ -25,8 +25,8 @@
 
 // #define NDEBUG
 
-#ifndef FRANKYCPP_GLOBALS_H
-#define FRANKYCPP_GLOBALS_H
+#ifndef FRANKYCPP_TYPES_H
+#define FRANKYCPP_TYPES_H
 
 #include <string>
 #include <cstdint>
@@ -42,7 +42,7 @@
 #define println(s) std::cout << (s) << std::endl
 
 // Global constants
-constexpr const char *START_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+constexpr const char* START_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 /** Max number of moves in a game to be used in arrays etc. */
 constexpr int MAX_MOVES = 256;
@@ -73,7 +73,6 @@ namespace INIT {
 
 ///////////////////////////////////
 //// COLOR
-
 enum Color {
   WHITE, BLACK, NOCOLOR,
   COLOR_LENGTH = 2
@@ -83,12 +82,10 @@ constexpr Color operator~(Color c) { return Color(c ^ BLACK); };
 
 ///////////////////////////////////
 //// BITBOARD
-
 typedef uint64_t Bitboard;
 
 ///////////////////////////////////
 //// SQUARES
-
 // @formatter:off
 enum Square : int {
   SQ_A1, SQ_B1, SQ_C1, SQ_D1, SQ_E1, SQ_F1, SQ_G1, SQ_H1,
@@ -109,7 +106,6 @@ constexpr bool isSquare(Square s) { return s >= SQ_A1 && s <= SQ_H8; }
 
 ///////////////////////////////////
 //// FILES
-
 enum File : int {
   FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H, FILE_NONE,
   FILE_LENGTH = 9
@@ -120,7 +116,6 @@ constexpr File fileOf(Square s) { return File(s & 7); }
 
 ///////////////////////////////////
 //// RANKS
-
 enum Rank : int {
   RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_NONE,
   RANK_LENGTH = 9
@@ -128,8 +123,10 @@ enum Rank : int {
 
 /** returns the rank of this square */
 constexpr Rank rankOf(Square s) { return Rank(s >> 3); }
+
 /** returns the square of the intersection of file and rank */
 constexpr Square getSquare(File f, Rank r) { return Square((r << 3) + f); }
+
 /** returns a string representing the square (e.g. a1 or h8) */
 inline std::string squareLabel(Square sq) {
   return std::string{char('a' + fileOf(sq)), char('1' + rankOf(sq))};
@@ -137,13 +134,12 @@ inline std::string squareLabel(Square sq) {
 
 ///////////////////////////////////
 //// DIRECTION
-
 enum Direction : int {
   NORTH = 8,
   EAST = 1,
   SOUTH = -NORTH,
   WEST = -EAST,
-
+  
   NORTH_EAST = NORTH + EAST,
   SOUTH_EAST = SOUTH + EAST,
   SOUTH_WEST = SOUTH + WEST,
@@ -153,42 +149,45 @@ enum Direction : int {
 /** return direction of pawns for the color */
 const static Direction pawnDir[COLOR_LENGTH] = {NORTH, SOUTH};
 
-/** Orientation */
+/// Additional operators to add a Direction to a Square
+constexpr Square operator+(Square s, Direction d) { return Square(int(s) + int(d)); }
+
+constexpr Square operator-(Square s, Direction d) { return Square(int(s) - int(d)); }
+
+constexpr Square &operator+=(Square &s, Direction d) { return s = s + d; }
+
+constexpr Square &operator-=(Square &s, Direction d) { return s = s - d; }
+
+///////////////////////////////////
+//// ORIENTATION
 enum Orientation : int {
   NW, N, NE, E, SE, S, SW, W,
   OR_LENGTH
 };
 
-/// Additional operators to add a Direction to a Square
-constexpr Square operator+(Square s, Direction d) { return Square(int(s) + int(d)); }
-constexpr Square operator-(Square s, Direction d) { return Square(int(s) - int(d)); }
-constexpr Square &operator+=(Square &s, Direction d) { return s = s + d; }
-constexpr Square &operator-=(Square &s, Direction d) { return s = s - d; }
-
 ///////////////////////////////////
 //// PIECE TYPES
-
 enum PieceType : int {
   PIECETYPE_NONE, KING, PAWN, KNIGHT, BISHOP, ROOK, QUEEN, PT_LENGTH = 7
   //             |non sliding ------ |sliding -----------
 };
 
 /** returns a char representing the piece type - "kpnbrq" */
-inline const char *pieceTypeToChar = " kpnbrq";
+inline const char* pieceTypeToChar = " kpnbrq";
 
 /** Game phase values */
 inline const int gamePhaseValue[] = {
-  0, // notype
+  0, // no type
   0, // king
   0, // pawn
   1, // knight
   1, // bishop
   2, // rook
   4  // queen
-
 };
 
-/** Pieces */
+///////////////////////////////////
+//// PIECES
 enum Piece : int {
   PIECE_NONE,
   WHITE_KING = 1, WHITE_PAWN, WHITE_KNIGHT, WHITE_BISHOP, WHITE_ROOK, WHITE_QUEEN,
@@ -197,18 +196,19 @@ enum Piece : int {
 };
 
 /** returns a char representing the piece. Upper case letters for white, lower case for black */
-inline const char *pieceToChar = " KPNBRQ  kpnbrq   ";
+inline const char* pieceToChar = " KPNBRQ  kpnbrq   ";
 
 /** creates the piece given by color and piece type */
 constexpr Piece makePiece(Color c, PieceType pt) { return Piece((c << 3) + pt); }
+
 /** returns the color of the given piece */
 constexpr Color colorOf(Piece p) { return Color(p >> 3); }
+
 /** returns the piece type of the given piece */
 constexpr PieceType typeOf(Piece p) { return PieceType(p & 7); }
 
 ///////////////////////////////////
 //// VALUE
-
 enum Value : int {
   VALUE_DRAW = 0,
   VALUE_ONE = 1,
@@ -220,14 +220,14 @@ enum Value : int {
   VALUE_CHECKMATE_THRESHOLD = VALUE_CHECKMATE - MAX_PLY,
 };
 
-inline std::ostream &operator<<(std::ostream &os, const Value &v) {
+inline std::ostream &operator<<(std::ostream &os, const Value v) {
   os << std::to_string(v);
   return os;
 }
 
 /** PieceType values */
 inline const Value pieceTypeValue[] = {
-  Value(0),     // notype
+  Value(0),    // no type
   Value(2000), // king
   Value(100),  // pawn
   Value(320),  // knight
@@ -238,24 +238,18 @@ inline const Value pieceTypeValue[] = {
 
 /** returns the value of the given piece type */
 inline Value valueOf(const PieceType pt) { return pieceTypeValue[pt]; }
+
 /** returns the value of the given piece */
 inline Value valueOf(const Piece p) { return pieceTypeValue[typeOf(p)]; }
 
-/**
- * Returns true if value is considered a checkmate
- * @param value
- * @return true if value is considered a checkmate
- */
-inline bool isCheckmateValue(const Value &value) {
+/** Returns true if value is considered a checkmate */
+inline bool isCheckmateValue(const Value value) {
   return abs(value) >= VALUE_CHECKMATE_THRESHOLD && abs(value) <= VALUE_CHECKMATE;
 }
 
-/**
-   * @param value
-   * @return a UCI compatible string for the score in cp or in mate in ply
-   * TODO add full protocol (lowerbound, upperbound, etc.)
-   */
-inline std::string printValue(Value value) {
+/** Returns a UCI compatible std::string for the score in cp or in mate in ply */
+inline std::string printValue(const Value value) {
+  // TODO add full protocol (lowerbound, upperbound, etc.)
   std::string scoreString;
   if (isCheckmateValue(value)) {
     scoreString = "mate ";
@@ -270,6 +264,10 @@ inline std::string printValue(Value value) {
 
 ///////////////////////////////////
 //// MOVE
+enum Move : uint32_t {
+  /** A move is basically a 32-bit int */
+    NOMOVE
+};
 
 /* @formatter:off
 BITMAP 32-bit
@@ -283,25 +281,21 @@ BITMAP 32-bit
                                 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 move sort value
 */ // @formatter:on
 
-inline const int FROM_SHIFT = 6;
-inline const int PROM_TYPE_SHIFT = 12;
-inline const int TYPE_SHIFT = 14;
-inline const int VALUE_SHIFT = 16;
+constexpr int FROM_SHIFT = 6;
+constexpr int PROM_TYPE_SHIFT = 12;
+constexpr int TYPE_SHIFT = 14;
+constexpr int VALUE_SHIFT = 16;
 
-inline const int SQUARE_MASK = 0x3F;
-inline const int FROMTO_MASK = 0xFFF;
-inline const int PROM_TYPE_MASK = 3 << PROM_TYPE_SHIFT;
-inline const int MOVE_TYPE_MASK = 3 << TYPE_SHIFT;
+constexpr int SQUARE_MASK = 0x3F;
+constexpr int FROMTO_MASK = 0xFFF;
+constexpr int PROM_TYPE_MASK = 3 << PROM_TYPE_SHIFT;
+constexpr int MOVE_TYPE_MASK = 3 << TYPE_SHIFT;
 
-inline const int MOVE_MASK = 0xFFFF;  // first 16-bit
-inline const int VALUE_MASK = 0xFFFF << VALUE_SHIFT; // second 16-bit
+constexpr int MOVE_MASK = 0xFFFF;  // first 16-bit
+constexpr int VALUE_MASK = 0xFFFF << VALUE_SHIFT; // second 16-bit
 
-/** A move is basically a 32-bit int */
-enum Move : uint32_t {
-  NOMOVE
-};
-
-/** MoveType */
+///////////////////////////////////
+//// MOVE TYPE
 enum MoveType {
   NORMAL,
   PROMOTION = 1 << TYPE_SHIFT,
@@ -337,12 +331,12 @@ constexpr Move createMove(Square from, Square to, Value v, PieceType pt = KNIGHT
 
 /** Creates a move of type T from an UCI string */
 template<MoveType T = NORMAL>
-Move createMove(const char *move) {
+Move createMove(const char* move) {
   std::istringstream iss(move);
   iss >> std::noskipws;
   unsigned char token = 0;
   Square from, to;
-
+  
   // from
   if (iss >> token) {
     if (token >= 'a' && token <= 'h') {
@@ -352,12 +346,12 @@ Move createMove(const char *move) {
         Rank r = Rank(token - '1');
         from = getSquare(f, r);
       }
-      else return NOMOVE; // malformed - ignore the rest
+      else { return NOMOVE; } // malformed - ignore the rest
     }
-    else return NOMOVE; // malformed - ignore the rest
+    else { return NOMOVE; } // malformed - ignore the rest
   }
-  else return NOMOVE; // malformed - ignore the rest
-
+  else { return NOMOVE; } // malformed - ignore the rest
+  
   // to
   if (iss >> token) {
     if (token >= 'a' && token <= 'h') {
@@ -367,12 +361,12 @@ Move createMove(const char *move) {
         Rank r = Rank(token - '1');
         to = getSquare(f, r);
       }
-      else return NOMOVE; // malformed - ignore the rest
+      else { return NOMOVE; } // malformed - ignore the rest
     }
-    else return NOMOVE; // malformed - ignore the rest
+    else { return NOMOVE; } // malformed - ignore the rest
   }
-  else return NOMOVE; // malformed - ignore the rest
-
+  else { return NOMOVE; } // malformed - ignore the rest
+  
   // promotion
   if (T == PROMOTION) {
     if (iss >> token) {
@@ -389,16 +383,18 @@ Move createMove(const char *move) {
           break;
       }
     }
-    else return NOMOVE; // malformed - ignore the rest
+    else { return NOMOVE; } // malformed - ignore the rest
   }
-
+  
   return createMove<T>(from, to);
 }
 
 /** returns the square the move originates from */
 constexpr Square getFromSquare(Move m) { return Square((m >> FROM_SHIFT) & SQUARE_MASK); }
+
 /** returns the square the move goes to */
 constexpr Square getToSquare(Move m) { return Square(m & SQUARE_MASK); }
+
 /** checks if this a valid move */
 constexpr bool isMove(Move m) {
   Square fromSquare = getFromSquare(m);
@@ -409,13 +405,16 @@ constexpr bool isMove(Move m) {
          && toSquare <= SQ_H8
          && fromSquare != toSquare;
 }
+
 /** returns the type of the move */
 constexpr MoveType typeOf(Move m) { return MoveType(m & MOVE_TYPE_MASK); }
+
 /** returns the promotion type of the move. This only makes sense if the move
  * actually is of type promotion. Otherwise it must be ignored */
 constexpr PieceType promotionType(Move m) {
   return PieceType(((m & PROM_TYPE_MASK) >> PROM_TYPE_SHIFT) + KNIGHT);
 }
+
 /** sets the value for the move. E.g. used by the move generator for move sorting */
 constexpr void setValue(Move &m, Value v) {
   assert(v <= VALUE_INF && v >= VALUE_NONE);
@@ -424,6 +423,7 @@ constexpr void setValue(Move &m, Value v) {
   // for retrieving we then shift the value back to a range from VALUE_NONE to VALUE_INF
   m = Move((m & MOVE_MASK) | (Value(v - VALUE_NONE) << VALUE_SHIFT));
 }
+
 /** returns the value of the move */
 constexpr Value valueOf(Move m) { return Value(((m & VALUE_MASK) >> VALUE_SHIFT) + VALUE_NONE); }
 
@@ -431,7 +431,7 @@ constexpr Value valueOf(Move m) { return Value(((m & VALUE_MASK) >> VALUE_SHIFT)
 constexpr Move moveOf(Move m) { return Move(m & MOVE_MASK); }
 
 /** returns a short representation of the move as string (UCI protocal) */
-inline std::string printMove(const Move &move) {
+inline std::string printMove(const Move move) {
   std::string promotion = "";
   if (moveOf(move) == NOMOVE) return "NOMOVE";
   if ((typeOf(move) == PROMOTION)) promotion = pieceTypeToChar[promotionType(move)];
@@ -439,7 +439,7 @@ inline std::string printMove(const Move &move) {
 }
 
 /** returns a verbose representation of the move as string */
-inline std::string printMoveVerbose(const Move &move) {
+inline std::string printMoveVerbose(const Move move) {
   if (move == NOMOVE) return "NOMOVE";
   std::string tp;
   std::string promPt;
@@ -462,7 +462,7 @@ inline std::string printMoveVerbose(const Move &move) {
          + " (" + tp + ") (" + std::to_string(valueOf(move)) + ")";
 }
 
-inline std::ostream &operator<<(std::ostream &os, const Move &move) {
+inline std::ostream &operator<<(std::ostream &os, const Move move) {
   os << printMove(move);
   return os;
 }
@@ -472,7 +472,6 @@ inline std::ostream &operator<<(std::ostream &os, const Move &move) {
 
 /** A collection of moves using a std::deque */
 typedef std::deque<Move> MoveList;
-typedef std::deque<Move, std::allocator<Move>>::iterator MoveListIter;
 
 inline std::string printMoveList(const MoveList &moveList) {
   std::ostringstream os;
@@ -528,23 +527,29 @@ enum CastlingRights : unsigned int {
 constexpr CastlingRights operator|(Color c, CastlingSide s) {
   return CastlingRights(WHITE_OO << ((s == QUEEN_SIDE) + 2 * c));
 }
+
 constexpr CastlingRights operator-(CastlingRights cr1, CastlingRights cr2) {
   assert(cr1 & cr2);
   return CastlingRights(cr1 ^ cr2);
 }
+
 constexpr CastlingRights &operator-=(CastlingRights &cr1, CastlingRights cr2) {
   assert(cr1 & cr2);
   return cr1 = CastlingRights(cr1 ^ cr2);
 }
+
 constexpr CastlingRights operator+(CastlingRights cr1, CastlingRights cr2) {
   return CastlingRights(cr1 | cr2);
 }
+
 constexpr CastlingRights &operator+=(CastlingRights &cr1, CastlingRights cr2) {
   return cr1 = CastlingRights(cr1 | cr2);
 }
+
 constexpr bool operator==(CastlingRights cr1, CastlingRights cr2) {
   return (cr1 & cr2) || (cr1 == 0 && cr2 == 0);
 }
+
 constexpr bool operator!=(CastlingRights cr1, CastlingRights cr2) {
   return !(cr1 & cr2);
 }
@@ -574,25 +579,30 @@ inline T& operator*=(T& d, int i) { return d = T(int(d) * i); }    \
 inline T& operator/=(T& d, int i) { return d = T(int(d) / i); }
 
 ENABLE_FULL_OPERATORS_ON(Value)
-//ENABLE_FULL_OPERATORS_ON(Depth)
+
 ENABLE_FULL_OPERATORS_ON(Direction)
 
 ENABLE_INCR_OPERATORS_ON(PieceType)
-ENABLE_INCR_OPERATORS_ON(Piece)
-ENABLE_INCR_OPERATORS_ON(Color)
-ENABLE_INCR_OPERATORS_ON(Square)
-ENABLE_INCR_OPERATORS_ON(File)
-ENABLE_INCR_OPERATORS_ON(Rank)
-ENABLE_INCR_OPERATORS_ON(CastlingRights)
 
-//ENABLE_BASE_OPERATORS_ON(Score)
+ENABLE_INCR_OPERATORS_ON(Piece)
+
+ENABLE_INCR_OPERATORS_ON(Color)
+
+ENABLE_INCR_OPERATORS_ON(Square)
+
+ENABLE_INCR_OPERATORS_ON(File)
+
+ENABLE_INCR_OPERATORS_ON(Rank)
+
+ENABLE_INCR_OPERATORS_ON(CastlingRights)
 
 #undef ENABLE_FULL_OPERATORS_ON
 #undef ENABLE_INCR_OPERATORS_ON
 #undef ENABLE_BASE_OPERATORS_ON
 
-constexpr const char *boolStr(bool b) { return b ? "true" : "false"; };
-constexpr const char *boolStr(int b) { return b ? "true" : "false"; };
+constexpr const char* boolStr(bool b) { return b ? "true" : "false"; };
+
+constexpr const char* boolStr(int b) { return b ? "true" : "false"; };
 
 inline bool to_bool(std::string str) {
   std::transform(str.begin(), str.end(), str.begin(), ::tolower);
@@ -604,10 +614,12 @@ inline bool to_bool(std::string str) {
 
 struct myLocale : std::numpunct<char> {
   char do_decimal_point() const override { return ','; }
+  
   char do_thousands_sep() const override { return '.'; }
+  
   std::string do_grouping() const override { return "\03"; }
 };
 
 const std::locale digitLocale(std::cout.getloc(), new myLocale);
 
-#endif //FRANKYCPP_GLOBALS_H
+#endif //FRANKYCPP_TYPES_H

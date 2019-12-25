@@ -28,7 +28,7 @@
 
 #include <ostream>
 
-#include "globals.h"
+#include "types.h"
 
 class UCISearchMode {
 

@@ -26,7 +26,7 @@
 #ifndef FRANKYCPP_EVALUATION_H
 #define FRANKYCPP_EVALUATION_H
 
-#include "globals.h"
+#include "types.h"
 
 namespace Values {
 
