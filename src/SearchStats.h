@@ -42,7 +42,6 @@ public:
   int currentSearchDepth = 0;
   int currentExtraSearchDepth = 0;
   Move currentRootMove = NOMOVE;
-  unsigned long currentRootMoveNumber = 0;
   int bestMoveChanges = 0;
   MilliSec lastSearchTime = 0;
 

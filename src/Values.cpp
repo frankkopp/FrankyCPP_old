@@ -28,20 +28,22 @@
 namespace Values {
   Value posMidValue[PIECE_LENGTH][SQ_LENGTH];
   Value posEndValue[PIECE_LENGTH][SQ_LENGTH];
-  Value posValue[PIECE_LENGTH][SQ_LENGTH][25];
+  Value posValue[PIECE_LENGTH][SQ_LENGTH][GAME_PHASE_MAX + 1];
 
   inline int
-  calcPosValueWhite(const Square &sq, int gp, const int posMidTable[], const int posEndTable[]) {
-    return static_cast<const int>(
-      float(gp) / GAME_PHASE_MAX * posMidTable[63 - sq] +
-      (1 - float(gp) / GAME_PHASE_MAX) * posEndTable[63 - sq]);
+  calcPosValueWhite(const Square &sq, int gamePhase, const int posMidTable[],
+                    const int posEndTable[]) {
+    return
+      (gamePhase / GAME_PHASE_MAX) * posMidTable[63 - sq] +
+      (1 - (gamePhase / GAME_PHASE_MAX)) * posEndTable[63 - sq];
   }
 
   inline int
-  calcPosValueBlack(const Square &sq, int gp, const int posMidTable[], const int posEndTable[]) {
+  calcPosValueBlack(const Square &sq, int gamePhase, const int posMidTable[],
+                    const int posEndTable[]) {
     return static_cast<const int>(
-      float(gp) / GAME_PHASE_MAX * posMidTable[sq] +
-      (1 - float(gp) / GAME_PHASE_MAX) * posEndTable[sq]);
+      (gamePhase / GAME_PHASE_MAX) * posMidTable[sq] +
+      (1 - (gamePhase / GAME_PHASE_MAX)) * posEndTable[sq]);
   }
 
   void init() {

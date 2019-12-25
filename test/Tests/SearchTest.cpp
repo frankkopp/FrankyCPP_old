@@ -295,9 +295,10 @@ TEST_F(SearchTest, quiescenceTest) {
   Search search;
   SearchLimits searchLimits;
   Position position;
-  searchLimits.depth = 4;
+  searchLimits.depth = 2;
   searchLimits.setupLimits();
 
+  SearchConfig::USE_ALPHABETA = false;
   SearchConfig::USE_QUIESCENCE = false;
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
@@ -310,11 +311,37 @@ TEST_F(SearchTest, quiescenceTest) {
   auto nodes2 = search.getSearchStats().nodesVisited;
   auto extra2 = search.getSearchStats().currentExtraSearchDepth;
 
-  LOG->info("Nodes with Quiescence: {:n} Nodes with Quiescence: {:n}", nodes1, nodes2);
-  LOG->info("Extra with Quiescence: {:n} Extra with Quiescence: {:n}", extra1, extra2);
+  LOG->info("Nodes without Quiescence: {:n} Nodes with Quiescence: {:n}", nodes1, nodes2);
+  LOG->info("Extra without Quiescence: {:n} Extra with Quiescence: {:n}", extra1, extra2);
 
   ASSERT_GT(nodes2, nodes1);
   ASSERT_GT(extra2, extra1);
+}
+
+TEST_F(SearchTest, alphaBetaTest) {
+
+  Search search;
+  SearchLimits searchLimits;
+  Position position;
+  searchLimits.depth = 4;
+  searchLimits.setupLimits();
+
+  SearchConfig::USE_ALPHABETA = true;
+  SearchConfig::USE_QUIESCENCE = true;
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+  auto leafPositionsEvaluated = search.getSearchStats().leafPositionsEvaluated;
+  auto nodesVisited = search.getSearchStats().nodesVisited;
+  LOG->info("Nodes with AlphaBeta: Visited: {:n} Evaluated {:n}", nodesVisited, leafPositionsEvaluated);
+
+//  SearchConfig::USE_ALPHABETA = false;
+//  search.startSearch(position, searchLimits);
+//  search.waitWhileSearching();
+//  auto nodes1 = search.getSearchStats().nodesVisited;
+//
+//LOG->info("Nodes without AlphaBeta: {:n} Nodes with AlphaBeta: {:n}", nodes1, nodes2);
+//
+//  ASSERT_GT(nodes1, nodes2);
 }
 
 TEST_F(SearchTest, perft) {

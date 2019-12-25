@@ -29,13 +29,13 @@
 #include "globals.h"
 
 namespace Values {
-  
+
   void init();
 
   // initialize in init();
   extern Value posMidValue[PIECE_LENGTH][SQ_LENGTH];
   extern Value posEndValue[PIECE_LENGTH][SQ_LENGTH];
-  extern Value posValue[PIECE_LENGTH][SQ_LENGTH][25];
+  extern Value posValue[PIECE_LENGTH][SQ_LENGTH][GAME_PHASE_MAX + 1];
 
   /// Tables are upright for easier reading - will be transposed in init()
 

@@ -28,7 +28,8 @@
 
 namespace SearchConfig {
 
-  inline bool USE_QUIESCENCE = true;
+  inline bool USE_QUIESCENCE = false;
+  inline bool USE_ALPHABETA = true;
 
 }
 

@@ -23,7 +23,6 @@
  *
  */
 
-
 #include <gtest/gtest.h>
 
 #include <utility>
@@ -33,6 +32,8 @@
 #include "../../src/Engine.h"
 
 using testing::Eq;
+
+constexpr int DEPTH = 6;
 
 class SearchTreeSizeTest : public ::testing::Test {
 public:
@@ -50,7 +51,7 @@ public:
   struct Result {
     std::string fen = "";
     std::vector<SingleTest> tests{};
-    Result(std::string fen) : fen(std::move(fen)) {};
+    explicit Result(std::string fen) : fen(std::move(fen)) {};
   };
 
   struct TestSums {
@@ -64,18 +65,16 @@ public:
     LOGGING::init();
     INIT::init();
     NEWLINE;
+
     // turn off info and below logging in the application
-    spdlog::set_level(spdlog::level::trace);
+    spdlog::set_level(spdlog::level::info);
   }
 
   std::shared_ptr<spdlog::logger> LOG = spdlog::get("Test_Logger");
 
 protected:
 
-  void SetUp() override {
-    LOG->set_level(spdlog::level::info);
-  }
-
+  void SetUp() override {}
   void TearDown() override {}
 
   std::vector<std::string> getFENs();
@@ -86,7 +85,6 @@ protected:
 };
 
 TEST_F(SearchTreeSizeTest, size_test) {
-  const int DEPTH = 4;
 
   LOG->info("Start SIZE Test for depth {}", DEPTH);
 
@@ -117,7 +115,7 @@ TEST_F(SearchTreeSizeTest, size_test) {
   std::map<std::string, TestSums> sums{};
 
   for (const Result &result : results) {
-    for (const SingleTest test : result.tests) {
+    for (const SingleTest& test : result.tests) {
       sums[test.name].sumNodes += test.nodes;
       sums[test.name].sumNps += test.nps;
       sums[test.name].sumTime += test.time;
@@ -136,12 +134,12 @@ TEST_F(SearchTreeSizeTest, size_test) {
 
   NEWLINE;
 
-  for (const auto &sum : sums) {
+  for (auto sum = sums.rbegin(); sum != sums.rend(); ++sum) {
     fmt::print("Test: {:<12s}  Nodes: {:>16n}  Nps: {:>16n}  Time: {:>16n} \n",
-               sum.first.c_str(),
-               sum.second.sumNodes,
-               sum.second.sumNps,
-               sum.second.sumTime);
+               sum->first.c_str(),
+               sum->second.sumNodes,
+               sum->second.sumNps,
+               sum->second.sumTime);
   }
 }
 
@@ -156,15 +154,28 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
 
   // turn off all options
   SearchConfig::USE_QUIESCENCE = false;
+  SearchConfig::USE_ALPHABETA = false;
 
   // ***********************************
   // TESTS
 
-  // pure MiniMax
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "MINIMAX"));
+  LOG->set_level(spdlog::level::info);
 
+  // pure MiniMax
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "MINIMAX-QS"));
+
+  // pure MiniMax + quiescence
   SearchConfig::USE_QUIESCENCE = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "MINIMAX_QS"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "MINIMAX+QS"));
+
+  // AlphaBeta - quiescence
+  SearchConfig::USE_QUIESCENCE = false;
+  SearchConfig::USE_ALPHABETA = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "ALPHABETA-QS"));
+
+  // AlphaBeta + quiescence
+  SearchConfig::USE_QUIESCENCE = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "ALPHABETA+QS"));
 
   // ***********************************
 
@@ -197,20 +208,7 @@ std::vector<std::string> SearchTreeSizeTest::getFENs() {
   std::vector<std::string> fen{};
 
   fen.emplace_back(START_POSITION_FEN);
-  fen.emplace_back("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
-  fen.emplace_back("1r3rk1/1pnnq1bR/p1pp2B1/P2P1p2/1PP1pP2/2B3P1/5PK1/2Q4R w - -");
-  fen.emplace_back("r1bq1rk1/pp2bppp/2n2n2/3p4/3P4/2N2N2/PPQ1BPPP/R1B2RK1 b - -");
-  fen.emplace_back("1r1r2k1/2p1qp1p/6p1/ppQB1b2/5Pn1/2R1P1P1/PP5P/R1B3K1 b - -");
-  fen.emplace_back("2q1r1k1/1ppb4/r2p1Pp1/p4n1p/2P1n3/5NPP/PP3Q1K/2BRRB2 w - -");
-  fen.emplace_back("2r4k/pB4bp/6p1/6q1/1P1n4/2N5/P4PPP/2R1Q1K1 b - -");
-  fen.emplace_back("6k1/1R4pp/2p5/8/P1rNp3/6Pb/4PK2/8 w - -");
-  fen.emplace_back("6K1/n1P2N1p/6pr/b1pp3b/n2Bp1k1/1R2R1Pp/3p1P2/2qN1B2 w - -");
-  fen.emplace_back("2b1rk2/r6p/1pP1p1p1/p2pNnR1/5Q2/P1B4q/1PP2P1P/1K4R1 w - -");
-  fen.emplace_back("8/8/8/p7/8/8/R6p/2K2Rbk w - -");
-  fen.emplace_back("8/8/8/4N3/2R5/4k3/8/5K2 w - -");
-  fen.emplace_back("2r1r1k1/pb1n1pp1/1p1qpn1p/4N1B1/2PP4/3B4/P2Q1PPP/3RR1K1 w - - ");
-  fen.emplace_back("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3");
-  fen.emplace_back("R6R/3Q4/1Q4Q1/4Q3/2Q4Q/Q4Q2/pp1Q4/kBNN1KB1 w - - 0 1"); // 218 moves to make
+//   
 //
 //  fen.emplace_back("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
 //  fen.emplace_back("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
@@ -599,7 +597,7 @@ std::vector<std::string> SearchTreeSizeTest::getFENs() {
 //  fen.emplace_back("8/8/2B2P2/p1b1P1kp/1p2K3/8/P7/8 w - -");
 //  fen.emplace_back("4B3/5K2/4PP2/p5k1/1p1b4/7p/P7/8 w - -");
   // repeat the first
-  fen.emplace_back("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
+  //fen.emplace_back("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
   return fen;
 }
 

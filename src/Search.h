@@ -108,6 +108,7 @@ private:
 
   // list of moves at the root
   MoveList rootMoves;
+  MoveList::size_type currentMoveIndex = 0;
 
   // store the current variation
   MoveList currentVariation;
@@ -168,7 +169,7 @@ private:
   SearchResult iterativeDeepening(Position* pPosition);
 
   template<Search_Type ST>
-  Value search(Position* pPosition, int depth, int ply);
+  Value search(Position* pPosition, int depth, int ply, int alpha, int beta);
   template<Search_Type ST>
   Move getMove(Position* pPosition, int ply);
   template<Search_Type ST>

@@ -15,12 +15,12 @@ v 0.3 (plan)
 v 0.2 (plan)
 ================================================================================
 - TODO:
-    - Quiescence Search
     - AlphaBeta search
     - PV and Killer moves
     - TT
     - Testing & Debugging
 - DONE:
+    - Quiescence Search
     - Templated Search for Root, non-root and qsearch
 
 v 0.1 (in progress)

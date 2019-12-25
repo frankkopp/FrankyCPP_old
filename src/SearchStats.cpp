@@ -35,8 +35,7 @@ std::string SearchStats::str() const {
   std::stringstream os;
   os << "currentIterationDepth: " << currentIterationDepth << " currentSearchDepth: "
      << currentSearchDepth << " currentExtraSearchDepth: " << currentExtraSearchDepth
-     << " currentRootMove: " << currentRootMove << " currentRootMoveNumber: "
-     << currentRootMoveNumber << " lastSearchTime: " << lastSearchTime
+     << " currentRootMove: " << currentRootMove << " lastSearchTime: " << lastSearchTime
      << " bestMoveChanges: " << bestMoveChanges << " leafPositionsEvaluated: "
      << leafPositionsEvaluated << " nonLeafPositionsEvaluated: "
      << nonLeafPositionsEvaluated << " checkCounter: " << checkCounter
