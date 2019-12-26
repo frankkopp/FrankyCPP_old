@@ -338,6 +338,10 @@ TEST_F(SearchTest, perft) {
 
 TEST_F(SearchTest, npsTest) {
   
+  SearchConfig::USE_QUIESCENCE = true;
+  SearchConfig::USE_ALPHABETA = true;
+  SearchConfig::USE_KILLER_MOVES = true;
+  
   Search search;
   SearchLimits searchLimits;
   Position position;
@@ -357,8 +361,9 @@ TEST_F(SearchTest, debugging) {
   Search search;
   SearchLimits searchLimits;
   Position position;
-  searchLimits.setDepth(4);
-  SearchConfig::USE_QUIESCENCE = false;
+  //searchLimits.setDepth(1);
+  searchLimits.setNodes(25'000'000);
+  SearchConfig::USE_QUIESCENCE = true;
   SearchConfig::USE_KILLER_MOVES = true;
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();

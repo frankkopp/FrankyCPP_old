@@ -265,7 +265,7 @@ SearchResult Search::iterativeDeepening(Position &position) {
   
   // make sure we have a temporary best move
   // when using TT this will already be set
-  pv[ROOT_PLY].push_back(rootMoves.front());
+  pv[ROOT_PLY].push_back(rootMoves.at(0));
   
   // print search setup for debugging
   if (LOG->should_log(spdlog::level::debug)) {
@@ -288,13 +288,10 @@ SearchResult Search::iterativeDeepening(Position &position) {
   assert (!rootMoves.empty() && "No root moves to search");
   assert (iterationDepth > 0 && "iterationDepth <= 0");
   
-  // first iteration update before start
-  sendIterationEndInfoToEngine();
-  
   // ###########################################
   // ### BEGIN Iterative Deepening
   do {
-    assert (pv[ROOT_PLY].front() != NOMOVE && "No best root move");
+    assert (pv[ROOT_PLY].at(0) != NOMOVE && "No best root move");
     
     TRACE(LOG, "Iteration Depth {} START", iterationDepth);
     
@@ -312,9 +309,21 @@ SearchResult Search::iterativeDeepening(Position &position) {
     // break on stop signal or time
     if (stopConditions()) break;
     
-    // sort root moves based on value for the next iteration
-    std::stable_sort(rootMoves.begin(), rootMoves.end(), std::greater());
+//    fmt::print("Before: ");
+//    for (auto m : rootMoves) {
+//      fmt::print("{} ", printMoveVerbose(m));
+//    }
+//    NEWLINE;
     
+    // sort root moves based on value for the next iteration
+    std::stable_sort(rootMoves.begin(), rootMoves.end(), rootMovesSort);
+    
+//    fmt::print("After : ");
+//    for (auto m : rootMoves) {
+//      fmt::print("{} ", printMoveVerbose(m));
+//    }
+//    NEWLINE;
+
     TRACE(LOG, "Iteration Depth={} END", iterationDepth);
     
   } while (++iterationDepth <= searchLimits.getMaxDepth());
@@ -322,7 +331,7 @@ SearchResult Search::iterativeDeepening(Position &position) {
   // ###########################################
   
   // update searchResult here
-  searchResult.bestMove = pv[ROOT_PLY].front();
+  searchResult.bestMove = pv[ROOT_PLY].at(0);
   searchResult.ponderMove = pv[ROOT_PLY].size() > 1 ? pv[ROOT_PLY].at(1) : NOMOVE;
   searchResult.depth = searchStats.currentSearchDepth;
   searchResult.extraDepth = searchStats.currentExtraSearchDepth;
@@ -393,9 +402,8 @@ Value Search::search(Position &position, int depth, int ply, int alpha, int beta
   Value value = VALUE_NONE;
   Move move = NOMOVE;
   moveGenerators[ply].resetOnDemand();
-  pv[ply].clear();
-  
-  if (root) { currentMoveIndex = 0; }
+  if (!root) { pv[ply].clear(); }
+  else { currentMoveIndex = 0; }
   
   // ###############################################
   // Quiescence StandPat
@@ -467,10 +475,10 @@ Value Search::search(Position &position, int depth, int ply, int alpha, int beta
     // For root moves encode value into the move
     // so we can sort the move before the next iteration
     if (root) setValue(rootMoves.at(currentMoveIndex++), value);
-   
+    
     // In PERFT we can ignore values and pruning
     if (PERFT) continue;
-   
+    
     // Did we find a better move for this node?
     // For the first move this is always the case.
     if (value > bestNodeValue) {
@@ -488,7 +496,6 @@ Value Search::search(Position &position, int depth, int ply, int alpha, int beta
           if (SearchConfig::USE_KILLER_MOVES) {
             moveGenerators[ply].storeKiller(move, SearchConfig::NO_KILLER_MOVES);
           }
-          
           searchStats.prunings++;
           TRACE(LOG, "{:>{}} Search in ply {} for depth {}: CUT NODE {} >= {} (beta)",
                 " ", ply, ply, depth, value, beta);
@@ -502,8 +509,12 @@ Value Search::search(Position &position, int depth, int ply, int alpha, int beta
         // TT.
         if (value > alpha) { // NEW ALPHA => NEW PV NODE
           savePV(move, pv[ply + 1], pv[ply]);
+          if (root) {
+            searchStats.bestMoveChanges++;
+            searchStats.bestMoveDepth = depth;
+            setValue(pv[ROOT_PLY].at(0), value);
+          }
           alpha = value;
-          if (root) searchStats.bestMoveChanges++;
           TRACE(LOG, "{:>{}}Search in ply {} for depth {}: NEW PV {} ({}) (alpha) PV: {}",
                 "", ply, ply, depth, printMove(move), value, printMoveListUCI(pv[ply]));
         }
@@ -552,7 +563,7 @@ Value Search::search(Position &position, int depth, int ply, int alpha, int beta
         ply, depth, alpha, movesSearched, printMoveListUCI(currentVariation));
   
   assert (PERFT || (bestNodeValue > VALUE_MIN && bestNodeValue < VALUE_MAX
-          && "bestNodeValue should not be MIN/MAX here"));
+                    && "bestNodeValue should not be MIN/MAX here"));
   
   return bestNodeValue;
 }
@@ -793,6 +804,10 @@ MoveList Search::generateRootMoves(Position &position) {
   return moveList;
 }
 
+bool Search::rootMovesSort(Move m1, Move m2) {
+  return (valueOf(m1) > valueOf(m2));
+}
+
 void Search::sendIterationEndInfoToEngine() const {
   
   MilliSec result;
@@ -802,7 +817,7 @@ void Search::sendIterationEndInfoToEngine() const {
       "depth {} seldepth {} multipv 1 {} nodes {} nps {} time {} pv {}",
       searchStats.currentIterationDepth,
       searchStats.currentExtraSearchDepth,
-      valueOf(pv[ROOT_PLY].front()),
+      valueOf(pv[ROOT_PLY].at(0)),
       searchStats.nodesVisited,
       getNps(),
       result,
@@ -812,7 +827,7 @@ void Search::sendIterationEndInfoToEngine() const {
   else {
     pEngine->sendIterationEndInfo(searchStats.currentIterationDepth,
                                   searchStats.currentExtraSearchDepth,
-                                  valueOf(pv[ROOT_PLY].front()),
+                                  valueOf(pv[ROOT_PLY].at(0)),
                                   searchStats.nodesVisited,
                                   getNps(),
                                   elapsedTime(startTime),
@@ -870,14 +885,18 @@ void Search::sendSearchUpdateToEngine() {
 void Search::sendResultToEngine() const {
   std::string infoString =
     fmt::format(
-      "Engine got Best Move: {} ({}) [Ponder {}]",
+      "Engine got Best Move: {} ({}) [Ponder {}] from depth {}",
       printMove(lastSearchResult.bestMove),
       printValue(valueOf(lastSearchResult.bestMove)),
-      printMove(lastSearchResult.ponderMove));
+      printMove(lastSearchResult.ponderMove),
+      searchStats.bestMoveDepth);
   
   if (!pEngine) { LOG->warn("<no engine> >> {}", infoString); }
   else { pEngine->sendResult(lastSearchResult.bestMove, lastSearchResult.ponderMove); }
+  
 }
+
+
 
 
 

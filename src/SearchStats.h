@@ -44,6 +44,7 @@ public:
   Move currentRootMove = NOMOVE;
   int bestMoveChanges = 0;
   MilliSec lastSearchTime = 0;
+  int bestMoveDepth = 0;
 
   // PERFT Values
   long leafPositionsEvaluated = 0;

@@ -457,7 +457,7 @@ inline std::string printMoveVerbose(const Move move) {
       break;
   }
   return squareLabel(getFromSquare(move)) + squareLabel(getToSquare(move)) + promPt
-         + " (" + tp + ") (" + std::to_string(valueOf(move)) + ")";
+         + " (" + tp + ") (" + std::to_string(valueOf(move)) + ") (" + std::to_string(move) + ")";
 }
 
 inline std::ostream &operator<<(std::ostream &os, const Move move) {
