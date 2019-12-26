@@ -85,7 +85,7 @@ class Search {
   SearchStats searchStats;
 
   // current position
-  Position position;
+  Position myPosition;
 
   // search state
   std::atomic_bool running = false;
@@ -114,7 +114,7 @@ private:
 
   // store the current principal variation
   MoveList pv[MAX_SEARCH_DEPTH]{};
-
+  
   // prepared move generator instances for each depth
   MoveGenerator moveGenerators[MAX_SEARCH_DEPTH]{};
 
@@ -165,24 +165,24 @@ private:
 
   void run();
 
-  SearchResult iterativeDeepening(Position* pPosition);
+  SearchResult iterativeDeepening(Position &refPosition);
 
   template<Search_Type ST>
-  Value search(Position* pPosition, int depth, int ply, int alpha, int beta);
+  Value search(Position &refPosition, int depth, int ply, int alpha, int beta);
   template<Search_Type ST>
-  Move getMove(Position* pPosition, int ply);
+  Move getMove(Position &refPosition, int ply);
   template<Search_Type ST>
-  bool checkDrawRepAnd50(Position* pPosition) const;
-  Value evaluate(Position* position, int ply);
+  bool checkDrawRepAnd50(Position &refPosition) const;
+  Value evaluate(Position &refPosition, int ply);
 
-  MoveList generateRootMoves(Position* pPosition);
-  static bool goodCapture(Position* pPosition, Move move);
+  MoveList generateRootMoves(Position &refPosition);
+  static bool goodCapture(Position &refPosition, Move move);
   static void savePV(Move move, MoveList &src, MoveList &dest);
 
   void configureTimeLimits();
   inline bool stopConditions();
   void addExtraTime(const double d);
-  inline bool hardTimeLimitReached();
+  inline bool timeLimitReached();
   static inline MilliSec elapsedTime(const MilliSec t);
   static inline MilliSec elapsedTime(const MilliSec t1, const MilliSec t2);
   static inline MilliSec now();

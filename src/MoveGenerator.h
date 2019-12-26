@@ -28,22 +28,28 @@
 
 #include <vector>
 #include "../test/lib/googletest-master/googletest/include/gtest/gtest_prod.h"
+#include "logging.h"
 #include "types.h"
 
 // circle reference between Position and MoveGenerator - this make it possible
 class Position;
 
 class MoveGenerator {
+  
+  std::shared_ptr<spdlog::logger> LOG = spdlog::get("MoveGen_Logger");
 
   MoveList pseudoLegalMoves = MoveList(256);
   MoveList legalMoves = MoveList(256);;
   MoveList onDemandMoves = MoveList(256);;
 
   enum onDemandStage : int {
-    OD_NEW, OD1, OD2, OD3, OD4, OD5, OD6, OD7, OD_END
+    OD_NEW, OD1, OD2, OD3, OD4, OD5, OD6, OD7, OD8, OD_END
   };
   onDemandStage currentODStage = OD_NEW;
   Key currentIteratorKey{};
+  
+  MoveList::size_type maxNumberOfKiller = 2; // default
+  MoveList killerMoves = MoveList(0);
 
 public:
 
@@ -66,7 +72,7 @@ public:
    * @param moves - generated moves will be added to this list
    */
   template<GenMode GM>
-  const MoveList* generatePseudoLegalMoves(const Position* const pPosition);
+  const MoveList* generatePseudoLegalMoves(const Position &refPosition);
 
   /**
   * Generates legal moves for the next player.
@@ -76,7 +82,7 @@ public:
   * @param moves - generated moves will be added to this list
   */
   template<GenMode GM>
-  const MoveList* generateLegalMoves(Position* const pPosition);
+  const MoveList* generateLegalMoves(Position  &refPosition);
 
   /**
    * Returns the next move for the given position. Usually this would be used in a loop
@@ -87,10 +93,17 @@ public:
    * @return
    */
   template<GenMode GM>
-  Move getNextPseudoLegalMove(const Position* const pPosition);
+  Move getNextPseudoLegalMove(const Position &refPosition);
 
   /**
-   * Resets the on demand move generator to start fresh
+   * Resets the move generator to start fresh.
+   * Clears all lists (e.g. killers) and resets on demand iterator
+   */
+  void reset();
+  
+  /**
+   * Resets the move on demand generator to start fresh.
+   * Does not clear any lists (e.g. killer moves are preserved)
    */
   void resetOnDemand();
 
@@ -103,14 +116,23 @@ public:
    *
    * @return true if there is at least one legal move
    */
-  bool hasLegalMove(Position* const pPosition);
-
+  static bool hasLegalMove(Position &refPosition);
+  
+  /**
+   * Provides the on demand move generator with a new killer move which should be returned as soon
+   * as possible when generating moves with the on demand generator. Also tells the move generator
+   * how many killer moves to store/use as a maximum.
+   */
+  void storeKiller(Move move, int maxKillers);
+  
 private:
 
   FRIEND_TEST(MoveGenTest, pawnMoves);
   FRIEND_TEST(MoveGenTest, kingMoves);
   FRIEND_TEST(MoveGenTest, normalMoves);
   FRIEND_TEST(MoveGenTest, castlingMoves);
+  FRIEND_TEST(MoveGenTest, storeKiller);
+  
 
   /**
    * Generates pseudo pawn moves for the next player. Does not check if king is left in check
@@ -119,7 +141,7 @@ private:
    * @param pMoves - generated moves will be added to this list
    */
   template<GenMode GM>
-  void generatePawnMoves(const Position* const pPosition, MoveList* const pMoves);
+  void generatePawnMoves(const Position &refPosition, MoveList* const pMoves);
 
   /**
    * Generates pseudo knight, bishop, rook and queen moves for the next player.
@@ -129,7 +151,7 @@ private:
    * @param pMoves - generated moves will be added to this list
    */
   template<GenMode GM>
-  void generateMoves(const Position* const pPosition, MoveList* const pMoves);
+  void generateMoves(const Position &refPosition, MoveList* const pMoves);
 
   /**
    * Generates pseudo king moves for the next player. Does not check if king
@@ -139,7 +161,7 @@ private:
    * @param pMoves - generated moves will be added to this list
    */
   template<GenMode GM>
-  void generateKingMoves(const Position* const pPosition, MoveList* const pMoves);
+  void generateKingMoves(const Position &refPosition, MoveList* const pMoves);
 
   /**
    * Generates pseudo castling move for the next player. Does not check if king passes or lands on an
@@ -149,8 +171,9 @@ private:
    * @param pMoves - generated moves will be added to this list
    */
   template<GenMode GM>
-  void generateCastling(const Position* const pPosition, MoveList* const pMoves);
-
+  void generateCastling(const Position &refPosition, MoveList* const pMoves);
+  
+  void pushKiller(MoveList &list);
 };
 
 #endif //FRANKYCPP_MOVEGENERATOR_H

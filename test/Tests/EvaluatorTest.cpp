@@ -54,15 +54,15 @@ TEST_F(EvaluatorTest, basic) {
   Position position;
   Evaluator evaluator;
 
-  int value = evaluator.evaluate(&position);
+  int value = evaluator.evaluate(position);
   ASSERT_EQ(0, value);
 
   position.doMove(createMove("e2e4"));
-  value = evaluator.evaluate(&position);
+  value = evaluator.evaluate(position);
   ASSERT_TRUE(value == -55);
 
   position.doMove(createMove("d7d5"));
-  value = evaluator.evaluate(&position);
+  value = evaluator.evaluate(position);
   ASSERT_TRUE(value == 0);
 
 }

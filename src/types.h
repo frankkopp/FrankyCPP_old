@@ -23,8 +23,6 @@
  *
  */
 
-// #define NDEBUG
-
 #ifndef FRANKYCPP_TYPES_H
 #define FRANKYCPP_TYPES_H
 

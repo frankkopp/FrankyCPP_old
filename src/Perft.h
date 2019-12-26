@@ -59,8 +59,8 @@ public:
 
 private:
   void resetCounter();
-  long miniMax(int depth, Position *pPosition, MoveGenerator *pMg);
-  long miniMaxOD(int depth, Position *pPosition, MoveGenerator *pMg);
+  long miniMax(int depth, Position &position, MoveGenerator *moveGeneratorList);
+  long miniMaxOD(int depth, Position &position, MoveGenerator *moveGeneratorList);
 };
 
 

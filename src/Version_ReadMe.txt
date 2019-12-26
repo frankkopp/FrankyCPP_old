@@ -15,8 +15,9 @@ v 0.3 (plan)
 v 0.2 (plan)
 ================================================================================
 - TODO:
-    - PV and Killer moves
+    - Killer moves
     - TT
+    - PV from TT 
     - Testing & Debugging
 - DONE:
     - Quiescence Search

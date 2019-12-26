@@ -30,6 +30,10 @@ namespace SearchConfig {
 
   inline bool USE_QUIESCENCE = true;
   inline bool USE_ALPHABETA = true;
+  
+  inline bool USE_KILLER_MOVES = true;
+  inline int NO_KILLER_MOVES = 2;
+  
 
 }
 

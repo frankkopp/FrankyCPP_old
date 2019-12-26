@@ -492,7 +492,7 @@ bool Position::hasCheck() const {
 bool Position::hasCheckMate() {
   if (!hasCheck()) return false;
   if (hasMateFlag != FLAG_TBD) return (hasMateFlag == FLAG_TRUE);
-  const bool hasLegalMove = mateCheckMG.hasLegalMove(this);
+  const bool hasLegalMove = MoveGenerator::hasLegalMove(*this);
   if (!hasLegalMove) {
     hasMateFlag = FLAG_TRUE;
     return true;

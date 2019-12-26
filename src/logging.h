@@ -38,7 +38,7 @@
 #define TRACE(logger, ...) LOGGER_TRACE(logger, __VA_ARGS__)
 #else
 #define LOGGER_TRACE(logger, ...) (void)0
-#define TRACE(...) (void)0
+#define TRACE(logger, ...) (void)0
 #endif
 
 namespace LOGGING {

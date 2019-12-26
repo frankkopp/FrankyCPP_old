@@ -32,19 +32,19 @@
 
 Evaluator::Evaluator() = default;
 
-Value Evaluator::evaluate(const Position *pPosition) {
+Value Evaluator::evaluate(const Position &refPosition) {
 
   // Calculations are always from the view of the white player.
 
   // MATERIAL
   int matEval = EvaluatorConfig::USE_MATERIAL
-                ? pPosition->getMaterial(WHITE) -
-                  pPosition->getMaterial(BLACK) : 0;
+                ? refPosition.getMaterial(WHITE) -
+                  refPosition.getMaterial(BLACK) : 0;
 
   // POSITION
   int posEval = EvaluatorConfig::USE_POSITION
-                ? pPosition->getPosValue(WHITE) -
-                  pPosition->getPosValue(BLACK) : 0;
+                ? refPosition.getPosValue(WHITE) -
+                  refPosition.getPosValue(BLACK) : 0;
 
   auto value = Value(
     matEval * EvaluatorConfig::MATERIAL_WEIGHT
@@ -52,7 +52,7 @@ Value Evaluator::evaluate(const Position *pPosition) {
   );
 
   // value is always from the view of the next player
-  if (pPosition->getNextPlayer() == BLACK) value *= -1;
+  if (refPosition.getNextPlayer() == BLACK) value *= -1;
 
   return value;
 }
