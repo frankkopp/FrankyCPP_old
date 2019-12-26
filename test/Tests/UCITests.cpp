@@ -204,11 +204,11 @@ TEST_F(UCITest, goPerft) {
   engine.stopSearch();
   engine.waitWhileSearching();
 
-  ASSERT_TRUE(engine.getSearchLimits().perft);
-  ASSERT_FALSE(engine.getSearchLimits().infinite);
-  ASSERT_FALSE(engine.getSearchLimits().ponder);
-  ASSERT_FALSE(engine.getSearchLimits().timeControl);
-  ASSERT_EQ(6, engine.getSearchLimits().maxDepth);
+  ASSERT_TRUE(engine.getSearchLimits().isPerft());
+  ASSERT_FALSE(engine.getSearchLimits().isInfinite());
+  ASSERT_FALSE(engine.getSearchLimits().isPonder());
+  ASSERT_FALSE(engine.getSearchLimits().isTimeControl());
+  ASSERT_EQ(6, engine.getSearchLimits().getMaxDepth());
 }
 
 TEST_F(UCITest, goInfinite) {
@@ -225,11 +225,11 @@ TEST_F(UCITest, goInfinite) {
   engine.stopSearch();
   engine.waitWhileSearching();
 
-  ASSERT_FALSE(engine.getSearchLimits().perft);
-  ASSERT_TRUE(engine.getSearchLimits().infinite);
-  ASSERT_FALSE(engine.getSearchLimits().ponder);
-  ASSERT_FALSE(engine.getSearchLimits().timeControl);
-  ASSERT_EQ(MAX_PLY, engine.getSearchLimits().maxDepth);
+  ASSERT_FALSE(engine.getSearchLimits().isPerft());
+  ASSERT_TRUE(engine.getSearchLimits().isInfinite());
+  ASSERT_FALSE(engine.getSearchLimits().isPonder());
+  ASSERT_FALSE(engine.getSearchLimits().isTimeControl());
+  ASSERT_EQ(MAX_PLY, engine.getSearchLimits().getMaxDepth());
 }
 
 TEST_F(UCITest, goPonder) {
@@ -245,11 +245,11 @@ TEST_F(UCITest, goPonder) {
   engine.stopSearch();
   engine.waitWhileSearching();
 
-  ASSERT_FALSE(engine.getSearchLimits().perft);
-  ASSERT_FALSE(engine.getSearchLimits().infinite);
-  ASSERT_TRUE(engine.getSearchLimits().ponder);
-  ASSERT_FALSE(engine.getSearchLimits().timeControl);
-  ASSERT_EQ(MAX_PLY, engine.getSearchLimits().maxDepth);
+  ASSERT_FALSE(engine.getSearchLimits().isPerft());
+  ASSERT_FALSE(engine.getSearchLimits().isInfinite());
+  ASSERT_TRUE(engine.getSearchLimits().isPonder());
+  ASSERT_FALSE(engine.getSearchLimits().isTimeControl());
+  ASSERT_EQ(MAX_PLY, engine.getSearchLimits().getMaxDepth());
 }
 
 TEST_F(UCITest, goMate) {
@@ -265,12 +265,12 @@ TEST_F(UCITest, goMate) {
   engine.stopSearch();
   engine.waitWhileSearching();
 
-  ASSERT_FALSE(engine.getSearchLimits().perft);
-  ASSERT_FALSE(engine.getSearchLimits().infinite);
-  ASSERT_FALSE(engine.getSearchLimits().ponder);
-  ASSERT_FALSE(engine.getSearchLimits().timeControl);
-  ASSERT_EQ(4, engine.getSearchLimits().mate);
-  ASSERT_EQ(MAX_PLY, engine.getSearchLimits().maxDepth);
+  ASSERT_FALSE(engine.getSearchLimits().isPerft());
+  ASSERT_FALSE(engine.getSearchLimits().isInfinite());
+  ASSERT_FALSE(engine.getSearchLimits().isPonder());
+  ASSERT_FALSE(engine.getSearchLimits().isTimeControl());
+  ASSERT_EQ(4, engine.getSearchLimits().getMate());
+  ASSERT_EQ(MAX_PLY, engine.getSearchLimits().getMaxDepth());
 }
 
 TEST_F(UCITest, goMateDepth) {
@@ -286,12 +286,12 @@ TEST_F(UCITest, goMateDepth) {
   engine.stopSearch();
   engine.waitWhileSearching();
 
-  ASSERT_FALSE(engine.getSearchLimits().perft);
-  ASSERT_FALSE(engine.getSearchLimits().infinite);
-  ASSERT_FALSE(engine.getSearchLimits().ponder);
-  ASSERT_FALSE(engine.getSearchLimits().timeControl);
-  ASSERT_EQ(4, engine.getSearchLimits().mate);
-  ASSERT_EQ(4, engine.getSearchLimits().maxDepth);
+  ASSERT_FALSE(engine.getSearchLimits().isPerft());
+  ASSERT_FALSE(engine.getSearchLimits().isInfinite());
+  ASSERT_FALSE(engine.getSearchLimits().isPonder());
+  ASSERT_FALSE(engine.getSearchLimits().isTimeControl());
+  ASSERT_EQ(4, engine.getSearchLimits().getMate());
+  ASSERT_EQ(4, engine.getSearchLimits().getMaxDepth());
 }
 
 TEST_F(UCITest, goMateTime) {
@@ -307,13 +307,13 @@ TEST_F(UCITest, goMateTime) {
   engine.stopSearch();
   engine.waitWhileSearching();
 
-  ASSERT_FALSE(engine.getSearchLimits().perft);
-  ASSERT_FALSE(engine.getSearchLimits().infinite);
-  ASSERT_FALSE(engine.getSearchLimits().ponder);
-  ASSERT_TRUE(engine.getSearchLimits().timeControl);
-  ASSERT_EQ(4, engine.getSearchLimits().mate);
-  ASSERT_EQ(MAX_PLY, engine.getSearchLimits().maxDepth);
-  ASSERT_EQ(15, engine.getSearchLimits().moveTime);
+  ASSERT_FALSE(engine.getSearchLimits().isPerft());
+  ASSERT_FALSE(engine.getSearchLimits().isInfinite());
+  ASSERT_FALSE(engine.getSearchLimits().isPonder());
+  ASSERT_TRUE(engine.getSearchLimits().isTimeControl());
+  ASSERT_EQ(4, engine.getSearchLimits().getMate());
+  ASSERT_EQ(MAX_PLY, engine.getSearchLimits().getMaxDepth());
+  ASSERT_EQ(15, engine.getSearchLimits().getMoveTime());
 }
 
 TEST_F(UCITest, goMateDepthTime) {
@@ -329,13 +329,13 @@ TEST_F(UCITest, goMateDepthTime) {
   engine.stopSearch();
   engine.waitWhileSearching();
 
-  ASSERT_FALSE(engine.getSearchLimits().infinite);
-  ASSERT_FALSE(engine.getSearchLimits().ponder);
-  ASSERT_TRUE(engine.getSearchLimits().timeControl);
-  ASSERT_EQ(4, engine.getSearchLimits().mate);
-  ASSERT_EQ(4, engine.getSearchLimits().maxDepth);
-  ASSERT_EQ(15, engine.getSearchLimits().moveTime);
-  ASSERT_FALSE(engine.getSearchLimits().perft);
+  ASSERT_FALSE(engine.getSearchLimits().isInfinite());
+  ASSERT_FALSE(engine.getSearchLimits().isPonder());
+  ASSERT_TRUE(engine.getSearchLimits().isTimeControl());
+  ASSERT_EQ(4, engine.getSearchLimits().getMate());
+  ASSERT_EQ(4, engine.getSearchLimits().getMaxDepth());
+  ASSERT_EQ(15, engine.getSearchLimits().getMoveTime());
+  ASSERT_FALSE(engine.getSearchLimits().isPerft());
 
 }
 
@@ -352,13 +352,13 @@ TEST_F(UCITest, goTimed) {
   engine.stopSearch();
   engine.waitWhileSearching();
 
-  ASSERT_FALSE(engine.getSearchLimits().perft);
-  ASSERT_FALSE(engine.getSearchLimits().infinite);
-  ASSERT_FALSE(engine.getSearchLimits().ponder);
-  ASSERT_TRUE(engine.getSearchLimits().timeControl);
-  ASSERT_EQ(MAX_PLY, engine.getSearchLimits().maxDepth);
-  ASSERT_EQ(500'001, engine.getSearchLimits().whiteTime);
-  ASSERT_EQ(500'002, engine.getSearchLimits().blackTime);
+  ASSERT_FALSE(engine.getSearchLimits().isPerft());
+  ASSERT_FALSE(engine.getSearchLimits().isInfinite());
+  ASSERT_FALSE(engine.getSearchLimits().isPonder());
+  ASSERT_TRUE(engine.getSearchLimits().isTimeControl());
+  ASSERT_EQ(MAX_PLY, engine.getSearchLimits().getMaxDepth());
+  ASSERT_EQ(500'001, engine.getSearchLimits().getWhiteTime());
+  ASSERT_EQ(500'002, engine.getSearchLimits().getBlackTime());
 }
 
 TEST_F(UCITest, goMovestogo) {
@@ -375,14 +375,14 @@ TEST_F(UCITest, goMovestogo) {
   engine.stopSearch();
   engine.waitWhileSearching();
 
-  ASSERT_FALSE(engine.getSearchLimits().perft);
-  ASSERT_FALSE(engine.getSearchLimits().infinite);
-  ASSERT_FALSE(engine.getSearchLimits().ponder);
-  ASSERT_TRUE(engine.getSearchLimits().timeControl);
-  ASSERT_EQ(MAX_PLY, engine.getSearchLimits().maxDepth);
-  ASSERT_EQ(300'001, engine.getSearchLimits().whiteTime);
-  ASSERT_EQ(300'002, engine.getSearchLimits().blackTime);
-  ASSERT_EQ(20, engine.getSearchLimits().movesToGo);
+  ASSERT_FALSE(engine.getSearchLimits().isPerft());
+  ASSERT_FALSE(engine.getSearchLimits().isInfinite());
+  ASSERT_FALSE(engine.getSearchLimits().isPonder());
+  ASSERT_TRUE(engine.getSearchLimits().isTimeControl());
+  ASSERT_EQ(MAX_PLY, engine.getSearchLimits().getMaxDepth());
+  ASSERT_EQ(300'001, engine.getSearchLimits().getWhiteTime());
+  ASSERT_EQ(300'002, engine.getSearchLimits().getBlackTime());
+  ASSERT_EQ(20, engine.getSearchLimits().getMovesToGo());
 }
 
 TEST_F(UCITest, goInc) {
@@ -399,15 +399,15 @@ TEST_F(UCITest, goInc) {
   engine.stopSearch();
   engine.waitWhileSearching();
 
-  ASSERT_FALSE(engine.getSearchLimits().perft);
-  ASSERT_FALSE(engine.getSearchLimits().infinite);
-  ASSERT_FALSE(engine.getSearchLimits().ponder);
-  ASSERT_TRUE(engine.getSearchLimits().timeControl);
-  ASSERT_EQ(MAX_PLY, engine.getSearchLimits().maxDepth);
-  ASSERT_EQ(300'001, engine.getSearchLimits().whiteTime);
-  ASSERT_EQ(300'002, engine.getSearchLimits().blackTime);
-  ASSERT_EQ(2001, engine.getSearchLimits().whiteInc);
-  ASSERT_EQ(2002, engine.getSearchLimits().blackInc);
+  ASSERT_FALSE(engine.getSearchLimits().isPerft());
+  ASSERT_FALSE(engine.getSearchLimits().isInfinite());
+  ASSERT_FALSE(engine.getSearchLimits().isPonder());
+  ASSERT_TRUE(engine.getSearchLimits().isTimeControl());
+  ASSERT_EQ(MAX_PLY, engine.getSearchLimits().getMaxDepth());
+  ASSERT_EQ(300'001, engine.getSearchLimits().getWhiteTime());
+  ASSERT_EQ(300'002, engine.getSearchLimits().getBlackTime());
+  ASSERT_EQ(2001, engine.getSearchLimits().getWhiteInc());
+  ASSERT_EQ(2002, engine.getSearchLimits().getBlackInc());
 }
 
 TEST_F(UCITest, goMovetime) {
@@ -424,13 +424,13 @@ TEST_F(UCITest, goMovetime) {
   engine.stopSearch();
   engine.waitWhileSearching();
 
-  ASSERT_FALSE(engine.getSearchLimits().perft);
-  ASSERT_FALSE(engine.getSearchLimits().infinite);
-  ASSERT_FALSE(engine.getSearchLimits().ponder);
-  ASSERT_TRUE(engine.getSearchLimits().timeControl);
-  ASSERT_EQ(0, engine.getSearchLimits().mate);
-  ASSERT_EQ(MAX_PLY, engine.getSearchLimits().maxDepth);
-  ASSERT_EQ(5000, engine.getSearchLimits().moveTime);
+  ASSERT_FALSE(engine.getSearchLimits().isPerft());
+  ASSERT_FALSE(engine.getSearchLimits().isInfinite());
+  ASSERT_FALSE(engine.getSearchLimits().isPonder());
+  ASSERT_TRUE(engine.getSearchLimits().isTimeControl());
+  ASSERT_EQ(0, engine.getSearchLimits().getMate());
+  ASSERT_EQ(MAX_PLY, engine.getSearchLimits().getMaxDepth());
+  ASSERT_EQ(5000, engine.getSearchLimits().getMoveTime());
 }
 
 TEST_F(UCITest, goDepth) {
@@ -446,13 +446,13 @@ TEST_F(UCITest, goDepth) {
   engine.stopSearch();
   engine.waitWhileSearching();
 
-  ASSERT_FALSE(engine.getSearchLimits().perft);
-  ASSERT_FALSE(engine.getSearchLimits().infinite);
-  ASSERT_FALSE(engine.getSearchLimits().ponder);
-  ASSERT_FALSE(engine.getSearchLimits().timeControl);
-  ASSERT_EQ(1, engine.getSearchLimits().startDepth);
-  ASSERT_EQ(5, engine.getSearchLimits().maxDepth);
-  ASSERT_EQ(0, engine.getSearchLimits().nodes);
+  ASSERT_FALSE(engine.getSearchLimits().isPerft());
+  ASSERT_FALSE(engine.getSearchLimits().isInfinite());
+  ASSERT_FALSE(engine.getSearchLimits().isPonder());
+  ASSERT_FALSE(engine.getSearchLimits().isTimeControl());
+  ASSERT_EQ(1, engine.getSearchLimits().getStartDepth());
+  ASSERT_EQ(5, engine.getSearchLimits().getMaxDepth());
+  ASSERT_EQ(0, engine.getSearchLimits().getNodes());
   engine.stopSearch();
   engine.waitWhileSearching();
 }
@@ -470,13 +470,13 @@ TEST_F(UCITest, goNodes) {
   engine.stopSearch();
   engine.waitWhileSearching();
 
-  ASSERT_FALSE(engine.getSearchLimits().perft);
-  ASSERT_FALSE(engine.getSearchLimits().infinite);
-  ASSERT_FALSE(engine.getSearchLimits().ponder);
-  ASSERT_FALSE(engine.getSearchLimits().timeControl);
-  ASSERT_EQ(1, engine.getSearchLimits().startDepth);
-  ASSERT_EQ(MAX_PLY, engine.getSearchLimits().maxDepth);
-  ASSERT_EQ(1'000'000, engine.getSearchLimits().nodes);
+  ASSERT_FALSE(engine.getSearchLimits().isPerft());
+  ASSERT_FALSE(engine.getSearchLimits().isInfinite());
+  ASSERT_FALSE(engine.getSearchLimits().isPonder());
+  ASSERT_FALSE(engine.getSearchLimits().isTimeControl());
+  ASSERT_EQ(1, engine.getSearchLimits().getStartDepth());
+  ASSERT_EQ(MAX_PLY, engine.getSearchLimits().getMaxDepth());
+  ASSERT_EQ(1'000'000, engine.getSearchLimits().getNodes());
 }
 
 TEST_F(UCITest, goNodesDepth) {
@@ -492,13 +492,13 @@ TEST_F(UCITest, goNodesDepth) {
   engine.stopSearch();
   engine.waitWhileSearching();
   
-  ASSERT_FALSE(engine.getSearchLimits().perft);
-  ASSERT_FALSE(engine.getSearchLimits().infinite);
-  ASSERT_FALSE(engine.getSearchLimits().ponder);
-  ASSERT_FALSE(engine.getSearchLimits().timeControl);
-  ASSERT_EQ(1, engine.getSearchLimits().startDepth);
-  ASSERT_EQ(5, engine.getSearchLimits().maxDepth);
-  ASSERT_EQ(1'000'000, engine.getSearchLimits().nodes);
+  ASSERT_FALSE(engine.getSearchLimits().isPerft());
+  ASSERT_FALSE(engine.getSearchLimits().isInfinite());
+  ASSERT_FALSE(engine.getSearchLimits().isPonder());
+  ASSERT_FALSE(engine.getSearchLimits().isTimeControl());
+  ASSERT_EQ(1, engine.getSearchLimits().getStartDepth());
+  ASSERT_EQ(5, engine.getSearchLimits().getMaxDepth());
+  ASSERT_EQ(1'000'000, engine.getSearchLimits().getNodes());
 }
 
 TEST_F(UCITest, goMoves) {
@@ -514,15 +514,15 @@ TEST_F(UCITest, goMoves) {
   engine.stopSearch();
   engine.waitWhileSearching();
 
-  ASSERT_FALSE(engine.getSearchLimits().perft);
-  ASSERT_FALSE(engine.getSearchLimits().infinite);
-  ASSERT_FALSE(engine.getSearchLimits().ponder);
-  ASSERT_TRUE(engine.getSearchLimits().timeControl);
-  ASSERT_EQ(0, engine.getSearchLimits().mate);
-  ASSERT_EQ(MAX_PLY, engine.getSearchLimits().maxDepth);
-  ASSERT_EQ(15, engine.getSearchLimits().moveTime);
-  ASSERT_EQ(createMove("d2d4"), engine.getSearchLimits().moves.front());
-  ASSERT_EQ(createMove("e2e4"), engine.getSearchLimits().moves.back());
+  ASSERT_FALSE(engine.getSearchLimits().isPerft());
+  ASSERT_FALSE(engine.getSearchLimits().isInfinite());
+  ASSERT_FALSE(engine.getSearchLimits().isPonder());
+  ASSERT_TRUE(engine.getSearchLimits().isTimeControl());
+  ASSERT_EQ(0, engine.getSearchLimits().getMate());
+  ASSERT_EQ(MAX_PLY, engine.getSearchLimits().getMaxDepth());
+  ASSERT_EQ(15, engine.getSearchLimits().getMoveTime());
+  ASSERT_EQ(createMove("d2d4"), engine.getSearchLimits().getMoves().front());
+  ASSERT_EQ(createMove("e2e4"), engine.getSearchLimits().getMoves().back());
 }
 
 TEST_F(UCITest, moveTest) {
@@ -588,7 +588,7 @@ TEST_F(UCITest, ponderMiss) {
 
   sleep(1);
   ASSERT_TRUE(engine.isSearching());
-  ASSERT_TRUE(engine.getSearchLimits().ponder);
+  ASSERT_TRUE(engine.getSearchLimits().isPonder());
   sleep(1);
 
   command = "position startpos moves e2e4 e7e6";
@@ -628,7 +628,7 @@ TEST_F(UCITest, ponderHit) {
 
   sleep(1);
   ASSERT_TRUE(engine.isSearching());
-  ASSERT_TRUE(engine.getSearchLimits().ponder);
+  ASSERT_TRUE(engine.getSearchLimits().isPonder());
   sleep(1);
 
   command = "ponderhit";

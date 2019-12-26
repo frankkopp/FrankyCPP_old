@@ -182,7 +182,7 @@ private:
   void configureTimeLimits();
   inline bool stopConditions();
   void addExtraTime(const double d);
-  bool hardTimeLimitReached();
+  inline bool hardTimeLimitReached();
   static inline MilliSec elapsedTime(const MilliSec t);
   static inline MilliSec elapsedTime(const MilliSec t1, const MilliSec t2);
   static inline MilliSec now();

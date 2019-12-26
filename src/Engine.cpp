@@ -138,7 +138,7 @@ void Engine::startSearch(const UCISearchMode &uciSearchMode) {
                               uciSearchMode.infinite, uciSearchMode.perft);
 
   // do not start pondering if not ponder option is set
-  if (searchLimits.ponder && !EngineConfig::ponder) {
+  if (searchLimits.isPonder() && !EngineConfig::ponder) {
     LOG->warn("Engine: go ponder command but ponder option is set to false.");
     return;
   }
@@ -172,7 +172,7 @@ void Engine::sendIterationEndInfo(int depth, int seldepth, Value value, long nod
       printMoveListUCI(pv));
 }
 
-void Engine::sendCurrentRootMove(Move currmove, int movenumber) const {
+void Engine::sendCurrentRootMove(Move currmove, MoveList::size_type movenumber) const {
   if (pUciHandler) pUciHandler->sendCurrentRootMove(currmove, movenumber);
   else
     LOG->warn("<no uci handler>: Engine current move: currmove {} currmovenumber {}",

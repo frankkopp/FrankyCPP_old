@@ -53,7 +53,7 @@ TEST_F(SearchTest, basic) {
   Search search;
   SearchLimits searchLimits;
   Position position;
-  searchLimits.infinite = true;
+  searchLimits.setInfinite(true);
   search.startSearch(position, searchLimits);
   sleep(2);
   search.stopSearch();
@@ -64,9 +64,8 @@ TEST_F(SearchTest, selective_moves) {
   Search search;
   SearchLimits searchLimits;
   Position position;
-  searchLimits.depth = 4;
-  searchLimits.moves.push_back(createMove("e2e4"));
-  searchLimits.setupLimits();
+  searchLimits.setDepth(4);
+  searchLimits.setMoves(MoveList({createMove("e2e4")}));
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
   ASSERT_EQ(13781, search.getSearchStats().leafPositionsEvaluated);
@@ -76,8 +75,7 @@ TEST_F(SearchTest, depth) {
   Search search;
   SearchLimits searchLimits;
   Position position;
-  searchLimits.depth = 6;
-  searchLimits.setupLimits();
+  searchLimits.setDepth(6);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
   ASSERT_EQ(6, search.getSearchStats().currentExtraSearchDepth);
@@ -87,8 +85,7 @@ TEST_F(SearchTest, nodes) {
   Search search;
   SearchLimits searchLimits;
   Position position;
-  searchLimits.nodes = 1'000'000;
-  searchLimits.setupLimits();
+  searchLimits.setNodes(1'000'000);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
   ASSERT_EQ(1'000'000, search.getSearchStats().nodesVisited);
@@ -98,23 +95,21 @@ TEST_F(SearchTest, movetime) {
   Search search;
   SearchLimits searchLimits;
   Position position;
-  searchLimits.moveTime = 2'000;
-  searchLimits.setupLimits();
+  searchLimits.setMoveTime(2'000);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
-  ASSERT_TRUE(search.getSearchStats().lastSearchTime < (searchLimits.moveTime + 100));
+  ASSERT_TRUE(search.getSearchStats().lastSearchTime < (searchLimits.getMoveTime() + 100));
 }
 
 TEST_F(SearchTest, timewhite) {
   Search search;
   SearchLimits searchLimits;
   Position position;
-  searchLimits.whiteTime = 60'000;
-  searchLimits.blackTime = 60'000;
-  searchLimits.setupLimits();
+  searchLimits.setWhiteTime(60'000);
+  searchLimits.setBlackTime(60'000);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
-  ASSERT_TRUE(search.getSearchStats().lastSearchTime < (searchLimits.whiteTime / 40));
+  ASSERT_TRUE(search.getSearchStats().lastSearchTime < (searchLimits.getWhiteTime() / 40));
 }
 
 TEST_F(SearchTest, timeblack) {
@@ -122,12 +117,11 @@ TEST_F(SearchTest, timeblack) {
   SearchLimits searchLimits;
   Position position;
   position.doMove(createMove("e2e4"));
-  searchLimits.whiteTime = 60'000;
-  searchLimits.blackTime = 60'000;
-  searchLimits.setupLimits();
+  searchLimits.setWhiteTime(60'000);
+  searchLimits.setBlackTime(60'000);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
-  ASSERT_TRUE(search.getSearchStats().lastSearchTime < (searchLimits.blackTime / 40));
+  ASSERT_TRUE(search.getSearchStats().lastSearchTime < (searchLimits.getBlackTime() / 40));
 }
 
 TEST_F(SearchTest, negamax) {
@@ -138,14 +132,12 @@ TEST_F(SearchTest, negamax) {
   spdlog::set_level(spdlog::level::debug);
 
   position = Position("4k3/8/8/8/4p3/8/P7/3QK3 w - - 0 1");
-  searchLimits.depth = 3;
-  searchLimits.setupLimits();
+  searchLimits.setStartDepth(3);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 
   position = Position("4k3/8/8/8/4p3/8/P7/3QK3 b - - 0 1");
-  searchLimits.depth = 4;
-  searchLimits.setupLimits();
+  searchLimits.setDepth(4);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 }
@@ -154,9 +146,8 @@ TEST_F(SearchTest, mate0Search) {
   Search search;
   SearchLimits searchLimits;
   Position position("8/8/8/8/8/6K1/8/R5k1 b - - 0 8");
-  searchLimits.mate = 0;
-  searchLimits.depth = 1;
-  searchLimits.setupLimits();
+  searchLimits.setMate(0);
+  searchLimits.setDepth(1);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
   ASSERT_EQ(-VALUE_CHECKMATE, valueOf(search.getLastSearchResult().bestMove));
@@ -166,9 +157,8 @@ TEST_F(SearchTest, mate1Search) {
   Search search;
   SearchLimits searchLimits;
   Position position("8/8/8/8/8/6K1/R7/6k1 w - - 0 8");
-  searchLimits.mate = 1;
-  searchLimits.depth = 4;
-  searchLimits.setupLimits();
+  searchLimits.setMate(1);
+  searchLimits.setDepth(4);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
   ASSERT_EQ(VALUE_CHECKMATE - 1, valueOf(search.getLastSearchResult().bestMove));
@@ -178,9 +168,8 @@ TEST_F(SearchTest, mate2Search) {
   Search search;
   SearchLimits searchLimits;
   Position position("8/8/8/8/8/5K2/R7/7k w - - 0 7");
-  searchLimits.mate = 2;
-  searchLimits.depth = 4;
-  searchLimits.setupLimits();
+  searchLimits.setMate(2);
+  searchLimits.setDepth(4);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
   ASSERT_EQ(VALUE_CHECKMATE - 3, valueOf(search.getLastSearchResult().bestMove));
@@ -201,8 +190,7 @@ TEST_F(SearchTest, repetitionForce) {
   position.doMove(createMove("g8h7"));
   // next white move would be 3-fold draw
 
-  searchLimits.depth = 4;
-  searchLimits.setupLimits();
+  searchLimits.setDepth(4);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 
@@ -227,8 +215,7 @@ TEST_F(SearchTest, repetitionAvoid) {
   // black should not move Kg8h7 as this would enable white to  3-fold repetition
   // although black is winning
 
-  searchLimits.depth = 4;
-  searchLimits.setupLimits();
+  searchLimits.setDepth(4);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 
@@ -295,8 +282,7 @@ TEST_F(SearchTest, quiescenceTest) {
   Search search;
   SearchLimits searchLimits;
   Position position;
-  searchLimits.depth = 2;
-  searchLimits.setupLimits();
+  searchLimits.setDepth(2);
 
   SearchConfig::USE_ALPHABETA = false;
   SearchConfig::USE_QUIESCENCE = false;
@@ -323,8 +309,7 @@ TEST_F(SearchTest, alphaBetaTest) {
   Search search;
   SearchLimits searchLimits;
   Position position;
-  searchLimits.depth = 4;
-  searchLimits.setupLimits();
+  searchLimits.setDepth(8);
 
   SearchConfig::USE_ALPHABETA = true;
   SearchConfig::USE_QUIESCENCE = true;
@@ -348,9 +333,8 @@ TEST_F(SearchTest, perft) {
   Search search;
   SearchLimits searchLimits;
   Position position;
-  searchLimits.perft = true;
-  searchLimits.depth = 6;
-  searchLimits.setupLimits();
+  searchLimits.setPerft(true);
+  searchLimits.setDepth(6);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
   LOG->info("Nodes per sec: {:n}", (search.getSearchStats().leafPositionsEvaluated * 1'000) /
@@ -368,8 +352,7 @@ TEST_F(SearchTest, npsTest) {
   Search search;
   SearchLimits searchLimits;
   Position position;
-  searchLimits.moveTime = 30'000;
-  searchLimits.setupLimits();
+  searchLimits.setMoveTime(30'000);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 

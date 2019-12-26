@@ -15,7 +15,6 @@ v 0.3 (plan)
 v 0.2 (plan)
 ================================================================================
 - TODO:
-    - AlphaBeta search
     - PV and Killer moves
     - TT
     - Testing & Debugging
@@ -26,6 +25,7 @@ v 0.2 (plan)
 v 0.1 (in progress)
 ================================================================================
 - DONE:
+    - AlphaBeta search
     - Configuration Framework for Search and Evaluation
     - Testing & Debugging
     - check draw by repetition or 50moves rule

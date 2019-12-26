@@ -94,7 +94,7 @@ public:
   void
   sendIterationEndInfo(int depth, int seldepth, Value value, long nodes, int nps, MilliSec time,
                        const MoveList& pv) const;
-  void sendCurrentRootMove(Move currmove, int movenumber) const;
+  void sendCurrentRootMove(Move currmove, MoveList::size_type movenumber) const;
   void
   sendSearchUpdate(int depth, int seldepth, long nodes, int nps, MilliSec time, int hashfull) const;
   void sendCurrentLine(const MoveList& moveList) const;

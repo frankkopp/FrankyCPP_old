@@ -31,7 +31,7 @@
 #include "spdlog/sinks/basic_file_sink.h"
 
 // uncomment this if tracing macros are needed.
-#define MACRO_LOGGING
+// #define MACRO_LOGGING
 
 #ifdef MACRO_LOGGING
 #define LOGGER_TRACE(logger, ...) SPDLOG_LOGGER_CALL(logger, spdlog::level::trace, __VA_ARGS__)

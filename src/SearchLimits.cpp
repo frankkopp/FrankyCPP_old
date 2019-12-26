@@ -28,8 +28,6 @@
 #include <utility>
 
 SearchLimits::SearchLimits() = default;
-//  SearchLimits(0, 0, 0, 0, 0, 0,
-//               0, 0, MoveList(), 0, false, false, false) {};
 
 SearchLimits::SearchLimits(MilliSec whiteTime,
                            MilliSec blackTime,
@@ -122,6 +120,7 @@ void SearchLimits::ponderHit() {
 
 void SearchLimits::ponderStop() {
   ponder=false;
+  setupLimits();
 }
 
 std::ostream &operator<<(std::ostream &os, const SearchLimits &limits) {
@@ -139,6 +138,140 @@ std::string SearchLimits::str() const {
      << " timeControl: " << timeControl << " startDepth: " << startDepth
      << " maxDepth: " << maxDepth;
   return os.str();
+}
+
+MilliSec SearchLimits::getWhiteTime() const {
+  return whiteTime;
+}
+
+void SearchLimits::setWhiteTime(MilliSec time) {
+  SearchLimits::whiteTime = time;
+  setupLimits();
+}
+
+MilliSec SearchLimits::getBlackTime() const {
+  return blackTime;
+}
+
+void SearchLimits::setBlackTime(MilliSec time) {
+  SearchLimits::blackTime = time;
+  setupLimits();
+}
+
+MilliSec SearchLimits::getWhiteInc() const {
+  return whiteInc;
+}
+
+void SearchLimits::setWhiteInc(MilliSec time) {
+  SearchLimits::whiteInc = time;
+  setupLimits();
+}
+
+MilliSec SearchLimits::getBlackInc() const {
+  return blackInc;
+}
+
+void SearchLimits::setBlackInc(MilliSec time) {
+  SearchLimits::blackInc = time;
+  setupLimits();
+}
+
+MilliSec SearchLimits::getMoveTime() const {
+  return moveTime;
+}
+
+void SearchLimits::setMoveTime(MilliSec time) {
+  SearchLimits::moveTime = time;
+  setupLimits();
+}
+
+int SearchLimits::getMovesToGo() const {
+  return movesToGo;
+}
+
+void SearchLimits::setMovesToGo(int m) {
+  SearchLimits::movesToGo = m;
+  setupLimits();
+}
+
+int SearchLimits::getDepth() const {
+  return depth;
+}
+
+void SearchLimits::setDepth(int d) {
+  SearchLimits::depth = d;
+  setupLimits();
+}
+
+long SearchLimits::getNodes() const {
+  return nodes;
+}
+
+void SearchLimits::setNodes(long n) {
+  SearchLimits::nodes = n;
+  setupLimits();
+}
+
+const MoveList &SearchLimits::getMoves() const {
+  return moves;
+}
+
+void SearchLimits::setMoves(const MoveList &moveList) {
+  SearchLimits::moves = moveList;
+  setupLimits();
+}
+
+int SearchLimits::getMate() const {
+  return mate;
+}
+
+void SearchLimits::setMate(int m) {
+  SearchLimits::mate = m;
+  setupLimits();
+}
+
+bool SearchLimits::isPonder() const {
+  return ponder;
+}
+
+void SearchLimits::setPonder(bool aBool) {
+  SearchLimits::ponder = aBool;
+  setupLimits();
+}
+
+bool SearchLimits::isInfinite() const {
+  return infinite;
+}
+
+void SearchLimits::setInfinite(bool aBool) {
+  SearchLimits::infinite = aBool;
+  setupLimits();
+}
+
+bool SearchLimits::isPerft() const {
+  return perft;
+}
+
+void SearchLimits::setPerft(bool aBool) {
+  SearchLimits::perft = aBool;
+  setupLimits();
+}
+
+bool SearchLimits::isTimeControl() const {
+  return timeControl;
+}
+
+int SearchLimits::getStartDepth() const {
+  return startDepth;
+}
+
+void SearchLimits::setStartDepth(int d) {
+  SearchLimits::startDepth = d;
+  setupLimits();
+}
+
+int SearchLimits::getMaxDepth() const {
+  return maxDepth;
 }
 
 

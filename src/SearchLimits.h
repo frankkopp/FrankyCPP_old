@@ -35,8 +35,6 @@ class SearchLimits {
 
   std::shared_ptr<spdlog::logger> LOG = spdlog::get("Search_Logger");
 
-public:
-
   // defaults time control
   MilliSec whiteTime = 0;
   MilliSec blackTime = 0;
@@ -60,7 +58,11 @@ public:
   bool timeControl = false;
   int startDepth = 1;
   int maxDepth = MAX_SEARCH_DEPTH;
-
+  
+  void setupLimits();
+  
+public:
+ 
   // Constructor
   SearchLimits();
   SearchLimits(MilliSec whiteTime,
@@ -80,11 +82,41 @@ public:
   // output
   std::string str() const;
   friend std::ostream &operator<<(std::ostream &os, const SearchLimits &limits);
-  void setupLimits();
 
   void ponderHit();
-
   void ponderStop();
+  
+  MilliSec getWhiteTime() const;
+  void setWhiteTime(MilliSec time);
+  MilliSec getBlackTime() const;
+  void setBlackTime(MilliSec time);
+  MilliSec getWhiteInc() const;
+  void setWhiteInc(MilliSec time);
+  MilliSec getBlackInc() const;
+  void setBlackInc(MilliSec time);
+  MilliSec getMoveTime() const;
+  void setMoveTime(MilliSec time);
+  int getMovesToGo() const;
+  void setMovesToGo(int m);
+  int getDepth() const;
+  void setDepth(int d);
+  long getNodes() const;
+  void setNodes(long n);
+  const MoveList &getMoves() const;
+  void setMoves(const MoveList &moveList);
+  int getMate() const;
+  void setMate(int m);
+  bool isPonder() const;
+  void setPonder(bool aBool);
+  bool isInfinite() const;
+  void setInfinite(bool aBool);
+  bool isPerft() const;
+  void setPerft(bool aBool);
+  bool isTimeControl() const;
+  int getStartDepth() const;
+  void setStartDepth(int d);
+  int getMaxDepth() const;
+  
 };
 
 
