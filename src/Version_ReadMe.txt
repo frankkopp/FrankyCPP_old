@@ -15,11 +15,11 @@ v 0.3 (plan)
 v 0.2 (plan)
 ================================================================================
 - TODO:
-    - Killer moves
     - TT
-    - PV from TT 
+    - PV from TT
     - Testing & Debugging
 - DONE:
+    - Killer moves
     - Quiescence Search
     - Templated Search for Root, non-root and qsearch
 
