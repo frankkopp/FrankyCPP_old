@@ -26,7 +26,7 @@
 #include <gtest/gtest.h>
 
 #include <utility>
-#include "../../src/logging.h"
+#include "../../src/Logging.h"
 #include "../../src/Search.h"
 #include "../../src/SearchConfig.h"
 #include "../../src/Engine.h"

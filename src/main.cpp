@@ -24,7 +24,7 @@
  */
 
 #include "version.h"
-#include "logging.h"
+#include "Logging.h"
 #include "UCIHandler.h"
 #include "Engine.h"
 

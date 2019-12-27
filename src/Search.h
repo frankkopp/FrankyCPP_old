@@ -33,7 +33,7 @@ class Engine;
 #include <iostream>
 #include <thread>
 #include "time.h"
-#include "logging.h"
+#include "Logging.h"
 #include "SearchStats.h"
 #include "Semaphore.h"
 #include "Position.h"

@@ -25,7 +25,7 @@
 
 
 #include <gtest/gtest.h>
-#include "../../src/logging.h"
+#include "../../src/Logging.h"
 #include "../../src/types.h"
 
 using testing::Eq;

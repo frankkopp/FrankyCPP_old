@@ -24,7 +24,7 @@
  */
 
 #include <iostream>
-#include "logging.h"
+#include "Logging.h"
 
 namespace LOGGING {
   void init() {
@@ -72,6 +72,12 @@ namespace LOGGING {
     EVAL_LOG->set_pattern("[%H:%M:%S:%e] [%n] [%L] [thread %t] %v");
     EVAL_LOG->set_level(spdlog::level::trace);
     EVAL_LOG->flush_on(spdlog::level::trace);
+    
+    auto TT_LOG = spdlog::stdout_color_mt("TT_Logger");
+    TT_LOG->sinks().push_back(sharedFileSink);
+    TT_LOG->set_pattern("[%H:%M:%S:%e] [%n] [%L] [thread %t] %v");
+    TT_LOG->set_level(spdlog::level::trace);
+    TT_LOG->flush_on(spdlog::level::trace);
     
     auto UCIHANDLER_LOG = spdlog::stdout_color_mt("UCIHandler_Logger");
     UCIHANDLER_LOG->sinks().push_back(sharedFileSink);

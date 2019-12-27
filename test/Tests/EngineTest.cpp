@@ -24,7 +24,7 @@
  */
 
 #include <gtest/gtest.h>
-#include "../../src/logging.h"
+#include "../../src/Logging.h"
 #include "../../src/Engine.h"
 
 using testing::Eq;

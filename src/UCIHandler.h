@@ -28,7 +28,7 @@
 
 #include <thread>
 #include <iostream>
-#include "logging.h"
+#include "Logging.h"
 #include "UCISearchMode.h"
 
 class Engine;

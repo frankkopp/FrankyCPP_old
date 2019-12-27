@@ -26,7 +26,7 @@
 #ifndef FRANKYCPP_EVALUATOR_H
 #define FRANKYCPP_EVALUATOR_H
 
-#include "logging.h"
+#include "Logging.h"
 #include "types.h"
 
 // forward declared dependencies

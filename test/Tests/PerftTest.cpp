@@ -26,7 +26,7 @@
 #include <gtest/gtest.h>
 #include <ostream>
 #include <string>
-#include "../../src/logging.h"
+#include "../../src/Logging.h"
 #include "../../src/Bitboards.h"
 #include "../../src/Perft.h"
 #include "../../src/Position.h"

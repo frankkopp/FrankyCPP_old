@@ -28,7 +28,7 @@
 
 #include <vector>
 #include "../test/lib/googletest-master/googletest/include/gtest/gtest_prod.h"
-#include "logging.h"
+#include "Logging.h"
 #include "types.h"
 
 // circle reference between Position and MoveGenerator - this make it possible
@@ -39,8 +39,8 @@ class MoveGenerator {
   std::shared_ptr<spdlog::logger> LOG = spdlog::get("MoveGen_Logger");
 
   MoveList pseudoLegalMoves = MoveList(256);
-  MoveList legalMoves = MoveList(256);;
-  MoveList onDemandMoves = MoveList(256);;
+  MoveList legalMoves = MoveList(256);
+  MoveList onDemandMoves = MoveList(256);
 
   enum onDemandStage : int {
     OD_NEW, OD1, OD2, OD3, OD4, OD5, OD6, OD7, OD8, OD_END

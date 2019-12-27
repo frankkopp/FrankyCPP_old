@@ -26,7 +26,7 @@
 #include <gtest/gtest.h>
 #include <chrono>
 
-#include "../../src/logging.h"
+#include "../../src/Logging.h"
 #include "../../src/Bitboards.h"
 #include "../../src/Position.h"
 

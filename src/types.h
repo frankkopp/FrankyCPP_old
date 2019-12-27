@@ -207,7 +207,7 @@ constexpr PieceType typeOf(Piece p) { return PieceType(p & 7); }
 
 ///////////////////////////////////
 //// VALUE
-enum Value : int {
+enum Value : int16_t {
   VALUE_DRAW = 0,
   VALUE_ONE = 1,
   VALUE_INF = 15000,

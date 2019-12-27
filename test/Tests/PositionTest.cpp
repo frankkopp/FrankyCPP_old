@@ -27,7 +27,7 @@
 #include <ostream>
 #include <string>
 
-#include "../../src/logging.h"
+#include "../../src/Logging.h"
 #include "../../src/types.h"
 #include "../../src/Position.h"
 #include "../../src/Bitboards.h"

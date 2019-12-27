@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.13)
 set(CMAKE_CXX_STANDARD 17)
 
 # some extra compiler flags
-set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+set(CMAKE_CXX_FLAGS "-Wpedantic -Wall -Wextra -Winline")
 #set(CMAKE_CXX_FLAGS_DEBUG "-Og")
 #set(CMAKE_CXX_FLAGS_RELEASE "-Ofast")
 

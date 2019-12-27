@@ -29,7 +29,7 @@
 #include <map>
 #include <ostream>
 
-#include "logging.h"
+#include "Logging.h"
 #include "EngineConfig.h"
 #include "UCIOption.h"
 #include "UCIHandler.h"
