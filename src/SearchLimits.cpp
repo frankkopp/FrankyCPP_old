@@ -44,7 +44,7 @@ SearchLimits::SearchLimits(MilliSec whiteTime,
                            bool perft)
   : whiteTime(whiteTime), blackTime(blackTime),
     whiteInc(whiteInc), blackInc(blackInc), moveTime(moveTime),
-    movesToGo(movesToGo), depth(depth), nodes(nodes),
+    movesToGo(movesToGo), depth(static_cast<Depth>(depth)), nodes(nodes),
     moves(std::move(moves)), mate(mate), ponder(ponder),
     infinite(infinite), perft(perft) {
 
@@ -57,58 +57,58 @@ void SearchLimits::setupLimits() {
   // e.g. if perft is set nothing else will checked. 
   if (perft) {
     timeControl = false;
-    startDepth = depth > 0 ? depth : 1;;
-    maxDepth = depth > 0 ? depth : 1;
+    startDepth = depth ? depth : DEPTH_ONE;;
+    maxDepth = depth ? depth : DEPTH_ONE;
   }
   else if (infinite) {
     timeControl = false;
-    startDepth = 1;
-    maxDepth = MAX_PLY;
+    startDepth = DEPTH_ONE;
+    maxDepth = DEPTH_MAX;
   }
   else if (ponder) {
     timeControl = false;
-    startDepth = 1;
-    maxDepth = MAX_PLY;
+    startDepth = DEPTH_ONE;
+    maxDepth = DEPTH_MAX;
   }
   else if (mate) {
     // limits per mate depth and move time
     timeControl = moveTime != 0;
-    startDepth = 1;
+    startDepth = DEPTH_ONE;
     // might be limited by depth as well
-    maxDepth = depth > 0 ? depth : MAX_PLY;
+    maxDepth = depth ? depth : DEPTH_MAX;
   }
   else if (whiteTime && blackTime) {
     // normal game with time for each player
     timeControl = true;
-    startDepth = 1;
+    startDepth = DEPTH_ONE;
     // might be limited by depth as well
-    maxDepth = depth ? depth : MAX_PLY;
+    maxDepth = depth ? depth : DEPTH_MAX;
   }
   else if (moveTime) {
     // normal game with time for each move
     timeControl = true;
-    startDepth = 1;
+    startDepth = DEPTH_ONE;
     // might be limited by depth as well
-    maxDepth = depth ? depth : MAX_PLY;
+    maxDepth = depth ? depth : DEPTH_MAX;
   }
   else if (depth && !nodes) {
     // limited only by depth but still iterating
     timeControl = false;
-    startDepth = 1;
+    startDepth = DEPTH_ONE;
     maxDepth = depth;
   }
   else if (nodes) {
     // limited only by the number of nodes visited
     timeControl = false;
-    startDepth = 1;
+    startDepth = DEPTH_ONE;
     // might be limited by depth as well
-    maxDepth = depth ? depth : MAX_PLY;
+    maxDepth = depth ? depth : DEPTH_MAX;
   }
   else { // invalid search mode - use default
     LOG->warn("SearchMode is invalid as no mode could be deducted from settings.");
     timeControl = false;
-    startDepth = 1;
-    maxDepth = 1;
+    startDepth = DEPTH_ONE;
+    maxDepth = DEPTH_ONE;
     LOG->warn("SearchMode set to depth {}", maxDepth);
   }
 }
@@ -194,11 +194,15 @@ void SearchLimits::setMovesToGo(int m) {
   setupLimits();
 }
 
-int SearchLimits::getDepth() const {
+Depth SearchLimits::getDepth() const {
   return depth;
 }
 
 void SearchLimits::setDepth(int d) {
+  setDepth(static_cast<Depth>(d));
+}
+
+void SearchLimits::setDepth(Depth d) {
   SearchLimits::depth = d;
   setupLimits();
 }
@@ -261,16 +265,20 @@ bool SearchLimits::isTimeControl() const {
   return timeControl;
 }
 
-int SearchLimits::getStartDepth() const {
+Depth SearchLimits::getStartDepth() const {
   return startDepth;
 }
 
 void SearchLimits::setStartDepth(int d) {
+  setStartDepth(static_cast<Depth>(d));
+}
+
+void SearchLimits::setStartDepth(Depth d) {
   SearchLimits::startDepth = d;
   setupLimits();
 }
 
-int SearchLimits::getMaxDepth() const {
+Depth SearchLimits::getMaxDepth() const {
   return maxDepth;
 }
 

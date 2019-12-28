@@ -35,74 +35,74 @@ using testing::Eq;
 
 class SearchTreeSizeTest : public ::testing::Test {
 public:
-  
-  static constexpr int DEPTH = 6;
-  
+
+  static constexpr int DEPTH = 4;
+
   struct SingleTest {
     std::string name = "";
     uint64_t nodes = 0;
     uint64_t nps = 0;
     uint64_t time = 0;
-    Move move = NOMOVE;
+    Move move = MOVE_NONE;
     Value value = VALUE_NONE;
     std::string pv = "";
   };
-  
+
   struct Result {
     std::string fen = "";
     std::vector<SingleTest> tests{};
-    
+
     explicit Result(std::string fen) : fen(std::move(fen)) {};
   };
-  
+
   struct TestSums {
     uint64_t sumNodes{};
     uint64_t sumNps{};
     uint64_t sumTime{};
   };
-  
+
   static void SetUpTestSuite() {
     NEWLINE;
     LOGGING::init();
     INIT::init();
     NEWLINE;
-    
+
     // turn off info and below logging in the application
     spdlog::set_level(spdlog::level::info);
   }
-  
+
   std::shared_ptr<spdlog::logger> LOG = spdlog::get("Test_Logger");
 
 protected:
-  
+
   void SetUp() override {}
-  
+
   void TearDown() override {}
-  
+
   std::vector<std::string> getFENs();
   Result featureMeasurements(int depth, const std::string &fen);
   SingleTest measureTreeSize(Search &search, const Position &position, SearchLimits searchLimits,
                              const std::string &featureName);
-  
+
 };
 
 TEST_F(SearchTreeSizeTest, size_test) {
-  
+
   LOG->info("Start SIZE Test for depth {}", DEPTH);
-  
+
   std::vector<std::string> fens = getFENs();
   std::vector<Result> results{};
-  
+
   // turn off info and below logging in the application
   spdlog::set_level(spdlog::level::debug);
-  
+
   results.reserve(fens.size());
   for (const std::string &fen : fens) {
     results.push_back(featureMeasurements(DEPTH, fen));
   }
-  
+
   spdlog::set_level(spdlog::level::trace);
-  
+
   // Print result
   NEWLINE;
   fmt::print("################## RESULTS for depth {} ##########################\n", DEPTH);
@@ -112,16 +112,16 @@ TEST_F(SearchTreeSizeTest, size_test) {
              "Value", "Nodes", "Nps", "Time", "PV", "Fen");
   println("-----------------------------------------------------------------------"
           "-----------------------------------------------------------------------");
-  
+
   setlocale(LC_NUMERIC, "de_DE.UTF-8");
   std::map<std::string, TestSums> sums{};
-  
+
   for (const Result &result : results) {
     for (const SingleTest &test : result.tests) {
       sums[test.name].sumNodes += test.nodes;
       sums[test.name].sumNps += test.nps;
       sums[test.name].sumTime += test.time;
-      
+
       fmt::print("{:<12s} | {:>6s} | {:>8d} | {:>15n} | {:>12n} | {:>12n} | {} | {}  \n",
                  test.name.c_str(),
                  printMove(test.move).c_str(),
@@ -133,9 +133,9 @@ TEST_F(SearchTreeSizeTest, size_test) {
                  result.fen.c_str());
     }
   }
-  
+
   NEWLINE;
-  
+
   for (auto sum = sums.rbegin(); sum != sums.rend(); ++sum) {
     fmt::print("Test: {:<12s}  Nodes: {:>16n}  Nps: {:>16n}  Time: {:>16n} \n",
                sum->first.c_str(),
@@ -152,50 +152,53 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   searchLimits.setDepth(depth);
   Result result(fen);
   Position position(fen);
-  
+
   // turn off all options
   SearchConfig::USE_QUIESCENCE = false;
   SearchConfig::USE_ALPHABETA = false;
   SearchConfig::USE_KILLER_MOVES = false;
-  
+
   // ***********************************
   // TESTS
-  
+
   LOG->set_level(spdlog::level::info);
-  
+
   //  // pure MiniMax
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "MINIMAX-QS"));
   //
   //  // pure MiniMax + quiescence
-  //  SearchConfig::USE_QUIESCENCE = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "MINIMAX+QS"));
-  
+  SearchConfig::USE_QUIESCENCE = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "MINIMAX+QS"));
+
+  SearchConfig::USE_TT = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "MINIMAX+QS+TT"));
+
   // AlphaBeta - quiescence
   //  SearchConfig::USE_ALPHABETA = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "ALPHABETA-QS"));
-  
+
   // AlphaBeta + quiescence
-  SearchConfig::USE_QUIESCENCE = true;
-  SearchConfig::USE_ALPHABETA = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "ALPHABETA+QS"));
-  
+  //  SearchConfig::USE_QUIESCENCE = true;
+  //  SearchConfig::USE_ALPHABETA = true;
+  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "ALPHABETA+QS"));
+
   // AlphaBeta + quiescence + killer
-  SearchConfig::USE_KILLER_MOVES = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "AB+QS+KILLER"));
-  
+  //  SearchConfig::USE_KILLER_MOVES = true;
+  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "AB+QS+KILLER"));
+
   // ***********************************
-  
+
   return result;
 }
 
 SearchTreeSizeTest::SingleTest SearchTreeSizeTest::measureTreeSize(
   Search &search, const Position &position, SearchLimits searchLimits,
   const std::string &featureName) {
-  
+
   LOG->info("Testing {}", featureName);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
-  
+
   SingleTest test{};
   test.name = featureName;
   test.nodes = search.getSearchStats().nodesVisited;
@@ -205,16 +208,16 @@ SearchTreeSizeTest::SingleTest SearchTreeSizeTest::measureTreeSize(
     (1'000 * search.getSearchStats().nodesVisited) / (search.getSearchStats().lastSearchTime + 1);
   test.time = search.getSearchStats().lastSearchTime;
   test.pv = printMoveListUCI(search.getPV());
-  
+
   return test;
 };
 
 std::vector<std::string> SearchTreeSizeTest::getFENs() {
-  
+
   std::vector<std::string> fen{};
-  
+
   fen.emplace_back(START_POSITION_FEN);
-  
+
   fen.emplace_back("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
   fen.emplace_back("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
   //  fen.emplace_back("8/1P6/6k1/8/8/8/p1K5/8 w - -");

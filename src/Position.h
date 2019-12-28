@@ -341,7 +341,7 @@ public:
   * @return int representing a move
   */
   Move getLastMove() const {
-    return historyCounter > 0 ? moveHistory[historyCounter - 1] : NOMOVE;
+    return historyCounter > 0 ? moveHistory[historyCounter - 1] : MOVE_NONE;
   };
 
   ////////////////////////////////////////////////
@@ -370,8 +370,8 @@ public:
   int getPosValue(const Color c) const {
     return getGamePhaseFactor() * psqMidValue[c] + (1 - getGamePhaseFactor()) * psqEndValue[c];
   }
-  int getGamePhase() const { return gamePhase; }
-  float getGamePhaseFactor() const { return float(gamePhase) / GAME_PHASE_MAX; }
+  int getGamePhase() const { return std::min(GAME_PHASE_MAX, gamePhase); }
+  float getGamePhaseFactor() const { return float(getGamePhase()) / GAME_PHASE_MAX; }
   CastlingRights getCastlingRights() const { return castlingRights; }
   int getHalfMoveClock() const { return halfMoveClock; }
   int getNextHalfMoveNumber() const { return nextHalfMoveNumber; }

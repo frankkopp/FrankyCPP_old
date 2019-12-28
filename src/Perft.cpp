@@ -46,7 +46,7 @@ void Perft::perft(int maxDepth, bool onDemand) {
   resetCounter();
   
   Position position(fen);
-  MoveGenerator mg[MAX_PLY];
+  MoveGenerator mg[PLY_MAX];
   std::ostringstream os;
   std::cout.imbue(digitLocale);
   os.imbue(digitLocale);
@@ -86,7 +86,7 @@ void Perft::perft_divide(int maxDepth, bool onDemand) {
   resetCounter();
   
   Position position(fen);
-  MoveGenerator mg[MAX_PLY];
+  MoveGenerator mg[PLY_MAX];
   std::ostringstream os;
   std::cout.imbue(digitLocale);
   os.imbue(digitLocale);
@@ -225,7 +225,7 @@ long Perft::miniMaxOD(int depth, Position &position, MoveGenerator* pMg) {
   Move move;
   while (true) {
     move = pMg[depth].getNextPseudoLegalMove<MoveGenerator::GENALL>(position);
-    if (move == NOMOVE) break;
+    if (move == MOVE_NONE) break;
     // println(move);
     
     if (depth > 1) {

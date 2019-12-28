@@ -300,7 +300,7 @@ void Position::undoMove() {
 
 void Position::doNullMove() {
   // save state of board for undo
-  moveHistory[historyCounter] = NOMOVE;
+  moveHistory[historyCounter] = MOVE_NONE;
   fromPieceHistory[historyCounter] = PIECE_NONE;
   capturedPieceHistory[historyCounter] = PIECE_NONE;
   castlingRights_History[historyCounter] = castlingRights;
@@ -922,7 +922,7 @@ void Position::putPiece(const Piece piece, const Square square) {
   // zobrist
   zobristKey ^= Zobrist::pieces[piece][square];
   // game phase
-  gamePhase = std::min(GAME_PHASE_MAX, gamePhase + gamePhaseValue[pieceType]);
+  gamePhase = gamePhase + gamePhaseValue[pieceType];
   // material
   material[color] += pieceTypeValue[pieceType];
   // position value

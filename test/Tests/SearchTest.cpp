@@ -336,12 +336,13 @@ TEST_F(SearchTest, perft) {
   // 7 = 3'195'901'860
 }
 
-TEST_F(SearchTest, npsTest) {
+TEST_F(SearchTest, PERFT_nps) {
   
   SearchConfig::USE_QUIESCENCE = true;
   SearchConfig::USE_ALPHABETA = true;
   SearchConfig::USE_KILLER_MOVES = true;
-  
+  SearchConfig::USE_TT = false;
+
   Search search;
   SearchLimits searchLimits;
   Position position;
@@ -358,13 +359,17 @@ TEST_F(SearchTest, npsTest) {
 
 // for debugging
 TEST_F(SearchTest, debugging) {
+
+  SearchConfig::USE_QUIESCENCE = true;
+  SearchConfig::USE_ALPHABETA = true;
+  SearchConfig::USE_KILLER_MOVES = true;
+  SearchConfig::USE_TT = true;
+
   Search search;
   SearchLimits searchLimits;
-  Position position;
-  //searchLimits.setDepth(1);
+  Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
+  //searchLimits.setDepth(6);
   searchLimits.setNodes(25'000'000);
-  SearchConfig::USE_QUIESCENCE = true;
-  SearchConfig::USE_KILLER_MOVES = true;
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 }

@@ -51,7 +51,7 @@ protected:
                   const vector<void (*)()> &tests);
 };
 
-TEST_F(TimingTests, popcount) {
+TEST_F(TimingTests, DISABLED_popcount) {
   ostringstream os;
 
   //// TESTS START
@@ -68,7 +68,7 @@ TEST_F(TimingTests, popcount) {
 /**
  * Test the absolute speed of doMove, undoMove
  */
-TEST_F(TimingTests, doMoveUndoMove) {
+TEST_F(TimingTests, DISABLED_doMoveUndoMove) {
   ostringstream os;
 
   //// TESTS START
@@ -110,7 +110,7 @@ TEST_F(TimingTests, doMoveUndoMove) {
  * Round  5 Test  1:  451.076.050 ns (  0,45107605 sec)
  * Round  5 Test  2:   17.723.886 ns ( 0,017723886 sec)
  */
-TEST_F(TimingTests, rotation) {
+TEST_F(TimingTests, DISABLED_rotation) {
   ostringstream os;
 
   //// TESTS START

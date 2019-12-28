@@ -186,7 +186,7 @@ TEST_F(PerftTest, pos3Perft) {
   };
   // @formatter:on
 
-  int maxDepth = 7;
+  int maxDepth = 6;
 
   for (int i = 1; i <= maxDepth; i++) {
     p.perft(i, true);
@@ -223,7 +223,7 @@ TEST_F(PerftTest, pos4Perft) {
   };
   // @formatter:on
 
-  int maxDepth = 6;
+  int maxDepth = 5;
 
   for (int i = 1; i <= maxDepth; i++) {
     p.perft(i, true);

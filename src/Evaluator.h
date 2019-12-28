@@ -39,7 +39,7 @@ class Evaluator {
 public:
   Evaluator();
 
-  Value evaluate(const Position &refPosition);
+  Value evaluate(const Position &position);
 
 };
 

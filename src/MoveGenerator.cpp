@@ -127,7 +127,7 @@ Move MoveGenerator::getNextPseudoLegalMove(const Position &refPosition) {
     }
   }
   // return a move and delete it form the list
-  if (onDemandMoves.empty()) { return NOMOVE; }
+  if (onDemandMoves.empty()) { return MOVE_NONE; }
   else {
     Move move = onDemandMoves.front();
     onDemandMoves.pop_front();

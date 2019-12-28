@@ -45,13 +45,6 @@ constexpr const char* START_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R
 /** Max number of moves in a game to be used in arrays etc. */
 constexpr int MAX_MOVES = 256;
 
-/** Max number of search depths */
-constexpr int MAX_PLY = 128;
-constexpr int MAX_SEARCH_DEPTH = 128;
-
-/** the ply of the root move */
-constexpr int ROOT_PLY = 0;
-
 /** Game phase is 24 when all officers are present. 0 when no officer is present */
 constexpr int GAME_PHASE_MAX = 24;
 
@@ -68,6 +61,22 @@ namespace INIT {
   /** initializes Values, Bitboards, Position */
   extern void init();
 }
+
+///////////////////////////////////
+//// DEPTH
+enum Depth : uint8_t {
+  DEPTH_NONE = 0,
+  DEPTH_ONE = 1,
+  DEPTH_MAX = 128
+};
+
+///////////////////////////////////
+//// DEPTH
+enum Ply : uint8_t {
+  PLY_ROOT = 0,
+  PLY_NONE = 0,
+  PLY_MAX = DEPTH_MAX
+};
 
 ///////////////////////////////////
 //// COLOR
@@ -137,7 +146,7 @@ enum Direction : int {
   EAST = 1,
   SOUTH = -NORTH,
   WEST = -EAST,
-  
+
   NORTH_EAST = NORTH + EAST,
   SOUTH_EAST = SOUTH + EAST,
   SOUTH_WEST = SOUTH + WEST,
@@ -215,7 +224,7 @@ enum Value : int16_t {
   VALUE_MIN = -10000,
   VALUE_MAX = 10000,
   VALUE_CHECKMATE = VALUE_MAX,
-  VALUE_CHECKMATE_THRESHOLD = VALUE_CHECKMATE - MAX_PLY,
+  VALUE_CHECKMATE_THRESHOLD = VALUE_CHECKMATE - PLY_MAX,
 };
 
 inline std::ostream &operator<<(std::ostream &os, const Value v) {
@@ -264,7 +273,7 @@ inline std::string printValue(const Value value) {
 //// MOVE
 enum Move : uint32_t {
   /** A move is basically a 32-bit int */
-    NOMOVE
+    MOVE_NONE
 };
 
 /* @formatter:off
@@ -279,34 +288,39 @@ BITMAP 32-bit
                                 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 move sort value
 */ // @formatter:on
 
-constexpr int FROM_SHIFT = 6;
-constexpr int PROM_TYPE_SHIFT = 12;
-constexpr int TYPE_SHIFT = 14;
-constexpr int VALUE_SHIFT = 16;
+namespace MoveShifts {
+  constexpr int FROM_SHIFT = 6;
+  constexpr int PROM_TYPE_SHIFT = 12;
+  constexpr int TYPE_SHIFT = 14;
+  constexpr int VALUE_SHIFT = 16;
 
-constexpr int SQUARE_MASK = 0x3F;
-constexpr int FROMTO_MASK = 0xFFF;
-constexpr int PROM_TYPE_MASK = 3 << PROM_TYPE_SHIFT;
-constexpr int MOVE_TYPE_MASK = 3 << TYPE_SHIFT;
+  constexpr int SQUARE_MASK = 0x3F;
+  constexpr int FROMTO_MASK = 0xFFF;
+  constexpr int PROM_TYPE_MASK = 3 << PROM_TYPE_SHIFT;
+  constexpr int MOVE_TYPE_MASK = 3 << TYPE_SHIFT;
 
-constexpr int MOVE_MASK = 0xFFFF;  // first 16-bit
-constexpr int VALUE_MASK = 0xFFFF << VALUE_SHIFT; // second 16-bit
+  constexpr int MOVE_MASK = 0xFFFF;  // first 16-bit
+  constexpr int VALUE_MASK = 0xFFFF << VALUE_SHIFT; // second 16-bit
+}
 
 ///////////////////////////////////
 //// MOVE TYPE
 enum MoveType {
   NORMAL,
-  PROMOTION = 1 << TYPE_SHIFT,
-  ENPASSANT = 2 << TYPE_SHIFT,
-  CASTLING = 3 << TYPE_SHIFT
+  PROMOTION = 1 << MoveShifts::TYPE_SHIFT,
+  ENPASSANT = 2 << MoveShifts::TYPE_SHIFT,
+  CASTLING = 3 << MoveShifts::TYPE_SHIFT
 };
 
 /** Creates a move of type NORMAL */
-constexpr Move createMove(Square from, Square to) { return Move((from << FROM_SHIFT) + to); }
+constexpr Move createMove(Square from, Square to) {
+  return Move((from << MoveShifts::FROM_SHIFT) + to);
+}
 
 /** Creates a move of type NORMAL with the given value */
 constexpr Move createMove(Square from, Square to, Value v) {
-  return Move((Value(v - VALUE_NONE) << VALUE_SHIFT) + (from << FROM_SHIFT) + to);
+  return Move(
+    (Value(v - VALUE_NONE) << MoveShifts::VALUE_SHIFT) + (from << MoveShifts::FROM_SHIFT) + to);
 }
 
 /** Creates a move of type T with optional promotion type */
@@ -314,7 +328,8 @@ template<MoveType T>
 constexpr Move createMove(Square from, Square to, PieceType pt = KNIGHT) {
   assert(T == PROMOTION || pt == KNIGHT);
   assert(pt == KNIGHT || pt == QUEEN || pt == ROOK || pt == BISHOP);
-  return Move(T + ((pt - KNIGHT) << PROM_TYPE_SHIFT) + (from << FROM_SHIFT) + to);
+  return Move(
+    T + ((pt - KNIGHT) << MoveShifts::PROM_TYPE_SHIFT) + (from << MoveShifts::FROM_SHIFT) + to);
 }
 
 /** Creates a move of type T with optional promotion type and the given value */
@@ -323,8 +338,9 @@ constexpr Move createMove(Square from, Square to, Value v, PieceType pt = KNIGHT
   assert(T == PROMOTION || pt == KNIGHT);
   assert(pt == KNIGHT || pt == QUEEN || pt == ROOK || pt == BISHOP);
   assert(v <= VALUE_INF && v >= VALUE_NONE);
-  return Move((Value(v - VALUE_NONE) << VALUE_SHIFT) + T + ((pt - KNIGHT) << PROM_TYPE_SHIFT) +
-              (from << FROM_SHIFT) + to);
+  return Move((Value(v - VALUE_NONE) << MoveShifts::VALUE_SHIFT) + T +
+              ((pt - KNIGHT) << MoveShifts::PROM_TYPE_SHIFT) +
+              (from << MoveShifts::FROM_SHIFT) + to);
 }
 
 /** Creates a move of type T from an UCI string */
@@ -334,37 +350,37 @@ Move createMove(const char* move) {
   iss >> std::noskipws;
   unsigned char token = 0;
   Square from, to;
-  
+
   // from
   if (iss >> token) {
     if (token >= 'a' && token <= 'h') {
       File f = File(token - 'a');
-      if (!(iss >> token)) return NOMOVE; // malformed - ignore the rest
+      if (!(iss >> token)) return MOVE_NONE; // malformed - ignore the rest
       if ((token >= '1' && token <= '8')) {
         Rank r = Rank(token - '1');
         from = getSquare(f, r);
       }
-      else { return NOMOVE; } // malformed - ignore the rest
+      else { return MOVE_NONE; } // malformed - ignore the rest
     }
-    else { return NOMOVE; } // malformed - ignore the rest
+    else { return MOVE_NONE; } // malformed - ignore the rest
   }
-  else { return NOMOVE; } // malformed - ignore the rest
-  
+  else { return MOVE_NONE; } // malformed - ignore the rest
+
   // to
   if (iss >> token) {
     if (token >= 'a' && token <= 'h') {
       File f = File(token - 'a');
-      if (!(iss >> token)) return NOMOVE; // malformed - ignore the rest
+      if (!(iss >> token)) return MOVE_NONE; // malformed - ignore the rest
       if ((token >= '1' && token <= '8')) {
         Rank r = Rank(token - '1');
         to = getSquare(f, r);
       }
-      else { return NOMOVE; } // malformed - ignore the rest
+      else { return MOVE_NONE; } // malformed - ignore the rest
     }
-    else { return NOMOVE; } // malformed - ignore the rest
+    else { return MOVE_NONE; } // malformed - ignore the rest
   }
-  else { return NOMOVE; } // malformed - ignore the rest
-  
+  else { return MOVE_NONE; } // malformed - ignore the rest
+
   // promotion
   if (T == PROMOTION) {
     if (iss >> token) {
@@ -381,17 +397,19 @@ Move createMove(const char* move) {
           break;
       }
     }
-    else { return NOMOVE; } // malformed - ignore the rest
+    else { return MOVE_NONE; } // malformed - ignore the rest
   }
-  
+
   return createMove<T>(from, to);
 }
 
 /** returns the square the move originates from */
-constexpr Square getFromSquare(Move m) { return Square((m >> FROM_SHIFT) & SQUARE_MASK); }
+constexpr Square getFromSquare(Move m) {
+  return Square((m >> MoveShifts::FROM_SHIFT) & MoveShifts::SQUARE_MASK);
+}
 
 /** returns the square the move goes to */
-constexpr Square getToSquare(Move m) { return Square(m & SQUARE_MASK); }
+constexpr Square getToSquare(Move m) { return Square(m & MoveShifts::SQUARE_MASK); }
 
 /** checks if this a valid move */
 constexpr bool isMove(Move m) {
@@ -405,12 +423,12 @@ constexpr bool isMove(Move m) {
 }
 
 /** returns the type of the move */
-constexpr MoveType typeOf(Move m) { return MoveType(m & MOVE_TYPE_MASK); }
+constexpr MoveType typeOf(Move m) { return MoveType(m & MoveShifts::MOVE_TYPE_MASK); }
 
 /** returns the promotion type of the move. This only makes sense if the move
  * actually is of type promotion. Otherwise it must be ignored */
 constexpr PieceType promotionType(Move m) {
-  return PieceType(((m & PROM_TYPE_MASK) >> PROM_TYPE_SHIFT) + KNIGHT);
+  return PieceType(((m & MoveShifts::PROM_TYPE_MASK) >> MoveShifts::PROM_TYPE_SHIFT) + KNIGHT);
 }
 
 /** sets the value for the move. E.g. used by the move generator for move sorting */
@@ -419,26 +437,28 @@ constexpr void setValue(Move &m, Value v) {
   // when saving a value to a move we shift value to a positive integer (0-VALUE_NONE) and
   // encode it into the move
   // for retrieving we then shift the value back to a range from VALUE_NONE to VALUE_INF
-  m = Move((m & MOVE_MASK) | (Value(v - VALUE_NONE) << VALUE_SHIFT));
+  m = Move((m & MoveShifts::MOVE_MASK) | (Value(v - VALUE_NONE) << MoveShifts::VALUE_SHIFT));
 }
 
 /** returns the value of the move */
-constexpr Value valueOf(Move m) { return Value(((m & VALUE_MASK) >> VALUE_SHIFT) + VALUE_NONE); }
+constexpr Value valueOf(Move m) {
+  return Value(((m & MoveShifts::VALUE_MASK) >> MoveShifts::VALUE_SHIFT) + VALUE_NONE);
+}
 
 /** returns the move without value */
-constexpr Move moveOf(Move m) { return Move(m & MOVE_MASK); }
+constexpr Move moveOf(Move m) { return Move(m & MoveShifts::MOVE_MASK); }
 
 /** returns a short representation of the move as string (UCI protocal) */
 inline std::string printMove(const Move move) {
   std::string promotion = "";
-  if (moveOf(move) == NOMOVE) return "NOMOVE";
+  if (moveOf(move) == MOVE_NONE) return "NOMOVE";
   if ((typeOf(move) == PROMOTION)) promotion = pieceTypeToChar[promotionType(move)];
   return squareLabel(getFromSquare(move)) + squareLabel(getToSquare(move)) + promotion;
 }
 
 /** returns a verbose representation of the move as string */
 inline std::string printMoveVerbose(const Move move) {
-  if (move == NOMOVE) return "NOMOVE";
+  if (move == MOVE_NONE) return "NOMOVE";
   std::string tp;
   std::string promPt;
   switch (typeOf(move)) {
@@ -569,12 +589,20 @@ inline T& operator--(T& d) { return d = T(int(d) - 1); }
 #define ENABLE_FULL_OPERATORS_ON(T)                                \
 ENABLE_BASE_OPERATORS_ON(T)                                        \
 ENABLE_INCR_OPERATORS_ON(T)                                        \
+constexpr T operator+(int i, T d) { return T(i + int(d)); }        \
+constexpr T operator+(T d, int i) { return T(int(d) + i); }        \
+constexpr T operator-(int i, T d) { return T(i - int(d)); }        \
+constexpr T operator-(T d, int i) { return T(int(d) - i); }        \
 constexpr T operator*(int i, T d) { return T(i * int(d)); }        \
 constexpr T operator*(T d, int i) { return T(int(d) * i); }        \
 constexpr T operator/(T d, int i) { return T(int(d) / i); }        \
 constexpr int operator/(T d1, T d2) { return int(d1) / int(d2); }  \
 inline T& operator*=(T& d, int i) { return d = T(int(d) * i); }    \
 inline T& operator/=(T& d, int i) { return d = T(int(d) / i); }
+
+ENABLE_FULL_OPERATORS_ON(Depth)
+
+ENABLE_FULL_OPERATORS_ON(Ply)
 
 ENABLE_FULL_OPERATORS_ON(Value)
 
@@ -612,9 +640,9 @@ inline bool to_bool(std::string str) {
 
 struct myLocale : std::numpunct<char> {
   char do_decimal_point() const override { return ','; }
-  
+
   char do_thousands_sep() const override { return '.'; }
-  
+
   std::string do_grouping() const override { return "\03"; }
 };
 

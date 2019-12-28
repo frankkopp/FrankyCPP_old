@@ -38,10 +38,10 @@ public:
   // long[] betaCutOffs = new long[MAX_MOVES];
 
   // Info values
-  int currentIterationDepth = 0;
-  int currentSearchDepth = 0;
-  int currentExtraSearchDepth = 0;
-  Move currentRootMove = NOMOVE;
+  Depth currentIterationDepth = DEPTH_NONE;
+  Ply currentSearchDepth = PLY_ROOT;
+  Ply currentExtraSearchDepth = PLY_ROOT;
+  Move currentRootMove = MOVE_NONE;
   int bestMoveChanges = 0;
   MilliSec lastSearchTime = 0;
   int bestMoveDepth = 0;

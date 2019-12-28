@@ -61,8 +61,7 @@ std::string Engine::str() const {
 
 void Engine::clearHash() {
   LOG->info("Engine: Clear Hash");
-  // TODO implement Hash
-  LOG->error("Engine: Clear Hash not implemented yet!");
+  search.clearHash();
 }
 
 void Engine::setOption(const std::string &name, const std::string &value) {

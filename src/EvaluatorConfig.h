@@ -28,11 +28,11 @@
 
 namespace EvaluatorConfig {
 
-  inline const bool USE_MATERIAL = true;
-  inline const int MATERIAL_WEIGHT = 1;
+  inline bool USE_MATERIAL = true;
+  inline int MATERIAL_WEIGHT = 1;
 
-  inline const int POSITION_WEIGHT = 1;
-  inline const bool USE_POSITION = true;
+  inline int POSITION_WEIGHT = 1;
+  inline bool USE_POSITION = true;
 };
 
 #endif //FRANKYCPP_EVALUATORCONFIG_H

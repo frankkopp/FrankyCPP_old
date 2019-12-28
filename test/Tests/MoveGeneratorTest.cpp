@@ -332,7 +332,7 @@ TEST_F(MoveGenTest, onDemandGen) {
   int counter = 0;
   while (true) {
     move = mg.getNextPseudoLegalMove<MoveGenerator::GENALL>(position);
-    if (move == NOMOVE) break;
+    if (move == MOVE_NONE) break;
     cout << printMoveVerbose(move) << " (" << int(move) << ")" << endl;
     counter++;
   }
@@ -348,7 +348,7 @@ TEST_F(MoveGenTest, onDemandGen) {
   counter = 0;
   while (true) {
     move = mg.getNextPseudoLegalMove<MoveGenerator::GENALL>(position);
-    if (move == NOMOVE) break;
+    if (move == MOVE_NONE) break;
     cout << printMoveVerbose(move) << " (" << int(move) << ")" << endl;
     counter++;
   }
@@ -423,7 +423,7 @@ TEST_F(MoveGenTest, pushKiller) {
   int counter = 0;
   while (true) {
     move = mg.getNextPseudoLegalMove<MoveGenerator::GENALL>(position);
-    if (move == NOMOVE) break;
+    if (move == MOVE_NONE) break;
     cout << counter << " " << printMoveVerbose(move) << " (" << int(move) << ")" << endl;
     if (counter==18) ASSERT_EQ(allMoves->at(21), move);
     else if (counter==33) ASSERT_EQ(allMoves->at(81), move);
@@ -458,7 +458,7 @@ TEST_F(MoveGenTest, swap) {
   
 }
 
-TEST_F(MoveGenTest, mps) {
+TEST_F(MoveGenTest, PERFT_mps) {
   string fen;
   MoveGenerator mg;
   Position position;
@@ -481,7 +481,7 @@ TEST_F(MoveGenTest, mps) {
     mg.storeKiller(killer1, 2);
     mg.storeKiller(killer2, 2);
     start = std::chrono::high_resolution_clock::now();
-    while (mg.getNextPseudoLegalMove<MoveGenerator::GENALL>(position) != NOMOVE) j++;
+    while (mg.getNextPseudoLegalMove<MoveGenerator::GENALL>(position) != MOVE_NONE) j++;
     finish = std::chrono::high_resolution_clock::now();
     generatedMoves += j;
     sum += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();

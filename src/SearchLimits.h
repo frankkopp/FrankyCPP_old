@@ -44,7 +44,7 @@ class SearchLimits {
   int movesToGo = 0;
 
   // extra limits
-  int depth = 0;
+  Depth depth = DEPTH_NONE;
   long nodes = 0;
   MoveList moves{};
 
@@ -56,8 +56,8 @@ class SearchLimits {
 
   // state
   bool timeControl = false;
-  int startDepth = 1;
-  int maxDepth = MAX_SEARCH_DEPTH;
+  Depth startDepth = DEPTH_ONE;
+  Depth maxDepth = DEPTH_MAX;
   
   void setupLimits();
   
@@ -98,8 +98,9 @@ public:
   void setMoveTime(MilliSec time);
   int getMovesToGo() const;
   void setMovesToGo(int m);
-  int getDepth() const;
+  Depth getDepth() const;
   void setDepth(int d);
+  void setDepth(Depth d);
   long getNodes() const;
   void setNodes(long n);
   const MoveList &getMoves() const;
@@ -113,9 +114,10 @@ public:
   bool isPerft() const;
   void setPerft(bool aBool);
   bool isTimeControl() const;
-  int getStartDepth() const;
+  Depth getStartDepth() const;
   void setStartDepth(int d);
-  int getMaxDepth() const;
+  void setStartDepth(Depth d);
+  Depth getMaxDepth() const;
   
 };
 

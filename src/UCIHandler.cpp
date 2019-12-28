@@ -243,8 +243,8 @@ namespace UCI {
         } catch (...) {
           cerr << "PANIK";
         }
-        if (searchMode.depth <= 0 || searchMode.depth > MAX_PLY) {
-          LOG->warn("depth not between 1 and {}. Was '{}'", MAX_PLY, token);
+        if (searchMode.depth <= 0 || searchMode.depth > PLY_MAX) {
+          LOG->warn("depth not between 1 and {}. Was '{}'", PLY_MAX, token);
           return;
         }
       }
@@ -267,8 +267,8 @@ namespace UCI {
         } catch (...) {
           cerr << "PANIK";
         }
-        if (searchMode.mate <= 0 || searchMode.mate > MAX_PLY) {
-          LOG->warn("mate not between 1 and {}. Was '{}'", MAX_PLY, token);
+        if (searchMode.mate <= 0 || searchMode.mate > PLY_MAX) {
+          LOG->warn("mate not between 1 and {}. Was '{}'", PLY_MAX, token);
           return;
         }
       }
@@ -295,8 +295,8 @@ namespace UCI {
         } catch (...) {
           cerr << "PANIK";
         }
-        if (searchMode.depth <= 0 || searchMode.depth > MAX_PLY) {
-          LOG->warn("perft depth not between 1 and {}. Was '{}'", MAX_PLY, token);
+        if (searchMode.depth <= 0 || searchMode.depth > PLY_MAX) {
+          LOG->warn("perft depth not between 1 and {}. Was '{}'", PLY_MAX, token);
           return;
         }
       }

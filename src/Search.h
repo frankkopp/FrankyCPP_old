@@ -39,11 +39,12 @@ class Engine;
 #include "Position.h"
 #include "SearchLimits.h"
 #include "Evaluator.h"
+#include "TT.h"
 
 struct SearchResult {
 public:
-  Move bestMove = NOMOVE;
-  Move ponderMove = NOMOVE;
+  Move bestMove = MOVE_NONE;
+  Move ponderMove = MOVE_NONE;
   int64_t time = 0;
   int depth = 0;
   int extraDepth = 0;
@@ -63,15 +64,16 @@ inline std::ostream &operator<<(std::ostream &os, const SearchResult &searchResu
 class Search {
   
   std::shared_ptr<spdlog::logger> LOG = spdlog::get("Search_Logger");
-  
+
   enum Search_Type {
     ROOT, NONROOT, QUIESCENCE
   };
-  
+
   // UCI related
   constexpr static MilliSec UCI_UPDATE_INTERVAL = 1'000;
+
   MilliSec lastUciUpdateTime{};
-  
+
   // thread control
   Semaphore initSemaphore; // used to block while initializing thread
   Semaphore searchSemaphore; // used to block while searching
@@ -93,6 +95,9 @@ class Search {
   
   // search result
   SearchResult lastSearchResult;
+  
+  // transposition table (singleton)
+  TT tt;
 
 private:
   
@@ -113,10 +118,10 @@ private:
   MoveList currentVariation;
   
   // store the current principal variation
-  MoveList pv[MAX_SEARCH_DEPTH]{};
+  MoveList pv[DEPTH_MAX]{};
   
   // prepared move generator instances for each depth
-  MoveGenerator moveGenerators[MAX_SEARCH_DEPTH]{};
+  MoveGenerator moveGenerators[DEPTH_MAX]{};
   
   // Evaluator
   Evaluator evaluator;
@@ -155,8 +160,10 @@ public:
   void ponderhit();
   
   /** return current pv */
-  const MoveList &getPV() const { return pv[ROOT_PLY]; };
+  const MoveList &getPV() const { return pv[PLY_ROOT]; };
 
+  /** clears the hash table */
+  void clearHash();
 private:
   ////////////////////////////////////////////////
   ///// PRIVATE
@@ -168,17 +175,19 @@ private:
   SearchResult iterativeDeepening(Position &refPosition);
   
   template<Search_Type ST>
-  Value search(Position &refPosition, int depth, int ply, int alpha, int beta);
+  Value search(Position &position, Depth depth, Ply ply, Value alpha, Value beta);
   template<Search_Type ST>
   Move getMove(Position &refPosition, int ply);
   template<Search_Type ST>
   bool checkDrawRepAnd50(Position &refPosition) const;
-  Value evaluate(Position &refPosition, int ply);
+  Value evaluate(Position &position, Ply ply);
   
   MoveList generateRootMoves(Position &refPosition);
   static bool rootMovesSort(Move m1, Move m2);
   static bool goodCapture(Position &refPosition, Move move);
   static void savePV(Move move, MoveList &src, MoveList &dest);
+  
+  void storeTT(Position &position, Value value, TT::EntryType ttType, Depth depth, Move bestMove, bool mateThreat);
   
   void configureTimeLimits();
   inline bool stopConditions();
@@ -193,6 +202,7 @@ private:
   void sendCurrentRootMoveToEngine() const;
   void sendSearchUpdateToEngine();
   void sendResultToEngine() const;
+
 };
 
 #endif // FRANKYCPP_SEARCH_H
