@@ -250,7 +250,7 @@ inline Value valueOf(const PieceType pt) { return pieceTypeValue[pt]; }
 inline Value valueOf(const Piece p) { return pieceTypeValue[typeOf(p)]; }
 
 /** Returns true if value is considered a checkmate */
-inline bool isCheckmateValue(const Value value) {
+inline bool isCheckMateValue(const Value value) {
   return abs(value) >= VALUE_CHECKMATE_THRESHOLD && abs(value) <= VALUE_CHECKMATE;
 }
 
@@ -258,7 +258,7 @@ inline bool isCheckmateValue(const Value value) {
 inline std::string printValue(const Value value) {
   // TODO add full protocol (lowerbound, upperbound, etc.)
   std::string scoreString;
-  if (isCheckmateValue(value)) {
+  if (isCheckMateValue(value)) {
     scoreString = "mate ";
     scoreString += value < 0 ? "-" : "";
     scoreString += std::to_string((VALUE_CHECKMATE - std::abs(value) + 1) / 2);

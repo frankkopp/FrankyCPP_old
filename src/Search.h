@@ -48,7 +48,7 @@ public:
   int64_t time = 0;
   int depth = 0;
   int extraDepth = 0;
-  
+
   std::string str() const {
     return "Best Move: " + printMove(bestMove) + " (" + std::to_string(valueOf(bestMove)) + ") "
            + "Ponder Move: " + printMove(ponderMove) + " Depth: " + std::to_string(depth) + "/" +
@@ -62,106 +62,106 @@ inline std::ostream &operator<<(std::ostream &os, const SearchResult &searchResu
 }
 
 class Search {
-  
+
   std::shared_ptr<spdlog::logger> LOG = spdlog::get("Search_Logger");
 
   // used to protect the transposition table from clearing and resizing during search
-  static std::timed_mutex tt_lock;
+  std::timed_mutex tt_lock;
 
+  // for code re-using through templating we use search types when calling search()
   enum Search_Type {
     ROOT, NONROOT, QUIESCENCE
   };
 
   // UCI related
   constexpr static MilliSec UCI_UPDATE_INTERVAL = 1'000;
-
   MilliSec lastUciUpdateTime{};
 
   // thread control
   Semaphore initSemaphore; // used to block while initializing thread
   Semaphore searchSemaphore; // used to block while searching
   std::thread myThread;
-  
+
   // pointer to engine of available
   Engine* pEngine{nullptr};
-  
+
   // search mode
   SearchLimits searchLimits;
   SearchStats searchStats;
-  
+
   // current position
   Position myPosition;
-  
+
   // search state
   std::atomic_bool running = false;
   std::atomic_bool stopSearchFlag = false;
-  
+
   // search result
   SearchResult lastSearchResult;
-  
+
   // transposition table (singleton)
   TT tt;
 
 private:
-  
+
   // search start time
   MilliSec startTime{};
   MilliSec stopTime{};
   MilliSec timeLimit{};
   MilliSec extraTime{};
-  
+
   // the color of the searching player
   Color myColor = NOCOLOR;
-  
+
   // list of moves at the root
   MoveList rootMoves;
   MoveList::size_type currentMoveIndex = 0;
-  
+
   // store the current variation
   MoveList currentVariation;
-  
+
   // store the current principal variation
   MoveList pv[DEPTH_MAX]{};
-  
+
   // prepared move generator instances for each depth
   MoveGenerator moveGenerators[DEPTH_MAX]{};
-  
+
   // Evaluator
   Evaluator evaluator;
 
 public:
   ////////////////////////////////////////////////
   ///// CONSTRUCTORS
-  
+
   /** Default constructor creates a board with a back reference to the engine */
   Search();
   explicit Search(Engine* pEng);
   virtual ~Search();
-  
+
   ////////////////////////////////////////////////
   ///// PUBLIC
-  
+
   /** starts the search in a separate thread with the given search limits */
   void startSearch(const Position &position, SearchLimits &limits);
-  
+
   /** Stops a running search gracefully - e.g. returns the best move found so far */
   void stopSearch();
-  
+
   /** checks if the search is already running */
   bool isRunning() const;
-  
+
   /** wait while searching */
   void waitWhileSearching();
-  
+
   /** return search stats instance */
   inline const SearchStats &getSearchStats() const { return searchStats; }
-  
+
   /** return the last search result */
   inline const SearchResult &getLastSearchResult() const { return lastSearchResult; };
-  
+
   /** to signal the search that pondering was successful */
   void ponderhit();
-  
+
   /** return current pv */
   const MoveList &getPV() const { return pv[PLY_ROOT]; };
 
@@ -174,13 +174,13 @@ public:
 private:
   ////////////////////////////////////////////////
   ///// PRIVATE
-  
+
   FRIEND_TEST(SearchTest, goodCapture);
-  
+
   void run();
-  
+
   SearchResult iterativeDeepening(Position &refPosition);
-  
+
   template<Search_Type ST>
   Value search(Position &position, Depth depth, Ply ply, Value alpha, Value beta);
   template<Search_Type ST>
@@ -188,14 +188,15 @@ private:
   template<Search_Type ST>
   bool checkDrawRepAnd50(Position &refPosition) const;
   Value evaluate(Position &position, Ply ply);
-  
+
   MoveList generateRootMoves(Position &refPosition);
   static bool rootMovesSort(Move m1, Move m2);
   static bool goodCapture(Position &refPosition, Move move);
   static void savePV(Move move, MoveList &src, MoveList &dest);
-  
-  void storeTT(Position &position, Value value, TT::EntryType ttType, Depth depth, Move bestMove, bool mateThreat);
-  
+
+  void storeTT(Position &position, Value value, TT::EntryType ttType, Depth depth, Move bestMove,
+               bool mateThreat);
+
   void configureTimeLimits();
   inline bool stopConditions();
   void addExtraTime(const double d);
@@ -204,7 +205,7 @@ private:
   static inline MilliSec elapsedTime(const MilliSec t1, const MilliSec t2);
   static inline MilliSec now();
   inline MilliSec getNps() const;
-  
+
   void sendIterationEndInfoToEngine() const;
   void sendCurrentRootMoveToEngine() const;
   void sendSearchUpdateToEngine();

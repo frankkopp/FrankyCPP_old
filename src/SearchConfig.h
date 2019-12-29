@@ -32,7 +32,7 @@ namespace SearchConfig {
   inline bool USE_ALPHABETA = true;
   
   inline bool USE_TT = true;
-  inline int TT_SIZE_MB = 16 * TT::MB;
+  inline int TT_SIZE_MB = 64;
   
   inline bool USE_KILLER_MOVES = true;
   inline int NO_KILLER_MOVES = 2;

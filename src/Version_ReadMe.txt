@@ -7,7 +7,9 @@ v 0.4 (plan)
 v 0.3 (plan)
 ================================================================================
 - TODO:
+    - TT in qsearch
     - PVS
+    - PV from TT
     - Extended Evaluation
     - EvalCache
     - Simple Opening Book
@@ -15,8 +17,7 @@ v 0.3 (plan)
 v 0.2 (in progress)
 ================================================================================
 - TODO:
-    - TT
-    - PV from TT
+    - TT (not in qsearch)
     - Testing & Debugging
 - DONE:
     - Killer moves

@@ -62,8 +62,7 @@ void TT::resize(uint64_t newsize) {
 
 void TT::clear() {
   // This clears the TT by overwriting each entry with 0.
-  // It uses multiple threads if noOfThreads is >1.
-  //
+  // It uses multiple threads if noOfThreads is > 1.
   LOG->debug("Clearing TT ({} threads)...", noOfThreads);
   auto start = std::chrono::high_resolution_clock::now();
   std::vector<std::thread> threads;
