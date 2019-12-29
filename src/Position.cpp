@@ -900,8 +900,52 @@ std::ostream &operator<<(std::ostream &os, Position &position) {
 ////////////////////////////////////////////////
 ///// PRIVATE
 
-void Position::movePiece(const Square from, const Square to) {
-  putPiece(removePiece(from), to);
+void Position::movePiece(const Square fromSq, const Square toSq) {
+
+  // remove
+  const Piece piece = getPiece(fromSq);
+  const Color color = colorOf(piece);
+  const PieceType pieceType = typeOf(piece);
+
+  // bitboards
+  assert (piecesBB[color][pieceType] & fromSq);
+  assert (occupiedBB[color] & fromSq);
+  piecesBB[color][pieceType] ^= fromSq;
+  occupiedBB[color] ^= fromSq;
+  // pre-rotated bb / expensive - ~30% hit
+  occupiedBBR90[color] ^= Bitboards::rotateSquareR90(fromSq);
+  occupiedBBL90[color] ^= Bitboards::rotateSquareL90(fromSq);
+  occupiedBBR45[color] ^= Bitboards::rotateSquareR45(fromSq);
+  occupiedBBL45[color] ^= Bitboards::rotateSquareL45(fromSq);
+
+  // piece board
+  assert (getPiece(fromSq) != PIECE_NONE);
+  board[fromSq] = PIECE_NONE;
+
+  // zobrist
+  zobristKey ^= Zobrist::pieces[piece][fromSq];
+  
+  // put
+
+  // bitboards
+  assert ((piecesBB[color][pieceType] & toSq) == 0);
+  assert ((occupiedBB[color] & toSq) == 0);
+  piecesBB[color][pieceType] |= toSq;
+  occupiedBB[color] |= toSq;
+  // pre-rotated bb / expensive - ~30% hit
+  occupiedBBR90[color] |= Bitboards::rotateSquareR90(toSq);
+  occupiedBBL90[color] |= Bitboards::rotateSquareL90(toSq);
+  occupiedBBR45[color] |= Bitboards::rotateSquareR45(toSq);
+  occupiedBBL45[color] |= Bitboards::rotateSquareL45(toSq);
+
+  // piece board
+  assert (getPiece(toSq) == PIECE_NONE);
+  board[toSq] = piece;
+  if (pieceType == KING) kingSquare[color] = toSq;
+
+  // zobrist
+  zobristKey ^= Zobrist::pieces[piece][toSq];
+
 }
 
 void Position::putPiece(const Piece piece, const Square square) {
