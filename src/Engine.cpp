@@ -214,6 +214,7 @@ void Engine::waitWhileSearching() {
 ///// PRIVATE
 
 void Engine::initOptions() {
+  // TODO: add option for TT 
   // @formatter:off
   // MAP("Hash", UCI::Option("Hash", config.hash, 1, 8192)); // spin
   // MAP("Clear Hash", UCI::Option("Clear Hash"));           // button

@@ -64,10 +64,10 @@ void Position::init() {
 Position::Position() : Position(START_POSITION_FEN) {}
 
 /** Creates a board with setup from the given fen */
-Position::Position(const std::string& fen) : Position(fen.c_str()) {};
+Position::Position(const std::string &fen) : Position(fen.c_str()) {};
 
 /** Creates a board with setup from the given fen */
-Position::Position(const char *fen) {
+Position::Position(const char* fen) {
   setupBoard(fen);
 }
 
@@ -129,7 +129,7 @@ void Position::doMove(const Move move) {
           zobristKey = zobristKey ^ Zobrist::enPassantFile[fileOf(enPassantSquare)]; // in
         }
       }
-      else halfMoveClock++;
+      else { halfMoveClock++; }
       movePiece(fromSq, toSq);
       break;
 
@@ -244,17 +244,19 @@ void Position::undoMove() {
 
     case NORMAL:
       movePiece(getToSquare(move), getFromSquare(move));
-      if (capturedPieceHistory[historyCounter] != PIECE_NONE)
+      if (capturedPieceHistory[historyCounter] != PIECE_NONE) {
         putPiece(
           capturedPieceHistory[historyCounter], getToSquare(move));
+      }
       break;
 
     case PROMOTION:
       removePiece(getToSquare(move));
       putPiece(makePiece(nextPlayer, PAWN), getFromSquare(move));
-      if (capturedPieceHistory[historyCounter] != PIECE_NONE)
+      if (capturedPieceHistory[historyCounter] != PIECE_NONE) {
         putPiece(
           capturedPieceHistory[historyCounter], getToSquare(move));
+      }
       break;
 
     case ENPASSANT:
@@ -347,16 +349,19 @@ bool Position::isAttacked(const Square sq, const Color byColor) const {
   assert(byColor != NOCOLOR);
 
   // check pawns
-  if (Bitboards::pawnAttacks[~byColor][sq] & piecesBB[byColor][PAWN])
+  if (Bitboards::pawnAttacks[~byColor][sq] & piecesBB[byColor][PAWN]) {
     return true;
+  }
 
   // check knights
-  if (Bitboards::pseudoAttacks[KNIGHT][sq] & piecesBB[byColor][KNIGHT])
+  if (Bitboards::pseudoAttacks[KNIGHT][sq] & piecesBB[byColor][KNIGHT]) {
     return true;
+  }
 
   // check king
-  if ((Bitboards::pseudoAttacks[KING][sq] & piecesBB[byColor][KING]))
+  if ((Bitboards::pseudoAttacks[KING][sq] & piecesBB[byColor][KING])) {
     return true;
+  }
 
   // Sliding
   // rooks and queens
@@ -365,8 +370,9 @@ bool Position::isAttacked(const Square sq, const Color byColor) const {
 
       && ((Bitboards::getMovesRank(sq, getOccupiedBB())
            | Bitboards::getMovesFileR(sq, getOccupiedBBL90())) &
-          (piecesBB[byColor][ROOK] | piecesBB[byColor][QUEEN])))
+          (piecesBB[byColor][ROOK] | piecesBB[byColor][QUEEN]))) {
     return true;
+  }
 
   // bishop and queens
   if (((Bitboards::pseudoAttacks[BISHOP][sq] & piecesBB[byColor][BISHOP])
@@ -374,8 +380,9 @@ bool Position::isAttacked(const Square sq, const Color byColor) const {
 
       && ((Bitboards::getMovesDiagUpR(sq, getOccupiedBBR45())
            | Bitboards::getMovesDiagDownR(sq, getOccupiedBBL45()))
-          & (piecesBB[byColor][BISHOP] | piecesBB[byColor][QUEEN])))
+          & (piecesBB[byColor][BISHOP] | piecesBB[byColor][QUEEN]))) {
     return true;
+  }
 
   // check en passant
   if (enPassantSquare != SQ_NONE) {
@@ -409,7 +416,7 @@ bool Position::isAttacked(const Square sq, const Color byColor) const {
   return false;
 }
 
-bool Position::isLegalMove(const Move move) {
+bool Position::isLegalMove(const Move move) const {
   // king is not allowed to pass a square which is attacked by opponent
   if (typeOf(move) == CASTLING) {
     switch (getToSquare(move)) {
@@ -434,16 +441,13 @@ bool Position::isLegalMove(const Move move) {
     }
   }
   // make the move on the position
+  // then check if the move leaves the king in check
   // TODO: isLegalMove: can we make this more efficient??
-  //  this prevents this function from being const
-  doMove(move);
-  // check if the move leaves the king in check
-  if (!isAttacked(kingSquare[~nextPlayer], nextPlayer)) {
-    undoMove();
-    return true;
-  }
-  undoMove();
-  return false;
+  //  this forces this const function to use a const_cast
+  const_cast<Position*>(this)->doMove(move);
+  bool legal = !isAttacked(kingSquare[~nextPlayer], nextPlayer);
+  const_cast<Position*>(this)->undoMove();
+  return legal;
 }
 
 bool Position::isLegalPosition() const {
@@ -489,7 +493,7 @@ bool Position::hasCheck() const {
  *  legal moves. The MoveGenerator also needs to know Position which leads to
  *  a circle reference.
  */
-bool Position::hasCheckMate() {
+bool Position::hasCheckMate() const {
   if (!hasCheck()) return false;
   if (hasMateFlag != FLAG_TBD) return (hasMateFlag == FLAG_TRUE);
   const bool hasLegalMove = MoveGenerator::hasLegalMove(*this);
@@ -519,8 +523,8 @@ bool Position::checkRepetitions(int reps) const {
   while (i >= 0) {
     // every time the half move clock gets reset (non reversible position) there
     // can't be any more repetition of positions before this position
-    if (halfMoveClockHistory[i] >= lastHalfMove) break;
-    else lastHalfMove = halfMoveClockHistory[i];
+    if (halfMoveClockHistory[i] >= lastHalfMove) { break; }
+    else { lastHalfMove = halfMoveClockHistory[i]; }
     if (zobristKey == zobristKey_History[i]) counter++;
     if (counter >= reps) return true;
     i -= 2;
@@ -535,8 +539,8 @@ int Position::countRepetitions() const {
   while (i >= 0) {
     // every time the half move clock gets reset (non reversible position) there
     // can't be any more repetition of positions before this position
-    if (halfMoveClockHistory[i] >= lastHalfMove) break;
-    else lastHalfMove = halfMoveClockHistory[i];
+    if (halfMoveClockHistory[i] >= lastHalfMove) { break; }
+    else { lastHalfMove = halfMoveClockHistory[i]; }
     if (zobristKey == zobristKey_History[i]) counter++;
     i -= 2;
   }
@@ -627,7 +631,7 @@ bool Position::givesCheck(const Move move) const {
   if (moveType == PROMOTION) {
     fromPt = promotionType(move);
   }
-  // Castling
+    // Castling
   else if (moveType == CASTLING) {
     // set the target square to the rook square and
     // piece type to ROOK. King can't give check
@@ -678,12 +682,12 @@ bool Position::givesCheck(const Move move) const {
 
     case PAWN:
       // normal pawn direct chess include en passant captures
-      if (Bitboards::pawnAttacks[colorOf(fromPc)][toSquare] & kingSq) return true;
-      else break;
+      if (Bitboards::pawnAttacks[colorOf(fromPc)][toSquare] & kingSq) { return true; }
+      else { break; }
 
     case KNIGHT:
-      if (Bitboards::pseudoAttacks[KNIGHT][toSquare] & kingSq) return true;
-      else break;
+      if (Bitboards::pseudoAttacks[KNIGHT][toSquare] & kingSq) { return true; }
+      else { break; }
 
     case ROOK:
       // is attack even possible
@@ -807,7 +811,8 @@ std::string Position::str() const {
          << std::endl;
   output << "Gamephase: " << gamePhase << std::endl;
   output << "Material: white=" << material[WHITE] << " black=" << material[BLACK] << std::endl;
-  output << "PosValue: white=" << psqMidValue[WHITE] << " black=" << psqMidValue[BLACK] << std::endl;
+  output << "PosValue: white=" << psqMidValue[WHITE] << " black=" << psqMidValue[BLACK]
+         << std::endl;
   output << "Zobrist Key: " << zobristKey << std::endl;
   return output.str();
 }
@@ -820,8 +825,8 @@ std::string Position::printBoard() const {
     output << (r + 1) << " |";
     for (File f = FILE_A; f <= FILE_H; ++f) {
       Piece pc = getPiece(getSquare(f, r));
-      if (pc == PIECE_NONE) output << "   |";
-      else output << " " << ptc[pc] << " |";
+      if (pc == PIECE_NONE) { output << "   |"; }
+      else { output << " " << ptc[pc] << " |"; }
     }
     output << std::endl;
     output << "  +---+---+---+---+---+---+---+---+" << std::endl;
@@ -843,7 +848,7 @@ std::string Position::printFen() const {
     for (File f = FILE_A; f <= FILE_H; ++f) {
       Piece pc = getPiece(getSquare(f, r));
 
-      if (pc == PIECE_NONE) emptySquares++;
+      if (pc == PIECE_NONE) { emptySquares++; }
       else {
         if (emptySquares) {
           fen << std::to_string(emptySquares);
@@ -862,7 +867,7 @@ std::string Position::printFen() const {
   fen << (nextPlayer ? " b " : " w ");
 
   // castling
-  if (castlingRights == NO_CASTLING) fen << "-";
+  if (castlingRights == NO_CASTLING) { fen << "-"; }
   else {
     if (castlingRights & WHITE_OO) fen << "K";
     if (castlingRights & WHITE_OOO) fen << "Q";
@@ -882,7 +887,7 @@ std::string Position::printFen() const {
   fen << halfMoveClock << " ";
 
   // full move number
-  fen << (int)((nextHalfMoveNumber + 1) / 2);
+  fen << (int) ((nextHalfMoveNumber + 1) / 2);
 
   return fen.str();
 }
@@ -1043,7 +1048,7 @@ void Position::initializeBoard() {
   gamePhase = 0;
 }
 
-void Position::setupBoard(const char *fen) {
+void Position::setupBoard(const char* fen) {
   // also sets defaults if fen is short
   initializeBoard();
 
@@ -1056,8 +1061,8 @@ void Position::setupBoard(const char *fen) {
 
   // pieces
   while ((iss >> token) && !isspace(token)) {
-    if (isdigit(token)) currentSquare += (token - '0') * EAST;
-    else if (token == '/') currentSquare += 2 * SOUTH;
+    if (isdigit(token)) { currentSquare += (token - '0') * EAST; }
+    else if (token == '/') { currentSquare += 2 * SOUTH; }
     else if ((idx = std::string(pieceToChar).find(token)) != std::string::npos) {
       putPiece(Piece(idx), currentSquare);
       ++currentSquare;
@@ -1073,7 +1078,7 @@ void Position::setupBoard(const char *fen) {
       nextHalfMoveNumber++; // increase to 2 for black
     }
   }
-  else return; // end of line
+  else { return; } // end of line
 
   // skip space
   if (!(iss >> token)) return; // end of line

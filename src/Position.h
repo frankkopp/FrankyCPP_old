@@ -260,7 +260,7 @@ public:
    *
    * @return true if current position is mate for next player
    */
-  bool hasCheckMate();
+  bool hasCheckMate() const;
 
   /**
    * Checks if move is giving check to the opponent.
@@ -290,7 +290,7 @@ public:
    * This checks if the  move is legal by checking if it leaves the king in check or if it
    * would pass an attacked square when castling.
    */
-  bool isLegalMove(const Move move);
+  bool isLegalMove(const Move move) const;
 
   /**
    * This checks if the last move was legal by checking if it left the king in check or if

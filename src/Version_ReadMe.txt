@@ -12,7 +12,7 @@ v 0.3 (plan)
     - EvalCache
     - Simple Opening Book
 
-v 0.2 (plan)
+v 0.2 (in progress)
 ================================================================================
 - TODO:
     - TT
@@ -23,7 +23,7 @@ v 0.2 (plan)
     - Quiescence Search
     - Templated Search for Root, non-root and qsearch
 
-v 0.1 (in progress)
+v 0.1 (done)
 ================================================================================
 - DONE:
     - AlphaBeta search

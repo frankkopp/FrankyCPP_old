@@ -72,7 +72,7 @@ public:
    * @param moves - generated moves will be added to this list
    */
   template<GenMode GM>
-  const MoveList* generatePseudoLegalMoves(const Position &refPosition);
+  const MoveList* generatePseudoLegalMoves(const Position &position);
 
   /**
   * Generates legal moves for the next player.
@@ -82,7 +82,7 @@ public:
   * @param moves - generated moves will be added to this list
   */
   template<GenMode GM>
-  const MoveList* generateLegalMoves(Position  &refPosition);
+  const MoveList* generateLegalMoves(Position  &position);
 
   /**
    * Returns the next move for the given position. Usually this would be used in a loop
@@ -93,7 +93,7 @@ public:
    * @return
    */
   template<GenMode GM>
-  Move getNextPseudoLegalMove(const Position &refPosition);
+  Move getNextPseudoLegalMove(const Position &position);
 
   /**
    * Resets the move generator to start fresh.
@@ -116,7 +116,7 @@ public:
    *
    * @return true if there is at least one legal move
    */
-  static bool hasLegalMove(Position &refPosition);
+  static bool hasLegalMove(const Position &position);
   
   /**
    * Provides the on demand move generator with a new killer move which should be returned as soon
@@ -141,7 +141,7 @@ private:
    * @param pMoves - generated moves will be added to this list
    */
   template<GenMode GM>
-  void generatePawnMoves(const Position &refPosition, MoveList* const pMoves);
+  void generatePawnMoves(const Position &position, MoveList* const pMoves);
 
   /**
    * Generates pseudo knight, bishop, rook and queen moves for the next player.
@@ -151,7 +151,7 @@ private:
    * @param pMoves - generated moves will be added to this list
    */
   template<GenMode GM>
-  void generateMoves(const Position &refPosition, MoveList* const pMoves);
+  void generateMoves(const Position &position, MoveList* const pMoves);
 
   /**
    * Generates pseudo king moves for the next player. Does not check if king
@@ -161,7 +161,7 @@ private:
    * @param pMoves - generated moves will be added to this list
    */
   template<GenMode GM>
-  void generateKingMoves(const Position &refPosition, MoveList* const pMoves);
+  void generateKingMoves(const Position &position, MoveList* const pMoves);
 
   /**
    * Generates pseudo castling move for the next player. Does not check if king passes or lands on an
@@ -171,7 +171,7 @@ private:
    * @param pMoves - generated moves will be added to this list
    */
   template<GenMode GM>
-  void generateCastling(const Position &refPosition, MoveList* const pMoves);
+  void generateCastling(const Position &position, MoveList* const pMoves);
   
   void pushKiller(MoveList &list);
 };
