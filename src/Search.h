@@ -65,6 +65,9 @@ class Search {
   
   std::shared_ptr<spdlog::logger> LOG = spdlog::get("Search_Logger");
 
+  // used to protect the transposition table from clearing and resizing during search
+  static std::timed_mutex tt_lock;
+
   enum Search_Type {
     ROOT, NONROOT, QUIESCENCE
   };
@@ -164,6 +167,10 @@ public:
 
   /** clears the hash table */
   void clearHash();
+
+  /** resize the hash to the given value in MB */
+  void setHashSize(int sizeInMB);
+
 private:
   ////////////////////////////////////////////////
   ///// PRIVATE

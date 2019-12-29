@@ -29,6 +29,8 @@
 #include "Engine.h"
 #include "TT.h"
 
+std::timed_mutex Search::tt_lock;
+
 ////////////////////////////////////////////////
 ///// CONSTRUCTORS
 
@@ -38,7 +40,12 @@ Search::Search() : Search(nullptr) {
 Search::Search(Engine* pEng) {
   pEngine = pEng;
   if (SearchConfig::USE_TT) {
-    tt.resize(SearchConfig::TT_SIZE_MB);
+    int hashSize = SearchConfig::TT_SIZE_MB;
+    if (pEngine) {
+      int tmp = pEngine->getHashSize();
+      if (tmp) hashSize = tmp;
+    }
+    tt.resize(hashSize * TT::MB);
     tt.setThreads(4);
   }
   else {
@@ -309,10 +316,16 @@ SearchResult Search::iterativeDeepening(Position &position) {
     searchStats.bestMoveChanges = 0;
     searchStats.nodesVisited++;
 
+    // protect the TT from being resozed or cleared during search
+    tt_lock.lock();
+
     // ###########################################
     // ### CALL SEARCH for iterationDepth
     search<ROOT>(position, iterationDepth, PLY_ROOT, alpha, beta);
     // ###########################################
+
+    // release lock on TT
+    tt_lock.unlock();
 
     sendIterationEndInfoToEngine();
 
@@ -482,9 +495,10 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
       assert ((value != VALUE_NONE || stopSearchFlag) && "Value should not be NONE at this point.");
 
       currentVariation.pop_back();
-    }  else {
+    }
+    else {
       TRACE(LOG, "{:>{}}Depth {} cv {} move {} NOT LEGAL",
-        "", ply, ply, printMoveListUCI(currentVariation), printMove(move));
+            "", ply, ply, printMoveListUCI(currentVariation), printMove(move));
     }
 
     position.undoMove();
@@ -570,7 +584,8 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
   if (!movesSearched && !stopSearchFlag) {
     searchStats.nonLeafPositionsEvaluated++;
     assert (ttType == TT::TYPE_ALPHA);
-    TRACE(LOG, "{:>{}}Depth {} cv {} NO LEGAL MOVES", "", ply, ply, printMoveListUCI(currentVariation));
+    TRACE(LOG, "{:>{}}Depth {} cv {} NO LEGAL MOVES", "", ply, ply,
+          printMoveListUCI(currentVariation));
     if (myPosition.hasCheck()) {
       // if the position has check we have a mate even in quiescence as we will
       // have generated all moves because of the check.
@@ -578,14 +593,16 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
       bestNodeValue = -VALUE_CHECKMATE + Value(ply);
       assert (bestNodeMove == MOVE_NONE);
       ttType = TT::TYPE_EXACT;
-      TRACE(LOG, "{:>{}} Search in ply {} for depth {}: {} CHECKMATE", " ", ply, ply, depth, bestNodeValue);
+      TRACE(LOG, "{:>{}} Search in ply {} for depth {}: {} CHECKMATE", " ", ply, ply, depth,
+            bestNodeValue);
     }
     else if (!quiescence) {
       // if not in quiescence we have a stale mate. Return the draw value.
       bestNodeValue = VALUE_DRAW;
       assert (bestNodeMove == MOVE_NONE);
       ttType = TT::TYPE_EXACT;
-      TRACE(LOG, "{:>{}} Search in ply {} for depth {}: {} STALEMATE", " ", ply, ply, depth, bestNodeValue);
+      TRACE(LOG, "{:>{}} Search in ply {} for depth {}: {} STALEMATE", " ", ply, ply, depth,
+            bestNodeValue);
     }
     // in quiescence having searched no moves while not in check means that
     // there were only quiet moves which we ignored on purpose.
@@ -600,10 +617,11 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
 
   if (!quiescence) {
     TRACE(LOG, "{:>{}}Storing into TT: {} {} {} {} {} {} {}", "", ply,
-          position.getZobristKey(), bestNodeValue, TT::str(ttType), depth, printMove(bestNodeMove), false, position.printFen());
+          position.getZobristKey(), bestNodeValue, TT::str(ttType), depth, printMove(bestNodeMove),
+          false, position.printFen());
     storeTT(position, bestNodeValue, ttType, depth, bestNodeMove, false);
   }
-  
+
   return bestNodeValue;
 }
 
@@ -862,7 +880,27 @@ bool Search::rootMovesSort(Move m1, Move m2) {
 }
 
 void Search::clearHash() {
-  LOG->error("Search: Clear Hash not implemented yet!");
+  LOG->debug("Search: Clear Hash command received!");
+  std::chrono::milliseconds timeout(2500);
+  if (tt_lock.try_lock_for(timeout)) {
+    tt.clear();
+    tt_lock.unlock();
+  }
+  else {
+    LOG->warn("Could not clear hash while searching.");
+  }
+}
+
+void Search::setHashSize(int sizeInMB) {
+  LOG->debug("Search: Set HashSize to {} MB command received!", sizeInMB);
+  std::chrono::milliseconds timeout(2500);
+  if (tt_lock.try_lock_for(timeout)) {
+    tt.resize(sizeInMB * TT::MB);
+    tt_lock.unlock();
+  }
+  else {
+    LOG->warn("Could not set hash size while searching.");
+  }
 }
 
 void Search::sendIterationEndInfoToEngine() const {
@@ -956,6 +994,8 @@ void Search::sendResultToEngine() const {
   else { pEngine->sendResult(lastSearchResult.bestMove, lastSearchResult.ponderMove); }
 
 }
+
+
 
 
 

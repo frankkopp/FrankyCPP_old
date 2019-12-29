@@ -105,6 +105,7 @@ public:
 
   // getter
   inline const SearchLimits &getSearchLimits() const { return searchLimits; };
+  int getHashSize();
 
 private:
 
@@ -114,6 +115,7 @@ private:
   void initOptions();
   void updateConfig();
   int getInt(const std::string &value) const;
+
 };
 
 #endif //FRANKYCPP_ENGINE_H

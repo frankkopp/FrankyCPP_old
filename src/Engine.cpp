@@ -59,21 +59,25 @@ std::string Engine::str() const {
   return os.str();
 }
 
-void Engine::clearHash() {
-  LOG->info("Engine: Clear Hash");
-  search.clearHash();
-}
 
 void Engine::setOption(const std::string &name, const std::string &value) {
   LOG->info("Engine: Set option {} = {}", name, value);
-  const auto pos = optionMap.find(name);
-  if (pos != optionMap.end()) {
-    pos->second.setCurrentValue(value);
+
+  const auto mapIterator = optionMap.find(name);
+  if (mapIterator != optionMap.end()) {
+    // handle commands like "Clear Hash"
+    if (mapIterator->first == "Clear Hash") {
+      clearHash();
+      return;
+    }
+    // handle real options with name and value
+    mapIterator->second.setCurrentValue(value);
+    updateConfig();
   }
   else {
     LOG->warn("No such option: {}", name);
   }
-  updateConfig();
+
 }
 
 std::string Engine::getOption(const std::string &name) {
@@ -155,6 +159,11 @@ void Engine::ponderHit() {
   search.ponderhit();
 }
 
+void Engine::clearHash() {
+  LOG->info("Engine: Clear Hash");
+  search.clearHash();
+}
+
 void Engine::sendIterationEndInfo(int depth, int seldepth, Value value, long nodes, int nps,
                                   MilliSec time, const MoveList &pv) const {
   if (pUciHandler)
@@ -214,10 +223,9 @@ void Engine::waitWhileSearching() {
 ///// PRIVATE
 
 void Engine::initOptions() {
-  // TODO: add option for TT 
   // @formatter:off
-  // MAP("Hash", UCI::Option("Hash", config.hash, 1, 8192)); // spin
-  // MAP("Clear Hash", UCI::Option("Clear Hash"));           // button
+  MAP("Hash", UCI::Option("Hash", EngineConfig::hash, 1, 1024)); // spin
+  MAP("Clear Hash", UCI::Option("Clear Hash"));           // button
   MAP("Ponder", UCI::Option("Ponder", EngineConfig::ponder));    // check
   // @formatter:on
   updateConfig();
@@ -229,12 +237,20 @@ void Engine::updateConfig() {
     const UCI::Option &option = it.second;
     const std::string &name = option.getNameID();
 
-    if (name == "Hash") EngineConfig::hash = getInt(option.getCurrentValue());
+    if (name == "Hash") {
+      EngineConfig::hash = getInt(option.getCurrentValue());
+      LOG->info("Setting hash table size to {} MB", EngineConfig::hash);
+      search.setHashSize(EngineConfig::hash);
+    }
     else
       if (name == "Ponder") {
         EngineConfig::ponder = to_bool(option.getCurrentValue());
       }
   }
+}
+
+int Engine::getHashSize() {
+  return EngineConfig::hash;
 }
 
 int Engine::getInt(const std::string &value) const {

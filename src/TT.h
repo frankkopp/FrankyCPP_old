@@ -91,7 +91,7 @@ public:
 
   /**
    * Changes the soze of the transposition table and clears all entries. 
-   * @param newsize
+   * @param newsize in Byte
    */
   void resize(uint64_t newsize);
 
