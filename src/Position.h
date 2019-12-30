@@ -389,7 +389,7 @@ private:
 
   void initializeBoard();
   void setupBoard(const char* fen);
-  void movePiece(const Square from, const Square to);
+  void movePiece(const Square fromSq, const Square toSq);
   void putPiece(const Piece piece, const Square square);
   Piece removePiece(const Square square);
   void invalidateCastlingRights(const Square from, const Square to);

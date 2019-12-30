@@ -7,7 +7,6 @@ v 0.4 (plan)
 v 0.3 (plan)
 ================================================================================
 - TODO:
-    - TT in qsearch
     - PVS
     - PV from TT
     - Extended Evaluation
@@ -16,10 +15,10 @@ v 0.3 (plan)
 
 v 0.2 (in progress)
 ================================================================================
-- TODO:
-    - TT (not in qsearch)
-    - Testing & Debugging
 - DONE:
+    - Testing & Debugging
+    - TT in qsearch
+    - TT (not in qsearch)
     - Killer moves
     - Quiescence Search
     - Templated Search for Root, non-root and qsearch

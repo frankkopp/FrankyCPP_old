@@ -91,9 +91,9 @@ public:
 
   /**
    * Changes the soze of the transposition table and clears all entries. 
-   * @param newsize in Byte
+   * @param newSize in Byte
    */
-  void resize(uint64_t newsize);
+  void resize(uint64_t newSize);
 
   /**
    * Clears the transposition table be resetting all entries to 0.
@@ -176,136 +176,117 @@ public:
                             (static_cast<double>(numberOfEntries) / (maxNumberOfEntries + 1)));
   };
 
-  /**
-   * Encodes the given move into the bit representation of the Entry.
-   *
-   * @param data
-   * @param bestMove
-   * @return long with value encoded
-   */
-  static Entry setBestMove(Entry eData, Move bestMove);
+  // ###########################################################################
+  // Bit operations for data
+  // data:       length position values
+  // ----------------------------------------------------
+  // move:       32 bit  0-31    (only positive integers)
+  // Value:      16 bit 32-47    (only positive shorts)
+  // Depth:       8 bit 48-55    (only positive bytes)
+  // Age:         3 bit 56-58    (0-7)
+  // Type:        2 bit 59-60    (0-3)
+  // MateThread:  1 bit 61       (0-1)
+  // Free:        2 bit
+  //
+  // 1111111111111111111111111111111111111111111111111111111111111111
+  //   ||T|A |Depth  |Value          | Move                         |
+  // 1111111111111111111111111111111111111111111111111111111111111111
+  // ###########################################################################
 
-  /**
-   * Decodes the move from the long. Does not have to be a valid move as it
-   * will ont be checked during storing or retrieving.
-   *
-   * @param entry
-   * @return decoded value
-   */
-  static Move getBestMove(Entry entry);
+  // MASKs
+  static constexpr TT::Entry MOVE_bitMASK = 0b11111111111111111111111111111111;
+  static constexpr TT::Entry VALUE_bitMASK = 0b1111111111111111;
+  static constexpr TT::Entry DEPTH_bitMASK = 0b11111111;
+  static constexpr TT::Entry AGE_bitMASK = 0b111;
+  static constexpr TT::Entry TYPE_bitMASK = 0b11;
+  static constexpr TT::Entry MATE_bitMASK = 0b1;
 
-  /**
-   * Encodes the given value into the bit representation of the long.
-   * @param entry
-   * @param value
-   * @return entry with value encoded
-   */
-  static Entry setValue(Entry entry, Value value);
+  // Bit operation values
+  static constexpr TT::Entry TT_MOVE_MASK = MOVE_bitMASK;
+  static constexpr TT::Entry TT_VALUE_SHIFT = 32;
+  static constexpr TT::Entry TT_VALUE_MASK = VALUE_bitMASK << TT_VALUE_SHIFT;
+  static constexpr TT::Entry TT_DEPTH_SHIFT = 48;
+  static constexpr TT::Entry TT_DEPTH_MASK = DEPTH_bitMASK << TT_DEPTH_SHIFT;
+  static constexpr TT::Entry TT_AGE_SHIFT = 56;
+  static constexpr TT::Entry TT_AGE_MASK = AGE_bitMASK << TT_AGE_SHIFT;
+  static constexpr TT::Entry TT_TYPE_SHIFT = 59;
+  static constexpr TT::Entry TT_TYPE_MASK = TYPE_bitMASK << TT_TYPE_SHIFT;
+  static constexpr TT::Entry TT_MATE_SHIFT = 61;
+  static constexpr TT::Entry TT_MATE_MASK = MATE_bitMASK << TT_MATE_SHIFT;
 
-  /**
-   * Decodes the value from the entry. Does not have to be a valid value
-   * as it will not be checked during storing or retrieving.
-   * @param data
-   * @return decoded value
-   */
-  static Value getValue(Entry entry);
+  static inline Entry setBestMove(Entry eData, Move bestMove) {
+    eData &= ~TT_MOVE_MASK; // reset old move
+    return eData | bestMove;
+  }
 
-  /**
-   * Encodes the given depth into the bit representation of the long.
-   *
-   * @param entry
-   * @param depth
-   * @return entry with value encoded
-   */
-  static Entry setDepth(Entry entry, Depth depth);
+  static inline Move getBestMove(Entry entry) {
+    return static_cast<Move>(entry & TT_MOVE_MASK);
+  }
 
-  /**
-   * Decodes the depth from the long. Does not have to be a valid depth
-   * as it will ont be checked during storing or retrieving.
-   *
-   * @param data
-   * @return decoded value
-   */
-  static Depth getDepth(Entry data);
+  static inline Entry setValue(Entry entry, Value value) {
+    if (value < VALUE_NONE) { value = VALUE_NONE; }
+    else if (value > VALUE_INF) value = VALUE_INF;
+    // shift to positive short to avoid signed values setting the negative bits
+    value += -VALUE_NONE;
+    assert (value >= 0);
+    entry &= ~TT_VALUE_MASK;
+    return entry | static_cast<Entry>(value) << TT_VALUE_SHIFT;
+  }
 
-  /**
-   * Encodes the given age into the bit representation of the long.
-   * Age value greater 7 will be set to 7.
-   *
-   * @param entry
-   * @param age
-   * @return long with value encoded
-   */
-  static Entry setAge(Entry entry, uint8_t age);
+  static inline Value getValue(Entry entry) {
+    // shift back result to potentially negative value
+    return static_cast<Value>((entry & TT_VALUE_MASK) >> TT_VALUE_SHIFT) + VALUE_NONE;
+  }
 
-  /**
-   * Decodes the age from the long.
-   *
-   * @param data
-   * @return decoded value
-   */
-  static uint8_t getAge(Entry entry);
+  static inline Entry setDepth(Entry entry, Depth depth) {
+    entry &= ~TT_DEPTH_MASK;
+    return entry | static_cast<Entry>(depth) << TT_DEPTH_SHIFT;
+  }
 
-  /**
-   * Encodes default age (1) into the bit representation of the long.
-   *
-   * @param data
-   * @return long with age encoded
-   */
-  static Entry resetAge(Entry entry);
+  static inline Depth getDepth(Entry data) {
+    return static_cast<Depth>((data & TT_DEPTH_MASK) >> TT_DEPTH_SHIFT);
+  }
 
-  /**
-   * Encodes age+1 into the bit representation of the long.
-   * Maximum age of 7 is ensured.
-   *
-   * @param entry
-   * @return long with value encoded
-   */
-  static Entry increaseAge(Entry entry);
+  static inline Entry setAge(Entry entry, uint8_t age) {
+    if (age > 7) age = 7;
+    entry &= ~TT_AGE_MASK;
+    return entry | static_cast<Entry>(age) << TT_AGE_SHIFT;
+  }
 
-  /**
-   * Encodes age-1 into the bit representation of the long.
-   * Minimum age of 0 is ensured.
-   *
-   * @param entry
-   * @return long with value encoded
-   */
-  static Entry decreaseAge(Entry entry);
+  static inline uint8_t getAge(Entry entry) {
+    return static_cast<uint8_t>((entry & TT_AGE_MASK) >> TT_AGE_SHIFT);
+  }
 
-  /**
-  * Encodes the given type into the bit representation of the long.
-  * Accepts values 0 =< value <= 3. Other values will be set to 0.
-  *
-  * @param entry
-  * @param type
-  * @return long with value encoded
-  */
-  static Entry setType(Entry entry, EntryType type);
+  static inline Entry resetAge(Entry entry) {
+    return setAge(entry, (uint8_t) 1);
+  }
 
-  /**
-   * Decodes the type from the entry.
-   *
-   * @param entry
-   * @return decoded value
-   */
-  static EntryType getType(Entry entry);
+  static inline Entry increaseAge(Entry entry) {
+    return setAge(entry, std::min(7, getAge(entry) + 1));
+  }
 
-  /**
-   * Encodes the given mateThreat into the bit representation of the long.
-   *
-   * @param entry
-   * @param mateThreat
-   * @return long with value encoded
-   */
-  static Entry setMateThreat(Entry entry, bool mateThreat);
+  static inline Entry decreaseAge(Entry entry) {
+    return setAge(entry, std::max(0, getAge(entry) - 1));
+  }
 
-  /**
-   * Decodes the mateThreat from the long.
-   *
-   * @param entry
-   * @return decoded value
-   */
-  static bool hasMateThreat(Entry entry);
+  static inline Entry setType(Entry entry, EntryType type) {
+    if (type > 3) type = EntryType::TYPE_NONE;
+    entry &= ~TT_TYPE_MASK;
+    return entry | static_cast<Entry>(type) << TT_TYPE_SHIFT;
+  }
+
+  static inline EntryType getType(Entry entry) {
+    return static_cast<EntryType>((entry & TT_TYPE_MASK) >> TT_TYPE_SHIFT);
+  }
+
+  static inline Entry setMateThreat(Entry entry, bool mateThreat) {
+    if (mateThreat) { return entry | static_cast<Entry>(1) << TT_MATE_SHIFT; }
+    else { return entry & ~TT_MATE_MASK; }
+  }
+
+  static inline bool hasMateThreat(Entry entry) {
+    return ((entry & TT_MATE_MASK) >> TT_MATE_SHIFT) == 1;
+  }
 
   /**
    * Prints a bit representation of an entry

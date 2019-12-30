@@ -37,51 +37,55 @@ public:
   // counter for cut off to measure quality of move ordering
   // long[] betaCutOffs = new long[MAX_MOVES];
 
-  // Info values
+  // Search info values
   Depth currentIterationDepth = DEPTH_NONE;
   Ply currentSearchDepth = PLY_ROOT;
   Ply currentExtraSearchDepth = PLY_ROOT;
   Move currentRootMove = MOVE_NONE;
   int bestMoveChanges = 0;
-  MilliSec lastSearchTime = 0;
   int bestMoveDepth = 0;
+  MilliSec lastSearchTime = 0;
+
+  // performance statistics
+  uint64_t movesGenerated = 0;
+  uint64_t nodesVisited = 0;
 
   // PERFT Values
-  long leafPositionsEvaluated = 0;
-  long nonLeafPositionsEvaluated = 0;
-  long checkCounter = 0;
-  long checkMateCounter = 0;
-  long captureCounter = 0;
-  long enPassantCounter = 0;
+  uint64_t leafPositionsEvaluated = 0;
+  uint64_t nonLeafPositionsEvaluated = 0;
+  uint64_t checkCounter = 0;
+  uint64_t checkMateCounter = 0;
+  uint64_t captureCounter = 0;
+  uint64_t enPassantCounter = 0;
+
+  // TT Statistics
+  uint64_t tt_Hits = 0;
+  uint64_t tt_Misses = 0;
+  uint64_t tt_Cuts = 0;
+  uint64_t tt_NoCut = 0;
 
   // Optimization Values
-  int aspirationResearches = 0;
-  long prunings = 0;
-  long pvs_root_researches = 0;
-  long pvs_root_cutoffs = 0;
-  long pvs_researches = 0;
-  long pvs_cutoffs = 0;
-  long positionsNonQuiet = 0;
-  long tt_Hits = 0;
-  long tt_Misses = 0;
-  long tt_Cuts = 0;
-  long tt_Ignored = 0;
-  long movesGenerated = 0;
-  long nodesVisited = 0;
-  int minorPromotionPrunings = 0;
-  int mateDistancePrunings = 0;
-  int rfpPrunings = 0;
-  int nullMovePrunings = 0;
-  int nullMoveVerifications = 0;
-  int razorReductions = 0;
-  int iidSearches = 0;
-  int lrReductions = 0;
-  int efpPrunings = 0;
-  int fpPrunings = 0;
-  int qfpPrunings = 0;
-  int lmpPrunings = 0;
-  int lmrReductions = 0;
-  int deltaPrunings = 0;
+  uint64_t aspirationResearches = 0;
+  uint64_t prunings = 0;
+  uint64_t pvs_root_researches = 0;
+  uint64_t pvs_root_cutoffs = 0;
+  uint64_t pvs_researches = 0;
+  uint64_t pvs_cutoffs = 0;
+  uint64_t positionsNonQuiet = 0;
+  uint64_t minorPromotionPrunings = 0;
+  uint64_t mateDistancePrunings = 0;
+  uint64_t rfpPrunings = 0;
+  uint64_t nullMovePrunings = 0;
+  uint64_t nullMoveVerifications = 0;
+  uint64_t razorReductions = 0;
+  uint64_t iidSearches = 0;
+  uint64_t lrReductions = 0;
+  uint64_t efpPrunings = 0;
+  uint64_t fpPrunings = 0;
+  uint64_t qfpPrunings = 0;
+  uint64_t lmpPrunings = 0;
+  uint64_t lmrReductions = 0;
+  uint64_t deltaPrunings = 0;
 
   std::string str() const;
   friend std::ostream &operator<<(std::ostream &os, const SearchStats &stats);

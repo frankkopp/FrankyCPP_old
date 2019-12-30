@@ -36,17 +36,17 @@ std::string SearchStats::str() const {
   os << "currentIterationDepth: " << currentIterationDepth << " currentSearchDepth: "
      << currentSearchDepth << " currentExtraSearchDepth: " << currentExtraSearchDepth
      << " currentRootMove: " << currentRootMove << " lastSearchTime: " << lastSearchTime
-     << " bestMoveChanges: " << bestMoveChanges << " leafPositionsEvaluated: "
-     << leafPositionsEvaluated << " nonLeafPositionsEvaluated: "
-     << nonLeafPositionsEvaluated << " checkCounter: " << checkCounter
-     << " checkMateCounter: " << checkMateCounter << " captureCounter: "
-     << captureCounter << " enPassantCounter: " << enPassantCounter
-     << " aspirationResearches: " << aspirationResearches << " prunings: " << prunings
-     << " pvs_root_researches: " << pvs_root_researches << " pvs_root_cutoffs: "
-     << pvs_root_cutoffs << " pvs_researches: " << pvs_researches << " pvs_cutoffs: "
-     << pvs_cutoffs << " positionsNonQuiet: " << positionsNonQuiet << " tt_Hits: "
-     << tt_Hits << " tt_Misses: " << tt_Misses << " tt_Cuts: " << tt_Cuts
-     << " tt_Ignored: " << tt_Ignored << " movesGenerated: " << movesGenerated
+    << " bestMoveChanges: " << bestMoveChanges << " leafPositionsEvaluated: "
+    << leafPositionsEvaluated << " nonLeafPositionsEvaluated: "
+    << nonLeafPositionsEvaluated << " checkCounter: " << checkCounter
+    << " checkMateCounter: " << checkMateCounter << " captureCounter: "
+    << captureCounter << " enPassantCounter: " << enPassantCounter
+    << " aspirationResearches: " << aspirationResearches << " prunings: " << prunings
+    << " pvs_root_researches: " << pvs_root_researches << " pvs_root_cutoffs: "
+    << pvs_root_cutoffs << " pvs_researches: " << pvs_researches << " pvs_cutoffs: "
+    << pvs_cutoffs << " positionsNonQuiet: " << positionsNonQuiet << " tt_Hits: "
+    << tt_Hits << " tt_Misses: " << tt_Misses << " tt_Cuts: " << tt_Cuts
+    << " tt_Ignored: " << tt_NoCut << " movesGenerated: " << movesGenerated
      << " nodesVisited: " << nodesVisited << " minorPromotionPrunings: "
      << minorPromotionPrunings << " mateDistancePrunings: " << mateDistancePrunings
      << " rfpPrunings: " << rfpPrunings << " nullMovePrunings: " << nullMovePrunings

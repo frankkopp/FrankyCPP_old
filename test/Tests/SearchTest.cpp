@@ -341,12 +341,13 @@ TEST_F(SearchTest, PERFT_nps) {
   SearchConfig::USE_QUIESCENCE = true;
   SearchConfig::USE_ALPHABETA = true;
   SearchConfig::USE_KILLER_MOVES = true;
-  SearchConfig::USE_TT = false;
+  SearchConfig::USE_TT = true;
+  SearchConfig::USE_TT_QSEARCH = true;
 
   Search search;
   SearchLimits searchLimits;
   Position position;
-  searchLimits.setMoveTime(30'000);
+  searchLimits.setMoveTime(300'000);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
   
@@ -364,12 +365,13 @@ TEST_F(SearchTest, debugging) {
   SearchConfig::USE_ALPHABETA = true;
   SearchConfig::USE_KILLER_MOVES = true;
   SearchConfig::USE_TT = true;
+  SearchConfig::USE_TT_QSEARCH = true;
 
   Search search;
   SearchLimits searchLimits;
   Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
-  position = Position("2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - -");
-  searchLimits.setDepth(6);
+  position = Position("2r3k1/pppR1pp1/4p3/4P1P1/5P2/1P4K1/P1P5/8 w - -");
+  searchLimits.setDepth(8);
   //searchLimits.setNodes(25'000'000);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();

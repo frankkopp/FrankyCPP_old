@@ -104,6 +104,12 @@ class Search {
 
 private:
 
+  // time check every x nodes
+  // As time checks are expensive we only do them every x-th node.
+  // As we loose precession in time keeping with this this must not be
+  // too high.
+  static constexpr uint64_t TIME_CHECK_FREQ = 0b1111'1111'1111'1111;
+
   // search start time
   MilliSec startTime{};
   MilliSec stopTime{};
@@ -198,9 +204,10 @@ private:
                bool mateThreat);
 
   void configureTimeLimits();
-  inline bool stopConditions();
+  inline bool stopConditions(bool shouldTimeCheck);
   void addExtraTime(const double d);
   inline bool timeLimitReached();
+  inline bool shouldTimeCheck() const;
   static inline MilliSec elapsedTime(const MilliSec t);
   static inline MilliSec elapsedTime(const MilliSec t1, const MilliSec t2);
   static inline MilliSec now();

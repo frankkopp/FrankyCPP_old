@@ -207,7 +207,7 @@ void SearchLimits::setDepth(Depth d) {
   setupLimits();
 }
 
-long SearchLimits::getNodes() const {
+uint64_t SearchLimits::getNodes() const {
   return nodes;
 }
 

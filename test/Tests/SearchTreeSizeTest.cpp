@@ -148,7 +148,7 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   SearchConfig::USE_ALPHABETA = false;
   SearchConfig::USE_KILLER_MOVES = false;
   SearchConfig::USE_TT = false;
-
+  SearchConfig::USE_TT_QSEARCH = false;
 
   // ***********************************
   // TESTS
@@ -159,20 +159,25 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "MINIMAX-QS"));
   //
   //  // pure MiniMax + quiescence
-//  SearchConfig::USE_QUIESCENCE = true;
-//  result.tests.push_back(measureTreeSize(search, position, searchLimits, "MM+QS"));
-//
-//  SearchConfig::USE_TT = true;
-//  result.tests.push_back(measureTreeSize(search, position, searchLimits, "MM+QS+TT"));
+  //  SearchConfig::USE_QUIESCENCE = true;
+  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "MM+QS"));
+  //
+  //  SearchConfig::USE_TT = true;
+  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "MM+QS+TT"));
 
-  // AlphaBeta
-  SearchConfig::USE_TT = false;
+  // AlphaBeta+Killer
+  SearchConfig::USE_QUIESCENCE = true;
   SearchConfig::USE_ALPHABETA = true;
+  SearchConfig::USE_KILLER_MOVES = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "AB"));
 
   // AlphaBeta + tt
   SearchConfig::USE_TT = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "AB+TT"));
+
+  // AlphaBeta + tt
+  SearchConfig::USE_TT_QSEARCH = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "AB+TTQ"));
 
   // AlphaBeta + quiescence + killer
   //  SearchConfig::USE_KILLER_MOVES = true;
@@ -213,42 +218,42 @@ std::vector<std::string> SearchTreeSizeTest::getFENs() {
 
   fen.emplace_back("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
   fen.emplace_back("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
-    fen.emplace_back("8/1P6/6k1/8/8/8/p1K5/8 w - -");
-    fen.emplace_back("1r3rk1/1pnnq1bR/p1pp2B1/P2P1p2/1PP1pP2/2B3P1/5PK1/2Q4R w - -");
-    fen.emplace_back("4rk2/p5p1/1p2P2N/7R/nP5P/5PQ1/b6K/q7 w - -");
-    fen.emplace_back("4k2r/1q1p1pp1/p3p3/1pb1P3/2r3P1/P1N1P2p/1PP1Q2P/2R1R1K1 b k -");
-    fen.emplace_back("r2r1n2/pp2bk2/2p1p2p/3q4/3PN1QP/2P3R1/P4PP1/5RK1 w - -");
-    fen.emplace_back("1kr4r/ppp2bq1/4n3/4P1pp/1NP2p2/2PP2PP/5Q1K/4R2R w - -");
-    fen.emplace_back("1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -");
-    fen.emplace_back("8/5k2/8/8/2N2N2/2B5/2K5/8 w - -");
-    fen.emplace_back("8/8/6k1/8/8/8/P1K5/8 w - -");
-    fen.emplace_back("8/5k2/8/8/8/8/1BK5/1B6 w - -");
-    fen.emplace_back("5r1k/4Qpq1/4p3/1p1p2P1/2p2P2/1p2P3/1K1P4/B7 w - -");
-    fen.emplace_back("1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -");
-    fen.emplace_back("3r1k2/4npp1/1ppr3p/p6P/P2PPPP1/1NR5/5K2/2R5 w - -");
-    fen.emplace_back("2q1rr1k/3bbnnp/p2p1pp1/2pPp3/PpP1P1P1/1P2BNNP/2BQ1PRK/7R b - -");
-    fen.emplace_back("rnbqkb1r/p3pppp/1p6/2ppP3/3N4/2P5/PPP1QPPP/R1B1KB1R w KQkq -");
-    fen.emplace_back("r1b2rk1/2q1b1pp/p2ppn2/1p6/3QP3/1BN1B3/PPP3PP/R4RK1 w - -");
-    fen.emplace_back("2r3k1/pppR1pp1/4p3/4P1P1/5P2/1P4K1/P1P5/8 w - -");
-    fen.emplace_back("1nk1r1r1/pp2n1pp/4p3/q2pPp1N/b1pP1P2/B1P2R2/2P1B1PP/R2Q2K1 w - -");
-    fen.emplace_back("4b3/p3kp2/6p1/3pP2p/2pP1P2/4K1P1/P3N2P/8 w - -");
-    fen.emplace_back("2kr1bnr/pbpq4/2n1pp2/3p3p/3P1P1B/2N2N1Q/PPP3PP/2KR1B1R w - -");
-    fen.emplace_back("3rr1k1/pp3pp1/1qn2np1/8/3p4/PP1R1P2/2P1NQPP/R1B3K1 b - -");
-    fen.emplace_back("2r1nrk1/p2q1ppp/bp1p4/n1pPp3/P1P1P3/2PBB1N1/4QPPP/R4RK1 w - -");
-    fen.emplace_back("r3r1k1/ppqb1ppp/8/4p1NQ/8/2P5/PP3PPP/R3R1K1 b - -");
-    fen.emplace_back("r2q1rk1/4bppp/p2p4/2pP4/3pP3/3Q4/PP1B1PPP/R3R1K1 w - -");
-    fen.emplace_back("rnb2r1k/pp2p2p/2pp2p1/q2P1p2/8/1Pb2NP1/PB2PPBP/R2Q1RK1 w - -");
-    fen.emplace_back("2r3k1/1p2q1pp/2b1pr2/p1pp4/6Q1/1P1PP1R1/P1PN2PP/5RK1 w - -");
-    fen.emplace_back("r1bqkb1r/4npp1/p1p4p/1p1pP1B1/8/1B6/PPPN1PPP/R2Q1RK1 w kq -");
-    fen.emplace_back("r2q1rk1/1ppnbppp/p2p1nb1/3Pp3/2P1P1P1/2N2N1P/PPB1QP2/R1B2RK1 b - -");
-    fen.emplace_back("r1bq1rk1/pp2ppbp/2np2p1/2n5/P3PP2/N1P2N2/1PB3PP/R1B1QRK1 b - -");
-    fen.emplace_back("3rr3/2pq2pk/p2p1pnp/8/2QBPP2/1P6/P5PP/4RRK1 b - -");
-    fen.emplace_back("r4k2/pb2bp1r/1p1qp2p/3pNp2/3P1P2/2N3P1/PPP1Q2P/2KRR3 w - -");
-    fen.emplace_back("3rn2k/ppb2rpp/2ppqp2/5N2/2P1P3/1P5Q/PB3PPP/3RR1K1 w - -");
-    fen.emplace_back("2r2rk1/1bqnbpp1/1p1ppn1p/pP6/N1P1P3/P2B1N1P/1B2QPP1/R2R2K1 b - -");
-    fen.emplace_back("r1bqk2r/pp2bppp/2p5/3pP3/P2Q1P2/2N1B3/1PP3PP/R4RK1 b kq -");
-    fen.emplace_back("r2qnrnk/p2b2b1/1p1p2pp/2pPpp2/1PP1P3/PRNBB3/3QNPPP/5RK1 w - -");
-    fen.emplace_back("r3qb1k/1b4p1/p2pr2p/3n4/Pnp1N1N1/6RP/1B3PP1/1B1QR1K1 w - -");
+  fen.emplace_back("8/1P6/6k1/8/8/8/p1K5/8 w - -");
+  fen.emplace_back("1r3rk1/1pnnq1bR/p1pp2B1/P2P1p2/1PP1pP2/2B3P1/5PK1/2Q4R w - -");
+  fen.emplace_back("4rk2/p5p1/1p2P2N/7R/nP5P/5PQ1/b6K/q7 w - -");
+  fen.emplace_back("4k2r/1q1p1pp1/p3p3/1pb1P3/2r3P1/P1N1P2p/1PP1Q2P/2R1R1K1 b k -");
+  fen.emplace_back("r2r1n2/pp2bk2/2p1p2p/3q4/3PN1QP/2P3R1/P4PP1/5RK1 w - -");
+  fen.emplace_back("1kr4r/ppp2bq1/4n3/4P1pp/1NP2p2/2PP2PP/5Q1K/4R2R w - -");
+  fen.emplace_back("1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -");
+  fen.emplace_back("8/5k2/8/8/2N2N2/2B5/2K5/8 w - -");
+  fen.emplace_back("8/8/6k1/8/8/8/P1K5/8 w - -");
+  fen.emplace_back("8/5k2/8/8/8/8/1BK5/1B6 w - -");
+  fen.emplace_back("5r1k/4Qpq1/4p3/1p1p2P1/2p2P2/1p2P3/1K1P4/B7 w - -");
+  fen.emplace_back("1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -");
+  fen.emplace_back("3r1k2/4npp1/1ppr3p/p6P/P2PPPP1/1NR5/5K2/2R5 w - -");
+  fen.emplace_back("2q1rr1k/3bbnnp/p2p1pp1/2pPp3/PpP1P1P1/1P2BNNP/2BQ1PRK/7R b - -");
+  fen.emplace_back("rnbqkb1r/p3pppp/1p6/2ppP3/3N4/2P5/PPP1QPPP/R1B1KB1R w KQkq -");
+  fen.emplace_back("r1b2rk1/2q1b1pp/p2ppn2/1p6/3QP3/1BN1B3/PPP3PP/R4RK1 w - -");
+  fen.emplace_back("2r3k1/pppR1pp1/4p3/4P1P1/5P2/1P4K1/P1P5/8 w - -");
+  fen.emplace_back("1nk1r1r1/pp2n1pp/4p3/q2pPp1N/b1pP1P2/B1P2R2/2P1B1PP/R2Q2K1 w - -");
+  fen.emplace_back("4b3/p3kp2/6p1/3pP2p/2pP1P2/4K1P1/P3N2P/8 w - -");
+  fen.emplace_back("2kr1bnr/pbpq4/2n1pp2/3p3p/3P1P1B/2N2N1Q/PPP3PP/2KR1B1R w - -");
+  fen.emplace_back("3rr1k1/pp3pp1/1qn2np1/8/3p4/PP1R1P2/2P1NQPP/R1B3K1 b - -");
+//  fen.emplace_back("2r1nrk1/p2q1ppp/bp1p4/n1pPp3/P1P1P3/2PBB1N1/4QPPP/R4RK1 w - -");
+//  fen.emplace_back("r3r1k1/ppqb1ppp/8/4p1NQ/8/2P5/PP3PPP/R3R1K1 b - -");
+//  fen.emplace_back("r2q1rk1/4bppp/p2p4/2pP4/3pP3/3Q4/PP1B1PPP/R3R1K1 w - -");
+//  fen.emplace_back("rnb2r1k/pp2p2p/2pp2p1/q2P1p2/8/1Pb2NP1/PB2PPBP/R2Q1RK1 w - -");
+//  fen.emplace_back("2r3k1/1p2q1pp/2b1pr2/p1pp4/6Q1/1P1PP1R1/P1PN2PP/5RK1 w - -");
+//  fen.emplace_back("r1bqkb1r/4npp1/p1p4p/1p1pP1B1/8/1B6/PPPN1PPP/R2Q1RK1 w kq -");
+//  fen.emplace_back("r2q1rk1/1ppnbppp/p2p1nb1/3Pp3/2P1P1P1/2N2N1P/PPB1QP2/R1B2RK1 b - -");
+//  fen.emplace_back("r1bq1rk1/pp2ppbp/2np2p1/2n5/P3PP2/N1P2N2/1PB3PP/R1B1QRK1 b - -");
+//  fen.emplace_back("3rr3/2pq2pk/p2p1pnp/8/2QBPP2/1P6/P5PP/4RRK1 b - -");
+//  fen.emplace_back("r4k2/pb2bp1r/1p1qp2p/3pNp2/3P1P2/2N3P1/PPP1Q2P/2KRR3 w - -");
+//  fen.emplace_back("3rn2k/ppb2rpp/2ppqp2/5N2/2P1P3/1P5Q/PB3PPP/3RR1K1 w - -");
+//  fen.emplace_back("2r2rk1/1bqnbpp1/1p1ppn1p/pP6/N1P1P3/P2B1N1P/1B2QPP1/R2R2K1 b - -");
+//  fen.emplace_back("r1bqk2r/pp2bppp/2p5/3pP3/P2Q1P2/2N1B3/1PP3PP/R4RK1 b kq -");
+//  fen.emplace_back("r2qnrnk/p2b2b1/1p1p2pp/2pPpp2/1PP1P3/PRNBB3/3QNPPP/5RK1 w - -");
+//  fen.emplace_back("r3qb1k/1b4p1/p2pr2p/3n4/Pnp1N1N1/6RP/1B3PP1/1B1QR1K1 w - -");
 
   fen.emplace_back("rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -");
   fen.emplace_back("r3k2r/pp2qppp/2n1pn2/bN5b/3P4/P3BN1P/1P2BPP1/R2Q1RK1 w kq -");
@@ -261,13 +266,13 @@ std::vector<std::string> SearchTreeSizeTest::getFENs() {
   fen.emplace_back("1r6/2q2pkp/5p2/4p3/3pB3/2bQ2P1/P3PP1P/5RK1 w - -");
   fen.emplace_back("5k1q/5p2/5p2/4p3/3pB1QP/6P1/4PP2/b5K1 w - -");
   fen.emplace_back("2q5/4kp2/5p2/4p3/2Bp3P/2b2QP1/4PP2/6K1 w - -");
-  fen.emplace_back("8/4kp2/3q4/4pp2/2Bp3P/2b3P1/Q3PP2/6K1 w - -");
-  fen.emplace_back("1Q6/4k3/5q2/1B3p2/3pp2P/6P1/3bPP2/6K1 w - -");
-  fen.emplace_back("4k3/2Q5/5q2/5p2/2Bp1P1P/6P1/3b4/5K2 w - -");
-  fen.emplace_back("1k6/4Q3/2q5/5B2/3p1P1P/4b1P1/8/5K2 w - -");
-  fen.emplace_back("rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -");
-  fen.emplace_back("r3k2r/pp3ppp/2nqpn2/4N3/3P4/P1b1B3/1P2QPPP/R4RK1 w kq -");
-  fen.emplace_back("4k2r/p4ppp/1p2pn2/8/2rP1B2/P1P5/5PPP/RR4K1 w k -");
+//  fen.emplace_back("8/4kp2/3q4/4pp2/2Bp3P/2b3P1/Q3PP2/6K1 w - -");
+//  fen.emplace_back("1Q6/4k3/5q2/1B3p2/3pp2P/6P1/3bPP2/6K1 w - -");
+//  fen.emplace_back("4k3/2Q5/5q2/5p2/2Bp1P1P/6P1/3b4/5K2 w - -");
+//  fen.emplace_back("1k6/4Q3/2q5/5B2/3p1P1P/4b1P1/8/5K2 w - -");
+//  fen.emplace_back("rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -");
+//  fen.emplace_back("r3k2r/pp3ppp/2nqpn2/4N3/3P4/P1b1B3/1P2QPPP/R4RK1 w kq -");
+//  fen.emplace_back("4k2r/p4ppp/1p2pn2/8/2rP1B2/P1P5/5PPP/RR4K1 w k -");
   //  fen.emplace_back("r5k1/5ppp/p1RBpn2/1p6/r2P4/P1P5/5PPP/1R3K2 w - -");
   //  fen.emplace_back("8/3r1pk1/p1R2p2/1p5p/r2p4/PRP1K1P1/5P1P/8 w - -");
   //  fen.emplace_back("r1bqk2r/pp1n1ppp/2pbpn2/3p4/2PP4/3BPN2/PP1N1PPP/R1BQK2R w KQkq -");

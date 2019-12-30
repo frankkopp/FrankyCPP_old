@@ -45,7 +45,7 @@ class SearchLimits {
 
   // extra limits
   Depth depth = DEPTH_NONE;
-  long nodes = 0;
+  uint64_t nodes = 0;
   MoveList moves{};
 
   // no time control
@@ -101,7 +101,7 @@ public:
   Depth getDepth() const;
   void setDepth(int d);
   void setDepth(Depth d);
-  long getNodes() const;
+  uint64_t getNodes() const;
   void setNodes(long n);
   const MoveList &getMoves() const;
   void setMoves(const MoveList &moveList);
