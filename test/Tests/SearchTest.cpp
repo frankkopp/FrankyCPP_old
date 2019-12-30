@@ -111,7 +111,7 @@ TEST_F(SearchTest, timewhite) {
   searchLimits.setBlackTime(60'000);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
-  ASSERT_TRUE(search.getSearchStats().lastSearchTime < (searchLimits.getWhiteTime() / 40));
+  ASSERT_TRUE(search.getSearchStats().lastSearchTime < (searchLimits.getWhiteTime() / 40) + 200);
 }
 
 TEST_F(SearchTest, timeblack) {
@@ -123,7 +123,7 @@ TEST_F(SearchTest, timeblack) {
   searchLimits.setBlackTime(60'000);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
-  ASSERT_TRUE(search.getSearchStats().lastSearchTime < (searchLimits.getBlackTime() / 40));
+  ASSERT_TRUE(search.getSearchStats().lastSearchTime < (searchLimits.getBlackTime() / 40) + 200);
 }
 
 TEST_F(SearchTest, mate0Search) {
@@ -216,8 +216,9 @@ TEST_F(SearchTest, goodCapture) {
   Position position;
   
   // no capture
-  position = Position();
-  ASSERT_FALSE(search.goodCapture(position, createMove("e2e4")));
+  // goodCapture does not check this any longer - unnecessary if only called for capture moves.
+  //  position = Position();
+  //  ASSERT_FALSE(search.goodCapture(position, createMove("e2e4")));
   
   // TODO goodCapture Tests
   // 2q1r1k1/rppb4/3p1Pp1/p4n1p/2P1n1PN/7P/PP3Q1K/2BRRB2 b - - 0 2
@@ -242,7 +243,7 @@ TEST_F(SearchTest, goodCapture) {
   
   position = Position("2q1r1k1/rppb4/3p1Pp1/p4n1p/2P1n1PN/7P/PP3Q1K/2BRRB2 w - -");
   ASSERT_TRUE(search.goodCapture(position, createMove("g4f5"))); // pawn capture
-  ASSERT_TRUE(search.goodCapture(position, createMove("g4h5"))); // pawn capture
+  ASSERT_FALSE(search.goodCapture(position, createMove("g4h5"))); // pawn capture
   ASSERT_TRUE(search.goodCapture(position, createMove("f2a7"))); // not defended
   ASSERT_TRUE(search.goodCapture(position, createMove("h4g6"))); // not defended
   ASSERT_FALSE(search.goodCapture(position, createMove("h4f5"))); // Nxn
@@ -255,8 +256,7 @@ TEST_F(SearchTest, goodCapture) {
   ASSERT_TRUE(search.goodCapture(position, createMove("e8e4"))); // recapture
   ASSERT_TRUE(search.goodCapture(position, createMove("a4d1"))); // bxR
   ASSERT_TRUE(search.goodCapture(position, createMove("f5h4"))); // nor defended
-  ASSERT_TRUE(search.goodCapture(position, createMove("h5g4"))); // pawn
-  
+  ASSERT_FALSE(search.goodCapture(position, createMove("h5g4"))); // pawn
   ASSERT_FALSE(search.goodCapture(position, createMove("h4f5"))); // Nxn
   
 }
@@ -269,13 +269,14 @@ TEST_F(SearchTest, quiescenceTest) {
   searchLimits.setDepth(2);
   
   SearchConfig::USE_ALPHABETA = false;
-  
+  SearchConfig::USE_TT = false;
+
   SearchConfig::USE_QUIESCENCE = false;
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
   auto nodes1 = search.getSearchStats().nodesVisited;
   auto extra1 = search.getSearchStats().currentExtraSearchDepth;
-  
+
   SearchConfig::USE_QUIESCENCE = true;
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();

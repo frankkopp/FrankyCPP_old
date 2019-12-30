@@ -1,17 +1,19 @@
-v 0.4 (plan)
+v 0.x (plan)
 ================================================================================
 - TODO:
+    - Extended Evaluation
+    - EvalCache
     - MDP, MPP, RFP, NMP, RAZOR, IID, LFP. LFR, ...
     - Aspiration Window Search
+    - Simple Opening Book
 
 v 0.3 (in progress)
 ================================================================================
 - TODO:
     - PVS
     - PV from TT
-    - Extended Evaluation
-    - EvalCache
-    - Simple Opening Book
+    - MDP, MPP, RFP, NMP, RAZOR, IID, LFP. LFR, ...
+    - Testing and Debugging
 
 v 0.2 (done)
 ================================================================================

@@ -89,9 +89,6 @@ class Search {
   SearchLimits searchLimits;
   SearchStats searchStats;
 
-  // current position
-  Position myPosition;
-
   // search state
   std::atomic_bool running = false;
   std::atomic_bool stopSearchFlag = false;
@@ -101,8 +98,6 @@ class Search {
 
   // transposition table (singleton)
   TT tt;
-
-private:
 
   // time check every x nodes
   // As time checks are expensive we only do them every x-th node.
@@ -183,7 +178,7 @@ private:
 
   FRIEND_TEST(SearchTest, goodCapture);
 
-  void run();
+  void run(Position position);
 
   SearchResult iterativeDeepening(Position &refPosition);
 

@@ -69,11 +69,7 @@ void Search::startSearch(const Position &pos, SearchLimits &limits) {
   // make sure we have a semaphore available
   searchSemaphore.reset();
 
-  // pos is a deep copy of the position parameter to not change
-  // the original position given
-  myPosition = pos;
   searchLimits = limits;
-  myColor = myPosition.getNextPlayer();
 
   // join() previous thread
   if (myThread.joinable()) myThread.join();
@@ -81,7 +77,7 @@ void Search::startSearch(const Position &pos, SearchLimits &limits) {
 
   // start search in a separate thread
   LOG->debug("Starting search in separate thread.");
-  myThread = std::thread(&Search::run, this);
+  myThread = std::thread(&Search::run, this, pos);
 
   // wait until thread is initialized before returning to caller
   initSemaphore.getOrWait();
@@ -178,8 +174,9 @@ void Search::ponderhit() {
  * After the search has stopped calls <code>Engine.sendResult(searchResult)</code>
  * to store/hand over the result. After storing the result the search is ended
  * and the thread terminated.<br>
+ * @param position the position to be searched given as value (copied)
  */
-void Search::run() {
+void Search::run(Position position) {
 
   // get the search lock
   searchSemaphore.getOrWait();
@@ -191,6 +188,7 @@ void Search::run() {
   startTime = lastUciUpdateTime = now();
 
   // Initialize for new search
+  myColor = position.getNextPlayer();
   lastSearchResult = SearchResult();
   timeLimit = extraTime = 0;
   searchStats = SearchStats();
@@ -227,7 +225,7 @@ void Search::run() {
   if (searchLimits.isTimeControl()) configureTimeLimits();
 
   // start iterative deepening
-  lastSearchResult = iterativeDeepening(myPosition);
+  lastSearchResult = iterativeDeepening(position);
 
   // if the mode still is ponder at this point we finished the ponder
   // search early before a miss or hit has been signaled. We need to
@@ -314,7 +312,7 @@ SearchResult Search::iterativeDeepening(Position &position) {
     searchStats.bestMoveChanges = 0;
     searchStats.nodesVisited++;
 
-    // protect the TT from being resozed or cleared during search
+    // protect the TT from being resized or cleared during search
     tt_lock.lock();
 
     // ###########################################
@@ -655,7 +653,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
     assert (ttType == TT::TYPE_ALPHA);
     TRACE(LOG, "{:>{}}Depth {} cv {} NO LEGAL MOVES", "", ply, ply,
           printMoveListUCI(currentVariation));
-    if (myPosition.hasCheck()) {
+    if (position.hasCheck()) {
       // If the position has check we have a mate even in
       // quiescence as we will have generated all moves
       // because of the check.
