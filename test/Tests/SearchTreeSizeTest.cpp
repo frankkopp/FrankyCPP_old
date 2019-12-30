@@ -36,7 +36,7 @@ using testing::Eq;
 class SearchTreeSizeTest : public ::testing::Test {
 public:
 
-  static constexpr int DEPTH = 8;
+  static constexpr int DEPTH = 6;
 
   struct SingleTest {
     std::string name = "";

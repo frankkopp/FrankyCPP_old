@@ -4,7 +4,7 @@ v 0.4 (plan)
     - MDP, MPP, RFP, NMP, RAZOR, IID, LFP. LFR, ...
     - Aspiration Window Search
 
-v 0.3 (plan)
+v 0.3 (in progress)
 ================================================================================
 - TODO:
     - PVS
@@ -13,7 +13,7 @@ v 0.3 (plan)
     - EvalCache
     - Simple Opening Book
 
-v 0.2 (in progress)
+v 0.2 (done)
 ================================================================================
 - DONE:
     - Testing & Debugging
