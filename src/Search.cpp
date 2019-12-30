@@ -572,14 +572,14 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
       return VALUE_NONE;
     }
 
-    // In PERFT we can ignore values and pruning
-    if (PERFT) continue;
-
     // For root moves encode value into the move
     // so we can sort the move before the next iteration
     if (ST == ROOT) {
       setValue(rootMoves.at(currentMoveIndex++), value);
     }
+
+    // In PERFT we can ignore values and pruning
+    if (PERFT) continue;
 
     // Did we find a better move for this node?
     // For the first move this is always the case.

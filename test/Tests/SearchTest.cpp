@@ -320,21 +320,22 @@ TEST_F(SearchTest, alphaBetaTest) {
 }
 
 TEST_F(SearchTest, perft) {
+
+  int DEPTH = 5;
+
+  long perftResults[] = { 0, 20, 400, 8'902, 197'281, 4'865'609, 119'060'324, 3'195'901'860 };
+
   Search search;
   SearchLimits searchLimits;
   Position position;
   searchLimits.setPerft(true);
-  searchLimits.setDepth(6);
+  searchLimits.setDepth(DEPTH);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
-  LOG->info("Nodes per sec: {:n}", (search.getSearchStats().leafPositionsEvaluated * 1'000) /
+  LOG->info("Leaf nodes per sec: {:n}", (search.getSearchStats().leafPositionsEvaluated * 1'000) /
                                    search.getSearchStats().lastSearchTime);
-  LOG->info("Leaf nodes:    {:n}", search.getSearchStats().leafPositionsEvaluated);
-  ASSERT_EQ(119'060'324, search.getSearchStats().leafPositionsEvaluated);
-  // 4 = 197'281
-  // 5 = 4'865'609
-  // 6 = 119'060'324
-  // 7 = 3'195'901'860
+  LOG->info("Leaf nodes:         {:n}", search.getSearchStats().leafPositionsEvaluated);
+  ASSERT_EQ(perftResults[DEPTH], search.getSearchStats().leafPositionsEvaluated);
 }
 
 TEST_F(SearchTest, PERFT_nps) {
@@ -348,7 +349,7 @@ TEST_F(SearchTest, PERFT_nps) {
   Search search;
   SearchLimits searchLimits;
   Position position;
-  searchLimits.setMoveTime(300'000);
+  searchLimits.setMoveTime(30'000);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
   
