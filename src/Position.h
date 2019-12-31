@@ -26,10 +26,7 @@
 #ifndef FRANKYCPP_POSITION_H
 #define FRANKYCPP_POSITION_H
 
-#include <cstdint>
-
 #include "../test/lib/googletest-master/googletest/include/gtest/gtest_prod.h"
-
 #include "types.h"
 #include "MoveGenerator.h"
 
@@ -342,6 +339,15 @@ public:
   */
   Move getLastMove() const {
     return historyCounter > 0 ? moveHistory[historyCounter - 1] : MOVE_NONE;
+  };
+
+  /**
+   * Determines if a move on this position is a capturing move
+   * @param move
+   * @return true if move captures (incl. en passant)
+   */
+  inline bool isCapturingMove(const Move &move) {
+    return occupiedBB[(~nextPlayer)] & getToSquare(move) || typeOf(move) == ENPASSANT;
   };
 
   ////////////////////////////////////////////////

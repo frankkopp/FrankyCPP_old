@@ -368,13 +368,14 @@ TEST_F(SearchTest, debugging) {
   SearchConfig::USE_KILLER_MOVES = true;
   SearchConfig::USE_TT = true;
   SearchConfig::USE_TT_QSEARCH = true;
+  SearchConfig::USE_MDP = true;
 
   Search search;
   SearchLimits searchLimits;
   Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
-  position = Position("2r3k1/pppR1pp1/4p3/4P1P1/5P2/1P4K1/P1P5/8 w - -");
-  searchLimits.setDepth(8);
-  //searchLimits.setNodes(25'000'000);
+  //position = Position("2r3k1/pppR1pp1/4p3/4P1P1/5P2/1P4K1/P1P5/8 w - -");
+  //searchLimits.setDepth(8);
+  searchLimits.setNodes(25'000'000);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 }

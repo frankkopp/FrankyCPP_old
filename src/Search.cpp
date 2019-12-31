@@ -399,11 +399,16 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
       searchStats.currentSearchDepth = std::max(searchStats.currentSearchDepth, ply);
       searchStats.currentExtraSearchDepth = std::max(searchStats.currentExtraSearchDepth, ply);
       if (depth <= DEPTH_NONE || ply >= PLY_MAX - 1) {
-        return search<QUIESCENCE>(position, depth, ply, alpha, beta);
+        if (SearchConfig::USE_QUIESCENCE && !PERFT) {
+          return search<QUIESCENCE>(position, depth, ply, alpha, beta);
+        }
+        else {
+          return evaluate(position, ply);
+        }
       }
       break;
     case QUIESCENCE:
-      if (PERFT || ply >= PLY_MAX - 1 || !SearchConfig::USE_QUIESCENCE) {
+      if (ply >= PLY_MAX - 1) {
         return evaluate(position, ply);
       }
       searchStats.currentExtraSearchDepth = std::max(searchStats.currentExtraSearchDepth, ply);
@@ -413,6 +418,22 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
   if (stopConditions(shouldTimeCheck())) {
     return VALUE_NONE;
   }
+
+  // ###############################################
+  // Mate Distance Pruning            @formatter:off
+  // Did we already find a shorter mate then ignore
+  // this one.
+  if (ST != ROOT && SearchConfig::USE_MDP && !PERFT) {
+    alpha = std::max(-VALUE_CHECKMATE + static_cast<Value>(ply), alpha);
+    beta = std::min(VALUE_CHECKMATE - static_cast<Value>(ply), beta);
+    if (alpha >= beta) {
+      assert (isCheckMateValue(alpha));
+      searchStats.mateDistancePrunings++;
+      TRACE(LOG, "{:>{}}Search in ply %d for depth %d: MDP CUT", "", ply, ply, depth);
+      return alpha;
+    }
+  } // @formatter:on
+  // ###############################################
 
   // prepare node search
   Value bestNodeValue = VALUE_NONE;
@@ -425,9 +446,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
   Move ttMove = MOVE_NONE;
   Value ttValue = VALUE_MIN;
   if ((SearchConfig::USE_TT && !PERFT) && (!(ST == QUIESCENCE) || SearchConfig::USE_TT_QSEARCH)) {
-
     TT::Entry ttEntry = tt.get(position.getZobristKey());
-
     if (ttEntry != 0) { // HIT
       searchStats.tt_Hits++;
       // get best move independent from tt entry depth
@@ -596,7 +615,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
         // this node
         if (value >= beta) { // fail-high
           // save killer moves so they will be searched earlier on following nodes
-          if (SearchConfig::USE_KILLER_MOVES) {
+          if (SearchConfig::USE_KILLER_MOVES && !position.isCapturingMove(move)) {
             moveGenerators[ply].storeKiller(move, SearchConfig::NO_KILLER_MOVES);
           }
           searchStats.prunings++;
@@ -678,8 +697,8 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
   }
 
   TRACE(LOG, "{:>{}}Search {} in ply {} for depth {}: END value={} ({} moves searched) ({})", "",
-        ply, (ST == ROOT ? "ROOT" : ST == NONROOT ? "NONROOT" : "QUIESCENCE"), ply, depth, bestNodeValue,
-        movesSearched, printMoveListUCI(currentVariation));
+        ply, (ST == ROOT ? "ROOT" : ST == NONROOT ? "NONROOT" : "QUIESCENCE"), ply, depth,
+        bestNodeValue, movesSearched, printMoveListUCI(currentVariation));
 
   assert (PERFT || (bestNodeValue > VALUE_MIN && bestNodeValue < VALUE_MAX &&
                     "bestNodeValue should not be MIN/MAX here"));
@@ -706,6 +725,21 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
   }
 
   return bestNodeValue;
+}
+
+Value Search::evaluate(Position &position, Ply ply) {
+  // count all leaf nodes evaluated
+  searchStats.leafPositionsEvaluated++;
+
+  // PERFT stats
+  // TODO: more perft stats
+  if (searchLimits.isPerft()) {
+    return VALUE_ONE;
+  }
+
+  Value value = evaluator.evaluate(position);
+  TRACE(LOG, "{:>{}} Evaluation: {} {}", " ", ply, printMoveListUCI(currentVariation), value);
+  return value;
 }
 
 /**
@@ -750,8 +784,7 @@ Move Search::getMove(Position &position, int ply) {
  * TODO: Improve, add SEE
  */
 bool Search::goodCapture(Position &position, Move move) {
-  assert (
-    position.getPiece(getToSquare(move)) != PIECE_NONE || typeOf(move) == MoveType::ENPASSANT);
+  assert (position.isCapturingMove(move));
   return
     // all pawn captures - they never loose material
     // typeOf(position.getPiece(getFromSquare(move))) == PAWN
@@ -772,21 +805,6 @@ bool Search::goodCapture(Position &position, Move move) {
     || !position.isAttacked(getToSquare(move), ~position.getNextPlayer());
 }
 
-Value Search::evaluate(Position &position, Ply ply) {
-  // count all leaf nodes evaluated
-  searchStats.leafPositionsEvaluated++;
-
-  // PERFT stats
-  // TODO: more perft stats
-  if (searchLimits.isPerft()) {
-    return VALUE_ONE;
-  }
-
-  Value value = evaluator.evaluate(position);
-  TRACE(LOG, "{:>{}} Evaluation: {} {}", " ", ply, printMoveListUCI(currentVariation), value);
-  return value;
-}
-
 inline void
 Search::storeTT(Position &position, Value value, TT::EntryType ttType, Depth depth, Move bestMove,
                 bool mateThreat) {
@@ -799,6 +817,7 @@ Search::storeTT(Position &position, Value value, TT::EntryType ttType, Depth dep
 #else
   tt.put(position.getZobristKey(), value, ttType, depth, bestMove, mateThreat);
 #endif
+
 }
 
 inline bool Search::stopConditions(bool shouldTimeCheck) {
