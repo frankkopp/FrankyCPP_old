@@ -27,7 +27,6 @@
 #include "Search.h"
 #include "SearchConfig.h"
 #include "Engine.h"
-#include "TT.h"
 
 ////////////////////////////////////////////////
 ///// CONSTRUCTORS
@@ -550,6 +549,26 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
       continue;
     }
 
+    // compute if this move gives chess
+    bool givesCheck = position.givesCheck(move);
+
+    // ###############################################
+    // Minor Promotion Pruning
+    // Skip non queen or knight promotion as they are
+    // redundant. Exception would be stale mate situations
+    // which we ignore.
+    if (ST != ROOT && SearchConfig::USE_MPP && !PERFT) {
+      if (typeOf(move) == PROMOTION && promotionType(move) != QUEEN &&
+          promotionType(move) != KNIGHT) {
+        searchStats.minorPromotionPrunings++;
+        TRACE(LOG, "{:>{}}Search in ply {} for depth {}: Move {} MPP CUT",
+          "", ply, ply, depth, printMove(move));
+        continue;
+      }
+    }
+    // ###############################################
+
+
     // ************************************
     // Execute move
     position.doMove(move);
@@ -1067,8 +1086,6 @@ void Search::sendSearchUpdateToEngine() {
 
     LOG->debug(tt.str());
   }
-
-
 }
 
 void Search::sendResultToEngine() const {

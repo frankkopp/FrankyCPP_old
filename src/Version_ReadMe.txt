@@ -3,7 +3,7 @@ v 0.x (plan)
 - TODO:
     - Extended Evaluation
     - EvalCache
-    - MDP, MPP, RFP, NMP, RAZOR, IID, LFP. LFR, ...
+    - MPP, RFP, NMP, RAZOR, IID, LFP. LFR, ...
     - Aspiration Window Search
     - Simple Opening Book
 
@@ -14,6 +14,8 @@ v 0.3 (in progress)
     - PV from TT
     - MDP, MPP, RFP, NMP, RAZOR, IID, LFP. LFR, ...
     - Testing and Debugging
+- DONE:
+    - MDP
 
 v 0.2 (done)
 ================================================================================

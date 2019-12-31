@@ -41,13 +41,11 @@ public:
     // turn off info and below logging in the application
     spdlog::set_level(spdlog::level::trace);
   }
-  
+
   std::shared_ptr<spdlog::logger> LOG = spdlog::get("Test_Logger");
 protected:
-  void SetUp() override {
-    LOG->set_level(spdlog::level::trace);
-  }
-  
+  void SetUp() override {}
+
   void TearDown() override {}
 };
 
@@ -173,13 +171,13 @@ TEST_F(SearchTest, repetitionForce) {
   position.doMove(createMove("h4d8"));
   position.doMove(createMove("g8h7"));
   // next white move would be 3-fold draw
-  
+
   searchLimits.setDepth(4);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
-  
+
   LOG->info("Repetition move: {}", printMoveVerbose(search.getLastSearchResult().bestMove));
-  
+
   ASSERT_EQ("d8h4", printMove(search.getLastSearchResult().bestMove));
   ASSERT_EQ(VALUE_DRAW, valueOf(search.getLastSearchResult().bestMove));
 }
@@ -198,14 +196,14 @@ TEST_F(SearchTest, repetitionAvoid) {
   position.doMove(createMove("h4d8"));
   // black should not move Kg8h7 as this would enable white to  3-fold repetition
   // although black is winning
-  
+
   searchLimits.setDepth(4);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
-  
+
   LOG->info("Repetition avoidance move: {}",
             printMoveVerbose(search.getLastSearchResult().bestMove));
-  
+
   ASSERT_NE("g8f7", printMove(search.getLastSearchResult().bestMove));
   ASSERT_NE(VALUE_DRAW, valueOf(search.getLastSearchResult().bestMove));
 }
@@ -214,12 +212,12 @@ TEST_F(SearchTest, repetitionAvoid) {
 TEST_F(SearchTest, goodCapture) {
   Search search;
   Position position;
-  
+
   // no capture
   // goodCapture does not check this any longer - unnecessary if only called for capture moves.
   //  position = Position();
   //  ASSERT_FALSE(search.goodCapture(position, createMove("e2e4")));
-  
+
   // TODO goodCapture Tests
   // 2q1r1k1/rppb4/3p1Pp1/p4n1p/2P1n1PN/7P/PP3Q1K/2BRRB2 b - - 0 2
   //    +---+---+---+---+---+---+---+---+
@@ -240,7 +238,7 @@ TEST_F(SearchTest, goodCapture) {
   // 1 |   |   | B | R | R | B |   |   |
   //   +---+---+---+---+---+---+---+---+
   //     A   B   C   D   E   F   G   H
-  
+
   position = Position("2q1r1k1/rppb4/3p1Pp1/p4n1p/2P1n1PN/7P/PP3Q1K/2BRRB2 w - -");
   ASSERT_TRUE(search.goodCapture(position, createMove("g4f5"))); // pawn capture
   ASSERT_FALSE(search.goodCapture(position, createMove("g4h5"))); // pawn capture
@@ -250,7 +248,7 @@ TEST_F(SearchTest, goodCapture) {
   ASSERT_FALSE(search.goodCapture(position, createMove("e1e4"))); // Rxn
   ASSERT_FALSE(search.goodCapture(position, createMove("f2f5"))); // Qxn
   ASSERT_FALSE(search.goodCapture(position, createMove("d1d6"))); // Rxp
-  
+
   position = Position("2q1r1k1/rpp5/3p1Pp1/p4n1p/b1P1n1PN/5Q1P/PP5K/2BRRB2 w - -");
   position.doMove(createMove("e1e4"));
   ASSERT_TRUE(search.goodCapture(position, createMove("e8e4"))); // recapture
@@ -258,16 +256,16 @@ TEST_F(SearchTest, goodCapture) {
   ASSERT_TRUE(search.goodCapture(position, createMove("f5h4"))); // nor defended
   ASSERT_FALSE(search.goodCapture(position, createMove("h5g4"))); // pawn
   ASSERT_FALSE(search.goodCapture(position, createMove("h4f5"))); // Nxn
-  
+
 }
 
 TEST_F(SearchTest, quiescenceTest) {
-  
+
   Search search;
   SearchLimits searchLimits;
   Position position;
   searchLimits.setDepth(2);
-  
+
   SearchConfig::USE_ALPHABETA = false;
   SearchConfig::USE_TT = false;
 
@@ -282,48 +280,71 @@ TEST_F(SearchTest, quiescenceTest) {
   search.waitWhileSearching();
   auto nodes2 = search.getSearchStats().nodesVisited;
   auto extra2 = search.getSearchStats().currentExtraSearchDepth;
-  
+
   LOG->info("Nodes without Quiescence: {:n} Nodes with Quiescence: {:n}", nodes1, nodes2);
   LOG->info("Extra without Quiescence: {:n} Extra with Quiescence: {:n}", extra1, extra2);
-  
+
   ASSERT_GT(nodes2, nodes1);
   ASSERT_GT(extra2, extra1);
 }
 
 TEST_F(SearchTest, alphaBetaTest) {
-  
+
   Search search;
   SearchLimits searchLimits;
   Position position;
   searchLimits.setDepth(4);
-  
+
   SearchConfig::USE_QUIESCENCE = true;
-  
+
   SearchConfig::USE_ALPHABETA = false;
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
   auto leafPositionsEvaluated1 = search.getSearchStats().leafPositionsEvaluated;
   auto nodesVisited1 = search.getSearchStats().nodesVisited;
-  
+
   SearchConfig::USE_ALPHABETA = true;
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
   auto leafPositionsEvaluated2 = search.getSearchStats().leafPositionsEvaluated;
   auto nodesVisited2 = search.getSearchStats().nodesVisited;
-  
+
   LOG->info("Nodes without AlphaBeta: Visited: {:n} Evaluated {:n}", nodesVisited1,
             leafPositionsEvaluated1);
   LOG->info("Nodes with AlphaBeta: Visited: {:n} Evaluated {:n}", nodesVisited2,
             leafPositionsEvaluated2);
-  
+
   ASSERT_GT(nodesVisited1, nodesVisited2);
+}
+
+TEST_F(SearchTest, MDPMPP) {
+
+  SearchConfig::USE_QUIESCENCE = true;
+  SearchConfig::USE_ALPHABETA = true;
+  SearchConfig::USE_KILLER_MOVES = true;
+  SearchConfig::USE_TT = true;
+  SearchConfig::USE_TT_QSEARCH = true;
+  SearchConfig::USE_MDP = true;
+  SearchConfig::USE_MPP = true;
+
+  Search search;
+  SearchLimits searchLimits;
+  Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
+  searchLimits.setNodes(5'000'000);
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+  
+  LOG->info("MDP: {:n} MPP: {:n}", search.getSearchStats().mateDistancePrunings,
+             search.getSearchStats().minorPromotionPrunings);
+  ASSERT_GT(search.getSearchStats().mateDistancePrunings, 1'000);
+  ASSERT_GT(search.getSearchStats().minorPromotionPrunings, 1'000);
 }
 
 TEST_F(SearchTest, perft) {
 
   int DEPTH = 5;
 
-  long perftResults[] = { 0, 20, 400, 8'902, 197'281, 4'865'609, 119'060'324, 3'195'901'860 };
+  long perftResults[] = {0, 20, 400, 8'902, 197'281, 4'865'609, 119'060'324, 3'195'901'860};
 
   Search search;
   SearchLimits searchLimits;
@@ -333,13 +354,13 @@ TEST_F(SearchTest, perft) {
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
   LOG->info("Leaf nodes per sec: {:n}", (search.getSearchStats().leafPositionsEvaluated * 1'000) /
-                                   search.getSearchStats().lastSearchTime);
+                                        search.getSearchStats().lastSearchTime);
   LOG->info("Leaf nodes:         {:n}", search.getSearchStats().leafPositionsEvaluated);
   ASSERT_EQ(perftResults[DEPTH], search.getSearchStats().leafPositionsEvaluated);
 }
 
 TEST_F(SearchTest, PERFT_nps) {
-  
+
   SearchConfig::USE_QUIESCENCE = true;
   SearchConfig::USE_ALPHABETA = true;
   SearchConfig::USE_KILLER_MOVES = true;
@@ -352,12 +373,10 @@ TEST_F(SearchTest, PERFT_nps) {
   searchLimits.setMoveTime(30'000);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
-  
-  LOG->info("Nodes: {:n} Time: {:n} ms NPS: {:n}",
-            search.getSearchStats().nodesVisited,
-            search.getSearchStats().lastSearchTime,
-            (search.getSearchStats().nodesVisited * 1'000)
-            / search.getSearchStats().lastSearchTime);
+
+  LOG->info("Nodes: {:n} Time: {:n} ms NPS: {:n}", search.getSearchStats().nodesVisited,
+            search.getSearchStats().lastSearchTime, (search.getSearchStats().nodesVisited * 1'000) /
+                                                    search.getSearchStats().lastSearchTime);
 }
 
 // for debugging
@@ -372,7 +391,7 @@ TEST_F(SearchTest, debugging) {
 
   Search search;
   SearchLimits searchLimits;
-  Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
+  Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
   //position = Position("2r3k1/pppR1pp1/4p3/4P1P1/5P2/1P4K1/P1P5/8 w - -");
   //searchLimits.setDepth(8);
   searchLimits.setNodes(25'000'000);

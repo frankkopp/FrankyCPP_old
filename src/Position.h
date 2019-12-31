@@ -29,6 +29,7 @@
 #include "../test/lib/googletest-master/googletest/include/gtest/gtest_prod.h"
 #include "types.h"
 #include "MoveGenerator.h"
+#include "Bitboards.h"
 
 // circle reference between Position and MoveGenerator - this make it possible
 class MoveGenerator;
@@ -347,7 +348,7 @@ public:
    * @return true if move captures (incl. en passant)
    */
   inline bool isCapturingMove(const Move &move) {
-    return occupiedBB[(~nextPlayer)] & getToSquare(move) || typeOf(move) == ENPASSANT;
+    return occupiedBB[~nextPlayer] & getToSquare(move) || typeOf(move) == ENPASSANT;
   };
 
   ////////////////////////////////////////////////

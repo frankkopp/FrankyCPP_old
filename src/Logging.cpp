@@ -94,7 +94,7 @@ namespace LOGGING {
     
     // Logger for Unit Tests
     auto TEST_LOG = spdlog::stdout_color_mt("Test_Logger");
-    TEST_LOG->set_pattern("[%H:%M:%S:%f] %L %v");
+    TEST_LOG->set_pattern("[%H:%M:%S:%f] [%n] [%L] %v");
     TEST_LOG->set_level(spdlog::level::trace);
     TEST_LOG->flush_on(spdlog::level::trace);
     

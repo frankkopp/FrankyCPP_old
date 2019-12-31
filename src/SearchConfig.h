@@ -43,6 +43,7 @@ namespace SearchConfig {
 
   // Pruning features
   inline bool USE_MDP = true; // mate distance pruning
+  inline bool USE_MPP = true; // minor promotion pruning
 }
 
 #endif //FRANKYCPP_SEARCHCONFIG_H
