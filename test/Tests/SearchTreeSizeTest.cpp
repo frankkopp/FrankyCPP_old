@@ -121,7 +121,7 @@ TEST_F(SearchTreeSizeTest, size_test) {
       sums[test.name].sumNps += test.nps;
       sums[test.name].sumTime += test.time;
 
-      fmt::print("{:<12s} | {:>6s} | {:>8d} | {:>15n} | {:>12n} | {:>12n} | {} | {}  \n",
+      fmt::print("{:<15s} | {:>6s} | {:>8d} | {:>15n} | {:>12n} | {:>12n} | {} | {}  \n",
                  test.name.c_str(), printMove(test.move).c_str(), test.value, test.nodes, test.nps,
                  test.time, test.pv.c_str(), result.fen.c_str());
     }
@@ -129,7 +129,7 @@ TEST_F(SearchTreeSizeTest, size_test) {
 
   NEWLINE;
 
-  for (auto sum = sums.rbegin(); sum != sums.rend(); ++sum) {
+  for (auto sum = sums.begin(); sum != sums.end(); ++sum) {
     fmt::print("Test: {:<12s}  Nodes: {:>16n}  Nps: {:>16n}  Time: {:>16n} \n", sum->first.c_str(),
                sum->second.sumNodes, sum->second.sumNps, sum->second.sumTime);
   }
@@ -149,6 +149,8 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   SearchConfig::USE_KILLER_MOVES = false;
   SearchConfig::USE_TT = false;
   SearchConfig::USE_TT_QSEARCH = false;
+  SearchConfig::USE_MDP = false;
+  SearchConfig::USE_MPP = false;
 
   // ***********************************
   // TESTS
@@ -168,20 +170,21 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   // AlphaBeta+Killer
   SearchConfig::USE_QUIESCENCE = true;
   SearchConfig::USE_ALPHABETA = true;
-  SearchConfig::USE_KILLER_MOVES = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "AB"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "01 AB"));
 
   // AlphaBeta + tt
   SearchConfig::USE_TT = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "AB+TT"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "AB+TT"));
 
   // AlphaBeta + tt
   SearchConfig::USE_TT_QSEARCH = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "AB+TTQ"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "02 AB+TT"));
 
-  // AlphaBeta + quiescence + killer
-  //  SearchConfig::USE_KILLER_MOVES = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "AB+QS+KILLER"));
+  // AB + tt + MDPMPP
+  SearchConfig::USE_KILLER_MOVES = true;
+  SearchConfig::USE_MDP = true;
+  SearchConfig::USE_MPP = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "03 AB+M*P"));
 
   // ***********************************
 

@@ -61,7 +61,7 @@ Search::~Search() {
 
 void Search::startSearch(const Position &pos, SearchLimits &limits) {
   if (running) {
-    LOG->error("Search already running");
+    LOG->error("Start Search: Search already running");
     return;
   }
 
@@ -89,7 +89,7 @@ void Search::stopSearch() {
     LOG->warn("Stop search called when search was not running");
     return;
   }
-  LOG->info("Stopping search.");
+  LOG->debug("Stopping search.");
 
   // stop pondering if we are
   if (searchLimits.isPonder()) {
@@ -110,14 +110,13 @@ void Search::stopSearch() {
 
   // set stop flag - search needs to check regularly and stop accordingly
   stopSearchFlag = true;
-  LOG->debug("Stop flag has been set to: {}!", stopSearchFlag);
 
   // Wait for the thread to die
   if (myThread.joinable()) myThread.join();
   waitWhileSearching();
 
-  LOG->info("Search stopped.", running);
   assert(!running);
+  LOG->info("Search stopped.", running);
 }
 
 bool Search::isRunning() const {
@@ -127,11 +126,8 @@ bool Search::isRunning() const {
 void Search::waitWhileSearching() {
   LOG->trace("Wait while searching");
   if (!running) return;
-  LOG->trace("Waiting for search semaphore");
   searchSemaphore.getOrWait();
-  LOG->trace("Got search semaphore");
   searchSemaphore.reset();
-  LOG->trace("Reset search semaphore");
 }
 
 void Search::ponderhit() {
@@ -145,7 +141,7 @@ void Search::ponderhit() {
       searchLimits.ponderHit();
       // if time based game setup the time limits
       if (searchLimits.isTimeControl()) {
-        LOG->debug("Time Management: {} time limit: {:n}",
+        LOG->debug("Time Management: {} Time limit: {:n}",
                    (searchLimits.isTimeControl() ? "ON" : "OFF"), timeLimit);
       }
     }
@@ -176,12 +172,11 @@ void Search::ponderhit() {
  * @param position the position to be searched given as value (copied)
  */
 void Search::run(Position position) {
+  LOG->trace("Search thread started.");
 
   // get the search lock
   searchSemaphore.getOrWait();
   running = true;
-
-  LOG->debug("Search thread started.");
 
   // store the start time of the search
   startTime = lastUciUpdateTime = now();
@@ -236,9 +231,18 @@ void Search::run(Position position) {
 
   sendResultToEngine();
 
+  // print result of the search
+  LOG->info("Search statistics: {}", searchStats.str());
+  if (SearchConfig::USE_TT) LOG->info(tt.str());
+  LOG->info("Search Depth was {} ({})", searchStats.currentIterationDepth,
+            searchStats.currentExtraSearchDepth);
+  LOG->info("Search took {},{:03} sec ({:n} nps)", (searchStats.lastSearchTime % 1'000'000) / 1'000,
+            (searchStats.lastSearchTime % 1'000),
+            (searchStats.nodesVisited * 1'000) / searchStats.lastSearchTime);
+
   running = false;
   searchSemaphore.reset();
-  LOG->debug("Search thread ended.");
+  LOG->trace("Search thread ended.");
 }
 
 /**
@@ -281,16 +285,14 @@ SearchResult Search::iterativeDeepening(Position &position) {
   pv[PLY_ROOT].push_back(rootMoves.at(0));
 
   // print search setup for debugging
-  if (LOG->should_log(spdlog::level::debug)) {
-    LOG->debug("Root moves: {}", printMoveList(rootMoves));
-    LOG->debug("Searching in position: {}", position.printFen());
-    LOG->debug("Searching these moves: {}", printMoveList(rootMoves));
-    LOG->debug("Search mode: {}", searchLimits.str());
-    LOG->debug("Time Management: {} time limit: {:n}",
-               (searchLimits.isTimeControl() ? "ON" : "OFF"), timeLimit);
-    LOG->debug("Start Depth: {} Max Depth: {}", iterationDepth, searchLimits.getMaxDepth());
-    LOG->debug("Starting iterative deepening now...");
-  }
+  LOG->info("Searching in position: {}", position.printFen());
+  LOG->debug("Root moves: {}", printMoveList(rootMoves));
+  LOG->info("Searching these moves: {}", printMoveList(rootMoves));
+  LOG->info("Search mode: {}", searchLimits.str());
+  LOG->info("Time Management: {} time limit: {:n}", (searchLimits.isTimeControl() ? "ON" : "OFF"),
+             timeLimit);
+  LOG->info("Start Depth: {} Max Depth: {}", iterationDepth, searchLimits.getMaxDepth());
+  LOG->debug("Starting iterative deepening now...");
 
   // max window search - preparation for aspiration window search
   Value alpha = VALUE_MIN;
@@ -358,17 +360,6 @@ SearchResult Search::iterativeDeepening(Position &position) {
   stopTime = now();
   searchStats.lastSearchTime = elapsedTime(startTime, stopTime);
 
-  // print result of the search
-  if (LOG->should_log(spdlog::level::debug)) {
-    LOG->debug("Search statistics: {}", searchStats.str());
-    LOG->debug("Search Depth was {} ({})", searchStats.currentIterationDepth,
-               searchStats.currentExtraSearchDepth);
-    LOG->debug("Search took {},{:03} sec ({:n} nps)",
-               (searchStats.lastSearchTime % 1'000'000) / 1'000,
-               (searchStats.lastSearchTime % 1'000),
-               (searchStats.nodesVisited * 1'000) / searchStats.lastSearchTime);
-  }
-
   return searchResult;
 }
 
@@ -414,6 +405,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
       break;
   }
 
+  // Time check
   if (stopConditions(shouldTimeCheck())) {
     return VALUE_NONE;
   }
@@ -478,11 +470,11 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
           return ttValue;
         }
       }
+      searchStats.tt_NoCut++;
     }
-    searchStats.tt_NoCut++;
-  }
-  else { // MISS
-    searchStats.tt_Misses++;
+    else { // MISS
+      searchStats.tt_Misses++;
+    }
   }
   // End TT Lookup
   // ###############################################
@@ -491,8 +483,8 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
   if (ST != ROOT) {
     bestNodeMove = ttMove;
     // IDEA: can we use ttValue here?
-    bestNodeValue = ttValue;
-    alpha = ttValue; // we checked that ttValue is >alpha and <beta above
+//    bestNodeValue = ttValue;
+//    alpha = ttValue; // we checked that ttValue is >alpha and <beta above
     pv[ply].clear();
   }
   else {
@@ -561,8 +553,8 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
       if (typeOf(move) == PROMOTION && promotionType(move) != QUEEN &&
           promotionType(move) != KNIGHT) {
         searchStats.minorPromotionPrunings++;
-        TRACE(LOG, "{:>{}}Search in ply {} for depth {}: Move {} MPP CUT",
-          "", ply, ply, depth, printMove(move));
+        TRACE(LOG, "{:>{}}Search in ply {} for depth {}: Move {} MPP CUT", "", ply, ply, depth,
+              printMove(move));
         continue;
       }
     }
@@ -849,7 +841,7 @@ inline bool Search::stopConditions(bool shouldTimeCheck) {
 
 inline bool Search::shouldTimeCheck() const {
   const bool shouldTimeCheck = !(searchStats.nodesVisited & TIME_CHECK_FREQ);
-  //if (shouldTimeCheck) LOG->debug("TIMECHECK at {} nodes", searchStats.nodesVisited);
+  TRACE(LOG, "TIMECHECK at {} nodes", searchStats.nodesVisited);
   return shouldTimeCheck;
 }
 
@@ -859,12 +851,12 @@ bool Search::checkDrawRepAnd50(Position &position) const {
   // loose too much precision
   constexpr int allowedRepetitions = (ST == QUIESCENCE ? 1 : 2);
   if (position.checkRepetitions(allowedRepetitions)) {
-    this->LOG->debug("DRAW because of repetition for move {} in variation {}",
+    LOG->trace("DRAW because of repetition for move {} in variation {}",
                      printMove(position.getLastMove()), printMoveListUCI(this->currentVariation));
     return true;
   }
   if (position.getHalfMoveClock() >= 100) {
-    this->LOG->debug("DRAW because 50-move rule", printMove(position.getLastMove()),
+    LOG->trace("DRAW because 50-move rule", printMove(position.getLastMove()),
                      printMoveListUCI(this->currentVariation));
     return true;
   }
@@ -1008,7 +1000,7 @@ bool Search::rootMovesSort(Move m1, Move m2) {
 }
 
 void Search::clearHash() {
-  LOG->debug("Search: Clear Hash command received!");
+  LOG->trace("Search: Clear Hash command received!");
   std::chrono::milliseconds timeout(2500);
   if (tt_lock.try_lock_for(timeout)) {
     tt.clear();
@@ -1020,7 +1012,7 @@ void Search::clearHash() {
 }
 
 void Search::setHashSize(int sizeInMB) {
-  LOG->debug("Search: Set HashSize to {} MB command received!", sizeInMB);
+  LOG->trace("Search: Set HashSize to {} MB command received!", sizeInMB);
   std::chrono::milliseconds timeout(2500);
   if (tt_lock.try_lock_for(timeout)) {
     tt.resize(sizeInMB * TT::MB);
@@ -1041,7 +1033,7 @@ void Search::sendIterationEndInfoToEngine() const {
     valueOf(pv[PLY_ROOT].at(0)), searchStats.nodesVisited, getNps(), result,
     printMoveListUCI(pv[PLY_ROOT]));
 
-  if (!pEngine) { LOG->warn("<no engine> >> {}", infoString); }
+  if (!pEngine) { LOG->info("UCI >> {}", infoString); }
   else {
     pEngine->sendIterationEndInfo(searchStats.currentIterationDepth,
                                   searchStats.currentExtraSearchDepth, valueOf(pv[PLY_ROOT].at(0)),
@@ -1055,7 +1047,7 @@ void Search::sendCurrentRootMoveToEngine() const {
                                        printMove(searchStats.currentRootMove),
                                        currentMoveIndex + 1);
 
-  if (!pEngine) { LOG->warn("<no engine> >> {}", infoString); }
+  if (!pEngine) { LOG->trace("UCI >> {}", infoString); }
   else {
     pEngine->sendCurrentRootMove(searchStats.currentRootMove, currentMoveIndex + 1);
   }
@@ -1072,8 +1064,7 @@ void Search::sendSearchUpdateToEngine() {
                                          searchStats.currentExtraSearchDepth,
                                          searchStats.nodesVisited, getNps(), result, tt.hashFull());
 
-    //(int) (1000 * ((float) transpositionTable.getNumberOfEntries() / transpositionTable.getMaxEntries())));
-    if (!pEngine) { LOG->warn("<no engine> >> {}", infoString); }
+    if (!pEngine) { LOG->info("UCI >> {}", infoString); }
     else {
       pEngine->sendSearchUpdate(searchStats.currentIterationDepth,
                                 searchStats.currentExtraSearchDepth, searchStats.nodesVisited,
@@ -1081,10 +1072,8 @@ void Search::sendSearchUpdateToEngine() {
     }
 
     infoString = fmt::format("currline {}", printMoveListUCI(currentVariation));
-    if (!pEngine) { LOG->warn("<no engine> >> {}", infoString); }
+    if (!pEngine) { LOG->trace("UCI >> {}", infoString); }
     else { pEngine->sendCurrentLine(currentVariation); }
-
-    LOG->debug(tt.str());
   }
 }
 
@@ -1095,7 +1084,7 @@ void Search::sendResultToEngine() const {
                                        printMove(lastSearchResult.ponderMove),
                                        searchStats.bestMoveDepth);
 
-  if (!pEngine) { LOG->warn("<no engine> >> {}", infoString); }
+  if (!pEngine) { LOG->info("UCI >> {}", infoString); }
   else { pEngine->sendResult(lastSearchResult.bestMove, lastSearchResult.ponderMove); }
 
 }

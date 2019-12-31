@@ -85,39 +85,148 @@ public:
 
   void ponderHit();
   void ponderStop();
-  
-  MilliSec getWhiteTime() const;
-  void setWhiteTime(MilliSec time);
-  MilliSec getBlackTime() const;
-  void setBlackTime(MilliSec time);
-  MilliSec getWhiteInc() const;
-  void setWhiteInc(MilliSec time);
-  MilliSec getBlackInc() const;
-  void setBlackInc(MilliSec time);
-  MilliSec getMoveTime() const;
-  void setMoveTime(MilliSec time);
-  int getMovesToGo() const;
-  void setMovesToGo(int m);
-  Depth getDepth() const;
-  void setDepth(int d);
-  void setDepth(Depth d);
-  uint64_t getNodes() const;
-  void setNodes(long n);
-  const MoveList &getMoves() const;
-  void setMoves(const MoveList &moveList);
-  int getMate() const;
-  void setMate(int m);
-  bool isPonder() const;
-  void setPonder(bool aBool);
-  bool isInfinite() const;
-  void setInfinite(bool aBool);
-  bool isPerft() const;
-  void setPerft(bool aBool);
-  bool isTimeControl() const;
-  Depth getStartDepth() const;
-  void setStartDepth(int d);
-  void setStartDepth(Depth d);
-  Depth getMaxDepth() const;
+
+  MilliSec getWhiteTime() const {
+    return whiteTime;
+  }
+
+  void setWhiteTime(MilliSec time) {
+    whiteTime = time;
+    setupLimits();
+  }
+
+  MilliSec getBlackTime() const {
+    return blackTime;
+  }
+
+  void setBlackTime(MilliSec time) {
+    blackTime = time;
+    setupLimits();
+  }
+
+  MilliSec getWhiteInc() const {
+    return whiteInc;
+  }
+
+  void setWhiteInc(MilliSec time) {
+    whiteInc = time;
+    setupLimits();
+  }
+
+  MilliSec getBlackInc() const {
+    return blackInc;
+  }
+
+  void setBlackInc(MilliSec time) {
+    blackInc = time;
+    setupLimits();
+  }
+
+  MilliSec getMoveTime() const {
+    return moveTime;
+  }
+
+  void setMoveTime(MilliSec time) {
+    moveTime = time;
+    setupLimits();
+  }
+
+  int getMovesToGo() const {
+    return movesToGo;
+  }
+
+  void setMovesToGo(int m) {
+    movesToGo = m;
+    setupLimits();
+  }
+
+  Depth getDepth() const {
+    return depth;
+  }
+
+  void setDepth(int d) {
+    setDepth(static_cast<Depth>(d));
+  }
+
+  void setDepth(Depth d) {
+    depth = d;
+    setupLimits();
+  }
+
+  uint64_t getNodes() const {
+    return nodes;
+  }
+
+  void setNodes(long n) {
+    nodes = n;
+    setupLimits();
+  }
+
+  const MoveList &getMoves() const {
+    return moves;
+  }
+
+  void setMoves(const MoveList &moveList) {
+    moves = moveList;
+    setupLimits();
+  }
+
+  int getMate() const {
+    return mate;
+  }
+
+  void setMate(int m) {
+    mate = m;
+    setupLimits();
+  }
+
+  bool isPonder() const {
+    return ponder;
+  }
+
+  void setPonder(bool aBool) {
+    ponder = aBool;
+    setupLimits();
+  }
+
+  bool isInfinite() const {
+    return infinite;
+  }
+
+  void setInfinite(bool aBool) {
+    infinite = aBool;
+    setupLimits();
+  }
+
+  bool isPerft() const {
+    return perft;
+  }
+
+  void setPerft(bool aBool) {
+    perft = aBool;
+    setupLimits();
+  }
+
+  bool isTimeControl() const {
+    return timeControl;
+  }
+
+  Depth getStartDepth() const {
+    return startDepth;
+  }
+
+  void setStartDepth(int d) {
+    setStartDepth(static_cast<Depth>(d));
+  }
+
+  void setStartDepth(Depth d) {
+    startDepth = d;
+    setupLimits();
+  }
+
+  Depth getMaxDepth() const {
+    return maxDepth;
+  }
   
 };
 

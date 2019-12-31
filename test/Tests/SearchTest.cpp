@@ -39,7 +39,7 @@ public:
     INIT::init();
     NEWLINE;
     // turn off info and below logging in the application
-    spdlog::set_level(spdlog::level::trace);
+    spdlog::set_level(spdlog::level::debug);
   }
 
   std::shared_ptr<spdlog::logger> LOG = spdlog::get("Test_Logger");
@@ -388,13 +388,22 @@ TEST_F(SearchTest, debugging) {
   SearchConfig::USE_TT = true;
   SearchConfig::USE_TT_QSEARCH = true;
   SearchConfig::USE_MDP = true;
+  SearchConfig::USE_MPP = true;
 
   Search search;
   SearchLimits searchLimits;
   Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
   //position = Position("2r3k1/pppR1pp1/4p3/4P1P1/5P2/1P4K1/P1P5/8 w - -");
   //searchLimits.setDepth(8);
-  searchLimits.setNodes(25'000'000);
+  //searchLimits.setNodes(30'000'000);
+  searchLimits.setMoveTime(10'000);
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+
+  position.doMove(createMove("b1e1"));
+  position.doMove(createMove("c4e4"));
+
+  searchLimits.setMoveTime(10'000);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 }

@@ -332,7 +332,7 @@ public:
 
   std::string str() {
     return fmt::format(
-      "TT: size {:n} MB max entries {:n} hushfull {} entries {:n} puts {:n} updates {:n} collisions {:n} overwrites {:n} ",
+      "TT: size {:n} MB max entries {:n} hashfull {} entries {:n} puts {:n} updates {:n} collisions {:n} overwrites {:n} ",
       sizeInByte / MB, maxNumberOfEntries, hashFull(), numberOfEntries,
       numberOfPuts, numberOfUpdates, numberOfCollisions, numberOfOverwrites);
   }
