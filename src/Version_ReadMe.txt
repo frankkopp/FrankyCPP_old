@@ -10,10 +10,10 @@ v 0.3 (in progress)
 ================================================================================
 - TODO:
     - IID
-    - PV from TT
     - RFP, NMP, RAZOR, LFP. LFR, ...
     - Testing and Debugging
 - DONE:
+    - PV from TT and PV Move Sorting
     - PVS
     - MDP, MPP
 

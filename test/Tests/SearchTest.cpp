@@ -384,16 +384,6 @@ TEST_F(SearchTest, perft) {
 }
 
 TEST_F(SearchTest, PERFT_nps) {
-
-  SearchConfig::USE_QUIESCENCE = true;
-  SearchConfig::USE_ALPHABETA = true;
-  SearchConfig::USE_KILLER_MOVES = true;
-  SearchConfig::USE_TT = true;
-  SearchConfig::USE_TT_QSEARCH = true;
-  SearchConfig::TT_SIZE_MB = 64;
-  SearchConfig::USE_MDP = true;
-  SearchConfig::USE_MPP = true;
-
   Search search;
   SearchLimits searchLimits;
   Position position;
