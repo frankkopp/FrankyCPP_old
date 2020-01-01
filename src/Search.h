@@ -190,28 +190,97 @@ private:
   bool checkDrawRepAnd50(Position &refPosition) const;
   Value evaluate(Position &position, Ply ply);
 
+  /**
+   * Generates root moves and filters them according to the UCI searchmoves list
+   * @param position
+   * @return UCI filtered root moves
+   */
   MoveList generateRootMoves(Position &refPosition);
   static bool rootMovesSort(Move m1, Move m2);
   static bool goodCapture(Position &refPosition, Move move);
   static void savePV(Move move, MoveList &src, MoveList &dest);
 
-  void storeTT(Position &position, Value value, TT::EntryType ttType, Depth depth, Move bestMove,
-               bool mateThreat);
+  /**
+  * Retrieves the PV line from the transposition table in root search.
+  *
+  * @param position
+  * @param depth
+  * @param pvRoot
+  */
+  void getPVLine(Position &position, MoveList &pvRoot);
+
+  void storeTT(Position &position, Value value, TT::EntryType ttType, Depth depth, Ply ply,
+               Move bestMove, bool mateThreat);
+
+  /**
+   * correct any mate values which are sent to TT so that
+   * they are relative to the ply we are in
+   * @param value
+   * @param ply
+   * @return
+   */
+  static Value valueToTT(Value value, Ply ply);
+
+  /**
+   * correct any mate values coming from the TT so that
+   * they are relative to the ply we are in
+   * @param value
+   * @param ply
+   * @return
+   */
+  static Value valueFromTT(Value value, Ply ply);
 
   void configureTimeLimits();
   inline bool stopConditions(bool shouldTimeCheck);
+
+  /**
+   * Changes the time limit by the given factor and also sets the soft time limit
+   * to 0.8 of the hard time limit.
+   * Factor 1 is neutral. <1 shortens the time, >1 adds time<br/>
+   * Example: factor 0.8 is 20% less time. Factor 1.2 is 20% additional time
+   * Always calculated from the initial time budget.
+   *
+   * @param d
+   */
   void addExtraTime(const double d);
+
+  /**
+   * Time limit is used to check time regularly in the search to stop the search when
+   * time is out
+   * IDEA instead of checking this regularly we could use a timer thread to set stopSearch to true.
+   *
+   * @return true if hard time limit is reached, false otherwise
+   */
   inline bool timeLimitReached();
+
   inline bool shouldTimeCheck() const;
+
+  /**
+   * @param t time point since the elapsed time
+   * @return the elapsed time from the start of the search to the given t
+   */
   static inline MilliSec elapsedTime(const MilliSec t);
+
+  /**
+   * @param t1 Earlier time point
+   * @param t2 Later time point
+   * @return Duration between time points in milliseconds
+   */
   static inline MilliSec elapsedTime(const MilliSec t1, const MilliSec t2);
+
+  /**
+   * Returns the current time in ms
+   * @return current time
+   */
   static inline MilliSec now();
+  
   inline MilliSec getNps() const;
 
   void sendIterationEndInfoToEngine() const;
   void sendCurrentRootMoveToEngine() const;
   void sendSearchUpdateToEngine();
   void sendResultToEngine() const;
+
 
 };
 

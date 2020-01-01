@@ -38,15 +38,22 @@
 class TT {
 public:
 
-  typedef uint64_t Entry;
-
   static constexpr uint64_t KB = 1024;
   static constexpr uint64_t MB = KB * KB;
-  static constexpr uint64_t ENTRY_SIZE = sizeof(Key) + sizeof(Entry); // 16 byte
   static constexpr uint64_t DEFAULT_TT_SIZE = 2 * MB; // byte
+
+  typedef uint64_t Entry;
+  static constexpr uint64_t ENTRY_SIZE = sizeof(Key) + sizeof(Entry); // 16 byte
 
   enum EntryType : u_int8_t {
     TYPE_NONE = 0, TYPE_EXACT = 1, TYPE_ALPHA = 2, TYPE_BETA = 3,
+  };
+
+  enum Result {
+    // TT probe has found an entry and the value leads to a cut off
+    TT_HIT,
+    // TT probe has not found an entry or the value does not lead to a cut off.
+    TT_MISS
   };
 
 private:
@@ -55,8 +62,6 @@ private:
 
   // threads for clearing hash
   int noOfThreads = 1;
-
-private:
 
   // size and fill info
   uint64_t sizeInByte = 0L;
@@ -162,6 +167,20 @@ public:
    * @return value for key or <tt>VALUE_NONE</tt> if not found
    */
   Entry get(Key key);
+
+  /**
+   * Looks up and returns a result using get(Key key).
+   *
+   * May write to ttValue and ttMove.
+   *
+   * @param position
+   * @param ttValue
+   * @param ttMove
+   * @return A result of the probe with value and move from the TT in case of hit.
+   */
+  TT::Result
+  probe(const Key &key, const Depth &depth, const Value &alpha, const Value &beta, Value &ttValue,
+        Move &ttMove);
 
   /**
    * Age all entries by 1
@@ -333,8 +352,8 @@ public:
   std::string str() {
     return fmt::format(
       "TT: size {:n} MB max entries {:n} hashfull {} entries {:n} puts {:n} updates {:n} collisions {:n} overwrites {:n} ",
-      sizeInByte / MB, maxNumberOfEntries, hashFull(), numberOfEntries,
-      numberOfPuts, numberOfUpdates, numberOfCollisions, numberOfOverwrites);
+      sizeInByte / MB, maxNumberOfEntries, hashFull(), numberOfEntries, numberOfPuts,
+      numberOfUpdates, numberOfCollisions, numberOfOverwrites);
   }
 
   uint64_t getSizeInByte() const {

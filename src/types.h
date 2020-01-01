@@ -38,6 +38,7 @@
 #define NEWLINE std::cout << std::endl
 #define printBB(bb) std::cout << Bitboards::print((bb)) << std::endl
 #define println(s) std::cout << (s) << std::endl
+#define fprint(s, args...) fmt::print(s, args); fmt::print("\n")
 
 // Global constants
 constexpr const char* START_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -252,6 +253,13 @@ inline Value valueOf(const Piece p) { return pieceTypeValue[typeOf(p)]; }
 /** Returns true if value is considered a checkmate */
 inline bool isCheckMateValue(const Value value) {
   return abs(value) >= VALUE_CHECKMATE_THRESHOLD && abs(value) <= VALUE_CHECKMATE;
+}
+
+constexpr Value operator+(Value d1, Ply d2) {
+  return static_cast<Value>(static_cast<int>(d1) + static_cast<int>(d2));
+}
+constexpr Value operator-(Value d1, Ply d2) {
+  return static_cast<Value>(static_cast<int>(d1) - static_cast<int>(d2));
 }
 
 /** Returns a UCI compatible std::string for the score in cp or in mate in ply */
@@ -575,30 +583,30 @@ constexpr bool operator!=(CastlingRights cr1, CastlingRights cr2) {
 /**
  * OPERATORS
  */
-#define ENABLE_BASE_OPERATORS_ON(T)                                \
-constexpr T operator+(T d1, T d2) { return T(int(d1) + int(d2)); } \
-constexpr T operator-(T d1, T d2) { return T(int(d1) - int(d2)); } \
-constexpr T operator-(T d) { return T(-int(d)); }                  \
-inline T& operator+=(T& d1, T d2) { return d1 = d1 + d2; }         \
+#define ENABLE_BASE_OPERATORS_ON(T) \
+constexpr T operator+(T d1, T d2) { return static_cast<T>(static_cast<int>(d1) + static_cast<int>(d2)); } \
+constexpr T operator-(T d1, T d2) { return static_cast<T>(static_cast<int>(d1) - static_cast<int>(d2)); } \
+constexpr T operator-(T d) { return static_cast<T>(-static_cast<int>(d)); } \
+inline T& operator+=(T& d1, T d2) { return d1 = d1 + d2; } \
 inline T& operator-=(T& d1, T d2) { return d1 = d1 - d2; }
 
-#define ENABLE_INCR_OPERATORS_ON(T)                      \
-inline T& operator++(T& d) { return d = T(int(d) + 1); } \
-inline T& operator--(T& d) { return d = T(int(d) - 1); }
+#define ENABLE_INCR_OPERATORS_ON(T) \
+inline T& operator++(T& d) { return d = static_cast<T>(static_cast<int>(d) + 1); } \
+inline T& operator--(T& d) { return d = static_cast<T>(static_cast<int>(d) - 1); }
 
-#define ENABLE_FULL_OPERATORS_ON(T)                                \
-ENABLE_BASE_OPERATORS_ON(T)                                        \
-ENABLE_INCR_OPERATORS_ON(T)                                        \
-constexpr T operator+(int i, T d) { return T(i + int(d)); }        \
-constexpr T operator+(T d, int i) { return T(int(d) + i); }        \
-constexpr T operator-(int i, T d) { return T(i - int(d)); }        \
-constexpr T operator-(T d, int i) { return T(int(d) - i); }        \
-constexpr T operator*(int i, T d) { return T(i * int(d)); }        \
-constexpr T operator*(T d, int i) { return T(int(d) * i); }        \
-constexpr T operator/(T d, int i) { return T(int(d) / i); }        \
-constexpr int operator/(T d1, T d2) { return int(d1) / int(d2); }  \
-inline T& operator*=(T& d, int i) { return d = T(int(d) * i); }    \
-inline T& operator/=(T& d, int i) { return d = T(int(d) / i); }
+#define ENABLE_FULL_OPERATORS_ON(T) \
+ENABLE_BASE_OPERATORS_ON(T) \
+ENABLE_INCR_OPERATORS_ON(T) \
+constexpr T operator+(int i, T d) { return static_cast<T>(i + static_cast<int>(d)); } \
+constexpr T operator+(T d, int i) { return static_cast<T>(static_cast<int>(d) + i); } \
+constexpr T operator-(int i, T d) { return static_cast<T>(i - static_cast<int>(d)); } \
+constexpr T operator-(T d, int i) { return static_cast<T>(static_cast<int>(d) - i); } \
+constexpr T operator*(int i, T d) { return static_cast<T>(i * static_cast<int>(d)); } \
+constexpr T operator*(T d, int i) { return static_cast<T>(static_cast<int>(d) * i); } \
+constexpr T operator/(T d, int i) { return static_cast<T>(static_cast<int>(d) / i); } \
+constexpr int operator/(T d1, T d2) { return static_cast<int>(d1) / static_cast<int>(d2); } \
+inline T& operator*=(T& d, int i) { return d = static_cast<T>(static_cast<int>(d) * i); } \
+inline T& operator/=(T& d, int i) { return d = static_cast<T>(static_cast<int>(d) / i); }
 
 ENABLE_FULL_OPERATORS_ON(Depth)
 

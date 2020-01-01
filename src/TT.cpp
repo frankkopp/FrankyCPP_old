@@ -24,8 +24,8 @@
  */
 
 #include "Logging.h"
-#include "types.h"
 #include "TT.h"
+#include "Position.h"
 
 TT::TT(uint64_t size) {
   resize(size);
@@ -91,9 +91,6 @@ void TT::put(bool forced, Key key, Value value, TT::EntryType type, Depth depth,
              bool mateThreat) {
 #endif
 
-  assert (depth >= 0);
-  assert (
-    type == EntryType::TYPE_EXACT || type == EntryType::TYPE_ALPHA || type == EntryType::TYPE_BETA);
   assert (value > VALUE_NONE);
 
   // get hash key
@@ -201,6 +198,45 @@ void TT::put(bool forced, Key key, Value value, TT::EntryType type, Depth depth,
   assert (numberOfPuts == (numberOfEntries + numberOfCollisions + numberOfUpdates));
 }
 
+TT::Result
+TT::probe(const Key &key, const Depth &depth, const Value &alpha, const Value &beta, Value &ttValue,
+          Move &ttMove) {
+
+  Entry ttEntry = get(key);
+
+  if (ttEntry != 0) { // HIT
+
+    // get best move independent from tt entry depth
+    ttMove = TT::getBestMove(ttEntry);
+
+    // TODO: Implement Mate Threat
+    // mateThreat[ply] = tt.hasMateThreat(ttEntry);
+
+    // use value only if tt depth was equal or deeper
+    if (TT::getDepth(ttEntry) >= depth) {
+
+      ttValue = TT::getValue(ttEntry);
+      assert (ttValue != VALUE_NONE);
+
+      // in PV node only return ttHit if it was an exact hit
+      if (getType(ttEntry) == TT::TYPE_EXACT) {
+        if (ttValue > alpha && ttValue < beta) {
+          // TODO: maybe set PV?
+        }
+        return TT_HIT;
+      }
+      else if (TT::getType(ttEntry) == TT::TYPE_ALPHA && ttValue <= alpha) {
+        return TT_HIT;
+      }
+      else if (TT::getType(ttEntry) == TT::TYPE_BETA && ttValue >= beta) {
+        return TT_HIT;
+      }
+    }
+  }
+  // MISS
+  return TT_MISS;
+}
+
 TT::Entry TT::get(Key key) {
   numberOfProbes++;
   uint64_t hashKey = getHash(key);
@@ -251,4 +287,5 @@ std::string TT::printBitString(Entry entry) {
   s << std::bitset<64>(entry);
   return s.str();
 }
+
 
