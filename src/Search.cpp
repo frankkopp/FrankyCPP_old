@@ -305,9 +305,6 @@ SearchResult Search::iterativeDeepening(Position &position) {
 
     searchStats.currentIterationDepth = iterationDepth;
     searchStats.bestMoveChanges = 0;
-    if (stopSearchFlag) {
-      assert(1);
-    }
     searchStats.nodesVisited++;
 
     // protect the TT from being resized or cleared during search
@@ -315,7 +312,7 @@ SearchResult Search::iterativeDeepening(Position &position) {
 
     // ###########################################
     // ### CALL SEARCH for iterationDepth
-    search<ROOT>(position, iterationDepth, PLY_ROOT, alpha, beta);
+    search<ROOT, PV>(position, iterationDepth, PLY_ROOT, alpha, beta);
     // ###########################################
 
     // release lock on TT
@@ -377,7 +374,7 @@ SearchResult Search::iterativeDeepening(Position &position) {
  * @param position
  * @param depth
  */
-template<Search::Search_Type ST>
+template<Search::Search_Type ST, Search::Node_Type NT>
 Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta) {
   assert (alpha >= VALUE_MIN && beta <= VALUE_MAX && "alpha/beta out if range");
 
@@ -400,7 +397,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
       searchStats.currentExtraSearchDepth = std::max(searchStats.currentExtraSearchDepth, ply);
       if (depth <= DEPTH_NONE || ply >= PLY_MAX - 1) {
         if (SearchConfig::USE_QUIESCENCE && !PERFT) {
-          return search<QUIESCENCE>(position, depth, ply, alpha, beta);
+          return search<QUIESCENCE, NT>(position, depth, ply, alpha, beta);
         }
         else {
           Value eval = evaluate(position);
@@ -466,8 +463,8 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
         searchStats.tt_Hits++;
         searchStats.tt_Cuts++;
         if (ST == ROOT) {
-          setValue(rootMoves.at(currentMoveIndex), ttValue);
           getPVLine(position, pv[PLY_ROOT]);
+          setValue(rootMoves.at(currentMoveIndex), ttValue);
           setValue(pv[PLY_ROOT].at(0), ttValue);
         }
         else if (ttValue > alpha && ttValue < beta) {
@@ -570,15 +567,32 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
       }
       else {
         // TODO: Implement PVS Search
-        // recurse deeper into the search tree
-        switch (ST) {
-          case ROOT: // fall through
-          case NONROOT:
-            value = -search<NONROOT>(position, depth - 1, ply + 1, -beta, -alpha);
-            break;
-          case QUIESCENCE:
-            value = -search<QUIESCENCE>(position, DEPTH_NONE, ply + 1, -beta, -alpha);
-            break;
+
+        // reduce depth by 1 in the next search
+        Depth newDepth = ST == QUIESCENCE ? DEPTH_NONE : depth - 1;
+
+        // ROOT is called only at the start - changes directly to NONROOT
+        const Search::Search_Type nextST = ST == ROOT ? NONROOT : ST;
+
+        if (!SearchConfig::USE_PVS || searchLimits.isPerft() || movesSearched == 0) {
+          // AlphaBeta Search
+          value = -search<nextST, PV>(position, newDepth, ply + 1, -beta, -alpha);
+        }
+        else {
+          // #############################
+          // PVS Search /START
+          value = -search<nextST, NonPV>(position, newDepth, ply + 1, -alpha - 1, -alpha);
+          if (value > alpha && value < beta && !stopSearchFlag) {
+            if (ST == ROOT) { searchStats.pvs_root_researches++; }
+            else { searchStats.pvs_researches++; }
+            value = -search<nextST, PV>(position, newDepth, ply + 1, -beta, -alpha);
+          }
+          else {
+            if (ST == ROOT) { searchStats.pvs_root_cutoffs++; }
+            else { searchStats.pvs_cutoffs++; }
+          }
+          // PVS Search /END
+          // #############################
         }
       }
       assert ((value != VALUE_NONE || stopSearchFlag) && "Value should not be NONE at this point.");

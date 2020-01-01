@@ -151,6 +151,7 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   SearchConfig::USE_TT_QSEARCH = false;
   SearchConfig::USE_MDP = false;
   SearchConfig::USE_MPP = false;
+  SearchConfig::USE_PVS = false;
 
   // ***********************************
   // TESTS
@@ -167,7 +168,7 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   //  SearchConfig::USE_TT = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "MM+QS+TT"));
 
-  // AlphaBeta+Killer
+  // AlphaBeta
   SearchConfig::USE_QUIESCENCE = true;
   SearchConfig::USE_ALPHABETA = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "01 AB"));
@@ -185,6 +186,10 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   SearchConfig::USE_MDP = true;
   SearchConfig::USE_MPP = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "03 AB+M*P"));
+
+  // AB + PVS
+  SearchConfig::USE_PVS = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "04 AB_PVS"));
 
   // ***********************************
 

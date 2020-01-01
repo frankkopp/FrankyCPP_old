@@ -73,6 +73,11 @@ class Search {
     ROOT, NONROOT, QUIESCENCE
   };
 
+  // in PV we search the full window in NonPV we try a zero window first
+  enum Node_Type {
+    NonPV, PV
+  };
+
   // UCI related
   constexpr static MilliSec UCI_UPDATE_INTERVAL = 1'000;
   MilliSec lastUciUpdateTime{};
@@ -176,18 +181,19 @@ private:
   ////////////////////////////////////////////////
   ///// PRIVATE
 
-  FRIEND_TEST(SearchTest, goodCapture);
-
   void run(Position position);
 
   SearchResult iterativeDeepening(Position &refPosition);
 
-  template<Search_Type ST>
+  template<Search_Type ST, Node_Type NT>
   Value search(Position &position, Depth depth, Ply ply, Value alpha, Value beta);
+
   template<Search_Type ST>
-  Move getMove(Position &refPosition, int ply);
+  Move getMove(Position &position, int ply);
+
   template<Search_Type ST>
-  bool checkDrawRepAnd50(Position &refPosition) const;
+  bool checkDrawRepAnd50(Position &position) const;
+
   Value evaluate(Position &position);
 
   /**
@@ -281,7 +287,7 @@ private:
   void sendSearchUpdateToEngine();
   void sendResultToEngine() const;
 
-
+  FRIEND_TEST(SearchTest, goodCapture);
 };
 
 #endif // FRANKYCPP_SEARCH_H

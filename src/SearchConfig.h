@@ -31,6 +31,7 @@ namespace SearchConfig {
   // basic search strategies and features
   inline bool USE_QUIESCENCE = true;
   inline bool USE_ALPHABETA = true;
+  inline bool USE_PVS = true;
 
   // Transposition Table
   inline bool USE_TT = true;
@@ -44,6 +45,7 @@ namespace SearchConfig {
   // Pruning features
   inline bool USE_MDP = true; // mate distance pruning
   inline bool USE_MPP = true; // minor promotion pruning
+
 }
 
 #endif //FRANKYCPP_SEARCHCONFIG_H
