@@ -41,6 +41,7 @@ namespace SearchConfig {
   // Move Sorting Features
   inline bool USE_KILLER_MOVES = true;
   inline int NO_KILLER_MOVES = 2;
+  inline bool USE_PV_MOVE_SORTING = true;
 
   // Pruning features
   inline bool USE_MDP = true; // mate distance pruning

@@ -29,8 +29,6 @@
 #ifndef FRANKYCPP_TT_H
 #define FRANKYCPP_TT_H
 
-// #define TT_DEBUG
-
 /**
  * Simple TT implementation using heap memory and simple hash for entries.
  * It is not yet thread safe as it has no synchronization. 
@@ -80,9 +78,6 @@ private:
   // these two arrays hold the actual entries for the transposition table
   Key* _keys = new Key[0]; // default initialization
   Entry* _data = new Entry[0]; // default initialization
-#ifdef TT_DEBUG
-  std::string* _fens = new std::string[0]; // default initialization
-#endif
 
 public:
 
@@ -105,12 +100,6 @@ public:
    */
   void clear();
 
-
-#ifdef TT_DEBUG
-  void put(bool forced, Key key, Value value, EntryType type, Depth depth, Move bestMove,
-           bool mateThreat, std::string fen);
-#endif
-
   /**
     * Stores the node value and the depth it has been calculated at.
     * @param forced - when true skips age check
@@ -121,16 +110,8 @@ public:
     * @param bestMove
     * @param mateThreat
     */
-
-#ifdef TT_DEBUG
-  void put(bool forced, Key key, Value value, EntryType type, Depth depth, Move bestMove,
-           bool mateThreat) {
-    put(forced, key, value, type, depth, bestMove, mateThreat, "");
-  }
-#else
   void put(bool forced, Key key, Value value, EntryType type, Depth depth, Move bestMove,
            bool mateThreat);
-#endif
 
   /**
    * Stores the node value and the depth it has been calculated at.

@@ -433,6 +433,31 @@ TEST_F(MoveGenTest, pushKiller) {
   ASSERT_EQ(86, counter);
 }
 
+TEST_F(MoveGenTest, pvMove) {
+  string fen;
+  MoveGenerator mg;
+  MoveList moves;
+
+  // 86 pseudo legal moves (incl. castling over attacked square)
+  fen = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 w kq e3";
+  Position position(fen);
+  // best move
+  Move pvMove = createMove("b1e1");
+
+  mg.setPV(pvMove);
+
+  Move move;
+  int counter = 0;
+  while (true) {
+    move = mg.getNextPseudoLegalMove<MoveGenerator::GENALL>(position);
+    if (move == MOVE_NONE) break;
+    fprint("{} {} ({})", counter, printMoveVerbose(move), move);
+    counter++;
+  }
+  println("Moves: " + to_string(counter));
+  ASSERT_EQ(27, counter);
+}
+
 TEST_F(MoveGenTest, swap) {
   string fen;
   MoveGenerator mg;

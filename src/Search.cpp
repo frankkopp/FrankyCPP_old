@@ -511,6 +511,11 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
   }
   // ###############################################
 
+  // make sure the pv move is returned first
+  if(ST != ROOT && SearchConfig::USE_PV_MOVE_SORTING) {
+    moveGenerators[ply].setPV(ttMove);
+  }
+
   // ###########################################################################
   // MOVE LOOP
   while ((move = getMove<ST>(position, ply)) != MOVE_NONE) {
@@ -837,14 +842,10 @@ Search::storeTT(Position &position, Value value, TT::EntryType ttType, Depth dep
   assert (depth >= 0 && depth <= DEPTH_MAX);
   assert ((value >= VALUE_MIN && value <= VALUE_MAX));
 
-  // correct mate values
-  value = valueToTT(value, ply);
-
-#ifdef TT_DEBUG
-  tt.put(false, position.getZobristKey(), value, ttType, depth, bestMove, mateThreat, position.printFen());
-#else
-  tt.put(position.getZobristKey(), value, ttType, depth, bestMove, mateThreat);
-#endif
+  // store the position in the TT
+  // correct the value for mate distance and remove the value from the move to
+  // later be able to easier compare it wh read from TT
+  tt.put(position.getZobristKey(), valueToTT(value, ply), ttType, depth, moveOf(bestMove), mateThreat);
 
 }
 

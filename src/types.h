@@ -38,7 +38,7 @@
 #define NEWLINE std::cout << std::endl
 #define printBB(bb) std::cout << Bitboards::print((bb)) << std::endl
 #define println(s) std::cout << (s) << std::endl
-#define fprint(s, ...) fmt::print(s, __VA_ARGS__); fmt::print("\n")
+#define fprint(...) fmt::print(__VA_ARGS__); fmt::print("\n")
 
 // Global constants
 constexpr const char* START_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -282,7 +282,7 @@ inline std::string printValue(const Value value) {
 //// MOVE
 enum Move : uint32_t {
   /** A move is basically a 32-bit int */
-    MOVE_NONE
+    MOVE_NONE = 0
 };
 
 /* @formatter:off

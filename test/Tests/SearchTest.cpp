@@ -338,6 +338,32 @@ TEST_F(SearchTest, MDPMPP) {
   ASSERT_GT(search.getSearchStats().minorPromotionPrunings, 1'000);
 }
 
+TEST_F(SearchTest, PV_MOVE) {
+
+  SearchConfig::USE_QUIESCENCE = true;
+  SearchConfig::USE_ALPHABETA = true;
+  SearchConfig::USE_PVS = true;
+  SearchConfig::USE_TT = true;
+  SearchConfig::USE_TT_QSEARCH = true;
+  SearchConfig::USE_KILLER_MOVES = true;
+  SearchConfig::USE_PV_MOVE_SORTING = true;
+  SearchConfig::USE_MDP = true;
+  SearchConfig::USE_MPP = true;
+
+  Search search;
+  SearchLimits searchLimits;
+  Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
+  searchLimits.setNodes(30'000'000);
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+
+  LOG->info("PVS ROOT CUTS {:n} PVS ROOT RE-SEARCH {:n} PVS CUTS: {:n} PVS RE-SEARCH: {:n}",
+            search.getSearchStats().pvs_root_cutoffs, search.getSearchStats().pvs_root_researches,
+            search.getSearchStats().pvs_cutoffs, search.getSearchStats().pvs_root_researches);
+  ASSERT_GT(search.getSearchStats().pvs_cutoffs, 10);
+  ASSERT_GT(search.getSearchStats().pvs_researches, 10);
+}
+
 TEST_F(SearchTest, perft) {
 
   int DEPTH = 6;
