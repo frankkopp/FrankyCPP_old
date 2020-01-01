@@ -59,11 +59,11 @@ TEST_F(EvaluatorTest, basic) {
 
   position.doMove(createMove("e2e4"));
   value = evaluator.evaluate(position);
-  ASSERT_TRUE(value == -55);
+  ASSERT_EQ(-55, value);
 
   position.doMove(createMove("d7d5"));
   value = evaluator.evaluate(position);
-  ASSERT_TRUE(value == 0);
+  ASSERT_EQ(0, value);
 
 }
 

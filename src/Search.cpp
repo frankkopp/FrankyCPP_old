@@ -124,7 +124,7 @@ bool Search::isRunning() const {
 }
 
 void Search::waitWhileSearching() {
-  LOG->trace("Wait while searching");
+  TRACE(LOG, "Wait while searching");
   if (!running) return;
   searchSemaphore.getOrWait();
   searchSemaphore.reset();
@@ -172,7 +172,7 @@ void Search::ponderhit() {
  * @param position the position to be searched given as value (copied)
  */
 void Search::run(Position position) {
-  LOG->trace("Search thread started.");
+  TRACE(LOG, "Search thread started.");
 
   // get the search lock
   searchSemaphore.getOrWait();
@@ -238,11 +238,11 @@ void Search::run(Position position) {
             searchStats.currentExtraSearchDepth);
   LOG->info("Search took {},{:03} sec ({:n} nps)", (searchStats.lastSearchTime % 1'000'000) / 1'000,
             (searchStats.lastSearchTime % 1'000),
-            (searchStats.nodesVisited * 1'000) / searchStats.lastSearchTime);
+            (searchStats.nodesVisited * 1'000) / (searchStats.lastSearchTime + 1));
 
   running = false;
   searchSemaphore.reset();
-  LOG->trace("Search thread ended.");
+  TRACE(LOG, "Search thread ended.");
 }
 
 /**
@@ -305,6 +305,9 @@ SearchResult Search::iterativeDeepening(Position &position) {
 
     searchStats.currentIterationDepth = iterationDepth;
     searchStats.bestMoveChanges = 0;
+    if (stopSearchFlag) {
+      assert(1);
+    }
     searchStats.nodesVisited++;
 
     // protect the TT from being resized or cleared during search
@@ -318,14 +321,18 @@ SearchResult Search::iterativeDeepening(Position &position) {
     // release lock on TT
     tt_lock.unlock();
 
-    // here should have a best root move with a value. 
-    assert (pv[PLY_ROOT].at(0) != MOVE_NONE && "Best root move missing!");
-    assert (valueOf(pv[PLY_ROOT].at(0)) != VALUE_NONE && "Best root move has no value!");
-
-    sendIterationEndInfoToEngine();
+    // here should have a best root move with a value.
+    if (!stopSearchFlag) {
+      assert (
+        searchLimits.isPerft() || (pv[PLY_ROOT].at(0) != MOVE_NONE && "Best root move missing!"));
+      assert (searchLimits.isPerft() ||
+              (valueOf(pv[PLY_ROOT].at(0)) != VALUE_NONE && "Best root move has no value!"));
+    }
 
     // break on stop signal or time
     if (stopConditions(true)) break;
+
+    sendIterationEndInfoToEngine();
 
     //    fmt::print("Before: ");
     //    for (auto m : rootMoves) {
@@ -349,7 +356,7 @@ SearchResult Search::iterativeDeepening(Position &position) {
   // ###########################################
 
   // update searchResult here
-  searchResult.bestMove = pv[PLY_ROOT].at(0);
+  searchResult.bestMove = pv[PLY_ROOT].empty() ? MOVE_NONE : pv[PLY_ROOT].at(0);
   searchResult.ponderMove = pv[PLY_ROOT].size() > 1 ? pv[PLY_ROOT].at(1) : MOVE_NONE;
   searchResult.depth = searchStats.currentSearchDepth;
   searchResult.extraDepth = searchStats.currentExtraSearchDepth;
@@ -380,6 +387,11 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
         (ST == ROOT ? "ROOT" : ST == NONROOT ? "NONROOT" : "QUIESCENCE"), ply, depth, alpha, beta,
         printMoveListUCI(currentVariation));
 
+  // Check if search should be stopped
+  if (stopConditions(shouldTimeCheck())) {
+    return VALUE_NONE;
+  }
+
   // Leaf node handling
   switch (ST) {
     case ROOT: // fall through
@@ -391,21 +403,21 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
           return search<QUIESCENCE>(position, depth, ply, alpha, beta);
         }
         else {
-          return evaluate(position, ply);
+          Value eval = evaluate(position);
+          TRACE(LOG, "{:>{}} Evaluation: {} {}", " ", ply, printMoveListUCI(currentVariation),
+                eval);
+          return eval;
         }
       }
       break;
     case QUIESCENCE:
       if (ply >= PLY_MAX - 1) {
-        return evaluate(position, ply);
+        Value eval = evaluate(position);
+        TRACE(LOG, "{:>{}} Evaluation: {} {}", " ", ply, printMoveListUCI(currentVariation), eval);
+        return eval;
       }
       searchStats.currentExtraSearchDepth = std::max(searchStats.currentExtraSearchDepth, ply);
       break;
-  }
-
-  // Time check
-  if (stopConditions(shouldTimeCheck())) {
-    return VALUE_NONE;
   }
 
   // ###############################################
@@ -444,12 +456,6 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
 
     // probe the TT and set ttValue and ttMove in case of HIT
     TT::Result result = tt.probe(position.getZobristKey(), depth, alpha, beta, ttValue, ttMove);
-
-    // DEBUG
-    if (isCheckMateValue(ttValue)) {
-      fprint("VALUE FROM TT {:>8d} Curr Ply {} Curr Depth {} ==> {:>8d} ({})", ttValue, ply, depth,
-             valueFromTT(ttValue, ply), position.getZobristKey());
-    }
 
     // correct mate values
     ttValue = valueFromTT(ttValue, ply);
@@ -491,7 +497,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
   // Assumption is that there is at least on move which would improve the
   // current position. So if we are already >beta we don't need to look at it.
   if (ST == QUIESCENCE && !position.hasCheck()) {
-    Value standPat = evaluate(position, ply);
+    Value standPat = evaluate(position);
     bestNodeValue = standPat;
     TRACE(LOG, "{:>{}}Quiescence in ply {}: STANDPAT {}", "", ply, ply, standPat);
     if (standPat >= beta) {
@@ -582,7 +588,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
     position.undoMove();
     // ************************************
 
-    if (stopSearchFlag) {
+    if (stopConditions(false)) {
       return VALUE_NONE;
     }
 
@@ -593,7 +599,10 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
     }
 
     // In PERFT we can ignore values and pruning
-    if (PERFT) continue;
+    if (PERFT) {
+      value = VALUE_ONE;
+      continue;
+    }
 
     // Did we find a better move for this node?
     // For the first move this is always the case.
@@ -678,8 +687,6 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
       ttType = TT::TYPE_EXACT;
       TRACE(LOG, "{:>{}} Search in ply {} for depth {}: {} CHECKMATE", " ", ply, ply, depth,
             bestNodeValue);
-      // DEBUG
-      fprint("CHECKMATE in ply {} for depth {}: {}", ply, depth, bestNodeValue);
     }
     else if (ST != QUIESCENCE) {
       // If not in quiescence we have a stale mate.
@@ -727,19 +734,21 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
   return bestNodeValue;
 }
 
-Value Search::evaluate(Position &position, Ply ply) {
+Value Search::evaluate(Position &position) {
   // count all leaf nodes evaluated
   searchStats.leafPositionsEvaluated++;
 
   // PERFT stats
-  // TODO: more perft stats
   if (searchLimits.isPerft()) {
+    //    Move lastMove = position.getLastMove();
+    //    if (position.getLastCapturedPiece() != PIECE_NONE) searchStats.captureCounter++;
+    //    if (typeOf(lastMove) == ENPASSANT) searchStats.enPassantCounter++;
+    //    if (position.hasCheck()) searchStats.checkCounter++;
+    //    if (position.hasCheckMate()) searchStats.checkMateCounter++;
     return VALUE_ONE;
   }
 
-  Value value = evaluator.evaluate(position);
-  TRACE(LOG, "{:>{}} Evaluation: {} {}", " ", ply, printMoveListUCI(currentVariation), value);
-  return value;
+  return evaluator.evaluate(position);
 }
 
 /**
@@ -814,12 +823,6 @@ Search::storeTT(Position &position, Value value, TT::EntryType ttType, Depth dep
   assert (depth >= 0 && depth <= DEPTH_MAX);
   assert ((value >= VALUE_MIN && value <= VALUE_MAX));
 
-  // DEBUG
-  if (isCheckMateValue(value)) {
-    fprint("VALUE TO TT   {:>8d} Curr Ply {} Curr Depth {} ==> {:>8d} ({})", value, ply, depth,
-           valueToTT(value, ply), position.getZobristKey());
-  }
-
   // correct mate values
   value = valueToTT(value, ply);
 
@@ -841,6 +844,7 @@ inline Value Search::valueFromTT(Value value, Ply ply) {
 }
 
 inline bool Search::stopConditions(bool shouldTimeCheck) {
+  if (stopSearchFlag) return true;
   if ((shouldTimeCheck && timeLimitReached()) ||
       (searchLimits.getNodes() && searchStats.nodesVisited >= searchLimits.getNodes())) {
     stopSearchFlag = true;
@@ -858,13 +862,13 @@ bool Search::checkDrawRepAnd50(Position &position) const {
   // loose too much precision
   constexpr int allowedRepetitions = (ST == QUIESCENCE ? 1 : 2);
   if (position.checkRepetitions(allowedRepetitions)) {
-    LOG->trace("DRAW because of repetition for move {} in variation {}",
-               printMove(position.getLastMove()), printMoveListUCI(this->currentVariation));
+    TRACE(LOG, "DRAW because of repetition for move {} in variation {}",
+          printMove(position.getLastMove()), printMoveListUCI(this->currentVariation));
     return true;
   }
   if (position.getHalfMoveClock() >= 100) {
-    LOG->trace("DRAW because 50-move rule", printMove(position.getLastMove()),
-               printMoveListUCI(this->currentVariation));
+    TRACE(LOG, "DRAW because 50-move rule", printMove(position.getLastMove()),
+          printMoveListUCI(this->currentVariation));
     return true;
   }
   return false;
@@ -989,7 +993,7 @@ bool Search::rootMovesSort(Move m1, Move m2) {
 }
 
 void Search::clearHash() {
-  LOG->trace("Search: Clear Hash command received!");
+  TRACE(LOG, "Search: Clear Hash command received!");
   std::chrono::milliseconds timeout(2500);
   if (tt_lock.try_lock_for(timeout)) {
     tt.clear();
@@ -1001,7 +1005,7 @@ void Search::clearHash() {
 }
 
 void Search::setHashSize(int sizeInMB) {
-  LOG->trace("Search: Set HashSize to {} MB command received!", sizeInMB);
+  TRACE(LOG, "Search: Set HashSize to {} MB command received!", sizeInMB);
   std::chrono::milliseconds timeout(2500);
   if (tt_lock.try_lock_for(timeout)) {
     tt.resize(sizeInMB * TT::MB);
@@ -1013,30 +1017,29 @@ void Search::setHashSize(int sizeInMB) {
 }
 
 void Search::sendIterationEndInfoToEngine() const {
-
-  MilliSec result;
-  result = elapsedTime(startTime);
-  std::string infoString = fmt::format(
-    "depth {} seldepth {} multipv 1 {} nodes {} nps {} time {} pv {}",
-    searchStats.currentIterationDepth, searchStats.currentExtraSearchDepth,
-    valueOf(pv[PLY_ROOT].at(0)), searchStats.nodesVisited, getNps(), result,
-    printMoveListUCI(pv[PLY_ROOT]));
-
-  if (!pEngine) { LOG->info("UCI >> {}", infoString); }
+  if (!pEngine) {
+    LOG->info("UCI >> {}",
+              fmt::format("depth {} seldepth {} multipv 1 {} nodes {:n} nps {:n} time {:n} pv {}",
+                          searchStats.currentIterationDepth, searchStats.currentExtraSearchDepth,
+                          (searchLimits.isPerft() ? VALUE_ZERO : valueOf(pv[PLY_ROOT].at(0))),
+                          searchStats.nodesVisited, getNps(), elapsedTime(startTime),
+                          printMoveListUCI(pv[PLY_ROOT])));
+  }
   else {
     pEngine->sendIterationEndInfo(searchStats.currentIterationDepth,
-                                  searchStats.currentExtraSearchDepth, valueOf(pv[PLY_ROOT].at(0)),
+                                  searchStats.currentExtraSearchDepth,
+                                  searchLimits.isPerft() ? VALUE_ZERO : valueOf(pv[PLY_ROOT].at(0)),
                                   searchStats.nodesVisited, getNps(), elapsedTime(startTime),
                                   pv[PLY_ROOT]);
   }
 }
 
 void Search::sendCurrentRootMoveToEngine() const {
-  std::string infoString = fmt::format("currmove {} currmovenumber {}",
-                                       printMove(searchStats.currentRootMove),
-                                       currentMoveIndex + 1);
-
-  if (!pEngine) { LOG->trace("UCI >> {}", infoString); }
+  if (!pEngine) {
+    TRACE(LOG, "UCI >> {}",
+          fmt::format("currmove {} currmovenumber {}", printMove(searchStats.currentRootMove),
+                      currentMoveIndex + 1));
+  }
   else {
     pEngine->sendCurrentRootMove(searchStats.currentRootMove, currentMoveIndex + 1);
   }
@@ -1045,36 +1048,39 @@ void Search::sendCurrentRootMoveToEngine() const {
 void Search::sendSearchUpdateToEngine() {
   if (elapsedTime(lastUciUpdateTime) > UCI_UPDATE_INTERVAL) {
     lastUciUpdateTime = now();
-
-    MilliSec result;
-    result = elapsedTime(startTime);
-    std::string infoString = fmt::format("depth {} seldepth {} nodes {} nps {} time {} hashfull {}",
-                                         searchStats.currentIterationDepth,
-                                         searchStats.currentExtraSearchDepth,
-                                         searchStats.nodesVisited, getNps(), result, tt.hashFull());
-
-    if (!pEngine) { LOG->info("UCI >> {}", infoString); }
+    if (!pEngine) {
+      LOG->info("UCI >> {}",
+                fmt::format("depth {} seldepth {} nodes {:n} nps {:n} time {:n} hashfull {}",
+                            searchStats.currentIterationDepth, searchStats.currentExtraSearchDepth,
+                            searchStats.nodesVisited, getNps(), elapsedTime(startTime),
+                            tt.hashFull()));
+    }
     else {
       pEngine->sendSearchUpdate(searchStats.currentIterationDepth,
                                 searchStats.currentExtraSearchDepth, searchStats.nodesVisited,
                                 getNps(), elapsedTime(startTime), 0);
     }
 
-    infoString = fmt::format("currline {}", printMoveListUCI(currentVariation));
-    if (!pEngine) { LOG->trace("UCI >> {}", infoString); }
-    else { pEngine->sendCurrentLine(currentVariation); }
+    if (!pEngine) {
+      TRACE(LOG, "UCI >> {}", fmt::format("currline {}", printMoveListUCI(currentVariation)));
+    }
+    else {
+      pEngine->sendCurrentLine(currentVariation);
+    }
   }
 }
 
 void Search::sendResultToEngine() const {
-  std::string infoString = fmt::format("Engine got Best Move: {} ({}) [Ponder {}] from depth {}",
+  if (!pEngine) {
+    LOG->info("UCI >> {}", fmt::format("Engine got Best Move: {} ({}) [Ponder {}] from depth {}",
                                        printMove(lastSearchResult.bestMove),
                                        printValue(valueOf(lastSearchResult.bestMove)),
                                        printMove(lastSearchResult.ponderMove),
-                                       searchStats.bestMoveDepth);
-
-  if (!pEngine) { LOG->info("UCI >> {}", infoString); }
-  else { pEngine->sendResult(lastSearchResult.bestMove, lastSearchResult.ponderMove); }
+                                       searchStats.bestMoveDepth));
+  }
+  else {
+    pEngine->sendResult(lastSearchResult.bestMove, lastSearchResult.ponderMove);
+  }
 
 }
 

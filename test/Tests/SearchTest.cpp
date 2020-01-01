@@ -331,16 +331,16 @@ TEST_F(SearchTest, MDPMPP) {
   searchLimits.setNodes(5'000'000);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
-  
+
   LOG->info("MDP: {:n} MPP: {:n}", search.getSearchStats().mateDistancePrunings,
-             search.getSearchStats().minorPromotionPrunings);
+            search.getSearchStats().minorPromotionPrunings);
   ASSERT_GT(search.getSearchStats().mateDistancePrunings, 1'000);
   ASSERT_GT(search.getSearchStats().minorPromotionPrunings, 1'000);
 }
 
 TEST_F(SearchTest, perft) {
 
-  int DEPTH = 5;
+  int DEPTH = 6;
 
   long perftResults[] = {0, 20, 400, 8'902, 197'281, 4'865'609, 119'060'324, 3'195'901'860};
 
@@ -364,11 +364,16 @@ TEST_F(SearchTest, PERFT_nps) {
   SearchConfig::USE_KILLER_MOVES = true;
   SearchConfig::USE_TT = true;
   SearchConfig::USE_TT_QSEARCH = true;
+  SearchConfig::TT_SIZE_MB = 64;
+  SearchConfig::USE_MDP = true;
+  SearchConfig::USE_MPP = true;
 
   Search search;
   SearchLimits searchLimits;
   Position position;
+
   searchLimits.setMoveTime(30'000);
+
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 
@@ -380,6 +385,9 @@ TEST_F(SearchTest, PERFT_nps) {
 // for debugging
 TEST_F(SearchTest, debugging) {
 
+  Search search;
+  SearchLimits searchLimits;
+
   SearchConfig::USE_QUIESCENCE = true;
   SearchConfig::USE_ALPHABETA = true;
   SearchConfig::USE_KILLER_MOVES = true;
@@ -389,21 +397,19 @@ TEST_F(SearchTest, debugging) {
   SearchConfig::USE_MDP = true;
   SearchConfig::USE_MPP = true;
 
-  Search search;
-  SearchLimits searchLimits;
-  //Position position("r3k2r/1ppn3p/2q1q1n1/4P3/4q3/5Pp1/pb4PP/2q2RK1 w kq - 0 1"); //
   Position position("r3k2r/1ppn3p/2q1q1n1/4P3/4Pp2/6R1/pbp1qPPP/4R1K1 w kq - 0 1");
+  //Position position("r3k2r/1ppn3p/2q1q1n1/4P3/4q3/5Pp1/pb4PP/2q2RK1 w kq - 0 1"); //
   //position = Position("2r3k1/pppR1pp1/4p3/4P1P1/5P2/1P4K1/P1P5/8 w - -");
-  searchLimits.setDepth(8);
+
+  searchLimits.setDepth(6);
   //searchLimits.setNodes(30'000'000);
   //searchLimits.setMoveTime(10'000);
+
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 
   position.doMove(createMove("h2g3"));
   position.doMove(createMove("b2d4"));
-
-  println(position.getZobristKey());
 
   //searchLimits.setMoveTime(10'000);
   search.startSearch(position, searchLimits);

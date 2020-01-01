@@ -38,7 +38,7 @@
 #define NEWLINE std::cout << std::endl
 #define printBB(bb) std::cout << Bitboards::print((bb)) << std::endl
 #define println(s) std::cout << (s) << std::endl
-#define fprint(s, args...) fmt::print(s, args); fmt::print("\n")
+#define fprint(s, ...) fmt::print(s, __VA_ARGS__); fmt::print("\n")
 
 // Global constants
 constexpr const char* START_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -218,10 +218,11 @@ constexpr PieceType typeOf(Piece p) { return PieceType(p & 7); }
 ///////////////////////////////////
 //// VALUE
 enum Value : int16_t {
-  VALUE_DRAW = 0,
+  VALUE_ZERO = 0,
+  VALUE_DRAW = VALUE_ZERO,
   VALUE_ONE = 1,
   VALUE_INF = 15000,
-  VALUE_NONE = -VALUE_INF - 1,
+  VALUE_NONE = -VALUE_INF - VALUE_ONE,
   VALUE_MIN = -10000,
   VALUE_MAX = 10000,
   VALUE_CHECKMATE = VALUE_MAX,
@@ -441,7 +442,7 @@ constexpr PieceType promotionType(Move m) {
 
 /** sets the value for the move. E.g. used by the move generator for move sorting */
 constexpr void setValue(Move &m, Value v) {
-  assert(v <= VALUE_INF && v >= VALUE_NONE);
+  assert(v >= VALUE_NONE && v <= -VALUE_NONE);
   // when saving a value to a move we shift value to a positive integer (0-VALUE_NONE) and
   // encode it into the move
   // for retrieving we then shift the value back to a range from VALUE_NONE to VALUE_INF

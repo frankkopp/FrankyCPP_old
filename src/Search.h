@@ -188,7 +188,7 @@ private:
   Move getMove(Position &refPosition, int ply);
   template<Search_Type ST>
   bool checkDrawRepAnd50(Position &refPosition) const;
-  Value evaluate(Position &position, Ply ply);
+  Value evaluate(Position &position);
 
   /**
    * Generates root moves and filters them according to the UCI searchmoves list
