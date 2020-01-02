@@ -482,11 +482,6 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
   // End TT Lookup
   // ###############################################
 
-  // prepare move loop
-  Value value = VALUE_NONE;
-  Move move = MOVE_NONE;
-  int movesSearched = 0; // to detect mate situations
-
   // ###############################################
   // Quiescence StandPat
   // Use evaluation as a standing pat (lower bound)
@@ -511,10 +506,42 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
   }
   // ###############################################
 
+  // ###############################################
+  // INTERNAL ITERATIVE DEEPENING
+  // If we didn't get a best move from the TT to play
+  // first (PV) then do a shallow search to find
+  // one. This is most effective with bad move ordering.
+  // If move ordering is quite good this might be
+  // a waste of search time.
+  // @formatter:off
+  if (SearchConfig::USE_IID
+      && SearchConfig::USE_TT // need TT as well for this feature
+      && !PERFT
+      && NT == PV
+      && !ttMove 
+      && depth > SearchConfig::IID_REDUCTION) {
+    // @formatter:on
+    fprint("IID SEARCH *******************************");
+    searchStats.iidSearches++;
+    Depth iidDepth = depth - SearchConfig::IID_REDUCTION;
+    // do the iterative search which will eventually
+    // fill the pv list and the TT
+    search<ST, PV>(position, iidDepth, ply, alpha, beta);
+    // no we look in the pv list if we have a best move
+    tt.probe(position.getZobristKey(), depth, alpha, beta, ttValue, ttMove);
+    assert (ttMove != MOVE_NONE);
+  }
+  // ###############################################
+
   // make sure the pv move is returned first
-  if(ST != ROOT && SearchConfig::USE_PV_MOVE_SORTING) {
+  if (ST != ROOT && SearchConfig::USE_PV_MOVE_SORTING) {
     moveGenerators[ply].setPV(ttMove);
   }
+
+  // prepare move loop
+  Value value = VALUE_NONE;
+  Move move = MOVE_NONE;
+  int movesSearched = 0; // to detect mate situations
 
   // ###########################################################################
   // MOVE LOOP
@@ -579,7 +606,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
         // ROOT is called only at the start - changes directly to NONROOT
         const Search::Search_Type nextST = ST == ROOT ? NONROOT : ST;
 
-        if (!SearchConfig::USE_PVS || searchLimits.isPerft() || movesSearched == 0) {
+        if (!SearchConfig::USE_PVS || PERFT || movesSearched == 0) {
           // AlphaBeta Search
           value = -search<nextST, PV>(position, newDepth, ply + 1, -beta, -alpha);
         }
@@ -845,7 +872,8 @@ Search::storeTT(Position &position, Value value, TT::EntryType ttType, Depth dep
   // store the position in the TT
   // correct the value for mate distance and remove the value from the move to
   // later be able to easier compare it wh read from TT
-  tt.put(position.getZobristKey(), valueToTT(value, ply), ttType, depth, moveOf(bestMove), mateThreat);
+  tt.put(position.getZobristKey(), valueToTT(value, ply), ttType, depth, moveOf(bestMove),
+         mateThreat);
 
 }
 

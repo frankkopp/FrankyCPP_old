@@ -340,15 +340,8 @@ TEST_F(SearchTest, MDPMPP) {
 
 TEST_F(SearchTest, PV_MOVE) {
 
-  SearchConfig::USE_QUIESCENCE = true;
-  SearchConfig::USE_ALPHABETA = true;
   SearchConfig::USE_PVS = true;
-  SearchConfig::USE_TT = true;
-  SearchConfig::USE_TT_QSEARCH = true;
-  SearchConfig::USE_KILLER_MOVES = true;
   SearchConfig::USE_PV_MOVE_SORTING = true;
-  SearchConfig::USE_MDP = true;
-  SearchConfig::USE_MPP = true;
 
   Search search;
   SearchLimits searchLimits;
@@ -362,6 +355,23 @@ TEST_F(SearchTest, PV_MOVE) {
             search.getSearchStats().pvs_cutoffs, search.getSearchStats().pvs_root_researches);
   ASSERT_GT(search.getSearchStats().pvs_cutoffs, 10);
   ASSERT_GT(search.getSearchStats().pvs_researches, 10);
+}
+
+
+TEST_F(SearchTest, IID) {
+
+  SearchConfig::USE_TT = true;
+  SearchConfig::USE_IID = true;
+
+  Search search;
+  SearchLimits searchLimits;
+  Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
+  searchLimits.setMoveTime(30'000);
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+
+  LOG->info("IID Searches {:n}", search.getSearchStats().iidSearches);
+  ASSERT_GT(search.getSearchStats().iidSearches, 10);
 }
 
 TEST_F(SearchTest, perft) {

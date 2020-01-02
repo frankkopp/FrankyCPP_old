@@ -156,6 +156,7 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   SearchConfig::USE_MPP = false;
   SearchConfig::USE_PVS = false;
   SearchConfig::USE_PV_MOVE_SORTING = false;
+  SearchConfig::USE_IID = false;
 
   // ***********************************
   // TESTS
@@ -198,6 +199,10 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   // AB + PVS + PV Sort
   SearchConfig::USE_PV_MOVE_SORTING = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "05 AB_PVMS"));
+
+  // AB + IID
+  SearchConfig::USE_IID = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "06 AB_IID"));
 
   // ***********************************
 

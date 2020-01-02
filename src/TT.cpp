@@ -48,9 +48,6 @@ void TT::resize(uint64_t newSize) {
 
   _keys = new Key[maxNumberOfEntries];
   _data = new Entry[maxNumberOfEntries];
-#ifdef TT_DEBUG
-  _fens = new std::string[maxNumberOfEntries];
-#endif
 
   LOG->info("TT Size {:n} Byte,  Capacity {:n} entries", sizeInByte, maxNumberOfEntries);
   clear();
@@ -64,7 +61,7 @@ void TT::clear() {
   std::vector<std::thread> threads;
   threads.reserve(noOfThreads);
   for (int t = 0; t < noOfThreads; ++t) {
-    threads.emplace_back([this, t]() {
+    threads.emplace_back([&, this, t]() {
       auto range = maxNumberOfEntries / noOfThreads;
       auto start = t * range;
       auto end = start + range;
@@ -82,14 +79,8 @@ void TT::clear() {
             noOfThreads);
 }
 
-#ifdef TT_DEBUG
-void TT::put(bool forced, Key key, Value value, TT::EntryType type, Depth depth, Move bestMove,
-             bool mateThreat, std::string fen) {
-#else
-
 void TT::put(bool forced, Key key, Value value, TT::EntryType type, Depth depth, Move bestMove,
              bool mateThreat) {
-#endif
 
   assert (value > VALUE_NONE);
 
@@ -106,9 +97,6 @@ void TT::put(bool forced, Key key, Value value, TT::EntryType type, Depth depth,
   if (entryKey == 0) {
     numberOfEntries++;
     _keys[hash] = key;
-#ifdef TT_DEBUG
-    _fens[hash] = fen;
-#endif
     entryData = resetAge(entryData);
     entryData = setMateThreat(entryData, mateThreat);
     entryData = setValue(entryData, value);
@@ -127,9 +115,6 @@ void TT::put(bool forced, Key key, Value value, TT::EntryType type, Depth depth,
         (depth == getDepth(entryData) && (forced || getAge(entryData) > 0))) {
       numberOfOverwrites++;
       _keys[hash] = key;
-#ifdef TT_DEBUG
-      _fens[hash] = fen;
-#endif
       entryData = resetAge(entryData);
       entryData = setMateThreat(entryData, mateThreat);
       entryData = setValue(entryData, value);
@@ -157,15 +142,7 @@ void TT::put(bool forced, Key key, Value value, TT::EntryType type, Depth depth,
       else {
         // old entry was exact, the new entry is also EXACT -> assert that they are identical
         if (type == TYPE_EXACT) {
-#ifdef TT_DEBUG
-          if (getValue(entryData) != value) {
-            LOG->error("ENTRY VAL {} FEN {} ENTRY {}", getValue(entryData),_fens[hash], str(entryKey, entryData));
-            LOG->error("NEW   VAL {} FEN {} ENTRY Key: {} Entry: Value {} Type {} Depth {} Move {}", value,_fens[hash], key, value, str(type), depth, printMove(bestMove));
-            assert (1);
-          }
-#else
           assert (getValue(entryData) == value);
-#endif
         }
       }
 
@@ -219,16 +196,9 @@ TT::probe(const Key &key, const Depth &depth, const Value &alpha, const Value &b
       assert (ttValue != VALUE_NONE);
 
       // in PV node only return ttHit if it was an exact hit
-      if (getType(ttEntry) == TT::TYPE_EXACT) {
-        if (ttValue > alpha && ttValue < beta) {
-          // TODO: maybe set PV?
-        }
-        return TT_HIT;
-      }
-      else if (TT::getType(ttEntry) == TT::TYPE_ALPHA && ttValue <= alpha) {
-        return TT_HIT;
-      }
-      else if (TT::getType(ttEntry) == TT::TYPE_BETA && ttValue >= beta) {
+      if (getType(ttEntry) == TT::TYPE_EXACT ||
+          (getType(ttEntry) == TT::TYPE_ALPHA && ttValue <= alpha) ||
+          (getType(ttEntry) == TT::TYPE_BETA && ttValue >= beta)) {
         return TT_HIT;
       }
     }
@@ -262,7 +232,7 @@ void TT::ageEntries() {
   std::vector<std::thread> threads;
   threads.reserve(noOfThreads);
   for (int idx = 0; idx < noOfThreads; ++idx) {
-    threads.emplace_back([this, idx]() {
+    threads.emplace_back([&, this, idx]() {
       auto range = maxNumberOfEntries / noOfThreads;
       auto start = idx * range;
       auto end = start + range;
