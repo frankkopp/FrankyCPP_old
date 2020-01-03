@@ -98,7 +98,7 @@ void TT::clear() {
             noOfThreads);
 }
 
-inline std::size_t TT::getBucket(const Key key) const {
+std::size_t TT::getBucket(const Key key) const {
   //  fprintln("key         = {}", TT::printBitString(key));
   //  fprintln("bucket mask = {}", TT::printBitString(bucketMask));
   //  fprintln("bucket      = {}", TT::printBitString((key & bucketMask) << 2));
@@ -262,6 +262,7 @@ void TT::ageEntries() {
       auto end = start + range;
       if (idx == noOfThreads - 1) end = maxNumberOfEntries;
       for (std::size_t i = start; i < end; ++i) {
+        if (!_data[i]) continue;
         _data[i] = increaseAge(_data[i]);
       }
     });

@@ -44,13 +44,14 @@ class Engine;
 struct SearchResult {
 public:
   Move bestMove = MOVE_NONE;
+  Value bestMoveValue = VALUE_NONE;
   Move ponderMove = MOVE_NONE;
   int64_t time = 0;
   int depth = 0;
   int extraDepth = 0;
 
   std::string str() const {
-    return "Best Move: " + printMove(bestMove) + " (" + std::to_string(valueOf(bestMove)) + ") "
+    return "Best Move: " + printMove(bestMove) + " (" + std::to_string(bestMoveValue) + ") "
            + "Ponder Move: " + printMove(ponderMove) + " Depth: " + std::to_string(depth) + "/" +
            std::to_string(extraDepth);
   }
