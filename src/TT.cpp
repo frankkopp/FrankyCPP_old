@@ -25,7 +25,11 @@
 
 #include "Logging.h"
 #include "TT.h"
-#include "Position.h"
+
+/*
+ * TODO:
+ *  Buckets for less replacements
+ */
 
 TT::TT(uint64_t size) {
   resize(size);
@@ -44,12 +48,19 @@ void TT::resize(uint64_t newSize) {
 
   // number of entries
   sizeInByte = newSize;
-  maxNumberOfEntries = sizeInByte / ENTRY_SIZE;
+  uint64_t maxPossibleEntries = sizeInByte / ENTRY_SIZE;
+
+  // find the highest power of 2 smaller than maxPossibleEntries
+  maxNumberOfEntries = (1ULL << static_cast<uint64_t>(std::floor(std::log2(maxPossibleEntries)))) - 1;
 
   _keys = new Key[maxNumberOfEntries];
   _data = new Entry[maxNumberOfEntries];
 
-  LOG->info("TT Size {:n} Byte,  Capacity {:n} entries", sizeInByte, maxNumberOfEntries);
+  sizeInByte = maxNumberOfEntries * ENTRY_SIZE;
+
+  LOG->info("TT Size {:n} Byte, Capacity {:n} entries (Requested were {:n} Bytes ",
+    sizeInByte, maxNumberOfEntries, newSize);
+  
   clear();
 }
 
@@ -83,6 +94,10 @@ void TT::put(bool forced, Key key, Value value, TT::EntryType type, Depth depth,
              bool mateThreat) {
 
   assert (value > VALUE_NONE);
+
+  // if the size of the TT = 0 we
+  // do not store anything
+  if (!maxNumberOfEntries) return;
 
   // get hash key
   std::size_t hash = getHash(key);
@@ -177,28 +192,24 @@ void TT::put(bool forced, Key key, Value value, TT::EntryType type, Depth depth,
 
 TT::Result
 TT::probe(const Key &key, const Depth &depth, const Value &alpha, const Value &beta, Value &ttValue,
-          Move &ttMove) {
-
+          Move &ttMove, bool isPVNode) {
   Entry ttEntry = get(key);
-
   if (ttEntry != 0) { // HIT
-
     // get best move independent from tt entry depth
     ttMove = TT::getBestMove(ttEntry);
-
     // TODO: Implement Mate Threat
     // mateThreat[ply] = tt.hasMateThreat(ttEntry);
-
     // use value only if tt depth was equal or deeper
     if (TT::getDepth(ttEntry) >= depth) {
-
       ttValue = TT::getValue(ttEntry);
       assert (ttValue != VALUE_NONE);
-
-      // in PV node only return ttHit if it was an exact hit
-      if (getType(ttEntry) == TT::TYPE_EXACT ||
-          (getType(ttEntry) == TT::TYPE_ALPHA && ttValue <= alpha) ||
-          (getType(ttEntry) == TT::TYPE_BETA && ttValue >= beta)) {
+      // In a PV node use the value only for a cut off if it is exact.
+      // In non PV nodes we use it only if it is outside our current bounds.
+      const EntryType entryType = getType(ttEntry);
+      if ((isPVNode && entryType == TT::TYPE_EXACT) ||
+          (!isPVNode && (entryType == TT::TYPE_EXACT ||
+                         (entryType == TT::TYPE_ALPHA && ttValue <= alpha) ||
+                         (entryType == TT::TYPE_BETA && ttValue >= beta)))) {
         return TT_HIT;
       }
     }
@@ -210,19 +221,13 @@ TT::probe(const Key &key, const Depth &depth, const Value &alpha, const Value &b
 TT::Entry TT::get(Key key) {
   numberOfProbes++;
   uint64_t hashKey = getHash(key);
-
   if (_keys[hashKey] == key) { // hash hit
     numberOfHits++;
-    // to return unchanged data store them in tmp and return tmp
     Entry tmp = _data[hashKey];
-    // decrease age of entry until 0
     _data[hashKey] = decreaseAge(_data[hashKey]);
     return tmp;
   }
-  else {
-    numberOfMisses++;
-  }
-  // cache miss or collision
+  numberOfMisses++;
   return 0;
 }
 
@@ -249,7 +254,7 @@ void TT::ageEntries() {
 }
 
 inline std::size_t TT::getHash(Key key) {
-  return key % maxNumberOfEntries;
+  return key & maxNumberOfEntries;
 }
 
 std::string TT::printBitString(Entry entry) {

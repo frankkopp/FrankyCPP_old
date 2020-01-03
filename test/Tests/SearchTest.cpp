@@ -361,17 +361,39 @@ TEST_F(SearchTest, PV_MOVE) {
 TEST_F(SearchTest, IID) {
 
   SearchConfig::USE_TT = true;
+  SearchConfig::TT_SIZE_MB = 64;
   SearchConfig::USE_IID = true;
 
   Search search;
   SearchLimits searchLimits;
   Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
-  searchLimits.setMoveTime(30'000);
+  searchLimits.setDepth(8);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 
   LOG->info("IID Searches {:n}", search.getSearchStats().iidSearches);
-  ASSERT_GT(search.getSearchStats().iidSearches, 10);
+  ASSERT_GT(search.getSearchStats().iidSearches, 0);
+}
+
+TEST_F(SearchTest, TT) {
+  Search search;
+  SearchLimits searchLimits;
+  Position position;
+
+  search.setHashSize(256);
+
+  searchLimits.setMoveTime(15'000);
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+
+  LOG->info("Nodes: {:n} Time: {:n} ms NPS: {:n}", search.getSearchStats().nodesVisited,
+            search.getSearchStats().lastSearchTime, (search.getSearchStats().nodesVisited * 1'000) /
+                                                    search.getSearchStats().lastSearchTime);
+  LOG->info("TT Hits: {:n} TT Misses: {:n} TT Hit rate: {}%",
+            search.getSearchStats().tt_Hits,
+            search.getSearchStats().tt_Misses,
+            (static_cast<double>(search.getSearchStats().tt_Hits * 100) /
+             (search.getSearchStats().tt_Hits + search.getSearchStats().tt_Misses)));
 }
 
 TEST_F(SearchTest, perft) {
@@ -393,7 +415,7 @@ TEST_F(SearchTest, perft) {
   ASSERT_EQ(perftResults[DEPTH], search.getSearchStats().leafPositionsEvaluated);
 }
 
-TEST_F(SearchTest, PERFT_nps) {
+TEST_F(SearchTest, nps) {
   Search search;
   SearchLimits searchLimits;
   Position position;
@@ -423,14 +445,15 @@ TEST_F(SearchTest, debugging) {
   SearchConfig::USE_MDP = true;
   SearchConfig::USE_MPP = true;
   SearchConfig::USE_PVS = true;
+  SearchConfig::USE_IID = true;
 
-  Position position("r3k2r/1ppn3p/2q1q1n1/4P3/4Pp2/6R1/pbp1qPPP/4R1K1 w kq - 0 1");
+  Position position("8/7p/R7/5p1k/5P2/7P/P1P1nP1K/5q2 w - - 3 33");
   //Position position("r3k2r/1ppn3p/2q1q1n1/4P3/4q3/5Pp1/pb4PP/2q2RK1 w kq - 0 1"); //
   //position = Position("2r3k1/pppR1pp1/4p3/4P1P1/5P2/1P4K1/P1P5/8 w - -");
 
   //searchLimits.setDepth(6);
   //searchLimits.setNodes(30'000'000);
-  searchLimits.setMoveTime(10'000);
+  searchLimits.setMoveTime(5'000);
 
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();

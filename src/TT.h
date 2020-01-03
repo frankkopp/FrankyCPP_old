@@ -31,6 +31,7 @@
 
 /**
  * Simple TT implementation using heap memory and simple hash for entries.
+ * The number of entries are always a power of two fitting into the given size.
  * It is not yet thread safe as it has no synchronization. 
  */
 class TT {
@@ -139,10 +140,9 @@ public:
   }
 
   /**
-   * This retrieves the cached value of this node from cache if the
-   * cached value has been calculated at a depth equal or deeper as the
-   * depth value provided.
-   * Decreases the age of the entry found.
+   * This retrieves the cached value of this node from cache
+   * Decreases the age of the entry found. The returned entry
+   * has the unchanged age. 
    *
    * @param key
    * @return value for key or <tt>VALUE_NONE</tt> if not found
@@ -151,7 +151,6 @@ public:
 
   /**
    * Looks up and returns a result using get(Key key).
-   *
    * May write to ttValue and ttMove.
    *
    * @param position
@@ -161,7 +160,7 @@ public:
    */
   TT::Result
   probe(const Key &key, const Depth &depth, const Value &alpha, const Value &beta, Value &ttValue,
-        Move &ttMove);
+        Move &ttMove, bool isPVNode);
 
   /**
    * Age all entries by 1
@@ -172,9 +171,25 @@ public:
    * Returns how full the transposition table is in permill as per UCI
    */
   inline int hashFull() const {
+    if (!maxNumberOfEntries) return 0;
     return static_cast<int>(1000 *
-                            (static_cast<double>(numberOfEntries) / (maxNumberOfEntries + 1)));
+                            (static_cast<double>(numberOfEntries) / (maxNumberOfEntries)));
   };
+
+  std::string str() {
+    return fmt::format(
+      "TT: size {:n} MB max entries {:n} hashfull {} entries {:n} puts {:n} updates {:n} collisions {:n} overwrites {:n} ",
+      sizeInByte / MB, maxNumberOfEntries, hashFull(), numberOfEntries, numberOfPuts,
+      numberOfUpdates, numberOfCollisions, numberOfOverwrites);
+  }
+
+private:
+
+  /**
+   * @param key
+   * @return returns a hash key
+   */
+  std::size_t getHash(Key key);
 
   // ###########################################################################
   // Bit operations for data
@@ -214,13 +229,11 @@ public:
   static constexpr TT::Entry TT_MATE_SHIFT = 61;
   static constexpr TT::Entry TT_MATE_MASK = MATE_bitMASK << TT_MATE_SHIFT;
 
+public:
+
   static inline Entry setBestMove(Entry eData, Move bestMove) {
     eData &= ~TT_MOVE_MASK; // reset old move
     return eData | bestMove;
-  }
-
-  static inline Move getBestMove(Entry entry) {
-    return static_cast<Move>(entry & TT_MOVE_MASK);
   }
 
   static inline Entry setValue(Entry entry, Value value) {
@@ -233,30 +246,15 @@ public:
     return entry | static_cast<Entry>(value) << TT_VALUE_SHIFT;
   }
 
-  static inline Value getValue(Entry entry) {
-    // shift back result to potentially negative value
-    return static_cast<Value>((entry & TT_VALUE_MASK) >> TT_VALUE_SHIFT) + VALUE_NONE;
-  }
-
   static inline Entry setDepth(Entry entry, Depth depth) {
     entry &= ~TT_DEPTH_MASK;
     return entry | static_cast<Entry>(depth) << TT_DEPTH_SHIFT;
   }
-
-  static inline Depth getDepth(Entry data) {
-    return static_cast<Depth>((data & TT_DEPTH_MASK) >> TT_DEPTH_SHIFT);
-  }
-
   static inline Entry setAge(Entry entry, uint8_t age) {
     if (age > 7) age = 7;
     entry &= ~TT_AGE_MASK;
     return entry | static_cast<Entry>(age) << TT_AGE_SHIFT;
   }
-
-  static inline uint8_t getAge(Entry entry) {
-    return static_cast<uint8_t>((entry & TT_AGE_MASK) >> TT_AGE_SHIFT);
-  }
-
   static inline Entry resetAge(Entry entry) {
     return setAge(entry, (uint8_t) 1);
   }
@@ -275,13 +273,32 @@ public:
     return entry | static_cast<Entry>(type) << TT_TYPE_SHIFT;
   }
 
-  static inline EntryType getType(Entry entry) {
-    return static_cast<EntryType>((entry & TT_TYPE_MASK) >> TT_TYPE_SHIFT);
-  }
-
   static inline Entry setMateThreat(Entry entry, bool mateThreat) {
     if (mateThreat) { return entry | static_cast<Entry>(1) << TT_MATE_SHIFT; }
     else { return entry & ~TT_MATE_MASK; }
+  }
+
+public:
+
+  static inline Move getBestMove(Entry entry) {
+    return static_cast<Move>(entry & TT_MOVE_MASK);
+  }
+
+  static inline Value getValue(Entry entry) {
+    // shift back result to potentially negative value
+    return static_cast<Value>((entry & TT_VALUE_MASK) >> TT_VALUE_SHIFT) + VALUE_NONE;
+  }
+
+  static inline Depth getDepth(Entry data) {
+    return static_cast<Depth>((data & TT_DEPTH_MASK) >> TT_DEPTH_SHIFT);
+  }
+
+  static inline uint8_t getAge(Entry entry) {
+    return static_cast<uint8_t>((entry & TT_AGE_MASK) >> TT_AGE_SHIFT);
+  }
+
+  static inline EntryType getType(Entry entry) {
+    return static_cast<EntryType>((entry & TT_TYPE_MASK) >> TT_TYPE_SHIFT);
   }
 
   static inline bool hasMateThreat(Entry entry) {
@@ -294,16 +311,6 @@ public:
    * @return
    */
   static std::string printBitString(Entry entry);
-
-private:
-
-  /**
-   * @param key
-   * @return returns a hash key
-   */
-  std::size_t getHash(Key key);
-
-public:
 
   static inline std::string str(EntryType type) {
     switch (type) {
@@ -330,12 +337,8 @@ public:
     }
   }
 
-  std::string str() {
-    return fmt::format(
-      "TT: size {:n} MB max entries {:n} hashfull {} entries {:n} puts {:n} updates {:n} collisions {:n} overwrites {:n} ",
-      sizeInByte / MB, maxNumberOfEntries, hashFull(), numberOfEntries, numberOfPuts,
-      numberOfUpdates, numberOfCollisions, numberOfOverwrites);
-  }
+/** GETTER and SETTER */
+public:
 
   uint64_t getSizeInByte() const {
     return sizeInByte;

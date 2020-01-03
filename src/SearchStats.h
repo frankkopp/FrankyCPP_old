@@ -59,8 +59,6 @@ struct SearchStats {
   // TT Statistics
   uint64_t tt_Hits = 0;
   uint64_t tt_Misses = 0;
-  uint64_t tt_Cuts = 0;
-  uint64_t tt_NoCut = 0;
 
   // Optimization Values
   uint64_t aspirationResearches = 0;

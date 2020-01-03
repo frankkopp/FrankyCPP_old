@@ -151,6 +151,7 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   SearchConfig::USE_ALPHABETA = false;
   SearchConfig::USE_KILLER_MOVES = false;
   SearchConfig::USE_TT = false;
+  SearchConfig::TT_SIZE_MB = 64;
   SearchConfig::USE_TT_QSEARCH = false;
   SearchConfig::USE_MDP = false;
   SearchConfig::USE_MPP = false;
@@ -180,9 +181,6 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
 
   // AlphaBeta + tt
   SearchConfig::USE_TT = true;
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "AB+TT"));
-
-  // AlphaBeta + tt
   SearchConfig::USE_TT_QSEARCH = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "02 AB+TT"));
 

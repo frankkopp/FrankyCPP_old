@@ -25,6 +25,7 @@
 
 #include <gtest/gtest.h>
 #include <chrono>
+#include <random>
 
 #include "../../src/Logging.h"
 #include "../../src/Bitboards.h"
@@ -48,15 +49,15 @@ protected:
   void TearDown() override {}
   // Necessary because of function pointer use below.
   void testTiming(ostringstream &os, int rounds, int iterations, int repetitions,
-                  const vector<void (*)()> &tests);
+                  vector<function<void(void)>> tests);
 };
 
 TEST_F(TimingTests, DISABLED_popcount) {
   ostringstream os;
 
   //// TESTS START
-  auto f1 = []() { popcount(DiagUpA1); };
-  vector<void (*)()> tests;
+  std::function<void()> f1 = []() { popcount(DiagUpA1); };
+  vector<std::function<void()>> tests;
   tests.push_back(f1);
   //// TESTS END
 
@@ -79,7 +80,7 @@ TEST_F(TimingTests, DISABLED_doMoveUndoMove) {
   const Move move4 = createMove(SQ_E8, SQ_C8);
   const Move move5 = createMove(SQ_E1, SQ_G1);
 
-  auto f1 = []() {
+  std::function<void()> f1 = []() {
     //    string fen = position.printFen();
     //    cout << position.printBoard() << endl;
     position.doMove(move1);
@@ -96,7 +97,7 @@ TEST_F(TimingTests, DISABLED_doMoveUndoMove) {
     // ASSERT_EQ(fen, position.printFen());
   };
 
-  vector<void (*)()> tests;
+  vector<std::function<void()>> tests;
   tests.push_back(f1);
   //// TESTS END
 
@@ -116,9 +117,9 @@ TEST_F(TimingTests, DISABLED_rotation) {
   //// TESTS START
   position = Position("r3k2r/1ppqbppp/2n2n2/1B2p1B1/3p2b1/2NP1N2/1PPQPPPP/R3K2R w KQkq - 0 1");
 
-  auto f1 = []() { Bitboards::getMovesDiagUp(SQ_D2, position.getOccupiedBB()); };
-  auto f2 = []() { Bitboards::getMovesDiagUpR(SQ_D2, position.getOccupiedBBR45()); };
-  vector<void (*)()> tests;
+  std::function<void()>  f1 = []() { Bitboards::getMovesDiagUp(SQ_D2, position.getOccupiedBB()); };
+  std::function<void()>  f2 = []() { Bitboards::getMovesDiagUpR(SQ_D2, position.getOccupiedBBR45()); };
+  vector<std::function<void()> > tests;
   tests.push_back(f1);
   tests.push_back(f2);
   //// TESTS END
@@ -128,9 +129,39 @@ TEST_F(TimingTests, DISABLED_rotation) {
   cout << os.str();
 }
 
+TEST_F(TimingTests,TThash) {
+  ostringstream os;
+
+  uint64_t *data1 = new uint64_t[2'500'000];
+  uint64_t *data2 = new uint64_t[2'500'000];
+  std::mt19937_64 eng1(12345);
+  std::mt19937_64 eng2(12345);
+  std::uniform_int_distribution<unsigned long long> distr1;
+  std::uniform_int_distribution<unsigned long long> distr2;
+
+  //// TESTS START
+  std::function<void()> f1 = [&]() {
+    data1[distr1(eng1) % 2'000'000] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+  };
+  std::function<void()> f2 = [&]() {
+    data2[distr2(eng2) & 2'097'151] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+  };
+  vector<std::function<void()>> tests;
+  tests.push_back(f1);
+  tests.push_back(f2);
+  //// TESTS END
+
+  testTiming(os, 5, 50, 1'000'000, tests);
+
+  cout << os.str();
+
+  delete[] data1;
+  delete[] data2;
+}
+
 void
 TimingTests::testTiming(ostringstream &os, int rounds, int iterations, int repetitions,
-           const vector<void (*)()> &tests) {
+                        vector<function<void(void)>> tests) {
 
   cout.imbue(digitLocale);
   os.imbue(digitLocale);

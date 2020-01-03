@@ -63,8 +63,7 @@ TEST_F(TT_Test, basic) {
   LOG->info("Number of entries: {:n}", tt.getMaxNumberOfEntries());
   LOG->info("Number of bytes allocated: {:n}", tt.getSizeInByte());
   LOG->info("Number of entries: {:n}", tt.getNumberOfEntries());
-  ASSERT_EQ(10 * TT::MB / TT::ENTRY_SIZE, tt.getMaxNumberOfEntries());
-  ASSERT_EQ(10 * TT::MB, tt.getSizeInByte());
+  ASSERT_EQ(524'288-1, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
   
   LOG->info("Trying to resize the TT with {:n} MB in size", 1'000);
@@ -84,8 +83,7 @@ TEST_F(TT_Test, basic) {
   LOG->info("Number of entries: {:n}", tt.getMaxNumberOfEntries());
   LOG->info("Number of bytes allocated: {:n}", tt.getSizeInByte());
   LOG->info("Number of entries: {:n}", tt.getNumberOfEntries());
-  ASSERT_EQ(50'000 * TT::MB / TT::ENTRY_SIZE, tt.getMaxNumberOfEntries());
-  ASSERT_EQ(50'000 * TT::MB, tt.getSizeInByte());
+  ASSERT_EQ(2'147'483'648-1, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
   
   LOG->info("Trying to resize the TT with {:n} MB in size", 64);
@@ -93,8 +91,7 @@ TEST_F(TT_Test, basic) {
   LOG->info("Number of entries: {:n}", tt.getMaxNumberOfEntries());
   LOG->info("Number of bytes allocated: {:n}", tt.getSizeInByte());
   LOG->info("Number of entries: {:n}", tt.getNumberOfEntries());
-  ASSERT_EQ(64 * TT::MB / TT::ENTRY_SIZE, tt.getMaxNumberOfEntries());
-  ASSERT_EQ(64 * TT::MB, tt.getSizeInByte());
+  ASSERT_EQ(4'194'304-1, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
 }
 
@@ -114,8 +111,7 @@ TEST_F(TT_Test, parallelClear) {
   LOG->info("Number of entries: {:n}", tt.getMaxNumberOfEntries());
   LOG->info("Number of bytes allocated: {:n}", tt.getSizeInByte());
   LOG->info("Number of entries: {:n}", tt.getNumberOfEntries());
-  ASSERT_EQ(sizeInMB * TT::MB / TT::ENTRY_SIZE, tt.getMaxNumberOfEntries());
-  ASSERT_EQ(sizeInMB * TT::MB, tt.getSizeInByte());
+  ASSERT_EQ(1'073'741'823, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
   
   tt.setThreads(4);
@@ -361,12 +357,12 @@ TEST_F(TT_Test, putGet) {
   ASSERT_EQ(2, tt.getNumberOfHits());
 
   // update with greater depth
-  tt.put(false, position.getZobristKey(), Value(2), TT::TYPE_EXACT, Depth(4), createMove("e7e5"), false);
+  tt.put(false, position.getZobristKey(), Value(2), TT::TYPE_EXACT, Depth(5), createMove("e7e5"), false);
   ASSERT_EQ(4, tt.getNumberOfPuts());
   ASSERT_EQ(2, tt.getNumberOfEntries());
   ASSERT_EQ(2, tt.getNumberOfUpdates());
   e = tt.get(position.getZobristKey());
-  ASSERT_EQ(1, TT::getValue(e));
+  ASSERT_EQ(2, TT::getValue(e));
   ASSERT_EQ(3, tt.getNumberOfHits());
 
   // update (should not update value as worse quality and same depth)
@@ -375,7 +371,7 @@ TEST_F(TT_Test, putGet) {
   ASSERT_EQ(2, tt.getNumberOfEntries());
   ASSERT_EQ(3, tt.getNumberOfUpdates());
   e = tt.get(position.getZobristKey());
-  ASSERT_EQ(3, TT::getValue(e));
+  ASSERT_EQ(2, TT::getValue(e));
   ASSERT_EQ(4, tt.getNumberOfHits());
 
   // not in TT

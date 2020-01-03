@@ -38,7 +38,7 @@
 #define NEWLINE std::cout << std::endl
 #define printBB(bb) std::cout << Bitboards::print((bb)) << std::endl
 #define println(s) std::cout << (s) << std::endl
-#define fprint(...) fmt::print(__VA_ARGS__); fmt::print("\n")
+#define fprintln(...) fmt::print(__VA_ARGS__); fmt::print("\n")
 
 // Global constants
 constexpr const char* START_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -440,15 +440,6 @@ constexpr PieceType promotionType(Move m) {
   return PieceType(((m & MoveShifts::PROM_TYPE_MASK) >> MoveShifts::PROM_TYPE_SHIFT) + KNIGHT);
 }
 
-/** sets the value for the move. E.g. used by the move generator for move sorting */
-constexpr void setValue(Move &m, Value v) {
-  assert(v >= VALUE_NONE && v <= -VALUE_NONE);
-  // when saving a value to a move we shift value to a positive integer (0-VALUE_NONE) and
-  // encode it into the move
-  // for retrieving we then shift the value back to a range from VALUE_NONE to VALUE_INF
-  m = Move((m & MoveShifts::MOVE_MASK) | (Value(v - VALUE_NONE) << MoveShifts::VALUE_SHIFT));
-}
-
 /** returns the value of the move */
 constexpr Value valueOf(Move m) {
   return Value(((m & MoveShifts::VALUE_MASK) >> MoveShifts::VALUE_SHIFT) + VALUE_NONE);
@@ -456,6 +447,17 @@ constexpr Value valueOf(Move m) {
 
 /** returns the move without value */
 constexpr Move moveOf(Move m) { return Move(m & MoveShifts::MOVE_MASK); }
+
+
+/** sets the value for the move. E.g. used by the move generator for move sorting */
+constexpr void setValue(Move &m, Value v) {
+  assert(v >= VALUE_NONE && v <= -VALUE_NONE);
+  if (!moveOf(m)) return;
+  // when saving a value to a move we shift value to a positive integer (0-VALUE_NONE) and
+  // encode it into the move
+  // for retrieving we then shift the value back to a range from VALUE_NONE to VALUE_INF
+  m = Move((m & MoveShifts::MOVE_MASK) | (Value(v - VALUE_NONE) << MoveShifts::VALUE_SHIFT));
+}
 
 /** returns a short representation of the move as string (UCI protocal) */
 inline std::string printMove(const Move move) {
@@ -467,7 +469,7 @@ inline std::string printMove(const Move move) {
 
 /** returns a verbose representation of the move as string */
 inline std::string printMoveVerbose(const Move move) {
-  if (move == MOVE_NONE) return "NOMOVE";
+  if (!move) return "NOMOVE";
   std::string tp;
   std::string promPt;
   switch (typeOf(move)) {
@@ -486,7 +488,7 @@ inline std::string printMoveVerbose(const Move move) {
       break;
   }
   return squareLabel(getFromSquare(move)) + squareLabel(getToSquare(move)) + promPt
-         + " (" + tp + ") (" + std::to_string(valueOf(move)) + ") (" + std::to_string(move) + ")";
+         + " (" + tp + " " + std::to_string(valueOf(move)) + " " + std::to_string(move) + ")";
 }
 
 inline std::ostream &operator<<(std::ostream &os, const Move move) {

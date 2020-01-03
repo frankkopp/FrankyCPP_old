@@ -451,7 +451,7 @@ TEST_F(MoveGenTest, pvMove) {
   while (true) {
     move = mg.getNextPseudoLegalMove<MoveGenerator::GENALL>(position);
     if (move == MOVE_NONE) break;
-    fprint("{} {} ({})", counter, printMoveVerbose(move), move);
+    fprintln("{} {} ({})", counter, printMoveVerbose(move), move);
     counter++;
   }
   println("Moves: " + to_string(counter));
