@@ -17,6 +17,8 @@ set(CMAKE_CXX_FLAGS "-m64 -Wpedantic -Wall -Wextra -Winline")
 project(FrankyCPP VERSION 0.3)
 
 include_directories(
+        ${PROJECT_SOURCE_DIR}/src
+        ${PROJECT_SOURCE_DIR}/test/lib/googletest-master/googletest/include/
         ${PROJECT_SOURCE_DIR}/spdlog/include
         #${PROJECT_SOURCE_DIR}/fmt/include
 )

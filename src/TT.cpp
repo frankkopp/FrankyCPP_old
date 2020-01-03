@@ -51,7 +51,15 @@ void TT::resize(uint64_t newSize) {
   uint64_t maxPossibleEntries = sizeInByte / ENTRY_SIZE;
 
   // find the highest power of 2 smaller than maxPossibleEntries
-  maxNumberOfEntries = (1ULL << static_cast<uint64_t>(std::floor(std::log2(maxPossibleEntries)))) - 1;
+  maxNumberOfEntries = (1ULL << static_cast<uint64_t>(std::floor(std::log2(maxPossibleEntries))));
+//  fprintln("maxNumberOfEntries {} {}", maxNumberOfEntries, TT::printBitString(maxNumberOfEntries));
+
+  // calculate how many buckets we can map
+  numberOfBuckets = maxNumberOfEntries >> 2; // 2 bits for buckets = 4 buckets
+//  fprintln("numberOfBuckets    {} {}", numberOfBuckets, TT::printBitString(numberOfBuckets));
+
+  bucketMask = numberOfBuckets - 1;
+//  fprintln("bucketMask         {} {}", bucketMask, TT::printBitString(bucketMask));
 
   _keys = new Key[maxNumberOfEntries];
   _data = new Entry[maxNumberOfEntries];
@@ -59,8 +67,8 @@ void TT::resize(uint64_t newSize) {
   sizeInByte = maxNumberOfEntries * ENTRY_SIZE;
 
   LOG->info("TT Size {:n} Byte, Capacity {:n} entries (Requested were {:n} Bytes ",
-    sizeInByte, maxNumberOfEntries, newSize);
-  
+            sizeInByte, maxNumberOfEntries, newSize);
+
   clear();
 }
 
@@ -78,8 +86,8 @@ void TT::clear() {
       auto end = start + range;
       if (t == noOfThreads - 1) end = maxNumberOfEntries;
       for (std::size_t i = start; i < end; ++i) {
-        _keys[i] = 0L;
-        _data[i] = 0L;
+        _keys[i] = 0;
+        _data[i] = 0;
       }
     });
   }
@@ -90,122 +98,146 @@ void TT::clear() {
             noOfThreads);
 }
 
-void TT::put(bool forced, Key key, Value value, TT::EntryType type, Depth depth, Move bestMove,
-             bool mateThreat) {
+inline std::size_t TT::getBucket(const Key key) const {
+  //  fprintln("key         = {}", TT::printBitString(key));
+  //  fprintln("bucket mask = {}", TT::printBitString(bucketMask));
+  //  fprintln("bucket      = {}", TT::printBitString((key & bucketMask) << 2));
+  return (key & bucketMask) << 2;
+}
 
+void
+TT::put(Key key, Value value, TT::EntryType type, Depth depth, Move bestMove, bool mateThreat) {
   assert (value > VALUE_NONE);
 
-  // if the size of the TT = 0 we
-  // do not store anything
+  // if the size of the TT = 0 we do not store anything
   if (!maxNumberOfEntries) return;
-
-  // get hash key
-  std::size_t hash = getHash(key);
-
-  // read the entries fpr this hash
-  Key entryKey = _keys[hash];
-  Entry entryData = _data[hash];
 
   numberOfPuts++;
 
-  // New hash
-  if (entryKey == 0) {
-    numberOfEntries++;
-    _keys[hash] = key;
-    entryData = resetAge(entryData);
-    entryData = setMateThreat(entryData, mateThreat);
-    entryData = setValue(entryData, value);
-    entryData = setType(entryData, type);
-    entryData = setDepth(entryData, depth);
-    entryData = setBestMove(entryData, bestMove);
-    _data[hash] = entryData;
-  }
-    // Same hash but different position
-    // overwrite if
-    // - the new entry's depth is higher
-    // - the new entry's depth is higher and the previous entry has not been used (is aged)
-  else if (entryKey != key) {
-    numberOfCollisions++;
-    if (depth > getDepth(entryData) ||
-        (depth == getDepth(entryData) && (forced || getAge(entryData) > 0))) {
-      numberOfOverwrites++;
-      _keys[hash] = key;
-      entryData = resetAge(entryData);
-      entryData = setMateThreat(entryData, mateThreat);
-      entryData = setValue(entryData, value);
-      entryData = setType(entryData, type);
-      entryData = setDepth(entryData, depth);
-      entryData = setBestMove(entryData, bestMove);
-      _data[hash] = entryData;
+  // get hash key
+  std::size_t bucket = getBucket(key);
+
+//  fprintln("bucket    = {} {}", bucket, TT::printBitString(bucket));
+
+  // check if we already have this entry in the bucket
+  int bucketEntry = 4; // not found
+  for (int i = 0; i < 4; ++i) {
+    if (_keys[bucket | i] == key) {
+      bucketEntry = i;
+      break;
     }
-  }
-    // Same hash and same position -> update entry?
-  else if (entryKey == key) {
+  } // found if bucketEntry < 4
+
+  if (bucketEntry < 4) { // found - update!
+    // if we have found the entry already we always replace it
+    // as it would not have been calculated again if a useful
+    // entry have been in the TT.
     numberOfUpdates++;
+    std::size_t entryAddr = bucket | bucketEntry;
+//    fprintln("entryAddr = {} {} UPDATE (bucketEntry={})", entryAddr, TT::printBitString(entryAddr), bucketEntry);
+    _data[entryAddr] = createEntry(value, type, depth, bestMove, mateThreat);
+  }
+  else { // not found - new or replace other?
 
-    // if from same depth only update when quality of new entry is better
-    // e.g. don't replace EXACT with ALPHA or BETA
-    if (depth == getDepth(entryData)) {
-      entryData = resetAge(entryData);
-      entryData = setMateThreat(entryData, mateThreat);
-      // old was not EXACT - update
-      if (getType(entryData) != EntryType::TYPE_EXACT) {
-        entryData = setValue(entryData, value);
-        entryData = setType(entryData, type);
-        entryData = setDepth(entryData, depth);
+    int oldest = 0;
+    int minDepth = DEPTH_MAX; // per age
+    int replaceEntry = 4; // no replace
+    // Find a place to store either new or replace
+    // We use one loop to find empty slots or replacable slots
+    for (int pos = 0; pos < 4; ++pos) {
+      const size_t entryAddr = bucket | pos;
+      if (_data[entryAddr] == 0) {
+        // empty entry - use this pos and stop looking
+        replaceEntry = pos;
+        break;
       }
-      else {
-        // old entry was exact, the new entry is also EXACT -> assert that they are identical
-        if (type == TYPE_EXACT) {
-          assert (getValue(entryData) == value);
-        }
+      // if we iterate to the last pos we didn't find an empty pos so this is
+      // a real collision where we have to decide which pos to replace
+      if (pos == 3) numberOfCollisions++;
+      // we replace the oldest entry with the lowest depth
+      const uint8_t age = getAge(_data[entryAddr]);
+      const uint8_t draft = getDepth(_data[entryAddr]);
+      // we found an older entry - use this as replace pos
+      if (age > oldest) { // older
+        oldest = age;
+        minDepth = DEPTH_MAX; // reset for age
+        replaceEntry = pos;
       }
-
-      // overwrite bestMove only with a valid move
-      if (bestMove != MOVE_NONE) {
-        entryData = setBestMove(entryData, bestMove);
+        // same age but less or equal draft - use this slot
+      else if (age == oldest && draft <= minDepth) {
+        minDepth = draft;
+        replaceEntry = pos;
       }
-
-      _data[hash] = entryData;
     }
-      // if depth is greater then update in any case
-    else if (depth > getDepth(entryData)) {
-      entryData = resetAge(entryData);
-      entryData = setMateThreat(entryData, mateThreat);
-      entryData = setValue(entryData, value);
-      entryData = setType(entryData, type);
-      entryData = setDepth(entryData, depth);
-
-      // overwrite bestMove only with a valid move
-      if (bestMove != MOVE_NONE) entryData = setBestMove(entryData, bestMove);
-
-      _data[hash] = entryData;
-    }
-      // overwrite bestMove if there wasn't any before
-    else if (getBestMove(entryData) == MOVE_NONE) {
-      entryData = setBestMove(entryData, bestMove);
-      _data[hash] = entryData;
+    // here we know the pos to use (new or replace)
+    if (replaceEntry < 4) { // create or replace the entry
+      std::size_t entryAddr = bucket | replaceEntry;
+      if (_data[entryAddr] == 0) { // new entry
+        numberOfEntries++;
+//        fprintln("entryAddr = {} {} NEW (bucketEntry={})", entryAddr, TT::printBitString(entryAddr), replaceEntry);
+      }
+      else { // replace old entry
+        numberOfReplaces++;
+//        fprintln("entryAddr = {} {} REPLACE (bucketEntry={})", entryAddr, TT::printBitString(entryAddr), replaceEntry);
+      }
+      _keys[entryAddr] = key;
+      _data[entryAddr] = createEntry(value, type, depth, bestMove, mateThreat);;
     }
   }
   assert (numberOfPuts == (numberOfEntries + numberOfCollisions + numberOfUpdates));
 }
 
+inline TT::Entry TT::createEntry(const Value &value, const TT::EntryType &type, const Depth &depth,
+                                 const Move &bestMove, bool mateThreat) {
+  Entry entryData = 0;
+  entryData = setAge(entryData, 1);
+  entryData = setMateThreat(entryData, mateThreat);
+  entryData = setValue(entryData, value);
+  entryData = setType(entryData, type);
+  entryData = setDepth(entryData, depth);
+  entryData = setBestMove(entryData, bestMove);
+  return entryData;
+}
+
+TT::Entry TT::getEntry(Key key) const {
+  Entry* const ptr = getEntryPtr(key);
+  return ptr == nullptr ? 0 : *ptr;
+}
+
+inline TT::Entry* TT::getEntryPtr(Key key) const {
+  std::size_t bucket = getBucket(key);
+  for (int pos = 0; pos < 4; ++pos) {
+    if (_keys[bucket | pos] == key)
+      return &_data[bucket | pos];
+  }
+  return nullptr;
+}
+
 TT::Result
 TT::probe(const Key &key, const Depth &depth, const Value &alpha, const Value &beta, Value &ttValue,
           Move &ttMove, bool isPVNode) {
-  Entry ttEntry = get(key);
-  if (ttEntry != 0) { // HIT
+
+  Entry* ttEntryPtr = getEntryPtr(key);
+
+  if (ttEntryPtr != nullptr) { // HIT
+    // we found an entry - decrease age for this entry
+    *ttEntryPtr = increaseAge(*ttEntryPtr);
+    
     // get best move independent from tt entry depth
-    ttMove = TT::getBestMove(ttEntry);
+    ttMove = TT::getBestMove(*ttEntryPtr);
+
     // TODO: Implement Mate Threat
     // mateThreat[ply] = tt.hasMateThreat(ttEntry);
+
     // use value only if tt depth was equal or deeper
-    if (TT::getDepth(ttEntry) >= depth) {
-      ttValue = TT::getValue(ttEntry);
+    if (TT::getDepth(*ttEntryPtr) >= depth) {
+
+      ttValue = TT::getValue(*ttEntryPtr);
       assert (ttValue != VALUE_NONE);
+
       // In a PV node use the value only for a cut off if it is exact.
       // In non PV nodes we use it only if it is outside our current bounds.
-      const EntryType entryType = getType(ttEntry);
+      const EntryType entryType = getType(*ttEntryPtr);
       if ((isPVNode && entryType == TT::TYPE_EXACT) ||
           (!isPVNode && (entryType == TT::TYPE_EXACT ||
                          (entryType == TT::TYPE_ALPHA && ttValue <= alpha) ||
@@ -216,19 +248,6 @@ TT::probe(const Key &key, const Depth &depth, const Value &alpha, const Value &b
   }
   // MISS
   return TT_MISS;
-}
-
-TT::Entry TT::get(Key key) {
-  numberOfProbes++;
-  uint64_t hashKey = getHash(key);
-  if (_keys[hashKey] == key) { // hash hit
-    numberOfHits++;
-    Entry tmp = _data[hashKey];
-    _data[hashKey] = decreaseAge(_data[hashKey]);
-    return tmp;
-  }
-  numberOfMisses++;
-  return 0;
 }
 
 void TT::ageEntries() {
@@ -251,10 +270,6 @@ void TT::ageEntries() {
   auto finish = std::chrono::high_resolution_clock::now();
   auto time = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start).count();
   LOG->info("TT aged {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
-}
-
-inline std::size_t TT::getHash(Key key) {
-  return key & maxNumberOfEntries;
 }
 
 std::string TT::printBitString(Entry entry) {

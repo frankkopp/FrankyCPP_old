@@ -23,6 +23,7 @@
  *
  */
 
+#include "gtest/gtest_prod.h"
 #include "Logging.h"
 #include "types.h"
 
@@ -60,17 +61,21 @@ private:
   std::shared_ptr<spdlog::logger> const LOG = spdlog::get("TT_Logger");
 
   // threads for clearing hash
-  int noOfThreads = 1;
+  int noOfThreads = 4;
 
   // size and fill info
-  uint64_t sizeInByte = 0L;
-  std::size_t maxNumberOfEntries = 0L;
-  std::size_t numberOfEntries = 0L;
+  uint64_t sizeInByte = 0;
+  std::size_t maxNumberOfEntries = 0;
+  std::size_t numberOfEntries = 0;
+  uint64_t numberOfBuckets = 0;
+  uint64_t bucketMask = 0;
+
+
 
   // statistics
   mutable uint64_t numberOfPuts = 0;
   mutable uint64_t numberOfCollisions = 0;
-  mutable uint64_t numberOfOverwrites = 0;
+  mutable uint64_t numberOfReplaces = 0;
   mutable uint64_t numberOfUpdates = 0;
   mutable uint64_t numberOfProbes = 0;
   mutable uint64_t numberOfHits = 0;
@@ -111,21 +116,7 @@ public:
     * @param bestMove
     * @param mateThreat
     */
-  void put(bool forced, Key key, Value value, EntryType type, Depth depth, Move bestMove,
-           bool mateThreat);
-
-  /**
-   * Stores the node value and the depth it has been calculated at.
-   * @param key
-   * @param value
-   * @param type
-   * @param depth
-   * @param bestMove
-   * @param mateThreat
-   */
-  void put(Key key, Value value, EntryType type, Depth depth, Move bestMove, bool mateThreat) {
-    put(false, key, value, type, depth, bestMove, mateThreat);
-  }
+  void put(Key key, Value value, TT::EntryType type, Depth depth, Move bestMove, bool mateThreat);
 
   /**
   * Stores the node value and the depth it has been calculated at.
@@ -140,14 +131,21 @@ public:
   }
 
   /**
-   * This retrieves the cached value of this node from cache
-   * Decreases the age of the entry found. The returned entry
-   * has the unchanged age. 
+   * This retrieves the entry for this key from the TT.
+   * It does not change the entry.
    *
    * @param key
-   * @return value for key or <tt>VALUE_NONE</tt> if not found
+   * @return entry for this key or 0 when no entry found.
    */
-  Entry get(Key key);
+  Entry getEntry(Key key) const;
+
+  /**
+   * This retrieves a pointer to the entry for this key from the TT.
+   *
+   * @param key
+   * @return entry for this key or 0 when no entry found.
+   */
+  Entry* getEntryPtr(Key key) const;
 
   /**
    * Looks up and returns a result using get(Key key).
@@ -178,9 +176,9 @@ public:
 
   std::string str() {
     return fmt::format(
-      "TT: size {:n} MB max entries {:n} hashfull {} entries {:n} puts {:n} updates {:n} collisions {:n} overwrites {:n} ",
+      "TT: size {:n} MB max entries {:n} hashfull {} entries {:n} puts {:n} updates {:n} collisions {:n} replaces {:n} ",
       sizeInByte / MB, maxNumberOfEntries, hashFull(), numberOfEntries, numberOfPuts,
-      numberOfUpdates, numberOfCollisions, numberOfOverwrites);
+      numberOfUpdates, numberOfCollisions, numberOfReplaces);
   }
 
 private:
@@ -189,7 +187,7 @@ private:
    * @param key
    * @return returns a hash key
    */
-  std::size_t getHash(Key key);
+  std::size_t getBucket(Key key) const;
 
   // ###########################################################################
   // Bit operations for data
@@ -256,11 +254,11 @@ public:
     return entry | static_cast<Entry>(age) << TT_AGE_SHIFT;
   }
   static inline Entry resetAge(Entry entry) {
-    return setAge(entry, (uint8_t) 1);
+    return setAge(entry, 1);
   }
 
   static inline Entry increaseAge(Entry entry) {
-    return setAge(entry, std::min(7, getAge(entry) + 1));
+    return setAge(entry, getAge(entry) + 1);
   }
 
   static inline Entry decreaseAge(Entry entry) {
@@ -279,6 +277,7 @@ public:
   }
 
 public:
+
 
   static inline Move getBestMove(Entry entry) {
     return static_cast<Move>(entry & TT_MOVE_MASK);
@@ -360,8 +359,8 @@ public:
     return numberOfCollisions;
   }
 
-  uint64_t getNumberOfOverwrites() const {
-    return numberOfOverwrites;
+  uint64_t getNumberOfReplacings() const {
+    return numberOfReplaces;
   }
 
   uint64_t getNumberOfUpdates() const {
@@ -388,6 +387,14 @@ public:
     TT::noOfThreads = threads;
   }
 
+  static Entry
+  createEntry(const Value &value, const EntryType &type, const Depth &depth, const Move &bestMove,
+              bool mateThreat) ;
+
+  FRIEND_TEST(TT_Test, bucketTest);
+  FRIEND_TEST(TT_Test, put);
+  FRIEND_TEST(TT_Test, get);
+  FRIEND_TEST(TT_Test, probe);
 };
 
 
