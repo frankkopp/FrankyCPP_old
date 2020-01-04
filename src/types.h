@@ -72,7 +72,7 @@ enum Depth : uint8_t {
 };
 
 ///////////////////////////////////
-//// DEPTH
+//// PLY
 enum Ply : uint8_t {
   PLY_ROOT = 0,
   PLY_NONE = 0,
@@ -259,6 +259,7 @@ inline bool isCheckMateValue(const Value value) {
 constexpr Value operator+(Value d1, Ply d2) {
   return static_cast<Value>(static_cast<int>(d1) + static_cast<int>(d2));
 }
+
 constexpr Value operator-(Value d1, Ply d2) {
   return static_cast<Value>(static_cast<int>(d1) - static_cast<int>(d2));
 }
@@ -414,7 +415,7 @@ Move createMove(const char* move) {
 
 /** returns the square the move originates from */
 constexpr Square getFromSquare(Move m) {
-  return Square((m >> MoveShifts::FROM_SHIFT) & MoveShifts::SQUARE_MASK);
+  return Square(m >> MoveShifts::FROM_SHIFT & MoveShifts::SQUARE_MASK);
 }
 
 /** returns the square the move goes to */
@@ -647,6 +648,21 @@ inline bool to_bool(std::string str) {
   bool b;
   is >> std::boolalpha >> b;
   return b;
+}
+
+/**
+  * Prints a 64-bit uint as a series of 0 and 1 grouped in 8 bits
+  * beginning with the LSB (0) on the left and the MSB (63) on the right
+  * @param b
+  */
+inline std::string printBitString(uint64_t b) {
+  std::string s;
+  for (int i = 0; i < 64; i++) {
+    if (i > 0 && i % 8 == 0) s += ".";
+    s += b & (1L << i) ? "1" : "0";
+  }
+  s += " (" + std::to_string(b) + ")";
+  return s;
 }
 
 struct myLocale : std::numpunct<char> {

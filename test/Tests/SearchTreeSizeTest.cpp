@@ -173,34 +173,48 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   //
   //  SearchConfig::USE_TT = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "MM+QS+TT"));
-
-  // AlphaBeta
-  SearchConfig::USE_QUIESCENCE = true;
+//
+//  // AlphaBeta
   SearchConfig::USE_ALPHABETA = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "01 AB"));
-
-  // AlphaBeta + tt
+  SearchConfig::USE_QUIESCENCE = true;
+//  result.tests.push_back(measureTreeSize(search, position, searchLimits, "01 AB"));
+//
+//  // AlphaBeta + tt
   SearchConfig::USE_TT = true;
   SearchConfig::USE_TT_QSEARCH = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "02 AB+TT"));
-
-  // AB + tt + MDPMPP
+//  result.tests.push_back(measureTreeSize(search, position, searchLimits, "02 AB+TT"));
+//
+//  // AB + tt + MDPMPP
   SearchConfig::USE_KILLER_MOVES = true;
   SearchConfig::USE_MDP = true;
   SearchConfig::USE_MPP = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "03 AB+M*P"));
-
-  // AB + PVS
+//  result.tests.push_back(measureTreeSize(search, position, searchLimits, "03 AB+M*P"));
+//
+//  // AB + PVS
   SearchConfig::USE_PVS = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "04 AB_PVS"));
-
-  // AB + PVS + PV Sort
+//  result.tests.push_back(measureTreeSize(search, position, searchLimits, "04 AB_PVS"));
+//
+//  // AB + PVS + PV Sort
   SearchConfig::USE_PV_MOVE_SORTING = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "05 AB_PVMS"));
+//  result.tests.push_back(measureTreeSize(search, position, searchLimits, "05 AB_PVMS"));
 
-  // AB + IID
+  // AB + IID -TT
+  SearchConfig::USE_TT = false;
+  SearchConfig::USE_TT_QSEARCH = false;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "06 AB-TT"));
+
   SearchConfig::USE_IID = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "06 AB_IID"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "07 AB+IID"));
+
+
+  //  // AB + IID +TT
+  SearchConfig::USE_IID = false;
+  SearchConfig::USE_TT = true;
+  SearchConfig::USE_TT_QSEARCH = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "08 AB+TT"));
+
+  SearchConfig::USE_IID = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "09 AB+IID"));
 
   // ***********************************
 
@@ -211,6 +225,7 @@ SearchTreeSizeTest::SingleTest
 SearchTreeSizeTest::measureTreeSize(Search &search, const Position &position,
                                     SearchLimits searchLimits, const std::string &featureName) {
 
+  LOG->info("");
   LOG->info("Testing {}", featureName);
   search.clearHash();
   search.startSearch(position, searchLimits);

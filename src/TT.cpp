@@ -38,25 +38,18 @@ TT::~TT() {
 void TT::resize(uint64_t newSizeInByte) {
   LOG->trace("Resizing TT from {:n} to {:n}", sizeInByte, newSizeInByte);
   delete[] _data;
-
   // number of entries
   sizeInByte = newSizeInByte;
-  uint64_t maxPossibleEntries = sizeInByte / ENTRY_SIZE;
-
   // find the highest power of 2 smaller than maxPossibleEntries
-  maxNumberOfEntries = (1ULL << static_cast<uint64_t>(std::floor(std::log2(maxPossibleEntries))));
+  maxNumberOfEntries = (1ULL << static_cast<uint64_t>(std::floor(std::log2(sizeInByte / ENTRY_SIZE))));
   hashKeyMask = maxNumberOfEntries - 1;
-
+  // if TT is resized to 0 we cant have any entries.
   if (sizeInByte == 0) maxNumberOfEntries = 0;
-
   _data = new Entry[maxNumberOfEntries];
-
   sizeInByte = maxNumberOfEntries * ENTRY_SIZE;
-
-  LOG->info("TT Size {:n} Byte, Capacity {:n} entries (size={}Byte) (Requested were {:n} Bytes ",
-            sizeInByte, maxNumberOfEntries, sizeof(Entry), newSizeInByte);
-
   clear();
+  LOG->info("TT Size {:n} Byte, Capacity {:n} entries (size={}Byte) (Requested were {:n} Bytes)",
+            sizeInByte, maxNumberOfEntries, sizeof(Entry), newSizeInByte);
 }
 
 void TT::clear() {
@@ -106,7 +99,7 @@ void TT::put(Key key, Depth depth, Move move, Value value, EntryType type, bool 
   // get hash key
   std::size_t hash = getHash(key);
 
-  // read the entries fpr this hash
+  // read the entries f0r this hash
   Entry* entryDataPtr = &_data[hash];
 
   numberOfPuts++;
@@ -136,23 +129,12 @@ void TT::put(Key key, Depth depth, Move move, Value value, EntryType type, bool 
   if (entryDataPtr->key == key) {
     numberOfUpdates++;
     // we always update as the stored moved can't be any good otherwise
-    // we would have found this in the previous probe.
+    // we would have found this during the search in a previous probe
+    // and we would not have come to store it again
     writeEntry(entryDataPtr, key, depth, move ? move : entryDataPtr->move, value, type, mateThreat, 1);
     return;
   }
   assert (numberOfPuts == (numberOfEntries + numberOfCollisions + numberOfUpdates));
-}
-
-inline void
-TT::writeEntry(Entry* entryPtr, Key key, const Depth &depth, const Move &move, const Value &value,
-               const TT::EntryType &type, bool mateThreat, uint8_t age) {
-  entryPtr->key = key;
-  entryPtr->move = move;
-  entryPtr->depth = depth;
-  entryPtr->value = value;
-  entryPtr->type = type;
-  entryPtr->age = age;
-  entryPtr->mateThreat = mateThreat;
 }
 
 TT::Result
@@ -160,10 +142,11 @@ TT::probe(const Key &key, const Depth &depth, const Value &alpha, const Value &b
           Move &ttMove, bool isPVNode) {
   numberOfProbes++;
   Entry* ttEntryPtr = getEntryPtr(key);
+  // result is a logical TT result considering node type, alpha and beta bounds
   if (ttEntryPtr->key == key) { // HIT
-    numberOfHits++; // keys found
+    numberOfHits++; // entries with identical keys found
     ttEntryPtr->age = std::max(0, ttEntryPtr->age - 1);
-    // get best move independent from tt entry depth
+    // get best move independent from tt entry depth or type
     ttMove = ttEntryPtr->move;
     // TODO: Implement Mate Threat
     // mateThreat[ply] = tt.hasMateThreat(ttEntry);
@@ -172,7 +155,8 @@ TT::probe(const Key &key, const Depth &depth, const Value &alpha, const Value &b
       ttValue = ttEntryPtr->value;
       assert (ttValue != VALUE_NONE);
       // In a PV node use the value only for a cut off if it is exact.
-      // In non PV nodes we use it only if it is outside our current bounds.
+      // In non PV nodes we use it only if it is exact or outside our
+      // current bounds.
       const EntryType entryType = ttEntryPtr->type;
       if ((isPVNode && entryType == TT::TYPE_EXACT) ||
           (!isPVNode && (entryType == TT::TYPE_EXACT ||
@@ -181,8 +165,9 @@ TT::probe(const Key &key, const Depth &depth, const Value &alpha, const Value &b
         return TT_HIT;
       }
     }
-  } else {
-    numberOfMisses++; // keys not found not equal to TT misses
+  }
+  else {
+    numberOfMisses++; // keys not found (not equal to TT misses)
   }
   // MISS
   return TT_MISS;
@@ -193,9 +178,20 @@ TT::Entry TT::getEntry(Key key) const {
   return entryPtr->key == key ? *entryPtr : Entry();
 }
 
+inline void
+TT::writeEntry(Entry* entryPtr, Key key, const Depth depth, const Move move, const Value value,
+               const TT::EntryType type, bool mateThreat, uint8_t age) {
+  entryPtr->key = key;
+  entryPtr->move = move;
+  entryPtr->depth = depth;
+  entryPtr->value = value;
+  entryPtr->type = type;
+  entryPtr->age = age;
+  entryPtr->mateThreat = mateThreat;
+}
+
 inline TT::Entry* TT::getEntryPtr(Key key) const {
-  const uint64_t hashKey = getHash(key);
-  return &_data[hashKey];
+  return &_data[getHash(key)];
 }
 
 void TT::ageEntries() {
@@ -222,8 +218,8 @@ void TT::ageEntries() {
 }
 
 std::ostream &operator<<(std::ostream &os, const TT::Entry &entry) {
-  os << "key: " << entry.key << " move: " << entry.move << " depth: " << entry.depth << " value: "
-     << entry.value << " type: " << entry.type << " age: " << entry.age << " mateThreat: "
-     << entry.mateThreat;
+  os << "key: " << entry.key << " depth: " << entry.depth << " move: " << entry.move << " value: "
+     << entry.value << " type: " << entry.type << " mateThreat: " << entry.mateThreat
+     << " age: " << entry.age;
   return os;
 }

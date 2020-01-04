@@ -103,8 +103,8 @@ private:
   mutable uint64_t numberOfOverwrites = 0;
   mutable uint64_t numberOfUpdates = 0;
   mutable uint64_t numberOfProbes = 0;
-  mutable uint64_t numberOfHits = 0;
-  mutable uint64_t numberOfMisses = 0;
+  mutable uint64_t numberOfHits = 0; // entries with identical key found
+  mutable uint64_t numberOfMisses = 0; // no entry with key found
 
   // these two arrays hold the actual entries for the transposition table
   Entry* _data = new Entry[0]; // default initialization
@@ -182,6 +182,12 @@ public:
 
   /**
    * Looks up and returns a result using get(Key key).
+   * Result is a logical TT result. HIT means we can cut the search of the node.
+   * MISS means we need to be searching on.
+   * In both cases we might have a ttMove.
+   * A HIT is returned when entry type is either EXACT or ALPHA and value<alpha
+   * or BETA and value>beta. In a PV node only EXACT values are a HIT. 
+   *
    * May write to ttValue and ttMove.
    *
    * @param key Position key (usually Zobrist key)
@@ -219,8 +225,8 @@ public:
 private:
 
   static void
-  writeEntry(Entry* entryPtr, Key key, const Depth &depth, const Move &move, const Value &value,
-             const TT::EntryType &type, bool mateThreat, uint8_t age);
+  writeEntry(Entry* entryPtr, Key key, const Depth depth, const Move move, const Value value,
+             const TT::EntryType type, bool mateThreat, uint8_t age);
 
   /* This retrieves a direct pointer to the entry of this node from cache */
   Entry* getEntryPtr(Key key) const;
@@ -279,6 +285,20 @@ public:
     TT::noOfThreads = threads;
   }
 
+  static inline std::string str(EntryType type) {
+    switch (type) {
+      case TYPE_NONE:
+        return "NONE";
+      case TYPE_EXACT:
+        return "EXACT";
+      case TYPE_ALPHA:
+        return "ALPHA";
+      case TYPE_BETA:
+        return "BETA";
+    }
+  }
+
+  FRIEND_TEST(TT_Test, put);
   FRIEND_TEST(TT_Test, put);
   FRIEND_TEST(TT_Test, get);
   FRIEND_TEST(TT_Test, probe);
