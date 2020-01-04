@@ -380,7 +380,7 @@ TEST_F(SearchTest, TT) {
   SearchLimits searchLimits;
   Position position;
 
-  search.setHashSize(256);
+  search.setHashSize(512);
 
   searchLimits.setMoveTime(15'000);
   search.startSearch(position, searchLimits);
@@ -420,6 +420,7 @@ TEST_F(SearchTest, nps) {
   SearchLimits searchLimits;
   Position position;
 
+  search.setHashSize(128);
   searchLimits.setMoveTime(30'000);
 
   search.startSearch(position, searchLimits);
