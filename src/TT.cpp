@@ -26,11 +26,6 @@
 #include "Logging.h"
 #include "TT.h"
 
-/*
- * TODO:
- *  Buckets for less replacements
- */
-
 TT::TT(uint64_t size) {
   resize(size);
 }
@@ -51,7 +46,8 @@ void TT::resize(uint64_t newSize) {
   uint64_t maxPossibleEntries = sizeInByte / ENTRY_SIZE;
 
   // find the highest power of 2 smaller than maxPossibleEntries
-  maxNumberOfEntries = (1ULL << static_cast<uint64_t>(std::floor(std::log2(maxPossibleEntries)))) - 1;
+  maxNumberOfEntries = (1ULL << static_cast<uint64_t>(std::floor(std::log2(maxPossibleEntries))));
+  hashKeyMask = maxNumberOfEntries - 1;
 
   _keys = new Key[maxNumberOfEntries];
   _data = new Entry[maxNumberOfEntries];
@@ -59,8 +55,8 @@ void TT::resize(uint64_t newSize) {
   sizeInByte = maxNumberOfEntries * ENTRY_SIZE;
 
   LOG->info("TT Size {:n} Byte, Capacity {:n} entries (Requested were {:n} Bytes ",
-    sizeInByte, maxNumberOfEntries, newSize);
-  
+            sizeInByte, maxNumberOfEntries, newSize);
+
   clear();
 }
 
@@ -90,6 +86,10 @@ void TT::clear() {
             noOfThreads);
 }
 
+inline std::size_t TT::getHash(Key key) const {
+  return key & hashKeyMask;
+}
+
 void TT::put(bool forced, Key key, Value value, TT::EntryType type, Depth depth, Move bestMove,
              bool mateThreat) {
 
@@ -108,104 +108,80 @@ void TT::put(bool forced, Key key, Value value, TT::EntryType type, Depth depth,
 
   numberOfPuts++;
 
-  // New hash
+  // New entry
   if (entryKey == 0) {
     numberOfEntries++;
     _keys[hash] = key;
-    entryData = resetAge(entryData);
-    entryData = setMateThreat(entryData, mateThreat);
-    entryData = setValue(entryData, value);
-    entryData = setType(entryData, type);
-    entryData = setDepth(entryData, depth);
-    entryData = setBestMove(entryData, bestMove);
-    _data[hash] = entryData;
+    _data[hash] = createEntry(value, type, depth, bestMove, mateThreat);
+    return;
   }
-    // Same hash but different position
+
+  // Same hash but different position
+  if (entryKey != key) {
+    numberOfCollisions++;
     // overwrite if
     // - the new entry's depth is higher
     // - the new entry's depth is higher and the previous entry has not been used (is aged)
-  else if (entryKey != key) {
-    numberOfCollisions++;
     if (depth > getDepth(entryData) ||
         (depth == getDepth(entryData) && (forced || getAge(entryData) > 0))) {
       numberOfOverwrites++;
       _keys[hash] = key;
-      entryData = resetAge(entryData);
-      entryData = setMateThreat(entryData, mateThreat);
-      entryData = setValue(entryData, value);
-      entryData = setType(entryData, type);
-      entryData = setDepth(entryData, depth);
-      entryData = setBestMove(entryData, bestMove);
-      _data[hash] = entryData;
+      _data[hash] = createEntry(value, type, depth, bestMove, mateThreat);
     }
+    return;
   }
-    // Same hash and same position -> update entry?
-  else if (entryKey == key) {
-    numberOfUpdates++;
 
-    // if from same depth only update when quality of new entry is better
-    // e.g. don't replace EXACT with ALPHA or BETA
+  // Same hash and same position -> update entry?
+  if (entryKey == key) {
+    numberOfUpdates++;
+    // we always update as the stored moved can't be any good otherwise
+    // we would have found this in the previous probe.
     if (depth == getDepth(entryData)) {
       entryData = resetAge(entryData);
       entryData = setMateThreat(entryData, mateThreat);
-      // old was not EXACT - update
-      if (getType(entryData) != EntryType::TYPE_EXACT) {
-        entryData = setValue(entryData, value);
-        entryData = setType(entryData, type);
-        entryData = setDepth(entryData, depth);
-      }
-      else {
-        // old entry was exact, the new entry is also EXACT -> assert that they are identical
-        if (type == TYPE_EXACT) {
-          assert (getValue(entryData) == value);
-        }
-      }
-
-      // overwrite bestMove only with a valid move
-      if (bestMove != MOVE_NONE) {
-        entryData = setBestMove(entryData, bestMove);
-      }
-
-      _data[hash] = entryData;
-    }
-      // if depth is greater then update in any case
-    else if (depth > getDepth(entryData)) {
-      entryData = resetAge(entryData);
-      entryData = setMateThreat(entryData, mateThreat);
       entryData = setValue(entryData, value);
       entryData = setType(entryData, type);
       entryData = setDepth(entryData, depth);
-
       // overwrite bestMove only with a valid move
-      if (bestMove != MOVE_NONE) entryData = setBestMove(entryData, bestMove);
-
+      if (bestMove) entryData = setBestMove(entryData, bestMove);
       _data[hash] = entryData;
-    }
-      // overwrite bestMove if there wasn't any before
-    else if (getBestMove(entryData) == MOVE_NONE) {
-      entryData = setBestMove(entryData, bestMove);
-      _data[hash] = entryData;
+      return;
     }
   }
   assert (numberOfPuts == (numberOfEntries + numberOfCollisions + numberOfUpdates));
 }
 
+TT::Entry TT::createEntry(const Value &value, const TT::EntryType &type, const Depth &depth,
+                          const Move &bestMove, bool mateThreat) {
+  Entry entryData = 0;
+  entryData = resetAge(entryData);
+  entryData = setMateThreat(entryData, mateThreat);
+  entryData = setValue(entryData, value);
+  entryData = setType(entryData, type);
+  entryData = setDepth(entryData, depth);
+  entryData = setBestMove(entryData, bestMove);
+  return entryData;
+}
+
 TT::Result
 TT::probe(const Key &key, const Depth &depth, const Value &alpha, const Value &beta, Value &ttValue,
           Move &ttMove, bool isPVNode) {
-  Entry ttEntry = get(key);
-  if (ttEntry != 0) { // HIT
+  numberOfProbes++;
+  Entry* ttEntryPtr = getEntryPtr(key);
+  if (ttEntryPtr) { // HIT
+    numberOfHits++;
+    *ttEntryPtr = decreaseAge(*ttEntryPtr);
     // get best move independent from tt entry depth
-    ttMove = TT::getBestMove(ttEntry);
+    ttMove = TT::getBestMove(*ttEntryPtr);
     // TODO: Implement Mate Threat
     // mateThreat[ply] = tt.hasMateThreat(ttEntry);
     // use value only if tt depth was equal or deeper
-    if (TT::getDepth(ttEntry) >= depth) {
-      ttValue = TT::getValue(ttEntry);
+    if (TT::getDepth(*ttEntryPtr) >= depth) {
+      ttValue = TT::getValue(*ttEntryPtr);
       assert (ttValue != VALUE_NONE);
       // In a PV node use the value only for a cut off if it is exact.
       // In non PV nodes we use it only if it is outside our current bounds.
-      const EntryType entryType = getType(ttEntry);
+      const EntryType entryType = getType(*ttEntryPtr);
       if ((isPVNode && entryType == TT::TYPE_EXACT) ||
           (!isPVNode && (entryType == TT::TYPE_EXACT ||
                          (entryType == TT::TYPE_ALPHA && ttValue <= alpha) ||
@@ -215,20 +191,18 @@ TT::probe(const Key &key, const Depth &depth, const Value &alpha, const Value &b
     }
   }
   // MISS
+  numberOfMisses++;
   return TT_MISS;
 }
 
-TT::Entry TT::get(Key key) {
-  numberOfProbes++;
-  uint64_t hashKey = getHash(key);
-  if (_keys[hashKey] == key) { // hash hit
-    numberOfHits++;
-    Entry tmp = _data[hashKey];
-    _data[hashKey] = decreaseAge(_data[hashKey]);
-    return tmp;
-  }
-  numberOfMisses++;
-  return 0;
+TT::Entry TT::getEntry(Key key) const {
+  const Entry* const entryPtr = getEntryPtr(key);
+  return entryPtr ? *entryPtr : 0;
+}
+
+inline TT::Entry* TT::getEntryPtr(Key key) const {
+  const uint64_t hashKey = getHash(key);
+  return  _keys[hashKey] == key ? &_data[hashKey] : nullptr;
 }
 
 void TT::ageEntries() {
@@ -243,6 +217,7 @@ void TT::ageEntries() {
       auto end = start + range;
       if (idx == noOfThreads - 1) end = maxNumberOfEntries;
       for (std::size_t i = start; i < end; ++i) {
+        if (!_data[i]) continue;
         _data[i] = increaseAge(_data[i]);
       }
     });
@@ -253,9 +228,6 @@ void TT::ageEntries() {
   LOG->info("TT aged {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
 }
 
-inline std::size_t TT::getHash(Key key) {
-  return key & maxNumberOfEntries;
-}
 
 std::string TT::printBitString(Entry entry) {
   std::stringstream s;

@@ -1027,7 +1027,7 @@ void Search::getPVLine(Position &position, MoveList &pvRoot) {
   pvRoot.clear();
   int counter = 0;
   TT::Entry ttEntry = 0;
-  while ((ttEntry = tt.get(position.getZobristKey())) != 0 &&
+  while ((ttEntry = tt.getEntry(position.getZobristKey())) != 0 &&
          TT::getBestMove(ttEntry) != MOVE_NONE) {
     pvRoot.push_back(TT::getBestMove(ttEntry));
     position.doMove(TT::getBestMove(ttEntry));

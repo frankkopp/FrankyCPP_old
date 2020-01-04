@@ -25,6 +25,7 @@
 
 #include "Logging.h"
 #include "types.h"
+#include "gtest/gtest_prod.h"
 
 #ifndef FRANKYCPP_TT_H
 #define FRANKYCPP_TT_H
@@ -50,9 +51,9 @@ public:
 
   enum Result {
     // TT probe has found an entry and the value leads to a cut off
-    TT_HIT,
+      TT_HIT,
     // TT probe has not found an entry or the value does not lead to a cut off.
-    TT_MISS
+      TT_MISS
   };
 
 private:
@@ -60,12 +61,13 @@ private:
   std::shared_ptr<spdlog::logger> const LOG = spdlog::get("TT_Logger");
 
   // threads for clearing hash
-  int noOfThreads = 1;
+  int noOfThreads = 4;
 
   // size and fill info
-  uint64_t sizeInByte = 0L;
-  std::size_t maxNumberOfEntries = 0L;
-  std::size_t numberOfEntries = 0L;
+  uint64_t sizeInByte = 0;
+  std::size_t maxNumberOfEntries = 0;
+  std::size_t hashKeyMask = 0;
+  std::size_t numberOfEntries = 0;
 
   // statistics
   mutable uint64_t numberOfPuts = 0;
@@ -140,14 +142,12 @@ public:
   }
 
   /**
-   * This retrieves the cached value of this node from cache
-   * Decreases the age of the entry found. The returned entry
-   * has the unchanged age. 
+   * This retrieves a copy of the entry of this node from cache
    *
    * @param key
-   * @return value for key or <tt>VALUE_NONE</tt> if not found
+   * @return Entry for key or 0 if not found
    */
-  Entry get(Key key);
+  Entry getEntry(Key key) const;
 
   /**
    * Looks up and returns a result using get(Key key).
@@ -186,10 +186,31 @@ public:
 private:
 
   /**
+   * Creates an entry out of the given data.
+   * @param value
+   * @param type
+   * @param depth
+   * @param bestMove
+   * @param mateThreat
+   * @param entryData
+   * @return entry
+   */
+  static TT::Entry createEntry(const Value &value, const TT::EntryType &type, const Depth &depth,
+                               const Move &bestMove, bool mateThreat);
+
+  /**
+   * This retrieves a pointer to the entry of this node from cache
+   *
+   * @param key
+   * @return Entry for key or 0 if not found
+   */
+  Entry* getEntryPtr(Key key) const;
+
+  /**
    * @param key
    * @return returns a hash key
    */
-  std::size_t getHash(Key key);
+  std::size_t getHash(Key key) const;
 
   // ###########################################################################
   // Bit operations for data
@@ -250,17 +271,19 @@ public:
     entry &= ~TT_DEPTH_MASK;
     return entry | static_cast<Entry>(depth) << TT_DEPTH_SHIFT;
   }
+
   static inline Entry setAge(Entry entry, uint8_t age) {
     if (age > 7) age = 7;
     entry &= ~TT_AGE_MASK;
     return entry | static_cast<Entry>(age) << TT_AGE_SHIFT;
   }
+
   static inline Entry resetAge(Entry entry) {
-    return setAge(entry, (uint8_t) 1);
+    return setAge(entry, 1);
   }
 
   static inline Entry increaseAge(Entry entry) {
-    return setAge(entry, std::min(7, getAge(entry) + 1));
+    return setAge(entry, getAge(entry) + 1);
   }
 
   static inline Entry decreaseAge(Entry entry) {
@@ -337,7 +360,7 @@ public:
     }
   }
 
-/** GETTER and SETTER */
+  /** GETTER and SETTER */
 public:
 
   uint64_t getSizeInByte() const {
@@ -387,6 +410,11 @@ public:
   void setThreads(int threads) {
     TT::noOfThreads = threads;
   }
+
+  FRIEND_TEST(TT_Test, put);
+  FRIEND_TEST(TT_Test, get);
+  FRIEND_TEST(TT_Test, probe);
+
 
 };
 
