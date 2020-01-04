@@ -115,7 +115,7 @@ public:
 
   /**
    * Resets the move on demand generator to start fresh.
-   * Does not clear any lists (e.g. killer moves are preserved)
+   * Also deletes Killer and PV moves
    */
   void resetOnDemand();
 

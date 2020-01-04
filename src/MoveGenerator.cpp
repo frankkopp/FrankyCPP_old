@@ -180,14 +180,16 @@ void MoveGenerator::reset() {
   onDemandMoves.clear();
   currentODStage = OD_NEW;
   currentIteratorKey = 0;
-  killerMoves.clear();
   pvMove = MOVE_NONE;
+  killerMoves.clear();
 }
 
 void MoveGenerator::resetOnDemand() {
   onDemandMoves.clear();
   currentODStage = OD_NEW;
   currentIteratorKey = 0;
+  pvMove = MOVE_NONE;
+  killerMoves.clear();
 }
 
 void MoveGenerator::storeKiller(Move move, int maxKillers) {
