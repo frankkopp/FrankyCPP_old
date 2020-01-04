@@ -522,7 +522,7 @@ TEST_F(TT_Test, probe) {
 
   TT::Entry beforeProbe1 = tt.getEntry(key1);
   TT::Result r = tt.probe(key1, Depth(5), Value(-1000), Value(1000), ttValue, ttMove, false);
-  ASSERT_EQ(TT::getAge(beforeProbe1) + 1, TT::getAge(tt.getEntry(key1))); // has entry aged?
+  ASSERT_EQ(TT::getAge(beforeProbe1) - 1, TT::getAge(tt.getEntry(key1))); // has entry aged?
   ASSERT_EQ(TT::TT_HIT, r);
 
   // TT entry has lower depth

@@ -221,7 +221,7 @@ TT::probe(const Key &key, const Depth &depth, const Value &alpha, const Value &b
 
   if (ttEntryPtr != nullptr) { // HIT
     // we found an entry - decrease age for this entry
-    *ttEntryPtr = increaseAge(*ttEntryPtr);
+    *ttEntryPtr = decreaseAge(*ttEntryPtr);
     
     // get best move independent from tt entry depth
     ttMove = TT::getBestMove(*ttEntryPtr);
