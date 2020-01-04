@@ -1026,11 +1026,10 @@ void Search::getPVLine(Position &position, MoveList &pvRoot) {
   // Recursion-less reading of the chain of pv moves
   pvRoot.clear();
   int counter = 0;
-  TT::Entry ttEntry = 0;
-  while ((ttEntry = tt.getEntry(position.getZobristKey())) != 0 &&
-         TT::getBestMove(ttEntry) != MOVE_NONE) {
-    pvRoot.push_back(TT::getBestMove(ttEntry));
-    position.doMove(TT::getBestMove(ttEntry));
+  TT::Entry ttEntry;
+  while ((ttEntry = tt.getEntry(position.getZobristKey())).key != 0 && ttEntry.move != MOVE_NONE) {
+    pvRoot.push_back(ttEntry.move);
+    position.doMove(ttEntry.move);
     counter++;
   }
   for (int i = 0; i < counter; ++i) {

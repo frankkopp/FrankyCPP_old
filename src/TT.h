@@ -23,6 +23,7 @@
  *
  */
 
+#include <ostream>
 #include "Logging.h"
 #include "types.h"
 #include "gtest/gtest_prod.h"
@@ -42,9 +43,6 @@ public:
   static constexpr uint64_t MB = KB * KB;
   static constexpr uint64_t DEFAULT_TT_SIZE = 2 * MB; // byte
 
-  typedef uint64_t Entry;
-  static constexpr uint64_t ENTRY_SIZE = sizeof(Key) + sizeof(Entry); // 16 byte
-
   enum EntryType : u_int8_t {
     TYPE_NONE = 0, TYPE_EXACT = 1, TYPE_ALPHA = 2, TYPE_BETA = 3,
   };
@@ -55,6 +53,19 @@ public:
     // TT probe has not found an entry or the value does not lead to a cut off.
       TT_MISS
   };
+
+  struct Entry {
+    friend std::ostream &operator<<(std::ostream &os, const Entry &entry);
+    Key key = 0;
+    Move move = MOVE_NONE;
+    Depth depth = DEPTH_NONE;
+    Value value = VALUE_NONE;
+    EntryType type = TYPE_NONE;
+    uint8_t age = 1;
+    bool mateThreat = false;
+  };
+
+  static constexpr uint64_t ENTRY_SIZE = sizeof(Entry);
 
 private:
 
@@ -79,7 +90,6 @@ private:
   mutable uint64_t numberOfMisses = 0;
 
   // these two arrays hold the actual entries for the transposition table
-  Key* _keys = new Key[0]; // default initialization
   Entry* _data = new Entry[0]; // default initialization
 
 public:
@@ -195,8 +205,10 @@ private:
    * @param entryData
    * @return entry
    */
-  static TT::Entry createEntry(const Value &value, const TT::EntryType &type, const Depth &depth,
-                               const Move &bestMove, bool mateThreat);
+  static void
+  writeEntry(Entry* entryPtr, Key key, const Move &bestMove, const Depth &depth,
+             const Value &value, const TT::EntryType &type, uint8_t age,
+             bool mateThreat);
 
   /**
    * This retrieves a pointer to the entry of this node from cache
@@ -229,136 +241,136 @@ private:
   // 1111111111111111111111111111111111111111111111111111111111111111
   // ###########################################################################
 
-  // MASKs
-  static constexpr TT::Entry MOVE_bitMASK = 0b11111111111111111111111111111111;
-  static constexpr TT::Entry VALUE_bitMASK = 0b1111111111111111;
-  static constexpr TT::Entry DEPTH_bitMASK = 0b11111111;
-  static constexpr TT::Entry AGE_bitMASK = 0b111;
-  static constexpr TT::Entry TYPE_bitMASK = 0b11;
-  static constexpr TT::Entry MATE_bitMASK = 0b1;
-
-  // Bit operation values
-  static constexpr TT::Entry TT_MOVE_MASK = MOVE_bitMASK;
-  static constexpr TT::Entry TT_VALUE_SHIFT = 32;
-  static constexpr TT::Entry TT_VALUE_MASK = VALUE_bitMASK << TT_VALUE_SHIFT;
-  static constexpr TT::Entry TT_DEPTH_SHIFT = 48;
-  static constexpr TT::Entry TT_DEPTH_MASK = DEPTH_bitMASK << TT_DEPTH_SHIFT;
-  static constexpr TT::Entry TT_AGE_SHIFT = 56;
-  static constexpr TT::Entry TT_AGE_MASK = AGE_bitMASK << TT_AGE_SHIFT;
-  static constexpr TT::Entry TT_TYPE_SHIFT = 59;
-  static constexpr TT::Entry TT_TYPE_MASK = TYPE_bitMASK << TT_TYPE_SHIFT;
-  static constexpr TT::Entry TT_MATE_SHIFT = 61;
-  static constexpr TT::Entry TT_MATE_MASK = MATE_bitMASK << TT_MATE_SHIFT;
-
-public:
-
-  static inline Entry setBestMove(Entry eData, Move bestMove) {
-    eData &= ~TT_MOVE_MASK; // reset old move
-    return eData | bestMove;
-  }
-
-  static inline Entry setValue(Entry entry, Value value) {
-    if (value < VALUE_NONE) { value = VALUE_NONE; }
-    else if (value > VALUE_INF) value = VALUE_INF;
-    // shift to positive short to avoid signed values setting the negative bits
-    value += -VALUE_NONE;
-    assert (value >= 0);
-    entry &= ~TT_VALUE_MASK;
-    return entry | static_cast<Entry>(value) << TT_VALUE_SHIFT;
-  }
-
-  static inline Entry setDepth(Entry entry, Depth depth) {
-    entry &= ~TT_DEPTH_MASK;
-    return entry | static_cast<Entry>(depth) << TT_DEPTH_SHIFT;
-  }
-
-  static inline Entry setAge(Entry entry, uint8_t age) {
-    if (age > 7) age = 7;
-    entry &= ~TT_AGE_MASK;
-    return entry | static_cast<Entry>(age) << TT_AGE_SHIFT;
-  }
-
-  static inline Entry resetAge(Entry entry) {
-    return setAge(entry, 1);
-  }
-
-  static inline Entry increaseAge(Entry entry) {
-    return setAge(entry, getAge(entry) + 1);
-  }
-
-  static inline Entry decreaseAge(Entry entry) {
-    return setAge(entry, std::max(0, getAge(entry) - 1));
-  }
-
-  static inline Entry setType(Entry entry, EntryType type) {
-    if (type > 3) type = EntryType::TYPE_NONE;
-    entry &= ~TT_TYPE_MASK;
-    return entry | static_cast<Entry>(type) << TT_TYPE_SHIFT;
-  }
-
-  static inline Entry setMateThreat(Entry entry, bool mateThreat) {
-    if (mateThreat) { return entry | static_cast<Entry>(1) << TT_MATE_SHIFT; }
-    else { return entry & ~TT_MATE_MASK; }
-  }
-
-public:
-
-  static inline Move getBestMove(Entry entry) {
-    return static_cast<Move>(entry & TT_MOVE_MASK);
-  }
-
-  static inline Value getValue(Entry entry) {
-    // shift back result to potentially negative value
-    return static_cast<Value>((entry & TT_VALUE_MASK) >> TT_VALUE_SHIFT) + VALUE_NONE;
-  }
-
-  static inline Depth getDepth(Entry data) {
-    return static_cast<Depth>((data & TT_DEPTH_MASK) >> TT_DEPTH_SHIFT);
-  }
-
-  static inline uint8_t getAge(Entry entry) {
-    return static_cast<uint8_t>((entry & TT_AGE_MASK) >> TT_AGE_SHIFT);
-  }
-
-  static inline EntryType getType(Entry entry) {
-    return static_cast<EntryType>((entry & TT_TYPE_MASK) >> TT_TYPE_SHIFT);
-  }
-
-  static inline bool hasMateThreat(Entry entry) {
-    return ((entry & TT_MATE_MASK) >> TT_MATE_SHIFT) == 1;
-  }
-
-  /**
-   * Prints a bit representation of an entry
-   * @param entry
-   * @return
-   */
-  static std::string printBitString(Entry entry);
-
-  static inline std::string str(EntryType type) {
-    switch (type) {
-      case TYPE_NONE:
-        return "NONE";
-      case TYPE_EXACT:
-        return "EXACT";
-      case TYPE_ALPHA:
-        return "ALPHA";
-      case TYPE_BETA:
-        return "BETA";
-    }
-  }
-
-  static inline std::string str(Key key, Entry entry) {
-    if (!entry) {
-      return fmt::format("Key: {} Entry: NONE", key);
-    }
-    else {
-      return fmt::format("Key: {} Entry: Value {} Type {} Depth {} Move {} Age {} Mate threat {}",
-                         key, TT::getValue(entry), TT::str(TT::getType(entry)), TT::getDepth(entry),
-                         printMove(TT::getBestMove(entry)), TT::getAge(entry),
-                         TT::hasMateThreat(entry));
-    }
-  }
+//  // MASKs
+//  static constexpr TT::Entry MOVE_bitMASK = 0b11111111111111111111111111111111;
+//  static constexpr TT::Entry VALUE_bitMASK = 0b1111111111111111;
+//  static constexpr TT::Entry DEPTH_bitMASK = 0b11111111;
+//  static constexpr TT::Entry AGE_bitMASK = 0b111;
+//  static constexpr TT::Entry TYPE_bitMASK = 0b11;
+//  static constexpr TT::Entry MATE_bitMASK = 0b1;
+//
+//  // Bit operation values
+//  static constexpr TT::Entry TT_MOVE_MASK = MOVE_bitMASK;
+//  static constexpr TT::Entry TT_VALUE_SHIFT = 32;
+//  static constexpr TT::Entry TT_VALUE_MASK = VALUE_bitMASK << TT_VALUE_SHIFT;
+//  static constexpr TT::Entry TT_DEPTH_SHIFT = 48;
+//  static constexpr TT::Entry TT_DEPTH_MASK = DEPTH_bitMASK << TT_DEPTH_SHIFT;
+//  static constexpr TT::Entry TT_AGE_SHIFT = 56;
+//  static constexpr TT::Entry TT_AGE_MASK = AGE_bitMASK << TT_AGE_SHIFT;
+//  static constexpr TT::Entry TT_TYPE_SHIFT = 59;
+//  static constexpr TT::Entry TT_TYPE_MASK = TYPE_bitMASK << TT_TYPE_SHIFT;
+//  static constexpr TT::Entry TT_MATE_SHIFT = 61;
+//  static constexpr TT::Entry TT_MATE_MASK = MATE_bitMASK << TT_MATE_SHIFT;
+//
+//public:
+//
+//  static inline Entry setBestMove(Entry eData, Move bestMove) {
+//    eData &= ~TT_MOVE_MASK; // reset old move
+//    return eData | bestMove;
+//  }
+//
+//  static inline Entry setValue(Entry entry, Value value) {
+//    if (value < VALUE_NONE) { value = VALUE_NONE; }
+//    else if (value > VALUE_INF) value = VALUE_INF;
+//    // shift to positive short to avoid signed values setting the negative bits
+//    value += -VALUE_NONE;
+//    assert (value >= 0);
+//    entry &= ~TT_VALUE_MASK;
+//    return entry | static_cast<Entry>(value) << TT_VALUE_SHIFT;
+//  }
+//
+//  static inline Entry setDepth(Entry entry, Depth depth) {
+//    entry &= ~TT_DEPTH_MASK;
+//    return entry | static_cast<Entry>(depth) << TT_DEPTH_SHIFT;
+//  }
+//
+//  static inline Entry setAge(Entry entry, uint8_t age) {
+//    if (age > 7) age = 7;
+//    entry &= ~TT_AGE_MASK;
+//    return entry | static_cast<Entry>(age) << TT_AGE_SHIFT;
+//  }
+//
+//  static inline Entry resetAge(Entry entry) {
+//    return setAge(entry, 1);
+//  }
+//
+//  static inline Entry increaseAge(Entry entry) {
+//    return setAge(entry, getAge(entry) + 1);
+//  }
+//
+//  static inline Entry decreaseAge(Entry entry) {
+//    return setAge(entry, std::max(0, getAge(entry) - 1));
+//  }
+//
+//  static inline Entry setType(Entry entry, EntryType type) {
+//    if (type > 3) type = EntryType::TYPE_NONE;
+//    entry &= ~TT_TYPE_MASK;
+//    return entry | static_cast<Entry>(type) << TT_TYPE_SHIFT;
+//  }
+//
+//  static inline Entry setMateThreat(Entry entry, bool mateThreat) {
+//    if (mateThreat) { return entry | static_cast<Entry>(1) << TT_MATE_SHIFT; }
+//    else { return entry & ~TT_MATE_MASK; }
+//  }
+//
+//public:
+//
+//  static inline Move getBestMove(Entry entry) {
+//    return static_cast<Move>(entry & TT_MOVE_MASK);
+//  }
+//
+//  static inline Value getValue(Entry entry) {
+//    // shift back result to potentially negative value
+//    return static_cast<Value>((entry & TT_VALUE_MASK) >> TT_VALUE_SHIFT) + VALUE_NONE;
+//  }
+//
+//  static inline Depth getDepth(Entry data) {
+//    return static_cast<Depth>((data & TT_DEPTH_MASK) >> TT_DEPTH_SHIFT);
+//  }
+//
+//  static inline uint8_t getAge(Entry entry) {
+//    return static_cast<uint8_t>((entry & TT_AGE_MASK) >> TT_AGE_SHIFT);
+//  }
+//
+//  static inline EntryType getType(Entry entry) {
+//    return static_cast<EntryType>((entry & TT_TYPE_MASK) >> TT_TYPE_SHIFT);
+//  }
+//
+//  static inline bool hasMateThreat(Entry entry) {
+//    return ((entry & TT_MATE_MASK) >> TT_MATE_SHIFT) == 1;
+//  }
+//
+//  /**
+//   * Prints a bit representation of an entry
+//   * @param entry
+//   * @return
+//   */
+//  static std::string printBitString(Entry entry);
+//
+//  static inline std::string str(EntryType type) {
+//    switch (type) {
+//      case TYPE_NONE:
+//        return "NONE";
+//      case TYPE_EXACT:
+//        return "EXACT";
+//      case TYPE_ALPHA:
+//        return "ALPHA";
+//      case TYPE_BETA:
+//        return "BETA";
+//    }
+//  }
+//
+//  static inline std::string str(Key key, Entry entry) {
+//    if (!entry) {
+//      return fmt::format("Key: {} Entry: NONE", key);
+//    }
+//    else {
+//      return fmt::format("Key: {} Entry: Value {} Type {} Depth {} Move {} Age {} Mate threat {}",
+//                         key, TT::getValue(entry), TT::str(TT::getType(entry)), TT::getDepth(entry),
+//                         printMove(TT::getBestMove(entry)), TT::getAge(entry),
+//                         TT::hasMateThreat(entry));
+//    }
+//  }
 
   /** GETTER and SETTER */
 public:
