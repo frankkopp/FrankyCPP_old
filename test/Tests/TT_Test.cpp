@@ -138,7 +138,7 @@ TEST_F(TT_Test, put) {
   const Key key8 = key7 + collisionDistance; // same bucket - collision
 
   // new entry in empty bucket at pos 0
-  tt.put(key1, Value(101), TT::TYPE_EXACT, Depth(6), createMove("e2e4"), false);
+  tt.put(key1, Depth(6), createMove("e2e4"), Value(101), TT::TYPE_EXACT, false);
   ASSERT_EQ(1, tt.getNumberOfPuts());
   ASSERT_EQ(1, tt.getNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfUpdates());
@@ -242,7 +242,7 @@ TEST_F(TT_Test, get) {
   const Key key4 = key1 + 17;
 
   // new entry in empty slot
-  tt.put(key1, Value(101), TT::TYPE_EXACT, Depth(6), createMove("e2e4"), false);
+  tt.put(key1, Depth(6), createMove("e2e4"), Value(101), TT::TYPE_EXACT, false);
   TT::Entry e1 = tt.getEntry(key1);
   ASSERT_EQ(101, e1.value);
 
@@ -272,9 +272,9 @@ TEST_F(TT_Test, probe) {
   const Key key2 = key1 + 13; // different bucket
   const Key key3 = key1 + 17; // same bucket - collision
 
-  tt.put(key1, Value(101), TT::TYPE_EXACT, Depth(6), createMove("e2e4"), false);
-  tt.put(key2, Value(102), TT::TYPE_ALPHA, Depth(5), createMove("e2e4"), false);
-  tt.put(key3, Value(103), TT::TYPE_BETA, Depth(4), createMove("e2e4"), false);
+  tt.put(key1, Depth(6), createMove("e2e4"), Value(101), TT::TYPE_EXACT, false);
+  tt.put(key2, Depth(5), createMove("e2e4"), Value(102), TT::TYPE_ALPHA, false);
+  tt.put(key3, Depth(4), createMove("e2e4"), Value(103), TT::TYPE_BETA, false);
 
   Value ttValue = VALUE_NONE;
   Move ttMove = MOVE_NONE;
@@ -332,6 +332,7 @@ TEST_F(TT_Test, tt_perft) {
   Move ttMove = MOVE_NONE;
 
   fprintln("Start perft test for TT...");
+  fprintln("TT Stats: {:s}", tt.str());
 
   auto start = std::chrono::high_resolution_clock::now();
 
@@ -340,13 +341,13 @@ TEST_F(TT_Test, tt_perft) {
   for (int j = 0; j < rounds; ++j) {
     // puts
     for (int i = 0; i < iterations; ++i) {
-      tt.put(true,
-             randomKey(rg1),
-             static_cast<Value>(randomValue(rg1)),
-             static_cast<TT::EntryType>(randomType(rg1)),
-             static_cast<Depth>(randomDepth(rg1)),
-             createMove("e2e4"),
-             false);
+      tt.put(
+        randomKey(rg1),
+        static_cast<Depth>(randomDepth(rg1)),
+        createMove("e2e4"),
+        static_cast<Value>(randomValue(rg1)),
+        static_cast<TT::EntryType>(randomType(rg1)),
+        false, true);
     }
     // probes
     for (int i = 0; i < iterations; ++i) {
@@ -364,17 +365,7 @@ TEST_F(TT_Test, tt_perft) {
   auto finish = std::chrono::high_resolution_clock::now();
   auto time = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start).count();
 
-  fprintln("Number of max entries: {:n}", tt.getMaxNumberOfEntries());
-  fprintln("");
-  fprintln("Number of puts:        {:n}", tt.getNumberOfPuts());
-  fprintln("Number of entries:     {:n}", tt.getNumberOfEntries());
-  fprintln("Number of updates      {:n}", tt.getNumberOfUpdates());
-  fprintln("Number of collisions:  {:n}", tt.getNumberOfCollisions());
-  fprintln("Number of overwrites:  {:n}", tt.getNumberOfOverwrites());
-  fprintln("");
-  fprintln("Number of probes:      {:n}", tt.getNumberOfProbes());
-  fprintln("Number of hits:        {:n}", tt.getNumberOfHits());
-  fprintln("Number of misses:      {:n}", tt.getNumberOfMisses());
+  fprintln("TT Statistics        : {:s}", tt.str());
   fprintln("");
   fprintln("Run time:              {:n} ms ({:n} put/probes per sec)",
            time, (rounds * 2 * iterations * 1000ULL) / time);

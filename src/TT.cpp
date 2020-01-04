@@ -26,8 +26,8 @@
 #include "Logging.h"
 #include "TT.h"
 
-TT::TT(uint64_t size) {
-  resize(size);
+TT::TT(uint64_t sizeInByte) {
+  resize(sizeInByte);
 }
 
 TT::~TT() {
@@ -35,12 +35,12 @@ TT::~TT() {
   delete[] _data;
 }
 
-void TT::resize(uint64_t newSize) {
-  LOG->trace("Resizing TT from {:n} to {:n}", sizeInByte, newSize);
+void TT::resize(uint64_t newSizeInByte) {
+  LOG->trace("Resizing TT from {:n} to {:n}", sizeInByte, newSizeInByte);
   delete[] _data;
 
   // number of entries
-  sizeInByte = newSize;
+  sizeInByte = newSizeInByte;
   uint64_t maxPossibleEntries = sizeInByte / ENTRY_SIZE;
 
   // find the highest power of 2 smaller than maxPossibleEntries
@@ -54,7 +54,7 @@ void TT::resize(uint64_t newSize) {
   sizeInByte = maxNumberOfEntries * ENTRY_SIZE;
 
   LOG->info("TT Size {:n} Byte, Capacity {:n} entries (size={}Byte) (Requested were {:n} Bytes ",
-            sizeInByte, maxNumberOfEntries, sizeof(Entry), newSize);
+            sizeInByte, maxNumberOfEntries, sizeof(Entry), newSizeInByte);
 
   clear();
 }
@@ -94,8 +94,8 @@ inline std::size_t TT::getHash(Key key) const {
   return key & hashKeyMask;
 }
 
-void TT::put(bool forced, Key key, Value value, TT::EntryType type, Depth depth, Move bestMove,
-             bool mateThreat) {
+void TT::put(Key key, Depth depth, Move move, Value value, EntryType type, bool mateThreat,
+             bool forced) {
 
   assert (value > VALUE_NONE);
 
@@ -114,7 +114,7 @@ void TT::put(bool forced, Key key, Value value, TT::EntryType type, Depth depth,
   // New entry
   if (entryDataPtr->key == 0) {
     numberOfEntries++;
-    writeEntry(entryDataPtr, key, bestMove, depth, value, type, 1, mateThreat);
+    writeEntry(entryDataPtr, key, depth, move, value, type, mateThreat, 1);
     return;
   }
 
@@ -127,7 +127,7 @@ void TT::put(bool forced, Key key, Value value, TT::EntryType type, Depth depth,
     if (depth > entryDataPtr->depth ||
         (depth == entryDataPtr->depth && (forced || entryDataPtr->age > 0))) {
       numberOfOverwrites++;
-      writeEntry(entryDataPtr, key, bestMove, depth, value, type, 1, mateThreat);
+      writeEntry(entryDataPtr, key, depth, move, value, type, mateThreat, 1);
     }
     return;
   }
@@ -137,18 +137,17 @@ void TT::put(bool forced, Key key, Value value, TT::EntryType type, Depth depth,
     numberOfUpdates++;
     // we always update as the stored moved can't be any good otherwise
     // we would have found this in the previous probe.
-    writeEntry(entryDataPtr, key, bestMove ? bestMove : entryDataPtr->move, depth, value, type, 1, mateThreat);
+    writeEntry(entryDataPtr, key, depth, move ? move : entryDataPtr->move, value, type, mateThreat, 1);
     return;
   }
   assert (numberOfPuts == (numberOfEntries + numberOfCollisions + numberOfUpdates));
 }
 
 inline void
-TT::writeEntry(Entry* entryPtr, Key key, const Move &bestMove, const Depth &depth,
-               const Value &value, const TT::EntryType &type, uint8_t age,
-               bool mateThreat) {
+TT::writeEntry(Entry* entryPtr, Key key, const Depth &depth, const Move &move, const Value &value,
+               const TT::EntryType &type, bool mateThreat, uint8_t age) {
   entryPtr->key = key;
-  entryPtr->move = bestMove;
+  entryPtr->move = move;
   entryPtr->depth = depth;
   entryPtr->value = value;
   entryPtr->type = type;
@@ -162,7 +161,7 @@ TT::probe(const Key &key, const Depth &depth, const Value &alpha, const Value &b
   numberOfProbes++;
   Entry* ttEntryPtr = getEntryPtr(key);
   if (ttEntryPtr->key == key) { // HIT
-    numberOfHits++;
+    numberOfHits++; // keys found
     ttEntryPtr->age = std::max(0, ttEntryPtr->age - 1);
     // get best move independent from tt entry depth
     ttMove = ttEntryPtr->move;
@@ -182,9 +181,10 @@ TT::probe(const Key &key, const Depth &depth, const Value &alpha, const Value &b
         return TT_HIT;
       }
     }
+  } else {
+    numberOfMisses++; // keys not found not equal to TT misses
   }
   // MISS
-  numberOfMisses++;
   return TT_MISS;
 }
 
