@@ -592,3 +592,69 @@ TEST_F(TT_Test, develop) {
   delete[] data;
 }
 
+TEST_F(TT_Test, tt_perft) {
+  std::random_device rd;
+  std::default_random_engine rg1(rd());
+  std::uniform_int_distribution<uint64_t> randomKey(1, 10'000'000);
+  std::uniform_int_distribution<u_int8_t> randomDepth(0, DEPTH_MAX);
+  std::uniform_int_distribution<int16_t> randomValue(VALUE_MIN, VALUE_MAX);
+  std::uniform_int_distribution<int16_t> randomAlpha(VALUE_MIN, 0);
+  std::uniform_int_distribution<int16_t> randomBeta(0, VALUE_MAX);
+  std::uniform_int_distribution<u_int8_t> randomType(1, 3);
+
+  TT tt(64 * TT::MB);
+  tt.setThreads(4);
+
+  Value ttValue = VALUE_NONE;
+  Move ttMove = MOVE_NONE;
+
+  fprintln("Start perft test for TT...");
+
+  auto start = std::chrono::high_resolution_clock::now();
+
+  const int rounds = 10;
+  const int iterations = 1'000'000;
+  for (int j = 0; j < rounds; ++j) {
+    // puts
+    for (int i = 0; i < iterations; ++i) {
+      tt.put(randomKey(rg1),
+             static_cast<Value>(randomValue(rg1)),
+             static_cast<TT::EntryType>(randomType(rg1)),
+             static_cast<Depth>(randomDepth(rg1)),
+             createMove("e2e4"),
+             false);
+    }
+    // probes
+    for (int i = 0; i < iterations; ++i) {
+      tt.probe(randomKey(rg1),
+               static_cast<Depth>(randomDepth(rg1)),
+               static_cast<Value>(randomAlpha(rg1)),
+               static_cast<Value>(randomBeta(rg1)),
+               ttValue,
+               ttMove,
+               false);
+    }
+    tt.ageEntries();
+  }
+
+  auto finish = std::chrono::high_resolution_clock::now();
+  auto time = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start).count();
+
+  fprintln("Number of max entries: {:n}", tt.getMaxNumberOfEntries());
+  fprintln("");
+  fprintln("Number of puts:        {:n}", tt.getNumberOfPuts());
+  fprintln("Number of entries:     {:n}", tt.getNumberOfEntries());
+  fprintln("Number of updates      {:n}", tt.getNumberOfUpdates());
+  fprintln("Number of collisions:  {:n}", tt.getNumberOfCollisions());
+  fprintln("Number of overwrites:  {:n}", tt.getNumberOfReplacings());
+  fprintln("");
+  fprintln("Number of probes:      {:n}", tt.getNumberOfProbes());
+  fprintln("Number of hits:        {:n}", tt.getNumberOfHits());
+  fprintln("Number of misses:      {:n}", tt.getNumberOfMisses());
+  fprintln("");
+  fprintln("Run time:              {:n} ms ({:n} put/probes per sec)",
+           time, (rounds * 2 * iterations * 1000ULL) / time);
+  fprintln("");
+
+}
+

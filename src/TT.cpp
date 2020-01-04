@@ -217,6 +217,8 @@ TT::Result
 TT::probe(const Key &key, const Depth &depth, const Value &alpha, const Value &beta, Value &ttValue,
           Move &ttMove, bool isPVNode) {
 
+  numberOfProbes++;
+  
   Entry* ttEntryPtr = getEntryPtr(key);
 
   if (ttEntryPtr != nullptr) { // HIT
@@ -242,11 +244,13 @@ TT::probe(const Key &key, const Depth &depth, const Value &alpha, const Value &b
           (!isPVNode && (entryType == TT::TYPE_EXACT ||
                          (entryType == TT::TYPE_ALPHA && ttValue <= alpha) ||
                          (entryType == TT::TYPE_BETA && ttValue >= beta)))) {
+        numberOfHits++;
         return TT_HIT;
       }
     }
   }
   // MISS
+  numberOfMisses++;
   return TT_MISS;
 }
 
