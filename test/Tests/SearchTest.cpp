@@ -448,7 +448,7 @@ TEST_F(SearchTest, debugging) {
   SearchConfig::USE_PV_MOVE_SORTING = true;
   SearchConfig::USE_MDP = true;
   SearchConfig::USE_MPP = true;
-  SearchConfig::USE_IID = false;
+  SearchConfig::USE_IID = true;
 
   //Position position("8/7p/R7/5p1k/5P2/7P/P1P1nP1K/5q2 w - - 3 33");
   Position position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ");

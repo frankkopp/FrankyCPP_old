@@ -524,15 +524,16 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
   // @formatter:off
   if (SearchConfig::USE_IID
       && !PERFT
+      && ST != ROOT
       && NT == PV
       && !ttMove 
       && depth > SearchConfig::IID_REDUCTION) {
     // @formatter:on
-    //    fprintln("\n**IID SEARCH");
-    //    fprintln(
-    //      "**ST={:<10} NT={:<5} depth={:<2} ply={:<2} alpha={:>6} beta={:>6} ttValue={:>6} ttMove={:<30} ",
-    //      ST == ROOT ? "ROOT" : ST == NONROOT ? "NONROOT" : "QUIESCENCE", NT == PV ? "PV" : "NonPV",
-    //      depth, ply, alpha, beta, ttValue, printMoveVerbose(ttMove));
+//    fprintln("\n**IID SEARCH");
+//    fprintln(
+//      "**ST={:<10} NT={:<5} depth={:<2} ply={:<2} alpha={:>6} beta={:>6} ttValue={:>6} ttMove={:<30} ",
+//      ST == ROOT ? "ROOT" : ST == NONROOT ? "NONROOT" : "QUIESCENCE", NT == PV ? "PV" : "NonPV",
+//      depth, ply, alpha, beta, ttValue, printMoveVerbose(ttMove));
     searchStats.iidSearches++;
     Depth iidDepth = depth - SearchConfig::IID_REDUCTION;
     // do the iterative search which will eventually
@@ -541,10 +542,10 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
     // no we look in the pv list if we have a best move
     //tt.probe(position.getZobristKey(), depth, alpha, beta, ttValue, ttMove);
     ttMove = pv[ply].empty() ? MOVE_NONE : pv[ply].at(0);
-    //    fprintln("****IID SEARCH RESULT: pv={} pv[{}] = {}",
-    //             printMoveVerbose(pv[ply].empty() ? MOVE_NONE : pv[ply].at(0)), ply,
-    //             printMoveList(pv[ply]));
-    //    fprintln("****IID SEARCH RESULT: ttMove={} ttValue={}\n", printMoveVerbose(ttMove), ttValue);
+//    fprintln("****IID SEARCH RESULT: pv={} pv[{}] = {}",
+//             printMoveVerbose(pv[ply].empty() ? MOVE_NONE : pv[ply].at(0)), ply,
+//             printMoveList(pv[ply]));
+//    fprintln("****IID SEARCH RESULT: ttMove={} ttValue={}\n", printMoveVerbose(ttMove), ttValue);
   }
   // ###############################################
 
@@ -617,7 +618,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
         // ROOT is used only at the start - changes directly to NONROOT
         const Search::Search_Type nextST = ST == ROOT ? NONROOT : ST;
 
-        if (!SearchConfig::USE_PVS || movesSearched == 0 || PERFT ) {
+        if (!SearchConfig::USE_PVS || movesSearched == 0 || PERFT) {
           // AlphaBeta Search or initial search in PVS
           value = -search<nextST, PV>(position, newDepth, ply + 1, -beta, -alpha);
         }
