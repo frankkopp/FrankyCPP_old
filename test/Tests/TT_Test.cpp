@@ -131,11 +131,11 @@ TEST_F(TT_Test, put) {
   const Key key1 = randomKey(rg);
   const Key key2 = key1 + 13; // different bucket
   const Key key3 = key1 + collisionDistance; // same bucket - collision
-  const Key key4 = key3 + collisionDistance; // same bucket - collision
-  const Key key5 = key4 + collisionDistance; // same bucket - collision
-  const Key key6 = key5 + collisionDistance; // same bucket - collision
-  const Key key7 = key6 + collisionDistance; // same bucket - collision
-  const Key key8 = key7 + collisionDistance; // same bucket - collision
+//  const Key key4 = key3 + collisionDistance; // same bucket - collision
+//  const Key key5 = key4 + collisionDistance; // same bucket - collision
+//  const Key key6 = key5 + collisionDistance; // same bucket - collision
+//  const Key key7 = key6 + collisionDistance; // same bucket - collision
+//  const Key key8 = key7 + collisionDistance; // same bucket - collision
 
   // new entry in empty bucket at pos 0
   tt.put(key1, Depth(6), createMove("e2e4"), Value(101), TT::TYPE_EXACT, false);
@@ -147,29 +147,29 @@ TEST_F(TT_Test, put) {
   ASSERT_EQ(tt.getEntry(key1).key, key1);
   ASSERT_EQ(tt.getEntry(key1).value, Value(101));
 
-//  // new entry in empty bucket at pos 0
-//  tt.put(key2, Value(102), TT::TYPE_EXACT, Depth(5), createMove("e2e4"), false);
-//  ASSERT_EQ(2, tt.getNumberOfPuts());
-//  ASSERT_EQ(2, tt.getNumberOfEntries());
-//  ASSERT_EQ(0, tt.getNumberOfUpdates());
-//  ASSERT_EQ(0, tt.getNumberOfCollisions());
-//  ASSERT_EQ(0, tt.getNumberOfOverwrites());
-//  ASSERT_EQ(tt._keys[key2], key2);
-//  ASSERT_EQ(TT::getValue(tt._data[key2]), Value(102));
-//  ASSERT_EQ(TT::getDepth(tt._data[key2]), Value(5));
-//
-//
-//  // new entry in bucket at pos 1 (collision)
-//  tt.put(key3, Value(103), TT::TYPE_EXACT, Depth(4), createMove("e2e4"), false);
-//  ASSERT_EQ(3, tt.getNumberOfPuts());
-//  ASSERT_EQ(3, tt.getNumberOfEntries());
-//  ASSERT_EQ(0, tt.getNumberOfUpdates());
-//  ASSERT_EQ(0, tt.getNumberOfCollisions());
-//  ASSERT_EQ(0, tt.getNumberOfOverwrites());
-//  ASSERT_EQ(tt._keys[key3], key3);
-//  ASSERT_EQ(TT::getValue(tt._data[key3]), Value(103));
-//
-//
+  // new entry
+  tt.put(key2, Depth(5), createMove("e2e4"), Value(102), TT::TYPE_EXACT, false);
+  ASSERT_EQ(2, tt.getNumberOfPuts());
+  ASSERT_EQ(2, tt.getNumberOfEntries());
+  ASSERT_EQ(0, tt.getNumberOfUpdates());
+  ASSERT_EQ(0, tt.getNumberOfCollisions());
+  ASSERT_EQ(0, tt.getNumberOfOverwrites());
+  ASSERT_EQ(tt.getEntry(key2).key, key2);
+  ASSERT_EQ(tt.getEntry(key2).value, Value(102));
+  ASSERT_EQ(tt.getEntry(key2).depth, Value(5));
+
+
+  // new entry (collision)
+  tt.put(key3, Depth(6), createMove("e2e4"), Value(103), TT::TYPE_EXACT, false);
+  ASSERT_EQ(3, tt.getNumberOfPuts());
+  ASSERT_EQ(2, tt.getNumberOfEntries());
+  ASSERT_EQ(0, tt.getNumberOfUpdates());
+  ASSERT_EQ(1, tt.getNumberOfCollisions());
+  ASSERT_EQ(1, tt.getNumberOfOverwrites());
+  ASSERT_EQ(tt.getEntry(key3).key, key3);
+  ASSERT_EQ(tt.getEntry(key3).value, Value(103));
+  
+  //
 //  // new entry in bucket at pos 2 (collision)
 //  tt.put(key4, Value(104), TT::TYPE_EXACT, Depth(3), createMove("e2e4"), false);
 //  ASSERT_EQ(4, tt.getNumberOfPuts());
@@ -246,18 +246,18 @@ TEST_F(TT_Test, get) {
   TT::Entry e1 = tt.getEntry(key1);
   ASSERT_EQ(101, e1.value);
 
-//  // new entry in empty slote
-//  tt.put(key2, Value(102), TT::TYPE_EXACT, Depth(5), createMove("e2e4"), false);
-//  TT::Entry e2 = tt.getEntry(key2);
-//  ASSERT_EQ(102, TT::getValue(e2));
-//
-//  // new entry in occupoied slot
-//  tt.put(key3, Value(103), TT::TYPE_EXACT, Depth(7), createMove("e2e4"), false);
-//  TT::Entry e3 = tt.getEntry(key3);
-//  ASSERT_EQ(103, TT::getValue(e3));
-//
-//  TT::Entry e4 = tt.getEntry(key4); // not in TT
-//  ASSERT_EQ(0, e4);
+  // new entry in empty slote
+  tt.put(key2, Depth(5), createMove("e2e4"), Value(102), TT::TYPE_EXACT, false);
+  TT::Entry e2 = tt.getEntry(key2);
+  ASSERT_EQ(102, e2.value);
+
+  // new entry in occupoied slot
+  tt.put(key3, Depth(7), createMove("e2e4"), Value(103), TT::TYPE_EXACT, false);
+  TT::Entry e3 = tt.getEntry(key3);
+  ASSERT_EQ(103, e3.value);
+
+  TT::Entry e4 = tt.getEntry(key4); // not in TT
+  ASSERT_EQ(0, e4.key);
 
 }
 

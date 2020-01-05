@@ -51,7 +51,8 @@ endif ()
 
 # build shared option
 if(NOT WIN32)
-    option(SPDLOG_BUILD_SHARED "Build shared library" OFF)
+    option(SPDLOG_BUILD_SHARED "Build shared library" ON)
+    message(STATUS "Build shared library")
 endif()
 
 # example options
