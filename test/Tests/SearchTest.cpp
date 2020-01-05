@@ -130,7 +130,7 @@ TEST_F(SearchTest, mate0Search) {
   searchLimits.setDepth(1);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
-  ASSERT_EQ(-VALUE_CHECKMATE, valueOf(search.getLastSearchResult().bestMove));
+  ASSERT_EQ(-VALUE_CHECKMATE, search.getLastSearchResult().bestMoveValue);
 }
 
 TEST_F(SearchTest, mate1Search) {

@@ -63,7 +63,7 @@ TEST_F(TT_Test, basic) {
   LOG->info("Number of entries: {:n}", tt.getMaxNumberOfEntries());
   LOG->info("Number of bytes allocated: {:n}", tt.getSizeInByte());
   LOG->info("Number of entries: {:n}", tt.getNumberOfEntries());
-  ASSERT_EQ(262144, tt.getMaxNumberOfEntries());
+  ASSERT_EQ(524288, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
 
   LOG->info("Trying to resize the TT with {:n} MB in size", 1'000);
@@ -91,7 +91,7 @@ TEST_F(TT_Test, basic) {
   LOG->info("Number of entries: {:n}", tt.getMaxNumberOfEntries());
   LOG->info("Number of bytes allocated: {:n}", tt.getSizeInByte());
   LOG->info("Number of entries: {:n}", tt.getNumberOfEntries());
-  ASSERT_EQ(2097152, tt.getMaxNumberOfEntries());
+  ASSERT_EQ(4194304, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
 }
 
