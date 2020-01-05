@@ -124,4 +124,6 @@ TEST_F(LoggingTest, basic) {
   UCI_LOG->info("INFO {:d}", 123456789);
   UCI_LOG->info("INFO {:n}", 123456789);
   UCI_LOG->info("INFO {:.5n}", double(123456789.12345));
+
+ fmt::print("TEST {:n}", 1234567891234ULL);
 }

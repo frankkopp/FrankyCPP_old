@@ -26,7 +26,7 @@
 #ifndef FRANKYCPP_POSITION_H
 #define FRANKYCPP_POSITION_H
 
-#include "../test/lib/googletest-master/googletest/include/gtest/gtest_prod.h"
+#include "gtest/gtest_prod.h"
 #include "types.h"
 #include "MoveGenerator.h"
 #include "Bitboards.h"

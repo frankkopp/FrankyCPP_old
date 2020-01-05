@@ -15,10 +15,15 @@ add_library(core ${core_SRCS})
 # define executable
 add_executable(${execname} main.cpp)
 
+find_package(fmt REQUIRED)
+find_package(spdlog REQUIRED)
+
+#spdlog_enable_warnings(${execname})
+
 # link executable with library
 target_link_libraries(
         ${execname}
         core
-        #fmt::fmt
+        fmt::fmt
         spdlog::spdlog)
 

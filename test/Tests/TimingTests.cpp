@@ -129,7 +129,7 @@ TEST_F(TimingTests, DISABLED_rotation) {
   cout << os.str();
 }
 
-TEST_F(TimingTests,TThash) {
+TEST_F(TimingTests, DISABLED_TThash) {
   ostringstream os;
 
   uint64_t *data1 = new uint64_t[2'500'000];
