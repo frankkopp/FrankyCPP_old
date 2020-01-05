@@ -24,10 +24,21 @@
  */
 
 #include <gtest/gtest.h>
-#include "../../src/types.h"
+#include "fmt/core.h"
+#include "types.h"
 
 using namespace std;
 using testing::Eq;
+
+TEST(GlobalsTest, formatter) {
+  try {
+    std::locale::global(std::locale("de_DE.UTF-8"));
+  }
+  catch (...) {
+    std::cerr << "failed to set locale" << std::endl;
+  }
+  fmt::print("\nFORMAT TEST {:n}\n", 1234567890ULL);
+}
 
 TEST(GlobalsTest, colors) {
   ASSERT_EQ(WHITE, ~BLACK);
