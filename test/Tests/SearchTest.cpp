@@ -441,7 +441,7 @@ TEST_F(SearchTest, debugging) {
   SearchConfig::USE_ALPHABETA = true;
   SearchConfig::USE_PVS = true;
   SearchConfig::USE_QUIESCENCE = true;
-  SearchConfig::USE_TT = false;
+  SearchConfig::USE_TT = true;
   SearchConfig::USE_TT_QSEARCH =   true;
   SearchConfig::TT_SIZE_MB = 64;
   SearchConfig::USE_KILLER_MOVES = true;
@@ -455,9 +455,9 @@ TEST_F(SearchTest, debugging) {
   //Position position("r3k2r/1ppn3p/2q1q1n1/4P3/4q3/5Pp1/pb4PP/2q2RK1 w kq - 0 1"); //
   //position = Position("2r3k1/pppR1pp1/4p3/4P1P1/5P2/1P4K1/P1P5/8 w - -");
 
-  searchLimits.setDepth(6);
+  //searchLimits.setDepth(8);
   //searchLimits.setNodes(30'000'000);
-  //searchLimits.setMoveTime(5'000);
+  searchLimits.setMoveTime(5'000);
 
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();

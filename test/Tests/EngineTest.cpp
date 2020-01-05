@@ -54,7 +54,7 @@ TEST_F(EngineTest, startSearch) {
   uciSearchMode.depth = 8;
   engine.startSearch(uciSearchMode);
 
-  LOG->info("{}: Start and Stop test...", SPDLOG_FUNCTION);
+  LOG->info("{}: Start and Stop test...", __FUNCTION__);
   for (int i = 0; i < 3; ++i) {
     sleep(3);
     engine.stopSearch();

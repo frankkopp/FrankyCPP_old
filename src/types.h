@@ -651,17 +651,13 @@ inline bool to_bool(std::string str) {
 
 /**
   * Prints a 64-bit uint as a series of 0 and 1 grouped in 8 bits
-  * beginning with the LSB (0) on the left and the MSB (63) on the right
+  * beginning with the MSB (0) on the left and the LSB (63) on the right
   * @param b
   */
 inline std::string printBitString(uint64_t b) {
-  std::string s;
-  for (int i = 0; i < 64; i++) {
-    if (i > 0 && i % 8 == 0) s += ".";
-    s += b & (1L << i) ? "1" : "0";
-  }
-  s += " (" + std::to_string(b) + ")";
-  return s;
+  std::ostringstream os;
+  os << std::bitset<64>(b);
+  return os.str();
 }
 
 struct deLocaleDecimals : std::numpunct<char> {

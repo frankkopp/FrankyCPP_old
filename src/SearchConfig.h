@@ -43,7 +43,7 @@ namespace SearchConfig {
   inline int NO_KILLER_MOVES = 2; // number of killers stored
   inline bool USE_PV_MOVE_SORTING = true; // tell the move gen the current pv to return first
   inline bool USE_IID = true; // internal iterative deepening if we did not get a TT move
-  inline Depth IID_REDUCTION = static_cast<Depth>(2); // reduction of search depth for IID
+  inline Depth IID_REDUCTION = static_cast<Depth>(4); // reduction of search depth for IID
 
   // Pruning features
   inline bool USE_MDP = true; // mate distance pruning

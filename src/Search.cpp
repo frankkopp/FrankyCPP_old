@@ -521,9 +521,9 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
   // one. This is most effective with bad move ordering.
   // If move ordering is quite good this might be
   // a waste of search time.
-  // TODO: look at this - doesn't seem to help
   // @formatter:off
   if (SearchConfig::USE_IID
+      && SearchConfig::USE_TT // TODO: only works with TT for now.
       && !PERFT
       && ST != ROOT
       && NT == PV
@@ -536,13 +536,13 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha, Valu
 //      ST == ROOT ? "ROOT" : ST == NONROOT ? "NONROOT" : "QUIESCENCE", NT == PV ? "PV" : "NonPV",
 //      depth, ply, alpha, beta, ttValue, printMoveVerbose(ttMove));
     searchStats.iidSearches++;
-    Depth iidDepth = depth - SearchConfig::IID_REDUCTION;
+    auto iidDepth = static_cast<Depth>(depth >> 1); // div by 2
     // do the iterative search which will eventually
     // fill the pv list and the TT
     search<ST, PV>(position, iidDepth, ply, alpha, beta);
     // no we look in the pv list if we have a best move
-    //tt.probe(position.getZobristKey(), depth, alpha, beta, ttValue, ttMove);
-    ttMove = pv[ply].empty() ? MOVE_NONE : pv[ply].at(0);
+    tt.probe(position.getZobristKey(), depth, alpha, beta, ttValue, ttMove, true);
+    //ttMove = pv[ply].empty() ? MOVE_NONE : pv[ply].at(0);
 //    fprintln("****IID SEARCH RESULT: pv={} pv[{}] = {}",
 //             printMoveVerbose(pv[ply].empty() ? MOVE_NONE : pv[ply].at(0)), ply,
 //             printMoveList(pv[ply]));

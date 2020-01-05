@@ -36,7 +36,7 @@ using testing::Eq;
 class SearchTreeSizeTest : public ::testing::Test {
 public:
 
-  static constexpr int DEPTH = 6;
+  static constexpr int DEPTH = 9;
 
   struct SingleTest {
     std::string name = "";
@@ -197,15 +197,6 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
 //  // AB + PVS + PV Sort
   SearchConfig::USE_PV_MOVE_SORTING = true;
 //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "05 AB_PVMS"));
-
-  // AB + IID -TT
-  SearchConfig::USE_TT = false;
-  SearchConfig::USE_TT_QSEARCH = false;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "06 AB-TT"));
-
-  SearchConfig::USE_IID = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "07 AB+IID"));
-
 
   //  // AB + IID +TT
   SearchConfig::USE_IID = false;

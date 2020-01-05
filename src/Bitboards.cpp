@@ -89,7 +89,13 @@ namespace Bitboards {
    * beginning with the LSB (0) on the left and the MSB (63) on the right
    */
   string printFlat(Bitboard b) {
-    return printBitString(b);
+    std::string s;
+    for (int i = 0; i < 64; i++) {
+      if (i > 0 && i % 8 == 0) s += ".";
+      s += b & (1L << i) ? "1" : "0";
+    }
+    s += " (" + std::to_string(b) + ")";
+    return s;
   }
 
   /**

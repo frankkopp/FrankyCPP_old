@@ -312,6 +312,9 @@ namespace Bitboards {
 
   /// popcount() counts the number of non-zero bits in a bitboard
   inline int popcount(Bitboard b) {
+#if defined(__GNUC__)  // GCC, Clang, ICC
+    return __builtin_popcountll(b);
+#else  // Compiler is not GCC
     // pre-computed table of population counter for 16-bit
     extern uint8_t PopCnt16[1 << 16];
     // nice trick to address 16-bit groups in a 64-bit int
@@ -320,6 +323,7 @@ namespace Bitboards {
     // @formatter:on
     // adding all 16-bit population counters referenced in the 64-bit union
     return PopCnt16[v.u[0]] + PopCnt16[v.u[1]] + PopCnt16[v.u[2]] + PopCnt16[v.u[3]];
+#endif
   }
 
 /// lsb() and msb() return the least/most significant bit in a non-zero bitboard

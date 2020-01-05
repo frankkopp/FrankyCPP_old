@@ -44,9 +44,12 @@ public:
     INIT::init();
     NEWLINE;
   }
+
 protected:
   void SetUp() override {}
+
   void TearDown() override {}
+
   // Necessary because of function pointer use below.
   void testTiming(ostringstream &os, int rounds, int iterations, int repetitions,
                   vector<function<void(void)>> tests);
@@ -117,8 +120,8 @@ TEST_F(TimingTests, DISABLED_rotation) {
   //// TESTS START
   position = Position("r3k2r/1ppqbppp/2n2n2/1B2p1B1/3p2b1/2NP1N2/1PPQPPPP/R3K2R w KQkq - 0 1");
 
-  std::function<void()>  f1 = []() { Bitboards::getMovesDiagUp(SQ_D2, position.getOccupiedBB()); };
-  std::function<void()>  f2 = []() { Bitboards::getMovesDiagUpR(SQ_D2, position.getOccupiedBBR45()); };
+  std::function<void()> f1 = []() { Bitboards::getMovesDiagUp(SQ_D2, position.getOccupiedBB()); };
+  std::function<void()> f2 = []() { Bitboards::getMovesDiagUpR(SQ_D2, position.getOccupiedBBR45()); };
   vector<std::function<void()> > tests;
   tests.push_back(f1);
   tests.push_back(f2);
@@ -132,8 +135,8 @@ TEST_F(TimingTests, DISABLED_rotation) {
 TEST_F(TimingTests, DISABLED_TThash) {
   ostringstream os;
 
-  uint64_t *data1 = new uint64_t[2'500'000];
-  uint64_t *data2 = new uint64_t[2'500'000];
+  uint64_t* data1 = new uint64_t[2'500'000];
+  uint64_t* data2 = new uint64_t[2'500'000];
   std::mt19937_64 eng1(12345);
   std::mt19937_64 eng2(12345);
   std::uniform_int_distribution<unsigned long long> distr1;
@@ -159,9 +162,51 @@ TEST_F(TimingTests, DISABLED_TThash) {
   delete[] data2;
 }
 
+unsigned popcount16(unsigned u) {
+  u -= (u >> 1U) & 0x5555U;
+  u = ((u >> 2U) & 0x3333U) + (u & 0x3333U);
+  u = ((u >> 4U) + u) & 0x0F0FU;
+  return (u * 0x0101U) >> 8U;
+}
+
+TEST_F(TimingTests, DISABLED_bitCount) {
+  ostringstream os;
+
+  std::mt19937_64 rg(12345);
+  std::uniform_int_distribution<unsigned long long> randomU64;
+
+  int i;
+
+  uint8_t PopCnt16[1 << 16];
+  // pre-computes 16-bit population counter to use in popcount(64-bit)
+  for (unsigned i = 0; i < (1U << 16U); ++i)
+    PopCnt16[i] = (uint8_t) popcount16(i);
+
+
+  //// TESTS START
+  std::function<void()> f1 = [&]() {
+    union {
+      Bitboard bb;
+      uint16_t u[4];
+    } v = {randomU64(rg)};
+    i = PopCnt16[v.u[0]] + PopCnt16[v.u[1]] + PopCnt16[v.u[2]] + PopCnt16[v.u[3]];
+  };
+  std::function<void()> f2 = [&]() {
+    i = __builtin_popcountll(randomU64(rg));
+  };
+  vector<std::function<void()>> tests;
+  tests.push_back(f1);
+  tests.push_back(f2);
+  //// TESTS END
+
+  testTiming(os, 5, 50, 10'000'000, tests);
+
+  cout << os.str();
+}
+
 void
 TimingTests::testTiming(ostringstream &os, int rounds, int iterations, int repetitions,
-                        vector<function<void(void)>> tests) {
+                        vector<function<void()>> tests) {
 
   cout.imbue(deLocale);
   os.imbue(deLocale);
@@ -192,7 +237,7 @@ TimingTests::testTiming(ostringstream &os, int rounds, int iterations, int repet
       os << "Round " << setw(2) << round << " Test " << setw(2) << testNr++ << ": " << setw(12)
          << avg
          << " ns" << " (" << setw(12) << (avg / 1e9) << " sec)"
-         << " (" << setw(12) << (avg/(repetitions*iterations)) << " ns avg per test)" << endl;
+         << " (" << setw(12) << (avg / (repetitions * iterations)) << " ns avg per test)" << endl;
     }
     // os << endl;
   }

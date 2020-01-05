@@ -54,12 +54,17 @@ TEST_F(LoggingTest, decimal) {
   auto s = fmt::format(deLocale, "{:n}", 1234567890);
   std::cout << "Direct cout  : " << s << std::endl;
   fprintln("Macro with ln: {:n}", 1234567890);
-  TEST_LOG->info("INFO {:n}", 123456789);
+  TEST_LOG->info("INFO {:n}", 1234567890);
   ASSERT_EQ("1.234.567.890", s);
   s = fmt::format("{:n}", 1234567890);
   std::cout << "Direct cout  : " << s << std::endl;
-  TEST_LOG->info("INFO {:n}", 123456789);
+  TEST_LOG->info("INFO {:n}", 1234567890);
   ASSERT_EQ("1.234.567.890", s);
+
+  s = fmt::format("{:n}", std::numeric_limits<__int128_t>::max());
+  std::cout << "Direct cout  : " << s << std::endl;
+  TEST_LOG->info("INFO {:n}", std::numeric_limits<__int128_t>::max());
+  ASSERT_EQ("170.141.183.460.469.231.731.687.303.715.884.105.727", s);
 }
 
 TEST_F(LoggingTest, basic) {
@@ -137,6 +142,4 @@ TEST_F(LoggingTest, basic) {
   UCI_LOG->info("INFO {:d}", 123456789);
   UCI_LOG->info("INFO {:n}", 123456789);
   UCI_LOG->info("INFO {:.5n}", double(123456789.12345));
-
-  fmt::print("TEST {:n}", 1234567891234ULL);
 }

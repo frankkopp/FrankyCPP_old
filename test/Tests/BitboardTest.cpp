@@ -78,6 +78,20 @@ protected:
 //  std::cout << Bitboards::print(ALL_BB) << std::endl;
 //}
 
+TEST_F(BitboardsTest, popcount) {
+  const uint64_t &b = 0b0010000000010000000000000010000000000000000000000000000000000000ULL;
+
+  fprintln("Bitstring: {}", printBitString(b));
+  fprintln("Bitstring: {}", printBitString(1));
+  fprintln("Bitstring: {}", printBitString(std::numeric_limits<uint64_t>().max()));
+
+  fprintln("Bitboard : {}", Bitboards::printFlat(b));
+  fprintln("Bitboard : {}", Bitboards::printFlat(1));
+  fprintln("Bitboard : {}", Bitboards::printFlat(std::numeric_limits<uint64_t>().max()));
+
+  ASSERT_EQ(3, Bitboards::popcount(b));
+}
+
 TEST_F(BitboardsTest, BitboardSquareTest) {
   ASSERT_EQ(squareBB[SQ_E4], ALL_BB & SQ_E4);
   ASSERT_EQ(squareBB[SQ_A1], ALL_BB & SQ_A1);
