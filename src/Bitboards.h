@@ -333,6 +333,10 @@ namespace Bitboards {
     return Square(__builtin_ctzll(b));
 #else  // Compiler is not GCC
 #error "Compiler not yet supported."
+    // GTEST - nice examples
+    // Windows:  _MSC_VER
+    // _BitScanForward64/_BitScanReverse64
+    // https://docs.microsoft.com/en-us/cpp/intrinsics/bitscanreverse-bitscanreverse64?view=vs-2019
 #endif
   }
 

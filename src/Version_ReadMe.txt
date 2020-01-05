@@ -5,14 +5,20 @@ v 0.x (plan)
     - EvalCache
     - Aspiration Window Search
     - Simple Opening Book
+    - IID check
+    - WIN MSC 
+        // GTEST - nice examples
+        // Windows:  _MSC_VER
+        // _BitScanForward64/_BitScanReverse64
+        // https://docs.microsoft.com/en-us/cpp/intrinsics/bitscanreverse-bitscanreverse64?view=vs-2019
 
 v 0.3 (in progress)
 ================================================================================
 - TODO:
-    - IID
     - RFP, NMP, RAZOR, LFP. LFR, ...
     - Testing and Debugging
 - DONE:
+    - IID (with TT - needs to be revisited)
     - PV from TT and PV Move Sorting
     - PVS
     - MDP, MPP
