@@ -24,7 +24,7 @@ include_directories(
 )
 
 # project sub directories - need to have their own CMakeList.txt
-add_subdirectory(spdlog)
+add_subdirectory(spdlog EXCLUDE_FROM_ALL)
 add_subdirectory(fmt EXCLUDE_FROM_ALL)
 add_subdirectory(src)
 add_subdirectory(test)

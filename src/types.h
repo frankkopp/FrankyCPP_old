@@ -33,12 +33,11 @@
 #include <sstream>
 #include <vector>
 #include <deque>
+#include "fmt/locale.h"
 
 // convenience macros
 #define NEWLINE std::cout << std::endl
 #define printBB(bb) std::cout << Bitboards::print((bb)) << std::endl
-#define println(s) std::cout << (s) << std::endl
-#define fprintln(...) fmt::print(__VA_ARGS__); fmt::print("\n")
 
 // Global constants
 constexpr const char* START_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -674,5 +673,8 @@ struct myLocale : std::numpunct<char> {
 };
 
 const std::locale digitLocale(std::cout.getloc(), new myLocale);
+
+#define println(s) std::cout << (s) << std::endl
+#define fprintln(...) std::cout << fmt::format(digitLocale, __VA_ARGS__) << std::endl
 
 #endif //FRANKYCPP_TYPES_H

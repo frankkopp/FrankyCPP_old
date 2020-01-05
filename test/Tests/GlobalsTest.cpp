@@ -24,20 +24,15 @@
  */
 
 #include <gtest/gtest.h>
-#include "fmt/core.h"
+#include "fmt/locale.h"
 #include "types.h"
 
-using namespace std;
 using testing::Eq;
 
 TEST(GlobalsTest, formatter) {
-  try {
-    std::locale::global(std::locale("de_DE.UTF-8"));
-  }
-  catch (...) {
-    std::cerr << "failed to set locale" << std::endl;
-  }
-  fmt::print("\nFORMAT TEST {:n}\n", 1234567890ULL);
+  auto s = fmt::format(digitLocale, "{:n}", 1234567);
+  std::cout << std::endl << s << std::endl;
+  fprintln("big number {:n}", 1234567890);
 }
 
 TEST(GlobalsTest, colors) {
@@ -47,14 +42,14 @@ TEST(GlobalsTest, colors) {
 
 TEST(GlobalsTest, labels) {
   // all squares and label of squares
-  string actual;
+  std::string actual;
   for (int i = 0; i < SQ_NONE; ++i) {
     ASSERT_TRUE(isSquare(Square(i)));
     actual += squareLabel(Square(i));
   }
-  string expected = "a1b1c1d1e1f1g1h1a2b2c2d2e2f2g2h2a3b3c3d3e3f3g3h3a4b4c4"
-                    "d4e4f4g4h4a5b5c5d5e5f5g5h5a6b6c6d6e6f6g6h6a7b7c7d7e7f7"
-                    "g7h7a8b8c8d8e8f8g8h8";
+  std::string expected = "a1b1c1d1e1f1g1h1a2b2c2d2e2f2g2h2a3b3c3d3e3f3g3h3a4b4c4"
+                         "d4e4f4g4h4a5b5c5d5e5f5g5h5a6b6c6d6e6f6g6h6a7b7c7d7e7f7"
+                         "g7h7a8b8c8d8e8f8g8h8";
   ASSERT_EQ(expected, actual);
 }
 
@@ -84,7 +79,7 @@ TEST(GlobalsTest, pieceLabels) {
 
 TEST(GlobalsTest, filesAndRanks) {
   // all squares and label of squares
-  string actual;
+  std::string actual;
   for (int i = 0; i < SQ_NONE; ++i) {
     ASSERT_EQ(Square(i), getSquare(File(fileOf(Square(i))), Rank(rankOf(Square(i)))));
   }
@@ -149,7 +144,7 @@ TEST(MoveTest, moves) {
   ASSERT_EQ(PROMOTION, typeOf(move));
   ASSERT_EQ(QUEEN, promotionType(move)); // not useful is not type PROMOTION
 
-  stringstream buffer1, buffer2;
+  std::stringstream buffer1, buffer2;
   buffer1 << "a7a8q";
   buffer2 << move;
   ASSERT_EQ(buffer1.str(), buffer2.str());
@@ -169,7 +164,7 @@ TEST(MoveTest, movesValue) {
   Move move = createMove<NORMAL>(SQ_A1, SQ_H1);
 
   ASSERT_EQ(VALUE_NONE, valueOf(move));
-  
+
   Value v = VALUE_MAX;
   setValue(move, v);
   ASSERT_EQ(v, valueOf(move));
@@ -271,9 +266,9 @@ TEST(MoveListTest, moveListPrint) {
   moveList.push_back(move2);
   moveList.push_back(move3);
 
-  ostringstream ml;
+  std::ostringstream ml;
   ml << moveList;
-  string expected = "MoveList: size=3 [a1h1, a7a8q, e1g1]";
+  std::string expected = "MoveList: size=3 [a1h1, a7a8q, e1g1]";
   ASSERT_EQ(expected, ml.str());
 
 }
