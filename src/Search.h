@@ -32,7 +32,6 @@ class Engine;
 // included dependencies
 #include <iostream>
 #include <thread>
-#include "time.h"
 #include "Logging.h"
 #include "SearchStats.h"
 #include "Semaphore.h"
@@ -77,6 +76,11 @@ class Search {
   // in PV we search the full window in NonPV we try a zero window first
   enum Node_Type {
     NonPV, PV
+  };
+
+  enum Do_Null : bool {
+    No_Null_Move = false,
+    Do_Null_Move = true
   };
 
   // UCI related
@@ -133,6 +137,9 @@ class Search {
   // prepared move generator instances for each depth
   MoveGenerator moveGenerators[DEPTH_MAX]{};
 
+  // mate threat in ply revealed by null move search
+  bool mateThreat[DEPTH_MAX]{};
+
   // Evaluator
   Evaluator evaluator;
 
@@ -187,7 +194,7 @@ private:
   SearchResult iterativeDeepening(Position &refPosition);
 
   template<Search_Type ST, Node_Type NT>
-  Value search(Position &position, Depth depth, Ply ply, Value alpha, Value beta);
+  Value search(Position &position, Depth depth, Ply ply, Value alpha, Value beta, Do_Null doNull);
 
   template<Search_Type ST>
   Move getMove(Position &position, int ply);

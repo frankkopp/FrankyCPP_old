@@ -36,7 +36,7 @@ using testing::Eq;
 class SearchTreeSizeTest : public ::testing::Test {
 public:
 
-  static constexpr int DEPTH = 9;
+  static constexpr int DEPTH = 8;
 
   struct SingleTest {
     std::string name = "";
@@ -108,7 +108,7 @@ TEST_F(SearchTreeSizeTest, size_test) {
   NEWLINE;
   fmt::print("################## RESULTS for depth {} ##########################\n", DEPTH);
   NEWLINE;
-  fmt::print("{:<12s} | {:>6s} | {:>8s} | {:>15s} | {:>12s} | {:>12s} | {} | {}\n", "Test Name",
+  fmt::print("{:<15s} | {:>6s} | {:>8s} | {:>15s} | {:>12s} | {:>12s} | {} | {}\n", "Test Name",
              "Move", "Value", "Nodes", "Nps", "Time", "PV", "Fen");
   println("-----------------------------------------------------------------------"
           "-----------------------------------------------------------------------");
@@ -127,6 +127,7 @@ TEST_F(SearchTreeSizeTest, size_test) {
                  test.name.c_str(), printMove(test.move).c_str(), test.value, test.nodes, test.nps,
                  test.time, test.pv.c_str(), result.fen.c_str());
     }
+    fmt::print("\n");
   }
 
   NEWLINE;
@@ -158,6 +159,9 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   SearchConfig::USE_PVS = false;
   SearchConfig::USE_PV_MOVE_SORTING = false;
   SearchConfig::USE_IID = false;
+  SearchConfig::USE_RFP = false;
+  SearchConfig::USE_RAZOR_PRUNING = false;
+  SearchConfig::USE_NMP= false;
 
   // ***********************************
   // TESTS
@@ -205,7 +209,16 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "08 AB+TT"));
 
   SearchConfig::USE_IID = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "09 AB+IID"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "09 IID"));
+
+  SearchConfig::USE_RFP = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "10 RFP"));
+
+  SearchConfig::USE_RAZOR_PRUNING = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "11 RAZOR"));
+
+  SearchConfig::USE_NMP = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "12 NMP"));
 
   // ***********************************
 

@@ -1,9 +1,6 @@
 v 0.x (plan)
 ================================================================================
 - TODO:
-    - Extended Evaluation
-    - EvalCache
-    - Aspiration Window Search
     - Simple Opening Book
     - IID check
     - WIN MSC 
@@ -12,12 +9,20 @@ v 0.x (plan)
         // _BitScanForward64/_BitScanReverse64
         // https://docs.microsoft.com/en-us/cpp/intrinsics/bitscanreverse-bitscanreverse64?view=vs-2019
 
+v 0.4 (plan)
+================================================================================
+- TODO:
+    - LFP. LFR, ...
+    - Extended Evaluation
+    - EvalCache
+    - Aspiration Window Search
+
 v 0.3 (in progress)
 ================================================================================
 - TODO:
-    - RFP, NMP, RAZOR, LFP. LFR, ...
     - Testing and Debugging
 - DONE:
+    - RFP, NMP, RAZOR
     - IID (with TT - needs to be revisited)
     - PV from TT and PV Move Sorting
     - PVS

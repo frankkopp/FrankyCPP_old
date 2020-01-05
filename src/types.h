@@ -67,6 +67,7 @@ namespace INIT {
 enum Depth : uint8_t {
   DEPTH_NONE = 0,
   DEPTH_ONE = 1,
+  DEPTH_FRONTIER = 1,
   DEPTH_MAX = 128
 };
 

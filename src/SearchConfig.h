@@ -48,7 +48,19 @@ namespace SearchConfig {
   // Pruning features
   inline bool USE_MDP = true; // mate distance pruning
   inline bool USE_MPP = true; // minor promotion pruning
+  inline bool USE_RFP = true; // Reverse Futility Pruning
+  inline Value RFP_MARGIN = static_cast<Value>(300);
+  inline bool USE_RAZOR_PRUNING = true; // Razoring - bad move direct into qs
+  inline Depth RAZOR_DEPTH = static_cast<Depth>(2);
+  inline Value RAZOR_MARGIN = static_cast<Value>(600);
+  inline bool USE_NMP = true;
+  inline Depth NMP_DEPTH = static_cast<Depth>(2);
+  inline bool USE_VERIFY_NMP = true;
+  inline Depth NMP_VERIFICATION_DEPTH = static_cast<Depth>(3);
 
+
+  // tactical features
+  inline bool USE_EXTENSIONS = true;
 }
 
 #endif //FRANKYCPP_SEARCHCONFIG_H

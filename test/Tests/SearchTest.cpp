@@ -396,6 +396,27 @@ TEST_F(SearchTest, TT) {
              (search.getSearchStats().tt_Hits + search.getSearchStats().tt_Misses)));
 }
 
+TEST_F(SearchTest, NULLMOVE) {
+  Search search;
+  SearchLimits searchLimits;
+  Position position;
+
+  search.setHashSize(256);
+
+  searchLimits.setMoveTime(5'000);
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+
+  LOG->info("Nodes: {:n} Time: {:n} ms NPS: {:n}", search.getSearchStats().nodesVisited,
+            search.getSearchStats().lastSearchTime, (search.getSearchStats().nodesVisited * 1'000) /
+                                                    search.getSearchStats().lastSearchTime);
+
+  LOG->info("Number of Null Moves Prunings: {:n} Verifications {:n}",
+            search.getSearchStats().nullMovePrunings,
+            search.getSearchStats().nullMoveVerifications
+  );
+}
+
 TEST_F(SearchTest, perft) {
 
   int DEPTH = 6;
@@ -442,7 +463,7 @@ TEST_F(SearchTest, debugging) {
   SearchConfig::USE_PVS = true;
   SearchConfig::USE_QUIESCENCE = true;
   SearchConfig::USE_TT = true;
-  SearchConfig::USE_TT_QSEARCH =   true;
+  SearchConfig::USE_TT_QSEARCH = true;
   SearchConfig::TT_SIZE_MB = 64;
   SearchConfig::USE_KILLER_MOVES = true;
   SearchConfig::USE_PV_MOVE_SORTING = true;
@@ -453,7 +474,7 @@ TEST_F(SearchTest, debugging) {
   Position position;
   // 08 AB+TT        |   b4c6 |     9991 |      36.743.859 |    5.850.001 |        6.280 | b4c6 b7c6 f2a7 b8a7 e1a1 a7b6 h1b1 b6c5 a1a5 | 1kr4r/ppp2bq1/4n3/4P1pp/1NP2p2/2PP2PP/5Q1K/4R2R w - -
   // 09 AB+IID       |   b4c6 |        0 |      46.915.971 |    6.024.909 |        7.786 | b4c6 b7c6 f2a7 b8a7 | 1kr4r/ppp2bq1/4n3/4P1pp/1NP2p2/2PP2PP/5Q1K/4R2R w - -
-  
+
   //Position position("8/7p/R7/5p1k/5P2/7P/P1P1nP1K/5q2 w - - 3 33");
   //Position position("r3k2r/1ppn3p/2q1q1n1/4P3/4q3/5Pp1/pb4PP/2q2RK1 w kq - 0 1"); //
   //position = Position("2r3k1/pppR1pp1/4p3/4P1P1/5P2/1P4K1/P1P5/8 w - -");
