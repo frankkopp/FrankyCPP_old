@@ -18,9 +18,9 @@ project(FrankyCPP VERSION 0.3)
 
 include_directories(
         ${PROJECT_SOURCE_DIR}/src
-        ${PROJECT_SOURCE_DIR}/test/lib/googletest-master/googletest/include/
         ${PROJECT_SOURCE_DIR}/spdlog/include
         #${PROJECT_SOURCE_DIR}/fmt/include
+        ${CMAKE_CURRENT_BINARY_DIR}/test/googletest-src/googletest/include
 )
 
 # project sub directories - need to have their own CMakeList.txt

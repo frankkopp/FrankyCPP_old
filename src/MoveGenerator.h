@@ -27,7 +27,7 @@
 #define FRANKYCPP_MOVEGENERATOR_H
 
 #include <vector>
-#include "../test/lib/googletest-master/googletest/include/gtest/gtest_prod.h"
+#include "gtest/gtest_prod.h"
 #include "Logging.h"
 #include "types.h"
 
