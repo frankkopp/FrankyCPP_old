@@ -127,6 +127,7 @@ class Position {
 
   // Material value will always be up to date
   int material[COLOR_LENGTH]{};
+  int materialNonPawn[COLOR_LENGTH]{};
 
   // Positional value will always be up to date
   int psqMidValue[COLOR_LENGTH]{};
@@ -372,6 +373,7 @@ public:
   Bitboard getOccupiedBBL45(const Color c) const { return occupiedBBL45[c]; }
 
   int getMaterial(const Color c) const { return material[c]; }
+  int getMaterialNonPawn(const Color c) const { return materialNonPawn[c]; }
   int getMidPosValue(const Color c) const { return psqMidValue[c]; }
   int getEndPosValue(const Color c) const { return psqEndValue[c]; }
   int getPosValue(const Color c) const {

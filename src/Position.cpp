@@ -815,6 +815,7 @@ std::string Position::str() const {
          << std::endl;
   output << "Gamephase: " << gamePhase << std::endl;
   output << "Material: white=" << material[WHITE] << " black=" << material[BLACK] << std::endl;
+  output << "Non Pawn: white=" << materialNonPawn[WHITE] << " black=" << materialNonPawn[BLACK] << std::endl;
   output << "PosValue: white=" << psqMidValue[WHITE] << " black=" << psqMidValue[BLACK]
          << std::endl;
   output << "Zobrist Key: " << zobristKey << std::endl;
@@ -934,6 +935,7 @@ void Position::putPiece(const Piece piece, const Square square) {
   gamePhase = gamePhase + gamePhaseValue[pieceType];
   // material
   material[color] += pieceTypeValue[pieceType];
+  if (pieceType > 2) materialNonPawn[color] += pieceTypeValue[pieceType];
   // position value
   psqMidValue[color] += Values::posMidValue[piece][square];
   psqEndValue[color] += Values::posEndValue[piece][square];
@@ -965,6 +967,7 @@ Piece Position::removePiece(const Square square) {
   gamePhase = std::max(0, gamePhase - gamePhaseValue[pieceType]);
   // material
   material[color] -= pieceTypeValue[pieceType];
+  if (pieceType > 2) materialNonPawn[color] -= pieceTypeValue[pieceType];
   // position value
   psqMidValue[color] -= Values::posMidValue[old][square];
   psqEndValue[color] -= Values::posEndValue[old][square];
@@ -1044,6 +1047,7 @@ void Position::initializeBoard() {
     std::fill_n(&piecesBB[color][0], sizeof(piecesBB[color]), Bitboards::EMPTY_BB);
     kingSquare[color] = SQ_NONE;
     material[color] = 0;
+    materialNonPawn[color] = 0;
     psqMidValue[color] = 0;
   }
 
