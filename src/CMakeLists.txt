@@ -1,9 +1,6 @@
 # updates template file and replaces placeholder variables
 configure_file(version.h.in version.h)
-
-include_directories(
-        ${CMAKE_CURRENT_BINARY_DIR}
-)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # set the name of the executable
 set(execname FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR})

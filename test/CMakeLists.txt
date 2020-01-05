@@ -36,6 +36,7 @@ endif()
 # etc. as appropriate
 
 find_package(fmt)
+find_package(spdlog)
 
 add_executable(FrankyTest main.cpp Tests/BitboardTest.cpp Tests/TimingTests.cpp Tests/SemaphoreTest.cpp Tests/EngineTest.cpp Tests/GlobalsTest.cpp Tests/PositionTest.cpp Tests/MoveGeneratorTest.cpp Tests/PerftTest.cpp Tests/UCITests.cpp Tests/SearchTest.cpp Tests/LoggingTest.cpp Tests/EvaluatorTest.cpp Tests/SearchTreeSizeTest.cpp Tests/ValuesTest.cpp Tests/TT_Test.cpp)
-target_link_libraries(FrankyTest core fmt::fmt gtest gtest_main)
+target_link_libraries(FrankyTest core fmt::fmt spdlog::spdlog gtest gtest_main)
