@@ -273,25 +273,26 @@ TEST(FPTest, GetCachedPower) {
 
 TEST(FPTest, GetRoundDirection) {
   using fmt::internal::get_round_direction;
-  EXPECT_EQ(fmt::internal::down, get_round_direction(100, 50, 0));
-  EXPECT_EQ(fmt::internal::up, get_round_direction(100, 51, 0));
-  EXPECT_EQ(fmt::internal::down, get_round_direction(100, 40, 10));
-  EXPECT_EQ(fmt::internal::up, get_round_direction(100, 60, 10));
-  for (int i = 41; i < 60; ++i)
-    EXPECT_EQ(fmt::internal::unknown, get_round_direction(100, i, 10));
+  using fmt::internal::round_direction;
+  EXPECT_EQ(round_direction::down, get_round_direction(100, 50, 0));
+  EXPECT_EQ(round_direction::up, get_round_direction(100, 51, 0));
+  EXPECT_EQ(round_direction::down, get_round_direction(100, 40, 10));
+  EXPECT_EQ(round_direction::up, get_round_direction(100, 60, 10));
+  for (size_t i = 41; i < 60; ++i)
+    EXPECT_EQ(round_direction::unknown, get_round_direction(100, i, 10));
   uint64_t max = max_value<uint64_t>();
   EXPECT_THROW(get_round_direction(100, 100, 0), assertion_failure);
   EXPECT_THROW(get_round_direction(100, 0, 100), assertion_failure);
   EXPECT_THROW(get_round_direction(100, 0, 50), assertion_failure);
   // Check that remainder + error doesn't overflow.
-  EXPECT_EQ(fmt::internal::up, get_round_direction(max, max - 1, 2));
+  EXPECT_EQ(round_direction::up, get_round_direction(max, max - 1, 2));
   // Check that 2 * (remainder + error) doesn't overflow.
-  EXPECT_EQ(fmt::internal::unknown,
+  EXPECT_EQ(round_direction::unknown,
             get_round_direction(max, max / 2 + 1, max / 2));
   // Check that remainder - error doesn't overflow.
-  EXPECT_EQ(fmt::internal::unknown, get_round_direction(100, 40, 41));
+  EXPECT_EQ(round_direction::unknown, get_round_direction(100, 40, 41));
   // Check that 2 * (remainder - error) doesn't overflow.
-  EXPECT_EQ(fmt::internal::up, get_round_direction(max, max - 1, 1));
+  EXPECT_EQ(round_direction::up, get_round_direction(max, max - 1, 1));
 }
 
 TEST(FPTest, FixedHandler) {
@@ -328,14 +329,14 @@ template <typename T> struct value_extractor {
     throw std::runtime_error(fmt::format("invalid type {}", typeid(U).name()));
   }
 
-#ifdef __apple_build_version__
+#if FMT_USE_INT128
   // Apple Clang does not define typeid for __int128_t and __uint128_t.
-  FMT_NORETURN T operator()(__int128_t) {
-    throw std::runtime_error(fmt::format("invalid type {}", "__int128_t"));
+  FMT_NORETURN T operator()(fmt::internal::int128_t) {
+    throw std::runtime_error("invalid type __int128_t");
   }
 
-  FMT_NORETURN T operator()(__uint128_t) {
-    throw std::runtime_error(fmt::format("invalid type {}", "__uint128_t"));
+  FMT_NORETURN T operator()(fmt::internal::uint128_t) {
+    throw std::runtime_error("invalid type __uint128_t");
   }
 #endif
 };
@@ -426,7 +427,11 @@ TEST(FormatTest, FormatErrorCode) {
 }
 
 TEST(FormatTest, CountCodePoints) {
-  EXPECT_EQ(4, fmt::internal::count_code_points(fmt::u8string_view("ёжик")));
+#ifndef __cpp_char8_t
+  using fmt::char8_t;
+#endif
+  EXPECT_EQ(4, fmt::internal::count_code_points(
+    fmt::basic_string_view<char8_t>(reinterpret_cast<const char8_t*>("ёжик"))));
 }
 
 // Tests fmt::internal::count_digits for integer type Int.
@@ -447,8 +452,8 @@ TEST(UtilTest, CountDigits) {
 TEST(UtilTest, WriteUIntPtr) {
   fmt::memory_buffer buf;
   fmt::internal::writer writer(buf);
-  writer.write_pointer(fmt::internal::fallback_uintptr(
-                           reinterpret_cast<void*>(0xface)),
-                       nullptr);
+  writer.write_pointer(
+      fmt::internal::fallback_uintptr(reinterpret_cast<void*>(0xface)),
+      nullptr);
   EXPECT_EQ("0xface", to_string(buf));
 }

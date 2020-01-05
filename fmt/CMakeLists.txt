@@ -42,6 +42,7 @@ option(FMT_DOC "Generate the doc target." ${MASTER_PROJECT})
 option(FMT_INSTALL "Generate the install target." ${MASTER_PROJECT})
 option(FMT_TEST "Generate the test target." ${MASTER_PROJECT})
 option(FMT_FUZZ "Generate the fuzz target." OFF)
+option(FMT_CUDA_TEST "Generate the cuda-test target." OFF)
 
 project(FMT CXX)
 
@@ -150,8 +151,8 @@ endfunction()
 
 # Define the fmt library, its includes and the needed defines.
 add_headers(FMT_HEADERS chrono.h color.h compile.h core.h format.h format-inl.h
-                        locale.h ostream.h posix.h printf.h ranges.h)
-set(FMT_SOURCES src/format.cc src/posix.cc)
+                        locale.h os.h ostream.h posix.h printf.h ranges.h)
+set(FMT_SOURCES src/format.cc src/os.cc)
 
 add_library(fmt ${FMT_SOURCES} ${FMT_HEADERS} README.rst ChangeLog.rst)
 add_library(fmt::fmt ALIAS fmt)
