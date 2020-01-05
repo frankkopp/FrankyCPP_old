@@ -258,11 +258,11 @@ SearchResult Search::iterativeDeepening(Position &position) {
   if (!MoveGenerator::hasLegalMove(position)) {
     if (position.hasCheck()) {
       searchResult.bestMove = MOVE_NONE;
-      setValue(searchResult.bestMove, -VALUE_CHECKMATE);
+      searchResult.bestMoveValue = -VALUE_CHECKMATE;
     }
     else {
       searchResult.bestMove = MOVE_NONE;
-      setValue(searchResult.bestMove, VALUE_DRAW);
+      searchResult.bestMoveValue = VALUE_DRAW;
     }
     return searchResult;
   }
@@ -350,6 +350,7 @@ SearchResult Search::iterativeDeepening(Position &position) {
 
   // update searchResult here
   searchResult.bestMove = pv[PLY_ROOT].empty() ? MOVE_NONE : pv[PLY_ROOT].at(0);
+  searchResult.bestMoveValue = pv[PLY_ROOT].empty() ? VALUE_NONE : valueOf(pv[PLY_ROOT].at(0));
   searchResult.ponderMove = pv[PLY_ROOT].size() > 1 ? pv[PLY_ROOT].at(1) : MOVE_NONE;
   searchResult.depth = searchStats.currentSearchDepth;
   searchResult.extraDepth = searchStats.currentExtraSearchDepth;
