@@ -23,8 +23,8 @@
  *
  */
 
-#ifndef FRANKYCPP_SEARCHCONFIG_H
-#define FRANKYCPP_SEARCHCONFIG_H
+#ifndef FRANKYCPP_ENGINECONFIG_H
+#define FRANKYCPP_ENGINECONFIG_H
 
 namespace EngineConfig {
 
@@ -33,4 +33,4 @@ namespace EngineConfig {
 
 };
 
-#endif //FRANKYCPP_SEARCHCONFIG_H
+#endif //FRANKYCPP_ENGINECONFIG_H

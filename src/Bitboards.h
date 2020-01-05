@@ -358,7 +358,7 @@ namespace Bitboards {
     return s;
   }
 
-}
+} // namespace Bitboards
 
 //// Operators for testing of Bitboards and Squares
 
