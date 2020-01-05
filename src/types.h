@@ -664,17 +664,15 @@ inline std::string printBitString(uint64_t b) {
   return s;
 }
 
-struct myLocale : std::numpunct<char> {
+struct deLocaleDecimals : std::numpunct<char> {
   char do_decimal_point() const override { return ','; }
-
   char do_thousands_sep() const override { return '.'; }
-
   std::string do_grouping() const override { return "\03"; }
 };
 
-const std::locale digitLocale(std::cout.getloc(), new myLocale);
+const std::locale deLocale(std::locale("de_DE.UTF-8"), new deLocaleDecimals);
 
 #define println(s) std::cout << (s) << std::endl
-#define fprintln(...) std::cout << fmt::format(digitLocale, __VA_ARGS__) << std::endl
+#define fprintln(...) std::cout << fmt::format(deLocale, __VA_ARGS__) << std::endl
 
 #endif //FRANKYCPP_TYPES_H

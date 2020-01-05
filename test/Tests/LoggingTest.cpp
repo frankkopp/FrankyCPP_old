@@ -23,10 +23,9 @@
  *
  */
 
-
 #include <gtest/gtest.h>
-#include "../../src/Logging.h"
-#include "../../src/types.h"
+#include "Logging.h"
+#include "types.h"
 
 using testing::Eq;
 
@@ -38,6 +37,7 @@ public:
     INIT::init();
     NEWLINE;
   }
+
   std::shared_ptr<spdlog::logger> TEST_LOG = spdlog::get("Test_Logger");
   std::shared_ptr<spdlog::logger> MAIN_LOG = spdlog::get("Main_Logger");
   std::shared_ptr<spdlog::logger> SEARCH_LOG = spdlog::get("Search_Logger");
@@ -46,8 +46,21 @@ public:
 protected:
   void SetUp() override {
   }
+
   void TearDown() override {}
 };
+
+TEST_F(LoggingTest, decimal) {
+  auto s = fmt::format(deLocale, "{:n}", 1234567890);
+  std::cout << "Direct cout  : " << s << std::endl;
+  fprintln("Macro with ln: {:n}", 1234567890);
+  TEST_LOG->info("INFO {:n}", 123456789);
+  ASSERT_EQ("1.234.567.890", s);
+  s = fmt::format("{:n}", 1234567890);
+  std::cout << "Direct cout  : " << s << std::endl;
+  TEST_LOG->info("INFO {:n}", 123456789);
+  ASSERT_EQ("1.234.567.890", s);
+}
 
 TEST_F(LoggingTest, basic) {
   // Logger test
@@ -63,8 +76,8 @@ TEST_F(LoggingTest, basic) {
   TEST_LOG->info("INFO {}", 123456789);
   TEST_LOG->info("INFO {:d}", 123456789);
   TEST_LOG->info("INFO {:n}", 123456789);
-  TEST_LOG->info("INFO {:.5n}", double(123456789.12345));  
-  
+  TEST_LOG->info("INFO {:.5n}", double(123456789.12345));
+
   // Logger test
   MAIN_LOG->info("MAIN LOGGER TESTS:");
   MAIN_LOG->critical("CRITICAL");
@@ -94,7 +107,7 @@ TEST_F(LoggingTest, basic) {
   ENGINE_LOG->info("INFO {:d}", 123456789);
   ENGINE_LOG->info("INFO {:n}", 123456789);
   ENGINE_LOG->info("INFO {:.5n}", double(123456789.12345));
-  
+
   // Logger test
   SEARCH_LOG->info("SEARCH LOGGER TESTS:");
   SEARCH_LOG->critical("CRITICAL");
@@ -125,5 +138,5 @@ TEST_F(LoggingTest, basic) {
   UCI_LOG->info("INFO {:n}", 123456789);
   UCI_LOG->info("INFO {:.5n}", double(123456789.12345));
 
- fmt::print("TEST {:n}", 1234567891234ULL);
+  fmt::print("TEST {:n}", 1234567891234ULL);
 }

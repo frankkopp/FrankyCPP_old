@@ -24,13 +24,13 @@
  */
 
 #include <iostream>
+#include "types.h"
 #include "Logging.h"
 
 namespace LOGGING {
   void init() {
-
     try {
-      std::locale::global(std::locale("de_DE.UTF-8"));
+      std::locale::global(deLocale);
     }
     catch (...) {
       std::cerr << "failed to set locale" << std::endl;

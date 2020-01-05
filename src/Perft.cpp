@@ -48,8 +48,8 @@ void Perft::perft(int maxDepth, bool onDemand) {
   Position position(fen);
   MoveGenerator mg[PLY_MAX];
   std::ostringstream os;
-  std::cout.imbue(digitLocale);
-  os.imbue(digitLocale);
+  std::cout.imbue(deLocale);
+  os.imbue(deLocale);
   os << std::setprecision(9);
   
   os << "Testing at depth " << maxDepth << std::endl;
@@ -88,8 +88,8 @@ void Perft::perft_divide(int maxDepth, bool onDemand) {
   Position position(fen);
   MoveGenerator mg[PLY_MAX];
   std::ostringstream os;
-  std::cout.imbue(digitLocale);
-  os.imbue(digitLocale);
+  std::cout.imbue(deLocale);
+  os.imbue(deLocale);
   os << std::setprecision(9);
   
   os << "Testing at depth " << maxDepth << std::endl;

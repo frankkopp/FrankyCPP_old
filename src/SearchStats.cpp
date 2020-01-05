@@ -33,7 +33,7 @@ std::ostream &operator<<(std::ostream &os, const SearchStats &stats) {
 
 std::string SearchStats::str() const {
   std::stringstream os;
-  os.imbue(digitLocale);
+  os.imbue(deLocale);
   os
     << "nodesVisited: " << nodesVisited
     << " tt_Hits: " << tt_Hits

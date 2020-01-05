@@ -29,12 +29,6 @@
 
 using testing::Eq;
 
-TEST(GlobalsTest, formatter) {
-  auto s = fmt::format(digitLocale, "{:n}", 1234567);
-  std::cout << std::endl << s << std::endl;
-  fprintln("big number {:n}", 1234567890);
-}
-
 TEST(GlobalsTest, colors) {
   ASSERT_EQ(WHITE, ~BLACK);
   ASSERT_EQ(BLACK, ~WHITE);

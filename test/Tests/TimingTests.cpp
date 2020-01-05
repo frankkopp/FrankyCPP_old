@@ -163,8 +163,8 @@ void
 TimingTests::testTiming(ostringstream &os, int rounds, int iterations, int repetitions,
                         vector<function<void(void)>> tests) {
 
-  cout.imbue(digitLocale);
-  os.imbue(digitLocale);
+  cout.imbue(deLocale);
+  os.imbue(deLocale);
   os << setprecision(9);
 
   os << endl;
