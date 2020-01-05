@@ -87,9 +87,7 @@ inline std::size_t TT::getHash(Key key) const {
   return key & hashKeyMask;
 }
 
-void TT::put(Key key, Depth depth, Move move, Value value, EntryType type, bool mateThreat,
-             bool forced) {
-
+void TT::put(Key key, Depth depth, Move move, Value value, EntryType type, bool mateThreat, bool forced) {
   assert (value > VALUE_NONE);
 
   // if the size of the TT = 0 we
@@ -138,8 +136,8 @@ void TT::put(Key key, Depth depth, Move move, Value value, EntryType type, bool 
 }
 
 TT::Result
-TT::probe(const Key &key, const Depth &depth, const Value &alpha, const Value &beta, Value &ttValue,
-          Move &ttMove, bool isPVNode) {
+TT::probe(const Key &key, const Depth &depth, const Value &alpha, const Value &beta,
+          const bool isPVNode, Value &ttValue, Move &ttMove, bool &mateThreat) {
   numberOfProbes++;
   Entry* ttEntryPtr = getEntryPtr(key);
   // result is a logical TT result considering node type, alpha and beta bounds
@@ -148,8 +146,8 @@ TT::probe(const Key &key, const Depth &depth, const Value &alpha, const Value &b
     ttEntryPtr->age = std::max(0, ttEntryPtr->age - 1);
     // get best move independent from tt entry depth or type
     ttMove = ttEntryPtr->move;
-    // TODO: Implement Mate Threat
-    // mateThreat[ply] = tt.hasMateThreat(ttEntry);
+    // mate threats are always valid
+    mateThreat = ttEntryPtr->mateThreat;
     // use value only if tt depth was equal or deeper
     if (ttEntryPtr->depth >= depth) {
       ttValue = ttEntryPtr->value;

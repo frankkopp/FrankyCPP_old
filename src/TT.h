@@ -200,8 +200,8 @@ public:
    * @return A result of the probe with value and move from the TT in case of hit.
    */
   TT::Result
-  probe(const Key &key, const Depth &depth, const Value &alpha, const Value &beta, Value &ttValue,
-        Move &ttMove, bool isPVNode);
+  probe(const Key &key, const Depth &depth, const Value &alpha, const Value &beta,
+        const bool isPVNode, Value &ttValue, Move &ttMove, bool &mateThreat);
 
   /** Age all entries by 1 */
   void ageEntries();

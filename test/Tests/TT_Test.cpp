@@ -138,7 +138,7 @@ TEST_F(TT_Test, put) {
 //  const Key key8 = key7 + collisionDistance; // same bucket - collision
 
   // new entry in empty bucket at pos 0
-  tt.put(key1, Depth(6), createMove("e2e4"), Value(101), TT::TYPE_EXACT, false);
+  tt.put(key1, Depth(6), createMove("e2e4"), Value(101), TT::TYPE_EXACT, true);
   ASSERT_EQ(1, tt.getNumberOfPuts());
   ASSERT_EQ(1, tt.getNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfUpdates());
@@ -146,6 +146,7 @@ TEST_F(TT_Test, put) {
   ASSERT_EQ(0, tt.getNumberOfOverwrites());
   ASSERT_EQ(tt.getEntry(key1).key, key1);
   ASSERT_EQ(tt.getEntry(key1).value, Value(101));
+  ASSERT_TRUE(tt.getEntry(key1).mateThreat);
 
   // new entry
   tt.put(key2, Depth(5), createMove("e2e4"), Value(102), TT::TYPE_EXACT, false);
@@ -160,7 +161,7 @@ TEST_F(TT_Test, put) {
 
 
   // new entry (collision)
-  tt.put(key3, Depth(6), createMove("e2e4"), Value(103), TT::TYPE_EXACT, false);
+  tt.put(key3, Depth(6), createMove("e2e4"), Value(103), TT::TYPE_EXACT, true);
   ASSERT_EQ(3, tt.getNumberOfPuts());
   ASSERT_EQ(2, tt.getNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfUpdates());
@@ -168,7 +169,8 @@ TEST_F(TT_Test, put) {
   ASSERT_EQ(1, tt.getNumberOfOverwrites());
   ASSERT_EQ(tt.getEntry(key3).key, key3);
   ASSERT_EQ(tt.getEntry(key3).value, Value(103));
-  
+  ASSERT_TRUE(tt.getEntry(key3).mateThreat);
+
   //
 //  // new entry in bucket at pos 2 (collision)
 //  tt.put(key4, Value(104), TT::TYPE_EXACT, Depth(3), createMove("e2e4"), false);
@@ -272,45 +274,48 @@ TEST_F(TT_Test, probe) {
   const Key key2 = key1 + 13; // different bucket
   const Key key3 = key1 + 17; // same bucket - collision
 
-  tt.put(key1, Depth(6), createMove("e2e4"), Value(101), TT::TYPE_EXACT, false);
+  tt.put(key1, Depth(6), createMove("e2e4"), Value(101), TT::TYPE_EXACT, true);
   tt.put(key2, Depth(5), createMove("e2e4"), Value(102), TT::TYPE_ALPHA, false);
   tt.put(key3, Depth(4), createMove("e2e4"), Value(103), TT::TYPE_BETA, false);
 
   Value ttValue = VALUE_NONE;
   Move ttMove = MOVE_NONE;
+  bool ttMateThreat = false;
 
   TT::Entry beforeProbe = tt.getEntry(key1);
-  TT::Result r = tt.probe(key1, Depth(5), Value(-1000), Value(1000), ttValue, ttMove, false);
+  TT::Result r = tt.probe(key1, Depth(5), Value(-1000), Value(1000), false, ttValue, ttMove, ttMateThreat);
   const TT::Entry afterProbe = tt.getEntry(key1);
   ASSERT_EQ(beforeProbe.age - 1, afterProbe.age); // has entry aged?
   ASSERT_EQ(TT::TT_HIT, r);
+  ASSERT_TRUE(ttMateThreat);
 
   // TT entry has lower depth
-  r = tt.probe(key1, Depth(7), Value(-1000), Value(1000), ttValue, ttMove, false);
+  r = tt.probe(key1, Depth(7), Value(-1000), Value(1000), false, ttValue, ttMove, ttMateThreat);
   ASSERT_EQ(TT::TT_MISS, r);
 
   // TT entry was alpha within of bounds - MISS
-  r = tt.probe(key2, Depth(4), Value(-1000), Value(1000), ttValue, ttMove, false);
+  r = tt.probe(key2, Depth(4), Value(-1000), Value(1000), false, ttValue, ttMove, ttMateThreat);
   ASSERT_EQ(TT::TT_MISS, r);
+  ASSERT_FALSE(ttMateThreat);
 
   // TT entry was alpha and value < alpha
-  r = tt.probe(key2, Depth(4), Value(103), Value(1000), ttValue, ttMove, false);
+  r = tt.probe(key2, Depth(4), Value(103), Value(1000), false, ttValue, ttMove, ttMateThreat);
   ASSERT_EQ(TT::TT_HIT, r);
 
   // TT entry was alpha and value < alpha but PV
-  r = tt.probe(key2, Depth(4), Value(103), Value(1000), ttValue, ttMove, true);
+  r = tt.probe(key2, Depth(4), Value(103), Value(1000), true, ttValue, ttMove, ttMateThreat);
   ASSERT_EQ(TT::TT_MISS, r);
 
   // TT entry was beta within of bounds - MISS
-  r = tt.probe(key3, Depth(4), Value(-1000), Value(1000), ttValue, ttMove, false);
+  r = tt.probe(key3, Depth(4), Value(-1000), Value(1000), false, ttValue, ttMove, ttMateThreat);
   ASSERT_EQ(TT::TT_MISS, r);
 
   // TT entry was beta and value > beta - HIT
-  r = tt.probe(key3, Depth(4), Value(-1000), Value(102), ttValue, ttMove, false);
+  r = tt.probe(key3, Depth(4), Value(-1000), Value(102), false, ttValue, ttMove, ttMateThreat);
   ASSERT_EQ(TT::TT_HIT, r);
 
   // TT entry was beta and value > beta but PV - MISS
-  r = tt.probe(key3, Depth(4), Value(-1000), Value(102), ttValue, ttMove, true);
+  r = tt.probe(key3, Depth(4), Value(-1000), Value(102), true, ttValue, ttMove, ttMateThreat);
   ASSERT_EQ(TT::TT_MISS, r);
 
 }
@@ -330,6 +335,7 @@ TEST_F(TT_Test, tt_perft) {
 
   Value ttValue = VALUE_NONE;
   Move ttMove = MOVE_NONE;
+  bool ttMateThreat = false;
 
   fprintln("Start perft test for TT...");
   fprintln("TT Stats: {:s}", tt.str());
@@ -355,9 +361,10 @@ TEST_F(TT_Test, tt_perft) {
                static_cast<Depth>(randomDepth(rg1)),
                static_cast<Value>(randomAlpha(rg1)),
                static_cast<Value>(randomBeta(rg1)),
+               false,
                ttValue,
                ttMove,
-               false);
+               ttMateThreat);
     }
     tt.ageEntries();
   }
