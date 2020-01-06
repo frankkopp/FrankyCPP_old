@@ -27,14 +27,18 @@
 using testing::Eq;
 
 #include <iostream>
-
+#include "types.h"
 #include <boost/timer/timer.hpp>
 
 TEST(BOOST, cpu_timer) {
 
+  std::cout.imbue(deLocale);
+  std::cout.imbue(deLocale);
+
   uint64_t i = 0;
   const uint64_t iterations = 10;
-  const int repetitions = 1'000'000;
+  const int repetitions = 10;
+  uint64_t sum = 0;
 
   boost::timer::cpu_timer timer;
   timer.stop();
@@ -42,16 +46,33 @@ TEST(BOOST, cpu_timer) {
   std::cout << std::endl;
   std::cout << timer.format() << std::endl;
 
+
   while (i++ < iterations) {
     for (int j = 0; j < repetitions; ++j) {
+      uint64_t n = 1'000, first = 0, second = 1, next = 0, c = 0;
       timer.resume();
-      if (!((i * j) % 10'000)) i=i;
+      auto start = std::chrono::high_resolution_clock::now();
+      // Fibunacci numbers
+      for (c = 0; c < n; c++) {
+        if (c <= 1) {
+          next = c;
+        }
+        else {
+          next = first + second;
+          first = second;
+          second = next;
+        }
+        std::cout << next << " ";
+      }
       timer.stop();
+      auto finish = std::chrono::high_resolution_clock::now();
+      sum += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
+      std::cout << std::endl;
     }
   }
 
-  std::cout << std::endl;
-  std::cout << timer.format() << std::endl;
+  std::cout << timer.format();
+  std::cout << " " << std::setprecision(7) << static_cast<double>(sum) / 1e9 << std::endl;
 
 }
 
