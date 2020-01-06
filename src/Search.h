@@ -149,18 +149,6 @@ public:
     Do_Null_Move = true
   };
 
-  enum EntryType : u_int8_t {
-    TYPE_NONE = 0,
-    // the node for the value was fully calculated and is exact
-      TYPE_EXACT = 1,
-    // the node for the value has NOT found a value > alpha so alpha is
-    // upper bound (value could be worse)
-      TYPE_ALPHA = 2,
-    // the node for the value has found a refutation (value > beta( and has
-    // been cut off. Value is a lower bound (could be better).
-      TYPE_BETA = 3,
-  };
-
   ////////////////////////////////////////////////
   ///// CONSTRUCTORS
 
@@ -244,7 +232,7 @@ private:
   */
   void getPVLine(Position &position, MoveList &pvRoot);
 
-  void storeTT(Position &position, Value value, EntryType ttType, Depth depth, Ply ply,
+  void storeTT(Position &position, Value value, Value_Type ttType, Depth depth, Ply ply,
                Move bestMove, bool mateThreat);
 
   /**

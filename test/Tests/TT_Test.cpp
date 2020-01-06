@@ -138,7 +138,7 @@ TEST_F(TT_Test, put) {
 //  const Key key8 = key7 + collisionDistance; // same bucket - collision
 
   // new entry in empty bucket at pos 0
-  tt.put(key1, Depth(6), createMove("e2e4"), Value(101), Search::TYPE_EXACT, true);
+  tt.put(key1, Depth(6), createMove("e2e4"), Value(101), TYPE_EXACT, true);
   ASSERT_EQ(1, tt.getNumberOfPuts());
   ASSERT_EQ(1, tt.getNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfUpdates());
@@ -149,7 +149,7 @@ TEST_F(TT_Test, put) {
   ASSERT_TRUE(tt.getEntry(key1).mateThreat);
 
   // new entry
-  tt.put(key2, Depth(5), createMove("e2e4"), Value(102), Search::TYPE_EXACT, false);
+  tt.put(key2, Depth(5), createMove("e2e4"), Value(102), TYPE_EXACT, false);
   ASSERT_EQ(2, tt.getNumberOfPuts());
   ASSERT_EQ(2, tt.getNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfUpdates());
@@ -161,7 +161,7 @@ TEST_F(TT_Test, put) {
 
 
   // new entry (collision)
-  tt.put(key3, Depth(6), createMove("e2e4"), Value(103), Search::TYPE_EXACT, true);
+  tt.put(key3, Depth(6), createMove("e2e4"), Value(103), TYPE_EXACT, true);
   ASSERT_EQ(3, tt.getNumberOfPuts());
   ASSERT_EQ(2, tt.getNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfUpdates());
@@ -244,17 +244,17 @@ TEST_F(TT_Test, get) {
   const Key key4 = key1 + 17;
 
   // new entry in empty slot
-  tt.put(key1, Depth(6), createMove("e2e4"), Value(101), Search::TYPE_EXACT, false);
+  tt.put(key1, Depth(6), createMove("e2e4"), Value(101), TYPE_EXACT, false);
   TT::Entry e1 = tt.getEntry(key1);
   ASSERT_EQ(101, e1.value);
 
   // new entry in empty slote
-  tt.put(key2, Depth(5), createMove("e2e4"), Value(102), Search::TYPE_EXACT, false);
+  tt.put(key2, Depth(5), createMove("e2e4"), Value(102), TYPE_EXACT, false);
   TT::Entry e2 = tt.getEntry(key2);
   ASSERT_EQ(102, e2.value);
 
   // new entry in occupoied slot
-  tt.put(key3, Depth(7), createMove("e2e4"), Value(103), Search::TYPE_EXACT, false);
+  tt.put(key3, Depth(7), createMove("e2e4"), Value(103), TYPE_EXACT, false);
   TT::Entry e3 = tt.getEntry(key3);
   ASSERT_EQ(103, e3.value);
 
@@ -274,9 +274,9 @@ TEST_F(TT_Test, probe) {
   const Key key2 = key1 + 13; // different bucket
   const Key key3 = key1 + 17; // same bucket - collision
 
-  tt.put(key1, Depth(6), createMove("e2e4"), Value(101), Search::TYPE_EXACT, true);
-  tt.put(key2, Depth(5), createMove("e2e4"), Value(102), Search::TYPE_ALPHA, false);
-  tt.put(key3, Depth(4), createMove("e2e4"), Value(103), Search::TYPE_BETA, false);
+  tt.put(key1, Depth(6), createMove("e2e4"), Value(101), TYPE_EXACT, true);
+  tt.put(key2, Depth(5), createMove("e2e4"), Value(102), TYPE_ALPHA, false);
+  tt.put(key3, Depth(4), createMove("e2e4"), Value(103), TYPE_BETA, false);
 
   Value ttValue = VALUE_NONE;
   Move ttMove = MOVE_NONE;
@@ -352,7 +352,7 @@ TEST_F(TT_Test, tt_perft) {
         static_cast<Depth>(randomDepth(rg1)),
         createMove("e2e4"),
         static_cast<Value>(randomValue(rg1)),
-        static_cast<Search::EntryType>(randomType(rg1)),
+        static_cast<Value_Type>(randomType(rg1)),
         false, true);
     }
     // probes

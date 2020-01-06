@@ -280,6 +280,21 @@ inline std::string printValue(const Value value) {
 }
 
 ///////////////////////////////////
+//// VALUE TYPE
+enum Value_Type : u_int8_t {
+  TYPE_NONE = 0,
+  // the node for the value was fully calculated and is exact
+    TYPE_EXACT = 1,
+  // the node for the value has NOT found a value > alpha so alpha is
+  // upper bound (value could be worse)
+    TYPE_ALPHA = 2,
+  // the node for the value has found a refutation (value > beta( and has
+  // been cut off. Value is a lower bound (could be better).
+    TYPE_BETA = 3,
+};
+
+
+///////////////////////////////////
 //// MOVE
 enum Move : uint32_t {
   /** A move is basically a 32-bit int */

@@ -71,7 +71,7 @@ void TT::clear() {
         _data[i].move = MOVE_NONE;
         _data[i].depth = DEPTH_NONE;
         _data[i].value = VALUE_NONE;
-        _data[i].type = Search::TYPE_NONE;
+        _data[i].type = TYPE_NONE;
         _data[i].age = 1;
         _data[i].mateThreat = false;
       }
@@ -88,7 +88,7 @@ inline std::size_t TT::getHash(Key key) const {
   return key & hashKeyMask;
 }
 
-void TT::put(Key key, Depth depth, Move move, Value value, Search::EntryType type, bool mateThreat,
+void TT::put(Key key, Depth depth, Move move, Value value, Value_Type type, bool mateThreat,
              bool forced) {
   assert (value > VALUE_NONE);
 
@@ -137,13 +137,14 @@ void TT::put(Key key, Depth depth, Move move, Value value, Search::EntryType typ
   assert (numberOfPuts == (numberOfEntries + numberOfCollisions + numberOfUpdates));
 }
 
-template<Search::Node_Type NT>
+template<bool NT>
 TT::Result
 TT::probe(const Key &key, const Depth &depth, const Value &alpha, const Value &beta,
           Value &ttValue, Move &ttMove, bool &mateThreat) {
 
   numberOfProbes++;
-  Entry* ttEntryPtr = getEntryPtr(key);
+  //Entry* ttEntryPtr = getEntryPtr(key);
+  Entry* ttEntryPtr = &_data[(key & hashKeyMask)];
   // result is a logical TT result considering node type, alpha and beta bounds
   if (ttEntryPtr->key == key) { // HIT
     numberOfHits++; // entries with identical keys found
@@ -159,18 +160,16 @@ TT::probe(const Key &key, const Depth &depth, const Value &alpha, const Value &b
       // In a PV node use the value only for a cut off if it is exact.
       // In non PV nodes we use it only if it is exact or outside our
       // current bounds.
-      const Search::EntryType entryType = ttEntryPtr->type;
-      switch (NT) {
-        case Search::PV:
-          if (entryType == Search::TYPE_EXACT) return TT_HIT;
-          break;
-        case Search::NonPV:
-          if (entryType == Search::TYPE_EXACT ||
-              (entryType == Search::TYPE_ALPHA && ttValue <= alpha) ||
-              (entryType == Search::TYPE_BETA && ttValue >= beta)) {
+      const Value_Type entryType = ttEntryPtr->type;
+      if (NT) {
+        if (entryType == TYPE_EXACT) return TT_HIT;
+      }
+      else {
+          if (entryType == TYPE_EXACT ||
+              (entryType == TYPE_ALPHA && ttValue <= alpha) ||
+              (entryType == TYPE_BETA && ttValue >= beta)) {
             return TT_HIT;
           }
-          break;
       }
     }
   }
@@ -188,7 +187,7 @@ TT::Entry TT::getEntry(Key key) const {
 
 inline void
 TT::writeEntry(Entry* entryPtr, Key key, const Depth depth, const Move move, const Value value,
-               const Search::EntryType type, bool mateThreat, uint8_t age) {
+               const Value_Type type, bool mateThreat, uint8_t age) {
   entryPtr->key = key;
   entryPtr->move = move;
   entryPtr->depth = depth;
@@ -235,8 +234,8 @@ std::ostream &operator<<(std::ostream &os, const TT::Entry &entry) {
 
 // explicit template instantiation
 template TT::Result
-TT::probe<Search::PV>(const Key &key, const Depth &depth, const Value &alpha, const Value &beta,
+TT::probe<true>(const Key &key, const Depth &depth, const Value &alpha, const Value &beta,
                       Value &ttValue, Move &ttMove, bool &mateThreat);
 template TT::Result
-TT::probe<Search::NonPV>(const Key &key, const Depth &depth, const Value &alpha, const Value &beta,
+TT::probe<false>(const Key &key, const Depth &depth, const Value &alpha, const Value &beta,
                          Value &ttValue, Move &ttMove, bool &mateThreat);

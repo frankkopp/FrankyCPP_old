@@ -440,7 +440,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
   Value ttValue = VALUE_NONE;
   Move ttStoreMove = MOVE_NONE;
   Move ttMove = MOVE_NONE;
-  Search::EntryType ttType = Search::TYPE_ALPHA;
+  Value_Type ttType = TYPE_ALPHA;
   moveGenerators[ply].resetOnDemand();
   if (ST != ROOT) {
     pv[ply].clear();
@@ -453,11 +453,9 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
   // TT Lookup
   if (SearchConfig::USE_TT
       && (SearchConfig::USE_TT_QSEARCH || ST != QUIESCENCE) && !PERFT) {
-
-    // probe the TT and set ttValue and ttMove in case of HIT
+    // probe the TT and set ttValue, ttMove and mateThreat
     TT::Result result =
-      tt->probe<NT>(position.getZobristKey(), depth, alpha, beta, ttValue, ttMove, mateThreat[ply]);
-
+      tt->probe<NT==PV>(position.getZobristKey(), depth, alpha, beta, ttValue, ttMove, mateThreat[ply]);
     /* TT PROBE
      * tt->probe has two results:
      * TT_HIT:
@@ -642,7 +640,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
     // fill the pv list and the TT
     search<ST, PV>(position, iidDepth, ply, alpha, beta, Do_Null_Move);
     // no we look in the pv list if we have a best move
-    tt->probe<PV>(position.getZobristKey(), depth, alpha, beta, ttValue, ttMove, mateThreat[ply]);
+    tt->probe<true>(position.getZobristKey(), depth, alpha, beta, ttValue, ttMove, mateThreat[ply]);
     //ttMove = pv[ply].empty() ? MOVE_NONE : pv[ply].at(0);
     //    fprintln("****IID SEARCH RESULT: pv={} pv[{}] = {}",
     //             printMoveVerbose(pv[ply].empty() ? MOVE_NONE : pv[ply].at(0)), ply,
@@ -743,6 +741,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
     // ************************************
     // Execute move
     position.doMove(move);
+    TT_PREFETCH
     searchStats.nodesVisited++;
     /* IDEA: (credit to Robert Hyatt) Instead of testing each move
         for legality we could simply go ahead and recurse into each node and
@@ -905,7 +904,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
     }
 
     // We should not have found a best move in an ALPHA node (all moves were worse than alpha)
-    if (ttType == Search::TYPE_ALPHA) {
+    if (ttType == TYPE_ALPHA) {
       assert (ttStoreMove == MOVE_NONE);
       assert (bestNodeValue <= alpha);
     }
@@ -1047,7 +1046,7 @@ bool Search::goodCapture(Position &position, Move move) {
 }
 
 inline void
-Search::storeTT(Position &position, Value value, Search::EntryType ttType, Depth depth, Ply ply,
+Search::storeTT(Position &position, Value value, Value_Type ttType, Depth depth, Ply ply,
                 Move bestMove, bool _mateThreat) {
 
   if (!SearchConfig::USE_TT || searchLimits.isPerft() || stopSearchFlag) return;

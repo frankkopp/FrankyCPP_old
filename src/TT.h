@@ -26,11 +26,22 @@
 #include <ostream>
 #include "Logging.h"
 #include "types.h"
-#include "Search.h"
 #include "gtest/gtest_prod.h"
 
 #ifndef FRANKYCPP_TT_H
 #define FRANKYCPP_TT_H
+
+// pre-fetching of TT entries into CPU caches
+#ifdef __GNUC__
+#define TT_ENABLE_PREFETCH
+#endif
+
+#ifdef TT_ENABLE_PREFETCH
+#include <emmintrin.h>
+#define TT_PREFETCH tt->prefetch(position.getZobristKey());
+#else
+#define TT_PREFETCH void(0);
+#endif
 
 /**
  * Simple TT implementation using heap memory and simple hash for entries.
@@ -65,7 +76,7 @@ public:
     Value value = VALUE_NONE; // 8 bit signed
     Depth depth:7; // 0-127
     uint8_t age:3; // 0-7
-    Search::EntryType type:2; // 4 values
+    Value_Type type:2; // 4 values
     bool mateThreat:1; // 1-bit bool
     friend std::ostream &operator<<(std::ostream &os, const Entry &entry);
   };
@@ -134,7 +145,7 @@ public:
     * @param mateThreat node had a mate threat in the ply
     */
   void
-  put(Key key, Depth depth, Move move, Value value, Search::EntryType type, bool mateThreat,
+  put(Key key, Depth depth, Move move, Value value, Value_Type type, bool mateThreat,
       bool forced);
 
   /**
@@ -146,7 +157,7 @@ public:
     * @param type EXACT, ALPHA or BETA
     * @param mateThreat node had a mate threat in the ply
     */
-  void put(Key key, Depth depth, Move move, Value value, Search::EntryType type, bool mateThreat) {
+  void put(Key key, Depth depth, Move move, Value value, Value_Type type, bool mateThreat) {
     put(key, depth, move, value, type, mateThreat, false);
   }
 
@@ -158,7 +169,7 @@ public:
     * @param value Value of the position between VALUE_MIN and VALUE_MAX
     * @param type EXACT, ALPHA or BETA
     */
-  void put(Key key, Depth depth, Value value, Search::EntryType type) {
+  void put(Key key, Depth depth, Value value, Value_Type type) {
     put(key, depth, MOVE_NONE, value, type, false);
   }
 
@@ -180,6 +191,7 @@ public:
    *
    * May write to ttValue and ttMove.
    *
+   * @tparam NT true for a PV node, false for NonPV
    * @param key Position key (usually Zobrist key)
    * @param depth 1-DEPTH_MAX (127)
    * @param alpha current alpha when probing
@@ -189,7 +201,7 @@ public:
    * @param isPVNode current node type when probing
    * @return A result of the probe with value and move from the TT in case of hit.
    */
-  template<Search::Node_Type NT>
+  template<bool NT>
   TT::Result
   probe(const Key &key, const Depth &depth, const Value &alpha, const Value &beta, Value &ttValue,
         Move &ttMove, bool &mateThreat);
@@ -217,7 +229,7 @@ private:
 
   static void
   writeEntry(Entry* entryPtr, Key key, const Depth depth, const Move move, const Value value,
-             const Search::EntryType type, bool mateThreat, uint8_t age);
+             const Value_Type type, bool mateThreat, uint8_t age);
 
   /* This retrieves a direct pointer to the entry of this node from cache */
   Entry* getEntryPtr(Key key) const;
@@ -276,15 +288,15 @@ public:
     TT::noOfThreads = threads;
   }
 
-  static inline std::string str(Search::EntryType type) {
+  static inline std::string str(Value_Type type) {
     switch (type) {
-      case Search::TYPE_NONE:
+      case TYPE_NONE:
         return "NONE";
-      case Search::TYPE_EXACT:
+      case TYPE_EXACT:
         return "EXACT";
-      case Search::TYPE_ALPHA:
+      case TYPE_ALPHA:
         return "ALPHA";
-      case Search::TYPE_BETA:
+      case TYPE_BETA:
         return "BETA";
     }
   }
@@ -294,6 +306,17 @@ public:
   FRIEND_TEST(TT_Test, get);
   FRIEND_TEST(TT_Test, probe);
 
+  // using prefetch improves probe lookup speed significantly
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-parameter"
+
+  inline void prefetch(const Key key) {
+#ifdef TT_ENABLE_PREFETCH
+    _mm_prefetch(&_data[(key & hashKeyMask)], _MM_HINT_T0);
+#endif
+  }
+
+#pragma clang diagnostic pop
 
 };
 
