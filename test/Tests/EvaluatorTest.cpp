@@ -24,9 +24,9 @@
  */
 
 #include <gtest/gtest.h>
-#include "../../src/Logging.h"
-#include "../../src/Evaluator.h"
-#include "../../src/Position.h"
+#include "Logging.h"
+#include "Evaluator.h"
+#include "Position.h"
 
 
 using testing::Eq;

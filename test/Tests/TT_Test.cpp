@@ -303,7 +303,7 @@ TEST_F(TT_Test, probe) {
   ASSERT_EQ(TT::TT_HIT, r);
 
   // TT entry was alpha and value < alpha but PV
-  r = tt.probe<Search::NonPV>(key2, Depth(4), Value(103), Value(1000), ttValue, ttMove, ttMateThreat);
+  r = tt.probe<Search::PV>(key2, Depth(4), Value(103), Value(1000), ttValue, ttMove, ttMateThreat);
   ASSERT_EQ(TT::TT_MISS, r);
 
   // TT entry was beta within of bounds - MISS
@@ -315,7 +315,7 @@ TEST_F(TT_Test, probe) {
   ASSERT_EQ(TT::TT_HIT, r);
 
   // TT entry was beta and value > beta but PV - MISS
-  r = tt.probe<Search::NonPV>(key3, Depth(4), Value(-1000), Value(102), ttValue, ttMove, ttMateThreat);
+  r = tt.probe<Search::PV>(key3, Depth(4), Value(-1000), Value(102), ttValue, ttMove, ttMateThreat);
   ASSERT_EQ(TT::TT_MISS, r);
 
 }

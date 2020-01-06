@@ -66,7 +66,9 @@ TEST_F(EngineTest, startSearch) {
     engine.stopSearch();
     engine.waitWhileSearching();
   }
-
+  SUCCEED();
 }
+
+
 
 

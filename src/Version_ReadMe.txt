@@ -8,6 +8,11 @@ v 0.x (plan)
         // Windows:  _MSC_VER
         // _BitScanForward64/_BitScanReverse64
         // https://docs.microsoft.com/en-us/cpp/intrinsics/bitscanreverse-bitscanreverse64?view=vs-2019
+    - IDEA: (credit to Robert Hyatt)
+        Instead of testing each move
+        for legality we could simply go ahead and recurse into each node and
+        if there is a king capture in one of the succeeding nodes we jump back
+        and dismiss this move.
 
 v 0.4 (plan)
 ================================================================================

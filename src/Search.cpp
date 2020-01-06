@@ -743,10 +743,6 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
     position.doMove(move);
     TT_PREFETCH
     searchStats.nodesVisited++;
-    /* IDEA: (credit to Robert Hyatt) Instead of testing each move
-        for legality we could simply go ahead and recurse into each node and
-        if there is a king capture in one of the succeeding nodes we jump back
-        and dismiss this move. */
     if (position.isLegalPosition()) {
       currentVariation.push_back(move);
       sendSearchUpdateToEngine();
@@ -915,7 +911,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
   // only quite moves
   if (!movesSearched && !stopSearchFlag) {
     searchStats.nonLeafPositionsEvaluated++;
-    assert (ttType == Search::TYPE_ALPHA);
+    assert (ttType == TYPE_ALPHA);
     TRACE(LOG, "{:>{}}Depth {} cv {} NO LEGAL MOVES", "", ply, ply, printMoveListUCI(currentVariation));
     if (position.hasCheck()) {
       /* If the position has check we have a mate even in

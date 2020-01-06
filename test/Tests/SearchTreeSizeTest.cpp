@@ -26,10 +26,10 @@
 #include <gtest/gtest.h>
 
 #include <utility>
-#include "../../src/Logging.h"
-#include "../../src/Search.h"
-#include "../../src/SearchConfig.h"
-#include "../../src/Engine.h"
+#include "Logging.h"
+#include "Search.h"
+#include "SearchConfig.h"
+#include "Engine.h"
 
 using testing::Eq;
 

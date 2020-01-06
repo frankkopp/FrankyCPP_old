@@ -26,11 +26,11 @@
 #include <gtest/gtest.h>
 #include <ostream>
 #include <string>
-#include "../../src/Logging.h"
-#include "../../src/Bitboards.h"
-#include "../../src/Perft.h"
-#include "../../src/Position.h"
-#include "../../src/MoveGenerator.h"
+#include "Logging.h"
+#include "Bitboards.h"
+#include "Perft.h"
+#include "Position.h"
+#include "MoveGenerator.h"
 
 using namespace std;
 using testing::Eq;

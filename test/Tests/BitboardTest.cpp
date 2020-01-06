@@ -24,9 +24,9 @@
  */
 
 #include <gtest/gtest.h>
-#include "../../src/Logging.h"
-#include "../../src/Bitboards.h"
-#include "../../src/Position.h"
+#include "Logging.h"
+#include "Bitboards.h"
+#include "Position.h"
 
 using namespace std;
 using namespace Bitboards;

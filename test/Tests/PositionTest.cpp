@@ -27,10 +27,10 @@
 #include <ostream>
 #include <string>
 
-#include "../../src/Logging.h"
-#include "../../src/types.h"
-#include "../../src/Position.h"
-#include "../../src/Bitboards.h"
+#include "Logging.h"
+#include "types.h"
+#include "Position.h"
+#include "Bitboards.h"
 
 using namespace std;
 using testing::Eq;

@@ -5,7 +5,7 @@
 #include <gtest/gtest.h>
 
 #include <thread>
-#include "../../src/Semaphore.h"
+#include "Semaphore.h"
 
 using testing::Eq;
 
