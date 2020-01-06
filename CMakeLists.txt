@@ -14,7 +14,7 @@ set(CMAKE_CXX_FLAGS "-m64 -Wpedantic -Wall -Wextra -Winline")
 #set(CMAKE_EXE_LINKER_FLAGS_RELEASE "<your flags here>")
 
 # Project name and version
-project(FrankyCPP VERSION 0.3)
+project(FrankyCPP VERSION 0.4)
 
 include_directories(
         ${PROJECT_SOURCE_DIR}/src
