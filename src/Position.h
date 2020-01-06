@@ -26,12 +26,10 @@
 #ifndef FRANKYCPP_POSITION_H
 #define FRANKYCPP_POSITION_H
 
-#include <cstdint>
-
-#include "../test/lib/googletest-master/googletest/include/gtest/gtest_prod.h"
-
+#include "gtest/gtest_prod.h"
 #include "types.h"
 #include "MoveGenerator.h"
+#include "Bitboards.h"
 
 // circle reference between Position and MoveGenerator - this make it possible
 class MoveGenerator;
@@ -129,6 +127,7 @@ class Position {
 
   // Material value will always be up to date
   int material[COLOR_LENGTH]{};
+  int materialNonPawn[COLOR_LENGTH]{};
 
   // Positional value will always be up to date
   int psqMidValue[COLOR_LENGTH]{};
@@ -344,6 +343,15 @@ public:
     return historyCounter > 0 ? moveHistory[historyCounter - 1] : MOVE_NONE;
   };
 
+  /**
+   * Determines if a move on this position is a capturing move
+   * @param move
+   * @return true if move captures (incl. en passant)
+   */
+  inline bool isCapturingMove(const Move &move) const {
+    return occupiedBB[~nextPlayer] & getToSquare(move) || typeOf(move) == ENPASSANT;
+  };
+
   ////////////////////////////////////////////////
   ///// GETTER / SETTER
   Piece getPiece(const Square square) const { return board[square]; }
@@ -365,6 +373,7 @@ public:
   Bitboard getOccupiedBBL45(const Color c) const { return occupiedBBL45[c]; }
 
   int getMaterial(const Color c) const { return material[c]; }
+  int getMaterialNonPawn(const Color c) const { return materialNonPawn[c]; }
   int getMidPosValue(const Color c) const { return psqMidValue[c]; }
   int getEndPosValue(const Color c) const { return psqEndValue[c]; }
   int getPosValue(const Color c) const {

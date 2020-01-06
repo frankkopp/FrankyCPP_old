@@ -3,10 +3,9 @@
 //
 
 #include <gtest/gtest.h>
-#include <gmock/gmock.h>
 
 #include <thread>
-#include "../../src/Semaphore.h"
+#include "Semaphore.h"
 
 using testing::Eq;
 

@@ -20,19 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
-// Uncomment if date/time logging is not needed and never appear in the log
-// pattern.
-// This will prevent spdlog from querying the clock on each log call.
-//
-// WARNING: If the log pattern contains any date/time while this flag is on, the
-// result is undefined.
-//          You must set new pattern(spdlog::set_pattern(..") without any
-//          date/time in it
-//
-// #define SPDLOG_NO_DATETIME
-///////////////////////////////////////////////////////////////////////////////
-
-///////////////////////////////////////////////////////////////////////////////
 // Uncomment if thread id logging is not needed (i.e. no %t in the log pattern).
 // This will prevent spdlog from querying the thread id on each log call.
 //
@@ -83,7 +70,9 @@
 // In this case spdlog will try to include <fmt/format.h> so set your -I flag
 // accordingly.
 //
-// #define SPDLOG_FMT_EXTERNAL
+#ifndef SPDLOG_FMT_EXTERNAL
+#define SPDLOG_FMT_EXTERNAL
+#endif
 ///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -121,10 +110,9 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 // Uncomment and set to compile time level with zero cost (default is INFO).
-// Macros like SPDLOG_DEBUG(..), SPDLOG_INFO(..)  will expand to empty statements
-// if not enabled
+// Macros like SPDLOG_DEBUG(..), SPDLOG_INFO(..)  will expand to empty statements if not enabled
 //
-// #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
+// #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_INFO
 ///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -133,5 +121,5 @@
 // __PRETTY_FUNCTION__ might be nicer in clang/gcc, and __FUNCTION__ in msvc.
 // Defaults to __FUNCTION__ (should work on all compilers) if not defined.
 //
-// #define SPDLOG_FUNCTION __PRETTY_FUNCTION__
+#define SPDLOG_FUNCTION __PRETTY_FUNCTION__
 ///////////////////////////////////////////////////////////////////////////////

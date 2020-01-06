@@ -26,31 +26,35 @@
 #ifndef FRANKYCPP_SEARCH_H
 #define FRANKYCPP_SEARCH_H
 
-// forward declared dependencies
-class Engine;
-
 // included dependencies
 #include <iostream>
 #include <thread>
-#include "time.h"
+#include <ostream>
 #include "Logging.h"
 #include "SearchStats.h"
 #include "Semaphore.h"
 #include "Position.h"
 #include "SearchLimits.h"
 #include "Evaluator.h"
-#include "TT.h"
+#include "types.h"
+#include "gtest/gtest_prod.h"
+
+// forward declared dependencies
+class Engine;
+class TT;
+
 
 struct SearchResult {
 public:
   Move bestMove = MOVE_NONE;
+  Value bestMoveValue = VALUE_NONE;
   Move ponderMove = MOVE_NONE;
   int64_t time = 0;
   int depth = 0;
   int extraDepth = 0;
 
   std::string str() const {
-    return "Best Move: " + printMove(bestMove) + " (" + std::to_string(valueOf(bestMove)) + ") "
+    return "Best Move: " + printMove(bestMove) + " (" + std::to_string(bestMoveValue) + ") "
            + "Ponder Move: " + printMove(ponderMove) + " Depth: " + std::to_string(depth) + "/" +
            std::to_string(extraDepth);
   }
@@ -68,11 +72,6 @@ class Search {
   // used to protect the transposition table from clearing and resizing during search
   std::timed_mutex tt_lock;
 
-  // for code re-using through templating we use search types when calling search()
-  enum Search_Type {
-    ROOT, NONROOT, QUIESCENCE
-  };
-
   // UCI related
   constexpr static MilliSec UCI_UPDATE_INTERVAL = 1'000;
   MilliSec lastUciUpdateTime{};
@@ -89,9 +88,6 @@ class Search {
   SearchLimits searchLimits;
   SearchStats searchStats;
 
-  // current position
-  Position myPosition;
-
   // search state
   std::atomic_bool running = false;
   std::atomic_bool stopSearchFlag = false;
@@ -100,9 +96,7 @@ class Search {
   SearchResult lastSearchResult;
 
   // transposition table (singleton)
-  TT tt;
-
-private:
+  TT* tt;
 
   // time check every x nodes
   // As time checks are expensive we only do them every x-th node.
@@ -132,18 +126,40 @@ private:
   // prepared move generator instances for each depth
   MoveGenerator moveGenerators[DEPTH_MAX]{};
 
+  // mate threat in ply revealed by null move search
+  bool mateThreat[DEPTH_MAX]{};
+
   // Evaluator
   Evaluator evaluator;
 
 public:
+
+  // for code re-using through templating we use search types when calling search()
+  enum Search_Type {
+    ROOT, NONROOT, QUIESCENCE
+  };
+
+  // in PV we search the full window in NonPV we try a zero window first
+  enum Node_Type {
+    NonPV, PV
+  };
+
+  enum Do_Null : bool {
+    No_Null_Move = false,
+    Do_Null_Move = true
+  };
+
   ////////////////////////////////////////////////
   ///// CONSTRUCTORS
 
   /** Default constructor creates a board with a back reference to the engine */
   Search();
   explicit Search(Engine* pEng);
-  virtual ~Search();
-
+  ~Search();
+  // disallow copies
+  Search(Search const &s) = delete;
+  Search &operator=(const Search &) = delete;
+  
   ////////////////////////////////////////////////
   ///// PUBLIC
 
@@ -178,39 +194,109 @@ public:
   void setHashSize(int sizeInMB);
 
 private:
+
   ////////////////////////////////////////////////
   ///// PRIVATE
 
-  FRIEND_TEST(SearchTest, goodCapture);
-
-  void run();
+  void run(Position position);
 
   SearchResult iterativeDeepening(Position &refPosition);
 
-  template<Search_Type ST>
-  Value search(Position &position, Depth depth, Ply ply, Value alpha, Value beta);
-  template<Search_Type ST>
-  Move getMove(Position &refPosition, int ply);
-  template<Search_Type ST>
-  bool checkDrawRepAnd50(Position &refPosition) const;
-  Value evaluate(Position &position, Ply ply);
+  template<Search_Type ST, Node_Type NT>
+  Value search(Position &position, Depth depth, Ply ply, Value alpha, Value beta, Do_Null doNull);
 
+  template<Search_Type ST>
+  Move getMove(Position &position, int ply);
+
+  template<Search_Type ST>
+  bool checkDrawRepAnd50(Position &position) const;
+
+  Value evaluate(Position &position);
+
+  /**
+   * Generates root moves and filters them according to the UCI searchmoves list
+   * @param position
+   * @return UCI filtered root moves
+   */
   MoveList generateRootMoves(Position &refPosition);
   static bool rootMovesSort(Move m1, Move m2);
   static bool goodCapture(Position &refPosition, Move move);
   static void savePV(Move move, MoveList &src, MoveList &dest);
 
-  void storeTT(Position &position, Value value, TT::EntryType ttType, Depth depth, Move bestMove,
-               bool mateThreat);
+  /**
+  * Retrieves the PV line from the transposition table in root search.
+  *
+  * @param position
+  * @param depth
+  * @param pvRoot
+  */
+  void getPVLine(Position &position, MoveList &pvRoot);
+
+  void storeTT(Position &position, Value value, Value_Type ttType, Depth depth, Ply ply,
+               Move bestMove, bool mateThreat);
+
+  /**
+   * correct any mate values which are sent to TT so that
+   * they are relative to the ply we are in
+   * @param value
+   * @param ply
+   * @return
+   */
+  static Value valueToTT(Value value, Ply ply);
+
+  /**
+   * correct any mate values coming from the TT so that
+   * they are relative to the ply we are in
+   * @param value
+   * @param ply
+   * @return
+   */
+  static Value valueFromTT(Value value, Ply ply);
 
   void configureTimeLimits();
   inline bool stopConditions(bool shouldTimeCheck);
+
+  /**
+   * Changes the time limit by the given factor and also sets the soft time limit
+   * to 0.8 of the hard time limit.
+   * Factor 1 is neutral. <1 shortens the time, >1 adds time<br/>
+   * Example: factor 0.8 is 20% less time. Factor 1.2 is 20% additional time
+   * Always calculated from the initial time budget.
+   *
+   * @param d
+   */
   void addExtraTime(const double d);
+
+  /**
+   * Time limit is used to check time regularly in the search to stop the search when
+   * time is out
+   * IDEA instead of checking this regularly we could use a timer thread to set stopSearch to true.
+   *
+   * @return true if hard time limit is reached, false otherwise
+   */
   inline bool timeLimitReached();
+
   inline bool shouldTimeCheck() const;
+
+  /**
+   * @param t time point since the elapsed time
+   * @return the elapsed time from the start of the search to the given t
+   */
   static inline MilliSec elapsedTime(const MilliSec t);
+
+  /**
+   * @param t1 Earlier time point
+   * @param t2 Later time point
+   * @return Duration between time points in milliseconds
+   */
   static inline MilliSec elapsedTime(const MilliSec t1, const MilliSec t2);
+
+  /**
+   * Returns the current time in ms
+   * @return current time
+   */
   static inline MilliSec now();
+  
   inline MilliSec getNps() const;
 
   void sendIterationEndInfoToEngine() const;
@@ -218,6 +304,7 @@ private:
   void sendSearchUpdateToEngine();
   void sendResultToEngine() const;
 
+  FRIEND_TEST(SearchTest, goodCapture);
 };
 
 #endif // FRANKYCPP_SEARCH_H

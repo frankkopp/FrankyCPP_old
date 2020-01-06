@@ -25,10 +25,10 @@
 
 #include <gtest/gtest.h>
 
-#include "../../src/Logging.h"
-#include "../../src/types.h"
-#include "../../src/UCIHandler.h"
-#include "../../src/Engine.h"
+#include "Logging.h"
+#include "types.h"
+#include "UCIHandler.h"
+#include "Engine.h"
 
 using namespace std;
 using testing::Eq;

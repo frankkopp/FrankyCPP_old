@@ -30,9 +30,7 @@
 #include "types.h"
 
 /** data structure to cluster all search statistical values */
-class SearchStats {
-
-public:
+struct SearchStats {
 
   // counter for cut off to measure quality of move ordering
   // long[] betaCutOffs = new long[MAX_MOVES];
@@ -61,8 +59,6 @@ public:
   // TT Statistics
   uint64_t tt_Hits = 0;
   uint64_t tt_Misses = 0;
-  uint64_t tt_Cuts = 0;
-  uint64_t tt_NoCut = 0;
 
   // Optimization Values
   uint64_t aspirationResearches = 0;

@@ -1,17 +1,36 @@
-v 0.4 (plan)
+v 0.x (plan)
 ================================================================================
 - TODO:
-    - MDP, MPP, RFP, NMP, RAZOR, IID, LFP. LFR, ...
-    - Aspiration Window Search
+    - Simple Opening Book
+    - IID check
+    - ATACKS / SEE
+    - WIN MSC 
+        // GTEST - nice examples
+        // Windows:  _MSC_VER
+        // _BitScanForward64/_BitScanReverse64
+        // https://docs.microsoft.com/en-us/cpp/intrinsics/bitscanreverse-bitscanreverse64?view=vs-2019
+    - IDEA: (credit to Robert Hyatt)
+        Instead of testing each move
+        for legality we could simply go ahead and recurse into each node and
+        if there is a king capture in one of the succeeding nodes we jump back
+        and dismiss this move.
 
-v 0.3 (in progress)
+v 0.4 (in progress)
 ================================================================================
 - TODO:
-    - PVS
-    - PV from TT
+    - LFP. LFR, ...
     - Extended Evaluation
     - EvalCache
-    - Simple Opening Book
+    - Aspiration Window Search
+
+v 0.3 (done)
+================================================================================
+- DONE:
+    - RFP, NMP, RAZOR
+    - IID (with TT - needs to be revisited)
+    - PV from TT and PV Move Sorting
+    - PVS
+    - MDP, MPP
 
 v 0.2 (done)
 ================================================================================

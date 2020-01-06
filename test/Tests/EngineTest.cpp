@@ -24,8 +24,8 @@
  */
 
 #include <gtest/gtest.h>
-#include "../../src/Logging.h"
-#include "../../src/Engine.h"
+#include "Logging.h"
+#include "Engine.h"
 
 using testing::Eq;
 using namespace std;
@@ -54,7 +54,7 @@ TEST_F(EngineTest, startSearch) {
   uciSearchMode.depth = 8;
   engine.startSearch(uciSearchMode);
 
-  LOG->info("Start and Stop test...");
+  LOG->info("{}: Start and Stop test...", __FUNCTION__);
   for (int i = 0; i < 3; ++i) {
     sleep(3);
     engine.stopSearch();
@@ -66,6 +66,9 @@ TEST_F(EngineTest, startSearch) {
     engine.stopSearch();
     engine.waitWhileSearching();
   }
+  SUCCEED();
 }
+
+
 
 

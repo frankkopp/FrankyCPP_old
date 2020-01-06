@@ -26,17 +26,17 @@
 #include <gtest/gtest.h>
 
 #include <utility>
-#include "../../src/Logging.h"
-#include "../../src/Search.h"
-#include "../../src/SearchConfig.h"
-#include "../../src/Engine.h"
+#include "Logging.h"
+#include "Search.h"
+#include "SearchConfig.h"
+#include "Engine.h"
 
 using testing::Eq;
 
 class SearchTreeSizeTest : public ::testing::Test {
 public:
 
-  static constexpr int DEPTH = 6;
+  static constexpr int DEPTH = 8;
 
   struct SingleTest {
     std::string name = "";
@@ -56,6 +56,7 @@ public:
   };
 
   struct TestSums {
+    uint64_t sumCounter{};
     uint64_t sumNodes{};
     uint64_t sumNps{};
     uint64_t sumTime{};
@@ -107,7 +108,7 @@ TEST_F(SearchTreeSizeTest, size_test) {
   NEWLINE;
   fmt::print("################## RESULTS for depth {} ##########################\n", DEPTH);
   NEWLINE;
-  fmt::print("{:<12s} | {:>6s} | {:>8s} | {:>15s} | {:>12s} | {:>12s} | {} | {}\n", "Test Name",
+  fmt::print("{:<15s} | {:>6s} | {:>8s} | {:>15s} | {:>12s} | {:>12s} | {} | {}\n", "Test Name",
              "Move", "Value", "Nodes", "Nps", "Time", "PV", "Fen");
   println("-----------------------------------------------------------------------"
           "-----------------------------------------------------------------------");
@@ -117,21 +118,24 @@ TEST_F(SearchTreeSizeTest, size_test) {
 
   for (const Result &result : results) {
     for (const SingleTest &test : result.tests) {
+      sums[test.name].sumCounter++;
       sums[test.name].sumNodes += test.nodes;
       sums[test.name].sumNps += test.nps;
       sums[test.name].sumTime += test.time;
 
-      fmt::print("{:<12s} | {:>6s} | {:>8d} | {:>15n} | {:>12n} | {:>12n} | {} | {}  \n",
+      fmt::print("{:<15s} | {:>6s} | {:>8d} | {:>15n} | {:>12n} | {:>12n} | {} | {}  \n",
                  test.name.c_str(), printMove(test.move).c_str(), test.value, test.nodes, test.nps,
                  test.time, test.pv.c_str(), result.fen.c_str());
     }
+    fmt::print("\n");
   }
 
   NEWLINE;
 
-  for (auto sum = sums.rbegin(); sum != sums.rend(); ++sum) {
-    fmt::print("Test: {:<12s}  Nodes: {:>16n}  Nps: {:>16n}  Time: {:>16n} \n", sum->first.c_str(),
-               sum->second.sumNodes, sum->second.sumNps, sum->second.sumTime);
+  for (auto & sum : sums) {
+    fmt::print("Test: {:<12s}  Nodes: {:>16n}  Nps: {:>16n}  Time: {:>16n} \n", sum.first.c_str(),
+               sum.second.sumNodes / sum.second.sumCounter, sum.second.sumNps / sum.second.sumCounter,
+               sum.second.sumTime / sum.second.sumCounter);
   }
 }
 
@@ -148,7 +152,16 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   SearchConfig::USE_ALPHABETA = false;
   SearchConfig::USE_KILLER_MOVES = false;
   SearchConfig::USE_TT = false;
+  SearchConfig::TT_SIZE_MB = 64;
   SearchConfig::USE_TT_QSEARCH = false;
+  SearchConfig::USE_MDP = false;
+  SearchConfig::USE_MPP = false;
+  SearchConfig::USE_PVS = false;
+  SearchConfig::USE_PV_MOVE_SORTING = false;
+  SearchConfig::USE_IID = false;
+  SearchConfig::USE_RFP = false;
+  SearchConfig::USE_RAZOR_PRUNING = false;
+  SearchConfig::USE_NMP= false;
 
   // ***********************************
   // TESTS
@@ -164,24 +177,48 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   //
   //  SearchConfig::USE_TT = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "MM+QS+TT"));
-
-  // AlphaBeta+Killer
-  SearchConfig::USE_QUIESCENCE = true;
+//
+//  // AlphaBeta
   SearchConfig::USE_ALPHABETA = true;
-  SearchConfig::USE_KILLER_MOVES = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "AB"));
-
-  // AlphaBeta + tt
+  SearchConfig::USE_QUIESCENCE = true;
+//  result.tests.push_back(measureTreeSize(search, position, searchLimits, "01 AB"));
+//
+//  // AlphaBeta + tt
   SearchConfig::USE_TT = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "AB+TT"));
-
-  // AlphaBeta + tt
   SearchConfig::USE_TT_QSEARCH = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "AB+TTQ"));
+//  result.tests.push_back(measureTreeSize(search, position, searchLimits, "02 AB+TT"));
+//
+//  // AB + tt + MDPMPP
+  SearchConfig::USE_KILLER_MOVES = true;
+  SearchConfig::USE_MDP = true;
+  SearchConfig::USE_MPP = true;
+//  result.tests.push_back(measureTreeSize(search, position, searchLimits, "03 AB+M*P"));
+//
+//  // AB + PVS
+  SearchConfig::USE_PVS = true;
+//  result.tests.push_back(measureTreeSize(search, position, searchLimits, "04 AB_PVS"));
+//
+//  // AB + PVS + PV Sort
+  SearchConfig::USE_PV_MOVE_SORTING = true;
+//  result.tests.push_back(measureTreeSize(search, position, searchLimits, "05 AB_PVMS"));
 
-  // AlphaBeta + quiescence + killer
-  //  SearchConfig::USE_KILLER_MOVES = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "AB+QS+KILLER"));
+  //  // AB + IID +TT
+  SearchConfig::USE_IID = false;
+  SearchConfig::USE_TT = true;
+  SearchConfig::USE_TT_QSEARCH = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "08 AB+TT"));
+
+  SearchConfig::USE_IID = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "09 IID"));
+
+  SearchConfig::USE_RFP = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "10 RFP"));
+
+  SearchConfig::USE_RAZOR_PRUNING = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "11 RAZOR"));
+
+  SearchConfig::USE_NMP = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "12 NMP"));
 
   // ***********************************
 
@@ -192,6 +229,7 @@ SearchTreeSizeTest::SingleTest
 SearchTreeSizeTest::measureTreeSize(Search &search, const Position &position,
                                     SearchLimits searchLimits, const std::string &featureName) {
 
+  LOG->info("");
   LOG->info("Testing {}", featureName);
   search.clearHash();
   search.startSearch(position, searchLimits);
@@ -239,21 +277,21 @@ std::vector<std::string> SearchTreeSizeTest::getFENs() {
   fen.emplace_back("4b3/p3kp2/6p1/3pP2p/2pP1P2/4K1P1/P3N2P/8 w - -");
   fen.emplace_back("2kr1bnr/pbpq4/2n1pp2/3p3p/3P1P1B/2N2N1Q/PPP3PP/2KR1B1R w - -");
   fen.emplace_back("3rr1k1/pp3pp1/1qn2np1/8/3p4/PP1R1P2/2P1NQPP/R1B3K1 b - -");
-//  fen.emplace_back("2r1nrk1/p2q1ppp/bp1p4/n1pPp3/P1P1P3/2PBB1N1/4QPPP/R4RK1 w - -");
-//  fen.emplace_back("r3r1k1/ppqb1ppp/8/4p1NQ/8/2P5/PP3PPP/R3R1K1 b - -");
-//  fen.emplace_back("r2q1rk1/4bppp/p2p4/2pP4/3pP3/3Q4/PP1B1PPP/R3R1K1 w - -");
-//  fen.emplace_back("rnb2r1k/pp2p2p/2pp2p1/q2P1p2/8/1Pb2NP1/PB2PPBP/R2Q1RK1 w - -");
-//  fen.emplace_back("2r3k1/1p2q1pp/2b1pr2/p1pp4/6Q1/1P1PP1R1/P1PN2PP/5RK1 w - -");
-//  fen.emplace_back("r1bqkb1r/4npp1/p1p4p/1p1pP1B1/8/1B6/PPPN1PPP/R2Q1RK1 w kq -");
-//  fen.emplace_back("r2q1rk1/1ppnbppp/p2p1nb1/3Pp3/2P1P1P1/2N2N1P/PPB1QP2/R1B2RK1 b - -");
-//  fen.emplace_back("r1bq1rk1/pp2ppbp/2np2p1/2n5/P3PP2/N1P2N2/1PB3PP/R1B1QRK1 b - -");
-//  fen.emplace_back("3rr3/2pq2pk/p2p1pnp/8/2QBPP2/1P6/P5PP/4RRK1 b - -");
-//  fen.emplace_back("r4k2/pb2bp1r/1p1qp2p/3pNp2/3P1P2/2N3P1/PPP1Q2P/2KRR3 w - -");
-//  fen.emplace_back("3rn2k/ppb2rpp/2ppqp2/5N2/2P1P3/1P5Q/PB3PPP/3RR1K1 w - -");
-//  fen.emplace_back("2r2rk1/1bqnbpp1/1p1ppn1p/pP6/N1P1P3/P2B1N1P/1B2QPP1/R2R2K1 b - -");
-//  fen.emplace_back("r1bqk2r/pp2bppp/2p5/3pP3/P2Q1P2/2N1B3/1PP3PP/R4RK1 b kq -");
-//  fen.emplace_back("r2qnrnk/p2b2b1/1p1p2pp/2pPpp2/1PP1P3/PRNBB3/3QNPPP/5RK1 w - -");
-//  fen.emplace_back("r3qb1k/1b4p1/p2pr2p/3n4/Pnp1N1N1/6RP/1B3PP1/1B1QR1K1 w - -");
+  //  fen.emplace_back("2r1nrk1/p2q1ppp/bp1p4/n1pPp3/P1P1P3/2PBB1N1/4QPPP/R4RK1 w - -");
+  //  fen.emplace_back("r3r1k1/ppqb1ppp/8/4p1NQ/8/2P5/PP3PPP/R3R1K1 b - -");
+  //  fen.emplace_back("r2q1rk1/4bppp/p2p4/2pP4/3pP3/3Q4/PP1B1PPP/R3R1K1 w - -");
+  //  fen.emplace_back("rnb2r1k/pp2p2p/2pp2p1/q2P1p2/8/1Pb2NP1/PB2PPBP/R2Q1RK1 w - -");
+  //  fen.emplace_back("2r3k1/1p2q1pp/2b1pr2/p1pp4/6Q1/1P1PP1R1/P1PN2PP/5RK1 w - -");
+  //  fen.emplace_back("r1bqkb1r/4npp1/p1p4p/1p1pP1B1/8/1B6/PPPN1PPP/R2Q1RK1 w kq -");
+  //  fen.emplace_back("r2q1rk1/1ppnbppp/p2p1nb1/3Pp3/2P1P1P1/2N2N1P/PPB1QP2/R1B2RK1 b - -");
+  //  fen.emplace_back("r1bq1rk1/pp2ppbp/2np2p1/2n5/P3PP2/N1P2N2/1PB3PP/R1B1QRK1 b - -");
+  //  fen.emplace_back("3rr3/2pq2pk/p2p1pnp/8/2QBPP2/1P6/P5PP/4RRK1 b - -");
+  //  fen.emplace_back("r4k2/pb2bp1r/1p1qp2p/3pNp2/3P1P2/2N3P1/PPP1Q2P/2KRR3 w - -");
+  //  fen.emplace_back("3rn2k/ppb2rpp/2ppqp2/5N2/2P1P3/1P5Q/PB3PPP/3RR1K1 w - -");
+  //  fen.emplace_back("2r2rk1/1bqnbpp1/1p1ppn1p/pP6/N1P1P3/P2B1N1P/1B2QPP1/R2R2K1 b - -");
+  //  fen.emplace_back("r1bqk2r/pp2bppp/2p5/3pP3/P2Q1P2/2N1B3/1PP3PP/R4RK1 b kq -");
+  //  fen.emplace_back("r2qnrnk/p2b2b1/1p1p2pp/2pPpp2/1PP1P3/PRNBB3/3QNPPP/5RK1 w - -");
+  //  fen.emplace_back("r3qb1k/1b4p1/p2pr2p/3n4/Pnp1N1N1/6RP/1B3PP1/1B1QR1K1 w - -");
 
   fen.emplace_back("rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -");
   fen.emplace_back("r3k2r/pp2qppp/2n1pn2/bN5b/3P4/P3BN1P/1P2BPP1/R2Q1RK1 w kq -");
@@ -266,13 +304,13 @@ std::vector<std::string> SearchTreeSizeTest::getFENs() {
   fen.emplace_back("1r6/2q2pkp/5p2/4p3/3pB3/2bQ2P1/P3PP1P/5RK1 w - -");
   fen.emplace_back("5k1q/5p2/5p2/4p3/3pB1QP/6P1/4PP2/b5K1 w - -");
   fen.emplace_back("2q5/4kp2/5p2/4p3/2Bp3P/2b2QP1/4PP2/6K1 w - -");
-//  fen.emplace_back("8/4kp2/3q4/4pp2/2Bp3P/2b3P1/Q3PP2/6K1 w - -");
-//  fen.emplace_back("1Q6/4k3/5q2/1B3p2/3pp2P/6P1/3bPP2/6K1 w - -");
-//  fen.emplace_back("4k3/2Q5/5q2/5p2/2Bp1P1P/6P1/3b4/5K2 w - -");
-//  fen.emplace_back("1k6/4Q3/2q5/5B2/3p1P1P/4b1P1/8/5K2 w - -");
-//  fen.emplace_back("rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -");
-//  fen.emplace_back("r3k2r/pp3ppp/2nqpn2/4N3/3P4/P1b1B3/1P2QPPP/R4RK1 w kq -");
-//  fen.emplace_back("4k2r/p4ppp/1p2pn2/8/2rP1B2/P1P5/5PPP/RR4K1 w k -");
+  //  fen.emplace_back("8/4kp2/3q4/4pp2/2Bp3P/2b3P1/Q3PP2/6K1 w - -");
+  //  fen.emplace_back("1Q6/4k3/5q2/1B3p2/3pp2P/6P1/3bPP2/6K1 w - -");
+  //  fen.emplace_back("4k3/2Q5/5q2/5p2/2Bp1P1P/6P1/3b4/5K2 w - -");
+  //  fen.emplace_back("1k6/4Q3/2q5/5B2/3p1P1P/4b1P1/8/5K2 w - -");
+  //  fen.emplace_back("rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -");
+  //  fen.emplace_back("r3k2r/pp3ppp/2nqpn2/4N3/3P4/P1b1B3/1P2QPPP/R4RK1 w kq -");
+  //  fen.emplace_back("4k2r/p4ppp/1p2pn2/8/2rP1B2/P1P5/5PPP/RR4K1 w k -");
   //  fen.emplace_back("r5k1/5ppp/p1RBpn2/1p6/r2P4/P1P5/5PPP/1R3K2 w - -");
   //  fen.emplace_back("8/3r1pk1/p1R2p2/1p5p/r2p4/PRP1K1P1/5P1P/8 w - -");
   //  fen.emplace_back("r1bqk2r/pp1n1ppp/2pbpn2/3p4/2PP4/3BPN2/PP1N1PPP/R1BQK2R w KQkq -");

@@ -33,11 +33,11 @@
 #include <sstream>
 #include <vector>
 #include <deque>
+#include "fmt/locale.h"
 
 // convenience macros
 #define NEWLINE std::cout << std::endl
 #define printBB(bb) std::cout << Bitboards::print((bb)) << std::endl
-#define println(s) std::cout << (s) << std::endl
 
 // Global constants
 constexpr const char* START_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -67,11 +67,12 @@ namespace INIT {
 enum Depth : uint8_t {
   DEPTH_NONE = 0,
   DEPTH_ONE = 1,
+  DEPTH_FRONTIER = 1,
   DEPTH_MAX = 128
 };
 
 ///////////////////////////////////
-//// DEPTH
+//// PLY
 enum Ply : uint8_t {
   PLY_ROOT = 0,
   PLY_NONE = 0,
@@ -217,10 +218,11 @@ constexpr PieceType typeOf(Piece p) { return PieceType(p & 7); }
 ///////////////////////////////////
 //// VALUE
 enum Value : int16_t {
-  VALUE_DRAW = 0,
+  VALUE_ZERO = 0,
+  VALUE_DRAW = VALUE_ZERO,
   VALUE_ONE = 1,
   VALUE_INF = 15000,
-  VALUE_NONE = -VALUE_INF - 1,
+  VALUE_NONE = -VALUE_INF - VALUE_ONE,
   VALUE_MIN = -10000,
   VALUE_MAX = 10000,
   VALUE_CHECKMATE = VALUE_MAX,
@@ -254,6 +256,14 @@ inline bool isCheckMateValue(const Value value) {
   return abs(value) >= VALUE_CHECKMATE_THRESHOLD && abs(value) <= VALUE_CHECKMATE;
 }
 
+constexpr Value operator+(Value d1, Ply d2) {
+  return static_cast<Value>(static_cast<int>(d1) + static_cast<int>(d2));
+}
+
+constexpr Value operator-(Value d1, Ply d2) {
+  return static_cast<Value>(static_cast<int>(d1) - static_cast<int>(d2));
+}
+
 /** Returns a UCI compatible std::string for the score in cp or in mate in ply */
 inline std::string printValue(const Value value) {
   // TODO add full protocol (lowerbound, upperbound, etc.)
@@ -270,10 +280,25 @@ inline std::string printValue(const Value value) {
 }
 
 ///////////////////////////////////
+//// VALUE TYPE
+enum Value_Type : u_int8_t {
+  TYPE_NONE = 0,
+  // the node for the value was fully calculated and is exact
+    TYPE_EXACT = 1,
+  // the node for the value has NOT found a value > alpha so alpha is
+  // upper bound (value could be worse)
+    TYPE_ALPHA = 2,
+  // the node for the value has found a refutation (value > beta( and has
+  // been cut off. Value is a lower bound (could be better).
+    TYPE_BETA = 3,
+};
+
+
+///////////////////////////////////
 //// MOVE
 enum Move : uint32_t {
   /** A move is basically a 32-bit int */
-    MOVE_NONE
+    MOVE_NONE = 0
 };
 
 /* @formatter:off
@@ -405,7 +430,7 @@ Move createMove(const char* move) {
 
 /** returns the square the move originates from */
 constexpr Square getFromSquare(Move m) {
-  return Square((m >> MoveShifts::FROM_SHIFT) & MoveShifts::SQUARE_MASK);
+  return Square(m >> MoveShifts::FROM_SHIFT & MoveShifts::SQUARE_MASK);
 }
 
 /** returns the square the move goes to */
@@ -431,15 +456,6 @@ constexpr PieceType promotionType(Move m) {
   return PieceType(((m & MoveShifts::PROM_TYPE_MASK) >> MoveShifts::PROM_TYPE_SHIFT) + KNIGHT);
 }
 
-/** sets the value for the move. E.g. used by the move generator for move sorting */
-constexpr void setValue(Move &m, Value v) {
-  assert(v <= VALUE_INF && v >= VALUE_NONE);
-  // when saving a value to a move we shift value to a positive integer (0-VALUE_NONE) and
-  // encode it into the move
-  // for retrieving we then shift the value back to a range from VALUE_NONE to VALUE_INF
-  m = Move((m & MoveShifts::MOVE_MASK) | (Value(v - VALUE_NONE) << MoveShifts::VALUE_SHIFT));
-}
-
 /** returns the value of the move */
 constexpr Value valueOf(Move m) {
   return Value(((m & MoveShifts::VALUE_MASK) >> MoveShifts::VALUE_SHIFT) + VALUE_NONE);
@@ -447,6 +463,17 @@ constexpr Value valueOf(Move m) {
 
 /** returns the move without value */
 constexpr Move moveOf(Move m) { return Move(m & MoveShifts::MOVE_MASK); }
+
+
+/** sets the value for the move. E.g. used by the move generator for move sorting */
+constexpr void setValue(Move &m, Value v) {
+  assert(v >= VALUE_NONE && v <= -VALUE_NONE);
+  if (!moveOf(m)) return;
+  // when saving a value to a move we shift value to a positive integer (0-VALUE_NONE) and
+  // encode it into the move
+  // for retrieving we then shift the value back to a range from VALUE_NONE to VALUE_INF
+  m = Move((m & MoveShifts::MOVE_MASK) | (Value(v - VALUE_NONE) << MoveShifts::VALUE_SHIFT));
+}
 
 /** returns a short representation of the move as string (UCI protocal) */
 inline std::string printMove(const Move move) {
@@ -458,7 +485,7 @@ inline std::string printMove(const Move move) {
 
 /** returns a verbose representation of the move as string */
 inline std::string printMoveVerbose(const Move move) {
-  if (move == MOVE_NONE) return "NOMOVE";
+  if (!move) return "NOMOVE";
   std::string tp;
   std::string promPt;
   switch (typeOf(move)) {
@@ -477,7 +504,7 @@ inline std::string printMoveVerbose(const Move move) {
       break;
   }
   return squareLabel(getFromSquare(move)) + squareLabel(getToSquare(move)) + promPt
-         + " (" + tp + ") (" + std::to_string(valueOf(move)) + ") (" + std::to_string(move) + ")";
+         + " (" + tp + " " + std::to_string(valueOf(move)) + " " + std::to_string(move) + ")";
 }
 
 inline std::ostream &operator<<(std::ostream &os, const Move move) {
@@ -575,30 +602,30 @@ constexpr bool operator!=(CastlingRights cr1, CastlingRights cr2) {
 /**
  * OPERATORS
  */
-#define ENABLE_BASE_OPERATORS_ON(T)                                \
-constexpr T operator+(T d1, T d2) { return T(int(d1) + int(d2)); } \
-constexpr T operator-(T d1, T d2) { return T(int(d1) - int(d2)); } \
-constexpr T operator-(T d) { return T(-int(d)); }                  \
-inline T& operator+=(T& d1, T d2) { return d1 = d1 + d2; }         \
+#define ENABLE_BASE_OPERATORS_ON(T) \
+constexpr T operator+(T d1, T d2) { return static_cast<T>(static_cast<int>(d1) + static_cast<int>(d2)); } \
+constexpr T operator-(T d1, T d2) { return static_cast<T>(static_cast<int>(d1) - static_cast<int>(d2)); } \
+constexpr T operator-(T d) { return static_cast<T>(-static_cast<int>(d)); } \
+inline T& operator+=(T& d1, T d2) { return d1 = d1 + d2; } \
 inline T& operator-=(T& d1, T d2) { return d1 = d1 - d2; }
 
-#define ENABLE_INCR_OPERATORS_ON(T)                      \
-inline T& operator++(T& d) { return d = T(int(d) + 1); } \
-inline T& operator--(T& d) { return d = T(int(d) - 1); }
+#define ENABLE_INCR_OPERATORS_ON(T) \
+inline T& operator++(T& d) { return d = static_cast<T>(static_cast<int>(d) + 1); } \
+inline T& operator--(T& d) { return d = static_cast<T>(static_cast<int>(d) - 1); }
 
-#define ENABLE_FULL_OPERATORS_ON(T)                                \
-ENABLE_BASE_OPERATORS_ON(T)                                        \
-ENABLE_INCR_OPERATORS_ON(T)                                        \
-constexpr T operator+(int i, T d) { return T(i + int(d)); }        \
-constexpr T operator+(T d, int i) { return T(int(d) + i); }        \
-constexpr T operator-(int i, T d) { return T(i - int(d)); }        \
-constexpr T operator-(T d, int i) { return T(int(d) - i); }        \
-constexpr T operator*(int i, T d) { return T(i * int(d)); }        \
-constexpr T operator*(T d, int i) { return T(int(d) * i); }        \
-constexpr T operator/(T d, int i) { return T(int(d) / i); }        \
-constexpr int operator/(T d1, T d2) { return int(d1) / int(d2); }  \
-inline T& operator*=(T& d, int i) { return d = T(int(d) * i); }    \
-inline T& operator/=(T& d, int i) { return d = T(int(d) / i); }
+#define ENABLE_FULL_OPERATORS_ON(T) \
+ENABLE_BASE_OPERATORS_ON(T) \
+ENABLE_INCR_OPERATORS_ON(T) \
+constexpr T operator+(int i, T d) { return static_cast<T>(i + static_cast<int>(d)); } \
+constexpr T operator+(T d, int i) { return static_cast<T>(static_cast<int>(d) + i); } \
+constexpr T operator-(int i, T d) { return static_cast<T>(i - static_cast<int>(d)); } \
+constexpr T operator-(T d, int i) { return static_cast<T>(static_cast<int>(d) - i); } \
+constexpr T operator*(int i, T d) { return static_cast<T>(i * static_cast<int>(d)); } \
+constexpr T operator*(T d, int i) { return static_cast<T>(static_cast<int>(d) * i); } \
+constexpr T operator/(T d, int i) { return static_cast<T>(static_cast<int>(d) / i); } \
+constexpr int operator/(T d1, T d2) { return static_cast<int>(d1) / static_cast<int>(d2); } \
+inline T& operator*=(T& d, int i) { return d = static_cast<T>(static_cast<int>(d) * i); } \
+inline T& operator/=(T& d, int i) { return d = static_cast<T>(static_cast<int>(d) / i); }
 
 ENABLE_FULL_OPERATORS_ON(Depth)
 
@@ -638,14 +665,26 @@ inline bool to_bool(std::string str) {
   return b;
 }
 
-struct myLocale : std::numpunct<char> {
+/**
+  * Prints a 64-bit uint as a series of 0 and 1 grouped in 8 bits
+  * beginning with the MSB (0) on the left and the LSB (63) on the right
+  * @param b
+  */
+inline std::string printBitString(uint64_t b) {
+  std::ostringstream os;
+  os << std::bitset<64>(b);
+  return os.str();
+}
+
+struct deLocaleDecimals : std::numpunct<char> {
   char do_decimal_point() const override { return ','; }
-
   char do_thousands_sep() const override { return '.'; }
-
   std::string do_grouping() const override { return "\03"; }
 };
 
-const std::locale digitLocale(std::cout.getloc(), new myLocale);
+const std::locale deLocale(std::locale("de_DE.UTF-8"), new deLocaleDecimals);
+
+#define println(s) std::cout << (s) << std::endl
+#define fprintln(...) std::cout << fmt::format(deLocale, __VA_ARGS__) << std::endl
 
 #endif //FRANKYCPP_TYPES_H

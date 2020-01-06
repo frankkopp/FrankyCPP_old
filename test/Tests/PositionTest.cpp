@@ -27,10 +27,10 @@
 #include <ostream>
 #include <string>
 
-#include "../../src/Logging.h"
-#include "../../src/types.h"
-#include "../../src/Position.h"
-#include "../../src/Bitboards.h"
+#include "Logging.h"
+#include "types.h"
+#include "Position.h"
+#include "Bitboards.h"
 
 using namespace std;
 using testing::Eq;
@@ -842,6 +842,17 @@ TEST_F(PositionTest, giveCheck) {
   ASSERT_FALSE(position.givesCheck(move));
 }
 
+TEST_F(PositionTest, isCapturingMove) {
+  string fen;
+  Position position;
+  
+  fen = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3";
+  position = Position(fen);
+  ASSERT_TRUE(position.isCapturingMove(createMove<PROMOTION>(SQ_A2, SQ_B1)));
+  ASSERT_FALSE(position.isCapturingMove(createMove<PROMOTION>(SQ_A2, SQ_A1)));
+  ASSERT_TRUE(position.isCapturingMove(createMove(SQ_C6, SQ_E4)));
+  ASSERT_FALSE(position.isCapturingMove(createMove(SQ_C4, SQ_F1)));
+}
 
 TEST_F(PositionTest, isLegalMove) {
   string fen;

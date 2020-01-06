@@ -23,11 +23,11 @@
  *
  */
 
-
+#include <random>
 #include <gtest/gtest.h>
-#include "../../src/Logging.h"
-#include "../../src/TT.h"
-#include "../../src/Position.h"
+#include "Logging.h"
+#include "TT.h"
+#include "Search.h"
 
 using testing::Eq;
 
@@ -39,15 +39,15 @@ public:
     INIT::init();
     NEWLINE;
     // turn off info and below logging in the application
-    spdlog::set_level(spdlog::level::trace);
+    spdlog::set_level(spdlog::level::debug);
   }
-  
+
   std::shared_ptr<spdlog::logger> LOG = spdlog::get("Test_Logger");
 protected:
   void SetUp() override {
-    LOG->set_level(spdlog::level::trace);
+    LOG->set_level(spdlog::level::debug);
   }
-  
+
   void TearDown() override {}
 };
 
@@ -57,44 +57,41 @@ TEST_F(TT_Test, basic) {
   LOG->info("Number of entries: {:n}", tt.getMaxNumberOfEntries());
   LOG->info("Number of bytes allocated: {:n}", tt.getSizeInByte());
   LOG->info("Number of entries: {:n}", tt.getNumberOfEntries());
-  
+
   LOG->info("Trying to resize the TT with {:n} MB in size", 10);
   tt.resize(10 * TT::MB);
   LOG->info("Number of entries: {:n}", tt.getMaxNumberOfEntries());
   LOG->info("Number of bytes allocated: {:n}", tt.getSizeInByte());
   LOG->info("Number of entries: {:n}", tt.getNumberOfEntries());
-  ASSERT_EQ(10 * TT::MB / TT::ENTRY_SIZE, tt.getMaxNumberOfEntries());
-  ASSERT_EQ(10 * TT::MB, tt.getSizeInByte());
+  ASSERT_EQ(524288, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
-  
+
   LOG->info("Trying to resize the TT with {:n} MB in size", 1'000);
   tt.resize(1'000 * TT::MB);
   LOG->info("Number of entries: {:n}", tt.getMaxNumberOfEntries());
   LOG->info("Number of bytes allocated: {:n}", tt.getSizeInByte());
   LOG->info("Number of entries: {:n}", tt.getNumberOfEntries());
-  
+
   LOG->info("Trying to resize the TT with {:n} MB in size", 10'000);
   tt.resize(10'000 * TT::MB);
   LOG->info("Number of entries: {:n}", tt.getMaxNumberOfEntries());
   LOG->info("Number of bytes allocated: {:n}", tt.getSizeInByte());
   LOG->info("Number of entries: {:n}", tt.getNumberOfEntries());
-  
-  LOG->info("Trying to resize the TT with {:n} MB in size", 50'000);
-  tt.resize(50'000 * TT::MB);
+
+  LOG->info("Trying to resize the TT with {:n} MB in size", 32'000);
+  tt.resize(32'000 * TT::MB);
   LOG->info("Number of entries: {:n}", tt.getMaxNumberOfEntries());
   LOG->info("Number of bytes allocated: {:n}", tt.getSizeInByte());
   LOG->info("Number of entries: {:n}", tt.getNumberOfEntries());
-  ASSERT_EQ(50'000 * TT::MB / TT::ENTRY_SIZE, tt.getMaxNumberOfEntries());
-  ASSERT_EQ(50'000 * TT::MB, tt.getSizeInByte());
+  ASSERT_EQ(1073741824, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
-  
+
   LOG->info("Trying to resize the TT with {:n} MB in size", 64);
   tt.resize(64 * TT::MB);
   LOG->info("Number of entries: {:n}", tt.getMaxNumberOfEntries());
   LOG->info("Number of bytes allocated: {:n}", tt.getSizeInByte());
   LOG->info("Number of entries: {:n}", tt.getNumberOfEntries());
-  ASSERT_EQ(64 * TT::MB / TT::ENTRY_SIZE, tt.getMaxNumberOfEntries());
-  ASSERT_EQ(64 * TT::MB, tt.getSizeInByte());
+  ASSERT_EQ(4194304, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
 }
 
@@ -102,311 +99,277 @@ TEST_F(TT_Test, zero) {
   LOG->info("Trying to create a TT with {:n} MB in size", 0);
   TT tt;
   tt.resize(0);
-  LOG->info("Number of entries: {:n}", tt.getMaxNumberOfEntries());
+  LOG->info("Number of entries:         {:n}", tt.getMaxNumberOfEntries());
   LOG->info("Number of bytes allocated: {:n}", tt.getSizeInByte());
-  LOG->info("Number of entries: {:n}", tt.getNumberOfEntries());
+  LOG->info("Number of max entries:     {:n}", tt.getMaxNumberOfEntries());
+  LOG->info("Number of entries:         {:n}", tt.getNumberOfEntries());
 }
 
 TEST_F(TT_Test, parallelClear) {
-  const int sizeInMB = 32'000;
+  const int sizeInMB = 16'000;
   LOG->info("Trying to create a TT with {:n} MB in size", sizeInMB);
   TT tt = TT(sizeInMB * TT::MB);
   LOG->info("Number of entries: {:n}", tt.getMaxNumberOfEntries());
   LOG->info("Number of bytes allocated: {:n}", tt.getSizeInByte());
   LOG->info("Number of entries: {:n}", tt.getNumberOfEntries());
-  ASSERT_EQ(sizeInMB * TT::MB / TT::ENTRY_SIZE, tt.getMaxNumberOfEntries());
-  ASSERT_EQ(sizeInMB * TT::MB, tt.getSizeInByte());
+  ASSERT_EQ(536870912, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
-  
+
   tt.setThreads(4);
   tt.clear();
 }
 
-TEST_F(TT_Test, setGetBestMove) {
-  TT::Entry entry(0);
-  Move move = createMove("e2e4");
-  LOG->info("Storing move {} into entry {}", printMoveVerbose(move), entry);
-  entry = TT::setBestMove(entry, move);
-  LOG->info("New entry: {} ({})", entry, TT::printBitString(entry));
-  Move moveRead = TT::getBestMove(entry);
-  LOG->info("Move read from entry: {}", printMoveVerbose(moveRead));
-  ASSERT_EQ(move, moveRead);
-  
-  move = createMove("e7e5");
-  LOG->info("Storing move {} into entry {}", printMoveVerbose(move), entry);
-  entry = TT::setBestMove(entry, move);
-  LOG->info("New entry: {} ({})", entry, TT::printBitString(entry));
-  moveRead = TT::getBestMove(entry);
-  LOG->info("Move read from entry: {}", printMoveVerbose(moveRead));
-  ASSERT_EQ(move, moveRead);
-}
+TEST_F(TT_Test, put) {
+  std::random_device rd;
+  std::mt19937_64 rg(rd());
+  std::uniform_int_distribution<uint64_t> randomKey;
 
-TEST_F(TT_Test, setGetValue) {
-  TT::Entry entry(0);
-  auto val = Value(299);
-  LOG->info("Storing value {} into entry {}", val, entry);
-  entry = TT::setValue(entry, val);
-  LOG->info("New entry: {} ({})", entry, TT::printBitString(entry));
-  Value valRead = TT::getValue(entry);
-  LOG->info("Value read from entry: {}", valRead);
-  ASSERT_EQ(val, valRead);
-  
-  val = Value(-313);
-  LOG->info("Storing value {} into entry {}", val, entry);
-  entry = TT::setValue(entry, val);
-  LOG->info("New entry: {} ({})", entry, TT::printBitString(entry));
-  valRead = TT::getValue(entry);
-  LOG->info("Value read from entry: {}", valRead);
-  ASSERT_EQ(val, valRead);
-}
-
-TEST_F(TT_Test, setGetDepth) {
-  TT::Entry entry(0);
-  auto depth = Depth(5);
-  LOG->info("Storing depth {} into entry {}", depth, entry);
-  entry = TT::setDepth(entry, depth);
-  LOG->info("New entry: {} ({})", entry, TT::printBitString(entry));
-  int depthRead = TT::getDepth(entry);
-  LOG->info("Depth read from entry: {}", depthRead);
-  ASSERT_EQ(depth, depthRead);
-  
-  depth = Depth(13);
-  LOG->info("Storing depth {} into entry {}", depth, entry);
-  entry = TT::setDepth(entry, depth);
-  LOG->info("New entry: {} ({})", entry, TT::printBitString(entry));
-  depthRead = TT::getDepth(entry);
-  LOG->info("Depth read from entry: {}", depthRead);
-  ASSERT_EQ(depth, depthRead);
-  
-}
-
-TEST_F(TT_Test, setGetAge) {
-  TT::Entry entry(0);
-  int age = 5;
-  LOG->info("Storing age {} into entry {}", age, entry);
-  entry = TT::setAge(entry, age);
-  LOG->info("New entry: {} ({})", entry, TT::printBitString(entry));
-  int ageRead = TT::getAge(entry);
-  LOG->info("Age read from entry: {}", ageRead);
-  ASSERT_EQ(age, ageRead);
-  
-  // increase
-  LOG->info("Increasing age in entry {}", entry);
-  entry = TT::increaseAge(entry);
-  LOG->info("New entry: {} ({})", entry, TT::printBitString(entry));
-  ageRead = TT::getAge(entry);
-  LOG->info("Age read from entry: {}", ageRead);
-  ASSERT_EQ(age + 1, ageRead);
-  
-  // decrease
-  LOG->info("Decreasing age in entry {}", entry);
-  entry = TT::decreaseAge(entry);
-  LOG->info("New entry: {} ({})", entry, TT::printBitString(entry));
-  ageRead = TT::getAge(entry);
-  LOG->info("Age read from entry: {}", ageRead);
-  ASSERT_EQ(age, ageRead);
-  
-  age = 12;
-  LOG->info("Storing age {} into entry {}", age, entry);
-  entry = TT::setAge(entry, age);
-  LOG->info("New entry: {} ({})", entry, TT::printBitString(entry));
-  ageRead = TT::getAge(entry);
-  LOG->info("Age read from entry: {}", ageRead);
-  ASSERT_EQ(7, ageRead);
-  
-  LOG->info("Resetting age in entry {}", entry);
-  entry = TT::resetAge(entry);
-  LOG->info("New entry: {} ({})", entry, TT::printBitString(entry));
-  ageRead = TT::getAge(entry);
-  LOG->info("Age read from entry: {}", ageRead);
-  ASSERT_EQ(1, ageRead);
-  
-  // decrease form 1
-  LOG->info("Decreasing age in entry {}", entry);
-  entry = TT::decreaseAge(entry);
-  LOG->info("New entry: {} ({})", entry, TT::printBitString(entry));
-  ageRead = TT::getAge(entry);
-  LOG->info("Age read from entry: {}", ageRead);
-  ASSERT_EQ(0, ageRead);
-  
-  // decrease from 0
-  LOG->info("Decreasing age in entry {}", entry);
-  entry = TT::decreaseAge(entry);
-  LOG->info("New entry: {} ({})", entry, TT::printBitString(entry));
-  ageRead = TT::getAge(entry);
-  LOG->info("Age read from entry: {}", ageRead);
-  ASSERT_EQ(0, ageRead);
-}
-
-TEST_F(TT_Test, setGetType) {
-  TT::Entry entry(0);
-  TT::EntryType type = TT::EntryType::TYPE_EXACT;
-  LOG->info("Storing type {} into entry {}", TT::str(type), entry);
-  entry = TT::setType(entry, type);
-  LOG->info("New entry: {} ({})", entry, TT::printBitString(entry));
-  TT::EntryType typeRead = TT::getType(entry);
-  LOG->info("Type read from entry: {}", TT::str(typeRead));
-  ASSERT_EQ(type, typeRead);
-  
-  type = TT::EntryType::TYPE_ALPHA;
-  LOG->info("Storing type {} into entry {}", TT::str(type), entry);
-  entry = TT::setType(entry, type);
-  LOG->info("New entry: {} ({})", entry, TT::printBitString(entry));
-  typeRead = TT::getType(entry);
-  LOG->info("Type read from entry: {}", TT::str(typeRead));
-  ASSERT_EQ(type, typeRead);
-}
-
-TEST_F(TT_Test, setGetMateThreat) {
-  TT::Entry entry(0);
-  bool mateThreat = true;
-  LOG->info("Storing mateThreat {} into entry {}", boolStr(mateThreat), entry);
-  entry = TT::setMateThreat(entry, mateThreat);
-  LOG->info("New entry: {} ({})", entry, TT::printBitString(entry));
-  bool mateThreatRead = TT::hasMateThreat(entry);
-  LOG->info("Mate threat read from entry: {}", boolStr(mateThreatRead));
-  ASSERT_EQ(mateThreat, mateThreatRead);
-  
-  mateThreat = false;
-  LOG->info("Storing mateThreat {} into entry {}", boolStr(mateThreat), entry);
-  entry = TT::setMateThreat(entry, mateThreat);
-  LOG->info("New entry: {} ({})", entry, TT::printBitString(entry));
-  mateThreatRead = TT::hasMateThreat(entry);
-  LOG->info("Mate threat read from entry: {}", boolStr(mateThreatRead));
-  ASSERT_EQ(mateThreat, mateThreatRead);
-}
-
-TEST_F(TT_Test, setGetAll) {
-  TT::Entry entry(0);
-  Move move = createMove("e2e4");
-  auto value = Value(199);
-  Depth depth = Depth(5);
-  int age = 3;
-  TT::EntryType type = TT::EntryType::TYPE_BETA;
-  bool mateThreat = true;
-  
-  LOG->info("Storing move {} into entry {}", printMoveVerbose(move), entry);
-  entry = TT::setBestMove(entry, move);
-  LOG->info("New entry: {} ({})", entry, TT::printBitString(entry));
-  
-  LOG->info("Storing value {} into entry {}", value, entry);
-  entry = TT::setValue(entry, value);
-  LOG->info("New entry: {} ({})", entry, TT::printBitString(entry));
-  
-  LOG->info("Storing depth {} into entry {}", depth, entry);
-  entry = TT::setDepth(entry, depth);
-  LOG->info("New entry: {} ({})", entry, TT::printBitString(entry));
-  
-  LOG->info("Storing age {} into entry {}", age, entry);
-  entry = TT::setAge(entry, age);
-  LOG->info("New entry: {} ({})", entry, TT::printBitString(entry));
-  
-  LOG->info("Storing type {} into entry {}", TT::str(type), entry);
-  entry = TT::setType(entry, type);
-  LOG->info("New entry: {} ({})", entry, TT::printBitString(entry));
-  
-  LOG->info("Storing mateThreat {} into entry {}", boolStr(mateThreat), entry);
-  entry = TT::setMateThreat(entry, mateThreat);
-  LOG->info("New entry: {} ({})", entry, TT::printBitString(entry));
-  
-  Move moveRead = TT::getBestMove(entry);
-  LOG->info("Move read from entry: {}", printMoveVerbose(moveRead));
-  ASSERT_EQ(move, moveRead);
-  
-  Value valRead = TT::getValue(entry);
-  LOG->info("Value read from entry: {}", valRead);
-  ASSERT_EQ(value, valRead);
-  
-  int depthRead = TT::getDepth(entry);
-  LOG->info("Depth read from entry: {}", depthRead);
-  ASSERT_EQ(depth, depthRead);
-  
-  int ageRead = TT::getAge(entry);
-  LOG->info("Age read from entry: {}", ageRead);
-  ASSERT_EQ(age, ageRead);
-  
-  TT::EntryType typeRead = TT::getType(entry);
-  LOG->info("Type read from entry: {}", TT::str(typeRead));
-  ASSERT_EQ(type, typeRead);
-  
-  bool mateThreatRead = TT::hasMateThreat(entry);
-  LOG->info("Mate threat read from entry: {}", boolStr(mateThreatRead));
-  ASSERT_EQ(mateThreat, mateThreatRead);
-}
-
-TEST_F(TT_Test, putGet) {
   TT tt(10 * TT::MB);
-  Position position;
-  
-  tt.put(false, position.getZobristKey(), VALUE_DRAW, TT::TYPE_EXACT, Depth(4), createMove("e2e4"), false);
+
+  uint64_t collisionDistance = tt.maxNumberOfEntries;
+
+  const Key key1 = randomKey(rg);
+  const Key key2 = key1 + 13; // different bucket
+  const Key key3 = key1 + collisionDistance; // same bucket - collision
+//  const Key key4 = key3 + collisionDistance; // same bucket - collision
+//  const Key key5 = key4 + collisionDistance; // same bucket - collision
+//  const Key key6 = key5 + collisionDistance; // same bucket - collision
+//  const Key key7 = key6 + collisionDistance; // same bucket - collision
+//  const Key key8 = key7 + collisionDistance; // same bucket - collision
+
+  // new entry in empty bucket at pos 0
+  tt.put(key1, Depth(6), createMove("e2e4"), Value(101), TYPE_EXACT, true);
   ASSERT_EQ(1, tt.getNumberOfPuts());
   ASSERT_EQ(1, tt.getNumberOfEntries());
+  ASSERT_EQ(0, tt.getNumberOfUpdates());
+  ASSERT_EQ(0, tt.getNumberOfCollisions());
+  ASSERT_EQ(0, tt.getNumberOfOverwrites());
+  ASSERT_EQ(tt.getEntry(key1).key, key1);
+  ASSERT_EQ(tt.getEntry(key1).value, Value(101));
+  ASSERT_TRUE(tt.getEntry(key1).mateThreat);
 
-  // new
-  position.doMove(createMove("e2e4"));
-  tt.put(false, position.getZobristKey(), VALUE_DRAW, TT::TYPE_BETA, Depth(4), createMove("e7e5"), false);
+  // new entry
+  tt.put(key2, Depth(5), createMove("e2e4"), Value(102), TYPE_EXACT, false);
   ASSERT_EQ(2, tt.getNumberOfPuts());
   ASSERT_EQ(2, tt.getNumberOfEntries());
-  TT::Entry e = tt.get(position.getZobristKey());
-  ASSERT_EQ(VALUE_DRAW, TT::getValue(e));
-  ASSERT_EQ(1, tt.getNumberOfHits());
+  ASSERT_EQ(0, tt.getNumberOfUpdates());
+  ASSERT_EQ(0, tt.getNumberOfCollisions());
+  ASSERT_EQ(0, tt.getNumberOfOverwrites());
+  ASSERT_EQ(tt.getEntry(key2).key, key2);
+  ASSERT_EQ(tt.getEntry(key2).value, Value(102));
+  ASSERT_EQ(tt.getEntry(key2).depth, Value(5));
 
-  // update with exact type
-  tt.put(false, position.getZobristKey(), Value(1), TT::TYPE_EXACT, Depth(4), createMove("e7e5"), false);
+
+  // new entry (collision)
+  tt.put(key3, Depth(6), createMove("e2e4"), Value(103), TYPE_EXACT, true);
   ASSERT_EQ(3, tt.getNumberOfPuts());
   ASSERT_EQ(2, tt.getNumberOfEntries());
-  ASSERT_EQ(1, tt.getNumberOfUpdates());
-  e = tt.get(position.getZobristKey());
-  ASSERT_EQ(Value(1), TT::getValue(e));
-  ASSERT_EQ(2, tt.getNumberOfHits());
+  ASSERT_EQ(0, tt.getNumberOfUpdates());
+  ASSERT_EQ(1, tt.getNumberOfCollisions());
+  ASSERT_EQ(1, tt.getNumberOfOverwrites());
+  ASSERT_EQ(tt.getEntry(key3).key, key3);
+  ASSERT_EQ(tt.getEntry(key3).value, Value(103));
+  ASSERT_TRUE(tt.getEntry(key3).mateThreat);
 
-  // update with greater depth
-  tt.put(false, position.getZobristKey(), Value(2), TT::TYPE_EXACT, Depth(4), createMove("e7e5"), false);
-  ASSERT_EQ(4, tt.getNumberOfPuts());
-  ASSERT_EQ(2, tt.getNumberOfEntries());
-  ASSERT_EQ(2, tt.getNumberOfUpdates());
-  e = tt.get(position.getZobristKey());
-  ASSERT_EQ(1, TT::getValue(e));
-  ASSERT_EQ(3, tt.getNumberOfHits());
+  //
+//  // new entry in bucket at pos 2 (collision)
+//  tt.put(key4, Value(104), TT::TYPE_EXACT, Depth(3), createMove("e2e4"), false);
+//  ASSERT_EQ(4, tt.getNumberOfPuts());
+//  ASSERT_EQ(4, tt.getNumberOfEntries());
+//  ASSERT_EQ(0, tt.getNumberOfUpdates());
+//  ASSERT_EQ(0, tt.getNumberOfCollisions());
+//  ASSERT_EQ(0, tt.getNumberOfOverwrites());
+//  ASSERT_EQ(tt._keys[key4], key4);
+//  ASSERT_EQ(TT::getValue(tt._data[key4]), Value(104));
+//
+//
+//  // new entry in bucket at pos 3 (collision)
+//  tt.put(key5, Value(105), TT::TYPE_EXACT, Depth(5), createMove("e2e4"), false);
+//  ASSERT_EQ(5, tt.getNumberOfPuts());
+//  ASSERT_EQ(5, tt.getNumberOfEntries());
+//  ASSERT_EQ(0, tt.getNumberOfUpdates());
+//  ASSERT_EQ(0, tt.getNumberOfCollisions());
+//  ASSERT_EQ(0, tt.getNumberOfOverwrites());
+//  ASSERT_EQ(tt._keys[key5], key5);
+//  ASSERT_EQ(TT::getValue(tt._data[key5]), Value(105));
+//
+//  // REPLACE entry in bucket at pos 2 (collision) as pos has lowest depth (3)
+//  tt.put(key6, Value(206), TT::TYPE_EXACT, Depth(4), createMove("e2e4"), false);
+//  ASSERT_EQ(6, tt.getNumberOfPuts());
+//  ASSERT_EQ(5, tt.getNumberOfEntries());
+//  ASSERT_EQ(0, tt.getNumberOfUpdates());
+//  ASSERT_EQ(1, tt.getNumberOfCollisions());
+//  ASSERT_EQ(1, tt.getNumberOfOverwrites());
+//  ASSERT_EQ(tt._keys[key6], key6);
+//  ASSERT_EQ(TT::getValue(tt._data[key6]), Value(206));
+//
+//  // REPLACE entry in bucket at pos 2 (collision) as pos has lowest depth (4) and is last of 2 entries with this depth
+//  tt.put(key7, Value(207), TT::TYPE_EXACT, Depth(4), createMove("e2e4"), false);
+//  ASSERT_EQ(7, tt.getNumberOfPuts());
+//  ASSERT_EQ(5, tt.getNumberOfEntries());
+//  ASSERT_EQ(0, tt.getNumberOfUpdates());
+//  ASSERT_EQ(2, tt.getNumberOfCollisions());
+//  ASSERT_EQ(2, tt.getNumberOfOverwrites());
+//  ASSERT_EQ(tt._keys[key7], key7);
+//  ASSERT_EQ(TT::getValue(tt._data[key7]), Value(207));
+//
+//  // age first entry with depth 5
+//  tt._data[key1] = TT::increaseAge(tt._data[key1]);
+//
+//  // REPLACE entry in bucket at pos 0 (collision) as it is oldest
+//  tt.put(key8, Value(208), TT::TYPE_EXACT, Depth(4), createMove("e2e4"), false);
+//  ASSERT_EQ(8, tt.getNumberOfPuts());
+//  ASSERT_EQ(5, tt.getNumberOfEntries());
+//  ASSERT_EQ(0, tt.getNumberOfUpdates());
+//  ASSERT_EQ(3, tt.getNumberOfCollisions());
+//  ASSERT_EQ(3, tt.getNumberOfOverwrites());
+//  ASSERT_EQ(tt._keys[key8], key8);
+//  ASSERT_EQ(TT::getValue(tt._data[key8]), Value(208));
 
-  // update (should not update value as worse quality and same depth)
-  tt.put(false, position.getZobristKey(), Value(3), TT::TYPE_BETA, Depth(5), createMove("e7e5"), false);
-  ASSERT_EQ(5, tt.getNumberOfPuts());
-  ASSERT_EQ(2, tt.getNumberOfEntries());
-  ASSERT_EQ(3, tt.getNumberOfUpdates());
-  e = tt.get(position.getZobristKey());
-  ASSERT_EQ(3, TT::getValue(e));
-  ASSERT_EQ(4, tt.getNumberOfHits());
-
-  // not in TT
-  position.doMove(createMove("e7e5"));
-  e = tt.get(position.getZobristKey());
-  ASSERT_EQ(4, tt.getNumberOfHits());
-  ASSERT_EQ(1, tt.getNumberOfMisses());
-  
-  ASSERT_EQ(5, tt.getNumberOfProbes());
 }
 
-TEST_F(TT_Test, putTest) {
-  Position position;
 
-  TT tt;
+TEST_F(TT_Test, get) {
+  std::random_device rd;
+  std::mt19937_64 rg(rd());
+  std::uniform_int_distribution<uint64_t> randomKey;
+
+  TT tt(10 * TT::MB);
+
+  uint64_t collisionDistance = tt.maxNumberOfEntries;
+
+  const Key key1 = randomKey(rg);
+  const Key key2 = key1 + 13; // different bucket
+  const Key key3 = key1 + collisionDistance; // same bucket - collision
+  const Key key4 = key1 + 17;
+
+  // new entry in empty slot
+  tt.put(key1, Depth(6), createMove("e2e4"), Value(101), TYPE_EXACT, false);
+  TT::Entry e1 = tt.getEntry(key1);
+  ASSERT_EQ(101, e1.value);
+
+  // new entry in empty slote
+  tt.put(key2, Depth(5), createMove("e2e4"), Value(102), TYPE_EXACT, false);
+  TT::Entry e2 = tt.getEntry(key2);
+  ASSERT_EQ(102, e2.value);
+
+  // new entry in occupoied slot
+  tt.put(key3, Depth(7), createMove("e2e4"), Value(103), TYPE_EXACT, false);
+  TT::Entry e3 = tt.getEntry(key3);
+  ASSERT_EQ(103, e3.value);
+
+  TT::Entry e4 = tt.getEntry(key4); // not in TT
+  ASSERT_EQ(0, e4.key);
+
+}
+
+TEST_F(TT_Test, probe) {
+  std::random_device rd;
+  std::mt19937_64 rg(rd());
+  std::uniform_int_distribution<uint64_t> randomKey;
+
+  TT tt(10 * TT::MB);
+
+  const Key key1 = randomKey(rg);
+  const Key key2 = key1 + 13; // different bucket
+  const Key key3 = key1 + 17; // same bucket - collision
+
+  tt.put(key1, Depth(6), createMove("e2e4"), Value(101), TYPE_EXACT, true);
+  tt.put(key2, Depth(5), createMove("e2e4"), Value(102), TYPE_ALPHA, false);
+  tt.put(key3, Depth(4), createMove("e2e4"), Value(103), TYPE_BETA, false);
+
+  TT::Result ttHit = TT::TT_MISS;
+  TT::Entry beforeProbe = tt.getEntry(key1);
+  const TT::Entry* r = tt.probe<Search::NonPV>(key1, Depth(5), Value(-1000), Value(1000), ttHit);
+  const TT::Entry afterProbe = tt.getEntry(key1);
+  ASSERT_EQ(beforeProbe.age - 1, afterProbe.age); // has entry aged?
+  ASSERT_EQ(TT::TT_HIT, ttHit);
+  ASSERT_TRUE(r->mateThreat);
+
+  // TT entry has lower depth
+  r = tt.probe<Search::NonPV>(key1, Depth(7), Value(-1000), Value(1000), ttHit);
+  ASSERT_EQ(TT::TT_MISS, ttHit);
+
+  // TT entry was alpha within of bounds - MISS
+  r = tt.probe<Search::NonPV>(key2, Depth(4), Value(-1000), Value(1000), ttHit);
+  ASSERT_EQ(TT::TT_MISS, ttHit);
+  ASSERT_FALSE(r);
+
+  // TT entry was alpha and value < alpha
+  r = tt.probe<Search::NonPV>(key2, Depth(4), Value(103), Value(1000), ttHit);
+  ASSERT_EQ(TT::TT_HIT, ttHit);
+
+  // TT entry was alpha and value < alpha but PV
+  r = tt.probe<Search::PV>(key2, Depth(4), Value(103), Value(1000), ttHit);
+  ASSERT_EQ(TT::TT_MISS, ttHit);
+
+  // TT entry was beta within of bounds - MISS
+  r = tt.probe<Search::NonPV>(key3, Depth(4), Value(-1000), Value(1000), ttHit);
+  ASSERT_EQ(TT::TT_MISS, ttHit);
+
+  // TT entry was beta and value > beta - HIT
+  r = tt.probe<Search::NonPV>(key3, Depth(4), Value(-1000), Value(102), ttHit);
+  ASSERT_EQ(TT::TT_HIT, ttHit);
+
+  // TT entry was beta and value > beta but PV - MISS
+  r = tt.probe<Search::PV>(key3, Depth(4), Value(-1000), Value(102), ttHit);
+  ASSERT_EQ(TT::TT_MISS, ttHit);
+
+}
+
+TEST_F(TT_Test, tt_perft) {
+  std::random_device rd;
+  std::default_random_engine rg1(rd());
+  std::uniform_int_distribution<uint64_t> randomKey(1, 10'000'000);
+  std::uniform_int_distribution<u_int8_t> randomDepth(0, DEPTH_MAX);
+  std::uniform_int_distribution<int16_t> randomValue(VALUE_MIN, VALUE_MAX);
+  std::uniform_int_distribution<int16_t> randomAlpha(VALUE_MIN, 0);
+  std::uniform_int_distribution<int16_t> randomBeta(0, VALUE_MAX);
+  std::uniform_int_distribution<u_int8_t> randomType(1, 3);
+
+  TT tt(64 * TT::MB);
   tt.setThreads(4);
-  const int newsize = 1 * TT::MB;
-  tt.resize(newsize);
 
-  const int noOfEntries = 1'000;
-  LOG->info("Filling the TT with {:n} entries", noOfEntries);
-  for (int i = 0; i < noOfEntries; ++i) {
-    tt.put(true, i, VALUE_DRAW, TT::TYPE_EXACT, Depth(4), createMove("e2e4"), false);
+  TT::Result ttHit = TT::TT_MISS;
+
+  fprintln("Start perft test for TT...");
+  fprintln("TT Stats: {:s}", tt.str());
+
+  auto start = std::chrono::high_resolution_clock::now();
+
+  const int rounds = 10;
+  const int iterations = 1'000'000;
+  for (int j = 0; j < rounds; ++j) {
+    // puts
+    for (int i = 0; i < iterations; ++i) {
+      tt.put(
+        randomKey(rg1),
+        static_cast<Depth>(randomDepth(rg1)),
+        createMove("e2e4"),
+        static_cast<Value>(randomValue(rg1)),
+        static_cast<Value_Type>(randomType(rg1)),
+        false, true);
+    }
+    // probes
+    for (int i = 0; i < iterations; ++i) {
+      tt.probe<Search::NonPV>(randomKey(rg1),
+                              static_cast<Depth>(randomDepth(rg1)),
+                              static_cast<Value>(randomAlpha(rg1)),
+                              static_cast<Value>(randomBeta(rg1)),
+                              ttHit);
+    }
+    tt.ageEntries();
   }
-  LOG->info("{}", tt.str());
-  LOG->info("{}", TT::str(944, tt.get(944)));
-  tt.ageEntries();
-  tt.ageEntries();
-  tt.ageEntries();
-  ASSERT_EQ(3, TT::getAge(tt.get(944)));
-  LOG->info("{}", TT::str(944, tt.get(944)));
+
+  auto finish = std::chrono::high_resolution_clock::now();
+  auto time = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start).count();
+
+  fprintln("TT Statistics        : {:s}", tt.str());
+  fprintln("");
+  fprintln("Run time:              {:n} ms ({:n} put/probes per sec)",
+           time, (rounds * 2 * iterations * 1000ULL) / time);
+  fprintln("");
+
 }
 
 

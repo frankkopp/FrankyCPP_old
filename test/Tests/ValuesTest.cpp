@@ -27,8 +27,8 @@
 #include <gtest/gtest.h>
 
 #include <utility>
-#include "../../src/Logging.h"
-#include "../../src/Values.h"
+#include "Logging.h"
+#include "Values.h"
 
 using testing::Eq;
 
