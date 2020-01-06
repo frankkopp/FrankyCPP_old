@@ -15,7 +15,7 @@ v 0.x (plan)
         if there is a king capture in one of the succeeding nodes we jump back
         and dismiss this move.
 
-v 0.4 (plan)
+v 0.4 (in progress)
 ================================================================================
 - TODO:
     - LFP. LFR, ...
@@ -23,10 +23,8 @@ v 0.4 (plan)
     - EvalCache
     - Aspiration Window Search
 
-v 0.3 (in progress)
+v 0.3 (done)
 ================================================================================
-- TODO:
-    - Testing and Debugging
 - DONE:
     - RFP, NMP, RAZOR
     - IID (with TT - needs to be revisited)
