@@ -228,7 +228,7 @@ bool MoveGenerator::hasLegalMove(const Position &position) {
 
   /*
   To determine if we have at least one legal move we only have to find
-  on legal move. We search for any KING, PAWN, KNIGHT, BISHOP, ROOK, QUEEN move
+  one legal move. We search for any KING, PAWN, KNIGHT, BISHOP, ROOK, QUEEN move
   and return immediately if we found one.
   The order of our search is from approx. the most likely to the least likely
   */
@@ -333,6 +333,14 @@ bool MoveGenerator::hasLegalMove(const Position &position) {
 
   // no move found
   return false;
+}
+
+bool MoveGenerator::validateMove(Position &position, Move move) {
+  const Move moveOf1 = moveOf(move);
+  if (!moveOf1) return false;
+  const MoveList* lm = generateLegalMoves<GENALL>(position);
+  return std::find_if(lm->begin(), lm->end(), [&](
+    Move m) { return (moveOf1 == moveOf(m)); }) != lm->end();
 }
 
 ////////////////////////////////////////////////

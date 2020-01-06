@@ -253,7 +253,6 @@ TEST_F(SearchTest, goodCapture) {
   ASSERT_TRUE(search.goodCapture(position, createMove("a4d1"))); // bxR
   ASSERT_TRUE(search.goodCapture(position, createMove("f5h4"))); // nor defended
   ASSERT_FALSE(search.goodCapture(position, createMove("h5g4"))); // pawn
-  ASSERT_FALSE(search.goodCapture(position, createMove("h4f5"))); // Nxn
 
 }
 
@@ -454,26 +453,9 @@ TEST_F(SearchTest, nps) {
 
 // for debugging
 TEST_F(SearchTest, debugging) {
-
-
   Search search;
   SearchLimits searchLimits;
-
-  SearchConfig::USE_ALPHABETA = true;
-  SearchConfig::USE_PVS = true;
-  SearchConfig::USE_QUIESCENCE = true;
-  SearchConfig::USE_TT = true;
-  SearchConfig::USE_TT_QSEARCH = true;
-  SearchConfig::TT_SIZE_MB = 64;
-  SearchConfig::USE_KILLER_MOVES = true;
-  SearchConfig::USE_PV_MOVE_SORTING = true;
-  SearchConfig::USE_MDP = true;
-  SearchConfig::USE_MPP = true;
-  SearchConfig::USE_IID = true;
-
   Position position;
-  // 08 AB+TT        |   b4c6 |     9991 |      36.743.859 |    5.850.001 |        6.280 | b4c6 b7c6 f2a7 b8a7 e1a1 a7b6 h1b1 b6c5 a1a5 | 1kr4r/ppp2bq1/4n3/4P1pp/1NP2p2/2PP2PP/5Q1K/4R2R w - -
-  // 09 AB+IID       |   b4c6 |        0 |      46.915.971 |    6.024.909 |        7.786 | b4c6 b7c6 f2a7 b8a7 | 1kr4r/ppp2bq1/4n3/4P1pp/1NP2p2/2PP2PP/5Q1K/4R2R w - -
 
   //Position position("8/7p/R7/5p1k/5P2/7P/P1P1nP1K/5q2 w - - 3 33");
   //Position position("r3k2r/1ppn3p/2q1q1n1/4P3/4q3/5Pp1/pb4PP/2q2RK1 w kq - 0 1"); //

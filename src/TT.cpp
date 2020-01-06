@@ -138,46 +138,42 @@ void TT::put(Key key, Depth depth, Move move, Value value, Value_Type type, bool
 }
 
 template<bool NT>
-TT::Result
+const TT::Entry*
 TT::probe(const Key &key, const Depth &depth, const Value &alpha, const Value &beta,
-          Value &ttValue, Move &ttMove, bool &mateThreat) {
-
+          Result &result) {
+  // result = TT_MISS at this point
   numberOfProbes++;
   //Entry* ttEntryPtr = getEntryPtr(key);
   Entry* ttEntryPtr = &_data[(key & hashKeyMask)];
   // result is a logical TT result considering node type, alpha and beta bounds
-  if (ttEntryPtr->key == key) { // HIT
+  if (ttEntryPtr->key == key) {
     numberOfHits++; // entries with identical keys found
     ttEntryPtr->age = std::max(0, ttEntryPtr->age - 1);
-    // get best move independent from tt entry depth or type
-    ttMove = ttEntryPtr->move;
-    // mate threats are always valid
-    mateThreat = ttEntryPtr->mateThreat;
     // use value only if tt depth was equal or deeper
     if (ttEntryPtr->depth >= depth) {
-      ttValue = ttEntryPtr->value;
-      assert (ttValue != VALUE_NONE);
       // In a PV node use the value only for a cut off if it is exact.
       // In non PV nodes we use it only if it is exact or outside our
       // current bounds.
       const Value_Type entryType = ttEntryPtr->type;
       if (NT) {
-        if (entryType == TYPE_EXACT) return TT_HIT;
+        if (entryType == TYPE_EXACT) {
+          result = TT_HIT;
+          return ttEntryPtr;
+        }
       }
       else {
-          if (entryType == TYPE_EXACT ||
-              (entryType == TYPE_ALPHA && ttValue <= alpha) ||
-              (entryType == TYPE_BETA && ttValue >= beta)) {
-            return TT_HIT;
-          }
+        if (entryType == TYPE_EXACT ||
+            (entryType == TYPE_ALPHA && ttEntryPtr->value <= alpha) ||
+            (entryType == TYPE_BETA && ttEntryPtr->value >= beta)) {
+          result = TT_HIT;
+          return ttEntryPtr;
+        }
       }
     }
   }
-  else {
-    numberOfMisses++; // keys not found (not equal to TT misses)
-  }
-  // MISS
-  return TT_MISS;
+  numberOfMisses++; // keys not found (not equal to TT misses)
+  result = TT_MISS;
+  return nullptr;
 }
 
 TT::Entry TT::getEntry(Key key) const {
@@ -233,9 +229,9 @@ std::ostream &operator<<(std::ostream &os, const TT::Entry &entry) {
 }
 
 // explicit template instantiation
-template TT::Result
+template const TT::Entry*
 TT::probe<true>(const Key &key, const Depth &depth, const Value &alpha, const Value &beta,
-                      Value &ttValue, Move &ttMove, bool &mateThreat);
-template TT::Result
+                Result &result);
+template const TT::Entry*
 TT::probe<false>(const Key &key, const Depth &depth, const Value &alpha, const Value &beta,
-                         Value &ttValue, Move &ttMove, bool &mateThreat);
+                 Result &result);

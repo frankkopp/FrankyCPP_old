@@ -451,11 +451,10 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
 
   // ###############################################
   // TT Lookup
+  const TT::Entry* ttEntryPtr;
   if (SearchConfig::USE_TT
       && (SearchConfig::USE_TT_QSEARCH || ST != QUIESCENCE) && !PERFT) {
-    // probe the TT and set ttValue, ttMove and mateThreat
-    TT::Result result =
-      tt->probe<NT==PV>(position.getZobristKey(), depth, alpha, beta, ttValue, ttMove, mateThreat[ply]);
+
     /* TT PROBE
      * tt->probe has two results:
      * TT_HIT:
@@ -474,21 +473,28 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
      *  We might have a best move to try first from previous searches of this
      *  node (e.g. lower or equal depth, beta cut off).
      */
-    switch (result) {
-      case TT::TT_HIT:
-        searchStats.tt_Hits++;
-        // correct mate values
-        ttValue = valueFromTT(ttValue, ply);
-        if (ST == ROOT) {
-          getPVLine(position, pv[PLY_ROOT]);
-          setValue(rootMoves.at(currentMoveIndex), ttValue);
-          setValue(pv[PLY_ROOT].at(0), ttValue);
-        }
-        return ttValue;
-      case TT::TT_MISS:
-        // no usable value
-        searchStats.tt_Misses++;
-        break;
+    TT::Result ttHit = TT::TT_MISS;
+    ttEntryPtr = tt->probe<NT == PV>(position.getZobristKey(), depth, alpha, beta, ttHit);
+    if (ttEntryPtr) {
+      ttMove = ttEntryPtr->move;
+      assert(!ttMove || moveGenerators[ply].validateMove(position, ttMove));
+      mateThreat[ply] = ttEntryPtr->mateThreat;
+      ttValue = valueFromTT(ttEntryPtr->value, ply);
+      switch (ttHit) {
+        case TT::TT_HIT:
+          searchStats.tt_Hits++;
+          // correct mate values
+          if (ST == ROOT) {
+            getPVLine(position, pv[PLY_ROOT]);
+            setValue(rootMoves.at(currentMoveIndex), ttValue);
+            setValue(pv[PLY_ROOT].at(0), ttValue);
+          }
+          return ttValue;
+        case TT::TT_MISS:
+          // no usable value
+          searchStats.tt_Misses++;
+          break;
+      }
     }
   }
   // End TT Lookup
@@ -517,6 +523,22 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
   }
   // ###############################################
 
+  // get an evaluation for the position
+  Value staticEval = VALUE_NONE;
+  if (!position.hasCheck() && !PERFT) {
+    staticEval = evaluate(position);
+    if (ttEntryPtr && ttValue != VALUE_NONE) {
+      if ((ttValue > staticEval && ttEntryPtr->type == TYPE_BETA)
+          || (ttValue <= staticEval && ttEntryPtr->type == TYPE_ALPHA)) {
+        staticEval = ttValue;
+      }
+    }
+    //    else {
+    //      // NULL move adjustment
+    //      // Stockfish saves this into TT (separate value eval)
+    //    }
+  }
+
   // ###############################################
   // FORWARD PRUNING BETA
   // Prunings which return a beta value and not just
@@ -531,9 +553,6 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
       && !position.hasCheck()
       && doNull
     ) {
-
-    // get an evaluation for the position
-    Value staticEval = evaluate(position); // TODO
 
     // ###############################################
     // Reverse Futility Pruning, (RFP, Static Null Move Pruning)
@@ -587,7 +606,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
 
       // pruning
       if (nullValue >= beta) {
-        TRACE(LOG, "{:>{}}Search in ply {} for depth {}: NULL CUT","", ply, ply, depth);
+        TRACE(LOG, "{:>{}}Search in ply {} for depth {}: NULL CUT", "", ply, ply, depth);
         searchStats.nullMovePrunings++;
         storeTT(position, nullValue, TYPE_BETA, depth, ply, ttMove, mateThreat[ply]);
         return nullValue; // fail-hard: beta / fail-soft: nullValue;
@@ -634,13 +653,21 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
     //      "**ST={:<10} NT={:<5} depth={:<2} ply={:<2} alpha={:>6} beta={:>6} ttValue={:>6} ttMove={:<30} ",
     //      ST == ROOT ? "ROOT" : ST == NONROOT ? "NONROOT" : "QUIESCENCE", NT == PV ? "PV" : "NonPV",
     //      depth, ply, alpha, beta, ttValue, printMoveVerbose(ttMove));
+
     searchStats.iidSearches++;
     auto iidDepth = static_cast<Depth>(depth >> 1); // div by 2
     // do the iterative search which will eventually
     // fill the pv list and the TT
     search<ST, PV>(position, iidDepth, ply, alpha, beta, Do_Null_Move);
     // no we look in the pv list if we have a best move
-    tt->probe<true>(position.getZobristKey(), depth, alpha, beta, ttValue, ttMove, mateThreat[ply]);
+    TT::Result ttHit = TT::TT_MISS;
+    const TT::Entry* pEntry = tt->probe<true>(position.getZobristKey(), depth, alpha, beta, ttHit);
+    if (pEntry) {
+      ttMove = pEntry->move;
+      assert(!ttMove || moveGenerators[ply].validateMove(position, ttMove));
+      ttValue = ttHit ? valueFromTT(pEntry->value, ply) : VALUE_NONE; // TODO: might be used later
+    }
+
     //ttMove = pv[ply].empty() ? MOVE_NONE : pv[ply].at(0);
     //    fprintln("****IID SEARCH RESULT: pv={} pv[{}] = {}",
     //             printMoveVerbose(pv[ply].empty() ? MOVE_NONE : pv[ply].at(0)), ply,
@@ -651,6 +678,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
 
   // make sure the pv move is returned first
   if (ST != ROOT && SearchConfig::USE_PV_MOVE_SORTING && ttMove) {
+    assert(moveGenerators[ply].validateMove(position, ttMove));
     moveGenerators[ply].setPV(ttMove);
   }
 
@@ -939,7 +967,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
   TRACE(LOG, "{:>{}}Search {} in ply {} for depth {}: END value={} ({} moves searched) ({})", "", ply, (ST == ROOT ? "ROOT" : ST == NONROOT ? "NONROOT" : "QUIESCENCE"), ply, depth, bestNodeValue, movesSearched, printMoveListUCI(currentVariation));
 
   // best value should in any case not be VALUE_NONE any more
-  assert ((bestNodeValue >= VALUE_MIN && bestNodeValue <= VALUE_MAX && "bestNodeValue should not be MIN/MAX here"));
+  assert (PERFT || (bestNodeValue >= VALUE_MIN && bestNodeValue <= VALUE_MAX && "bestNodeValue should not be MIN/MAX here"));
 
   // store TT data
   switch (ST) {

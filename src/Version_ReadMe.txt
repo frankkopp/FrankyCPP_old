@@ -3,6 +3,7 @@ v 0.x (plan)
 - TODO:
     - Simple Opening Book
     - IID check
+    - ATACKS / SEE
     - WIN MSC 
         // GTEST - nice examples
         // Windows:  _MSC_VER

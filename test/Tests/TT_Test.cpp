@@ -278,45 +278,42 @@ TEST_F(TT_Test, probe) {
   tt.put(key2, Depth(5), createMove("e2e4"), Value(102), TYPE_ALPHA, false);
   tt.put(key3, Depth(4), createMove("e2e4"), Value(103), TYPE_BETA, false);
 
-  Value ttValue = VALUE_NONE;
-  Move ttMove = MOVE_NONE;
-  bool ttMateThreat = false;
-
+  TT::Result ttHit = TT::TT_MISS;
   TT::Entry beforeProbe = tt.getEntry(key1);
-  TT::Result r = tt.probe<Search::NonPV>(key1, Depth(5), Value(-1000), Value(1000), ttValue, ttMove, ttMateThreat);
+  const TT::Entry* r = tt.probe<Search::NonPV>(key1, Depth(5), Value(-1000), Value(1000), ttHit);
   const TT::Entry afterProbe = tt.getEntry(key1);
   ASSERT_EQ(beforeProbe.age - 1, afterProbe.age); // has entry aged?
-  ASSERT_EQ(TT::TT_HIT, r);
-  ASSERT_TRUE(ttMateThreat);
+  ASSERT_EQ(TT::TT_HIT, ttHit);
+  ASSERT_TRUE(r->mateThreat);
 
   // TT entry has lower depth
-  r = tt.probe<Search::NonPV>(key1, Depth(7), Value(-1000), Value(1000), ttValue, ttMove, ttMateThreat);
-  ASSERT_EQ(TT::TT_MISS, r);
+  r = tt.probe<Search::NonPV>(key1, Depth(7), Value(-1000), Value(1000), ttHit);
+  ASSERT_EQ(TT::TT_MISS, ttHit);
 
   // TT entry was alpha within of bounds - MISS
-  r = tt.probe<Search::NonPV>(key2, Depth(4), Value(-1000), Value(1000), ttValue, ttMove, ttMateThreat);
-  ASSERT_EQ(TT::TT_MISS, r);
-  ASSERT_FALSE(ttMateThreat);
+  r = tt.probe<Search::NonPV>(key2, Depth(4), Value(-1000), Value(1000), ttHit);
+  ASSERT_EQ(TT::TT_MISS, ttHit);
+  ASSERT_FALSE(r);
 
   // TT entry was alpha and value < alpha
-  r = tt.probe<Search::NonPV>(key2, Depth(4), Value(103), Value(1000), ttValue, ttMove, ttMateThreat);
-  ASSERT_EQ(TT::TT_HIT, r);
+  r = tt.probe<Search::NonPV>(key2, Depth(4), Value(103), Value(1000), ttHit);
+  ASSERT_EQ(TT::TT_HIT, ttHit);
 
   // TT entry was alpha and value < alpha but PV
-  r = tt.probe<Search::PV>(key2, Depth(4), Value(103), Value(1000), ttValue, ttMove, ttMateThreat);
-  ASSERT_EQ(TT::TT_MISS, r);
+  r = tt.probe<Search::PV>(key2, Depth(4), Value(103), Value(1000), ttHit);
+  ASSERT_EQ(TT::TT_MISS, ttHit);
 
   // TT entry was beta within of bounds - MISS
-  r = tt.probe<Search::NonPV>(key3, Depth(4), Value(-1000), Value(1000), ttValue, ttMove, ttMateThreat);
-  ASSERT_EQ(TT::TT_MISS, r);
+  r = tt.probe<Search::NonPV>(key3, Depth(4), Value(-1000), Value(1000), ttHit);
+  ASSERT_EQ(TT::TT_MISS, ttHit);
 
   // TT entry was beta and value > beta - HIT
-  r = tt.probe<Search::NonPV>(key3, Depth(4), Value(-1000), Value(102), ttValue, ttMove, ttMateThreat);
-  ASSERT_EQ(TT::TT_HIT, r);
+  r = tt.probe<Search::NonPV>(key3, Depth(4), Value(-1000), Value(102), ttHit);
+  ASSERT_EQ(TT::TT_HIT, ttHit);
 
   // TT entry was beta and value > beta but PV - MISS
-  r = tt.probe<Search::PV>(key3, Depth(4), Value(-1000), Value(102), ttValue, ttMove, ttMateThreat);
-  ASSERT_EQ(TT::TT_MISS, r);
+  r = tt.probe<Search::PV>(key3, Depth(4), Value(-1000), Value(102), ttHit);
+  ASSERT_EQ(TT::TT_MISS, ttHit);
 
 }
 
@@ -333,9 +330,7 @@ TEST_F(TT_Test, tt_perft) {
   TT tt(64 * TT::MB);
   tt.setThreads(4);
 
-  Value ttValue = VALUE_NONE;
-  Move ttMove = MOVE_NONE;
-  bool ttMateThreat = false;
+  TT::Result ttHit = TT::TT_MISS;
 
   fprintln("Start perft test for TT...");
   fprintln("TT Stats: {:s}", tt.str());
@@ -361,9 +356,7 @@ TEST_F(TT_Test, tt_perft) {
                               static_cast<Depth>(randomDepth(rg1)),
                               static_cast<Value>(randomAlpha(rg1)),
                               static_cast<Value>(randomBeta(rg1)),
-                              ttValue,
-                              ttMove,
-                              ttMateThreat);
+                              ttHit);
     }
     tt.ageEntries();
   }

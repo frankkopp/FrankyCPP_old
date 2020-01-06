@@ -318,6 +318,32 @@ TEST_F(MoveGenTest, legalMoves) {
   NEWLINE;
 }
 
+
+TEST_F(MoveGenTest, validateMove) {
+  string fen;
+  MoveGenerator mg;
+  MoveList moves;
+
+  // 86 pseudo legal moves (incl. castling over attacked square)
+  fen = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3";
+  Position position(fen);
+
+  ASSERT_TRUE (mg.validateMove(position, createMove("b2e5")));
+  ASSERT_TRUE (mg.validateMove(position, createMove("e6e5")));
+  ASSERT_TRUE (mg.validateMove(position, createMove("c4e4")));
+  ASSERT_TRUE (mg.validateMove(position, createMove("c6e4")));
+  ASSERT_TRUE (mg.validateMove(position, createMove<PROMOTION>("a2a1q")));
+  ASSERT_TRUE (mg.validateMove(position, createMove<PROMOTION>("c2c1q")));
+  ASSERT_TRUE (mg.validateMove(position, createMove<PROMOTION>("a2a1n")));
+  ASSERT_TRUE (mg.validateMove(position, createMove<PROMOTION>("c2c1n")));
+  ASSERT_FALSE (mg.validateMove(position, createMove("e2e4")));
+  ASSERT_FALSE (mg.validateMove(position, createMove("b8c8")));
+  ASSERT_FALSE (mg.validateMove(position, createMove("a2b3")));
+  ASSERT_FALSE (mg.validateMove(position, createMove("b1c3")));
+  ASSERT_FALSE (mg.validateMove(position, MOVE_NONE));
+
+}
+
 TEST_F(MoveGenTest, onDemandGen) {
   string fen;
   MoveGenerator mg;

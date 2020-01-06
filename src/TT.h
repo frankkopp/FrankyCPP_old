@@ -62,10 +62,10 @@ public:
   static constexpr uint64_t DEFAULT_TT_SIZE = 2 * MB; // byte
 
   enum Result {
-    // TT probe has found an entry and the value leads to a cut off
-      TT_HIT,
     // TT probe has not found an entry or the value does not lead to a cut off.
-      TT_MISS
+      TT_MISS,
+    // TT probe has found an entry and the value leads to a cut off
+      TT_HIT
   };
 
   struct Entry {
@@ -202,9 +202,9 @@ public:
    * @return A result of the probe with value and move from the TT in case of hit.
    */
   template<bool NT>
-  TT::Result
-  probe(const Key &key, const Depth &depth, const Value &alpha, const Value &beta, Value &ttValue,
-        Move &ttMove, bool &mateThreat);
+  const Entry*
+  probe(const Key &key, const Depth &depth, const Value &alpha, const Value &beta,
+        Result &result);
 
   /** Age all entries by 1 */
   void ageEntries();

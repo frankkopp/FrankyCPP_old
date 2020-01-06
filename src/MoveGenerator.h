@@ -143,6 +143,15 @@ public:
    */
   void setPV(Move move);
 
+  /**
+   * Validate a a move is a legal move by checking it against all legal moves.
+   * This is for asserting and testing - it is not very efficient.
+   * @param position
+   * @param move
+   * @return true if move is a valid move on the current position.
+   */
+  bool validateMove(Position &position, Move move);
+
 private:
 
   FRIEND_TEST(MoveGenTest, pawnMoves);
