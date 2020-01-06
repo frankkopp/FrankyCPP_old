@@ -2,6 +2,17 @@
 configure_file(version.h.in version.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
+ # include BOOST
+set(BOOST_ROOT "/usr/local/boost_1_72_0")
+set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
+set(Boost_USE_MULTITHREADED ON)
+#set(Boost_USE_STATIC_LIBS ON) # only find static libs
+#set(Boost_USE_STATIC_RUNTIME OFF)
+find_package(Boost 1.72.0 COMPONENTS timer log log_setup REQUIRED)
+if (Boost_FOUND)
+    include_directories(${Boost_INCLUDE_DIRS})
+endif ()
+
 # set the name of the executable
 set(execname FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR})
 
@@ -22,5 +33,7 @@ target_link_libraries(
         ${execname}
         core
         fmt::fmt
-        spdlog::spdlog)
+        spdlog::spdlog
+        ${Boost_LIBRARIES}
+)
 

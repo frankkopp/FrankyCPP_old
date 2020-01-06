@@ -31,6 +31,9 @@
 #include "Bitboards.h"
 #include "Position.h"
 
+#include <boost/timer/timer.hpp>
+using namespace boost::timer;
+
 using namespace std;
 using namespace Bitboards;
 
@@ -169,7 +172,7 @@ unsigned popcount16(unsigned u) {
   return (u * 0x0101U) >> 8U;
 }
 
-TEST_F(TimingTests, DISABLED_bitCount) {
+TEST_F(TimingTests, bitCount) {
   ostringstream os;
 
   std::mt19937_64 rg(12345);
@@ -208,6 +211,8 @@ void
 TimingTests::testTiming(ostringstream &os, int rounds, int iterations, int repetitions,
                         vector<function<void()>> tests) {
 
+  nanosecond_type last = 0;
+
   cout.imbue(deLocale);
   os.imbue(deLocale);
   os << setprecision(9);
@@ -224,22 +229,33 @@ TimingTests::testTiming(ostringstream &os, int rounds, int iterations, int repet
     int testNr = 1;
     for (auto f : tests) {
       // iterations
-      unsigned long long sum = 0ULL;
       int i = 0;
+      boost::timer::cpu_timer timer;
+      timer.stop();
       while (i++ < iterations) {
         // repetitions
-        auto start = std::chrono::high_resolution_clock::now();
+        timer.resume();
         for (int j = 0; j < repetitions; ++j) f();
-        auto finish = std::chrono::high_resolution_clock::now();
-        sum += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
+        timer.stop();
       }
-      auto avg = ((double) sum / iterations);
-      os << "Round " << setw(2) << round << " Test " << setw(2) << testNr++ << ": " << setw(12)
-         << avg
-         << " ns" << " (" << setw(12) << (avg / 1e9) << " sec)"
-         << " (" << setw(12) << (avg / (repetitions * iterations)) << " ns avg per test)" << endl;
+
+      cpu_times cpuTime = timer.elapsed();
+      cpu_times avgTimes = cpu_times{cpuTime.wall / iterations, cpuTime.user / iterations,
+                                     cpuTime.system / iterations};
+
+      int percentFromLast = last ? (avgTimes.wall * 10'000) / last : 10'000;
+
+      os << "Round " << std::setfill(' ') << setw(2) << round << " Test " << setw(2) << testNr++
+         << ": " << std::setfill(' ') << setw(12) << avgTimes.wall << " ns"
+         << " (" << std::setfill(' ') << setw(6) << (percentFromLast / 100) << "%)"
+         << " (" << std::setfill(' ') << setw(12) << (avgTimes.wall / 1e9) << " sec)"
+         << " (" << std::setfill(' ') << setw(12) << static_cast<double>(avgTimes.wall) / (repetitions * iterations) << " ns avg per test)"
+         << " >> " << boost::timer::format(avgTimes, default_places);
+
+      last = avgTimes.wall;
     }
-    // os << endl;
+    os << endl;
+    last = 0;
   }
 }
 
