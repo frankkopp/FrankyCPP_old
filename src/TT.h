@@ -26,6 +26,7 @@
 #include <ostream>
 #include "Logging.h"
 #include "types.h"
+#include "Search.h"
 #include "gtest/gtest_prod.h"
 
 #ifndef FRANKYCPP_TT_H
@@ -49,18 +50,6 @@ public:
   static constexpr uint64_t MB = KB * KB;
   static constexpr uint64_t DEFAULT_TT_SIZE = 2 * MB; // byte
 
-  enum EntryType : u_int8_t {
-    TYPE_NONE = 0,
-    // the node for the value was fully calculated and is exact
-    TYPE_EXACT = 1,
-    // the node for the value has NOT found a value > alpha so alpha is
-    // upper bound (value could be worse)
-    TYPE_ALPHA = 2,
-    // the node for the value has found a refutation (value > beta( and has
-    // been cut off. Value is a lower bound (could be better).
-    TYPE_BETA = 3,
-  };
-
   enum Result {
     // TT probe has found an entry and the value leads to a cut off
       TT_HIT,
@@ -76,7 +65,7 @@ public:
     Value value = VALUE_NONE; // 8 bit signed
     Depth depth:7; // 0-127
     uint8_t age:3; // 0-7
-    EntryType type:2; // 4 values
+    Search::EntryType type:2; // 4 values
     bool mateThreat:1; // 1-bit bool
     friend std::ostream &operator<<(std::ostream &os, const Entry &entry);
   };
@@ -145,7 +134,8 @@ public:
     * @param mateThreat node had a mate threat in the ply
     */
   void
-  put(Key key, Depth depth, Move move, Value value, EntryType type, bool mateThreat, bool forced);
+  put(Key key, Depth depth, Move move, Value value, Search::EntryType type, bool mateThreat,
+      bool forced);
 
   /**
     * Stores the node value and the depth it has been calculated at.
@@ -156,7 +146,7 @@ public:
     * @param type EXACT, ALPHA or BETA
     * @param mateThreat node had a mate threat in the ply
     */
-  void put(Key key, Depth depth, Move move, Value value, EntryType type, bool mateThreat) {
+  void put(Key key, Depth depth, Move move, Value value, Search::EntryType type, bool mateThreat) {
     put(key, depth, move, value, type, mateThreat, false);
   }
 
@@ -168,7 +158,7 @@ public:
     * @param value Value of the position between VALUE_MIN and VALUE_MAX
     * @param type EXACT, ALPHA or BETA
     */
-  void put(Key key, Depth depth, Value value, EntryType type) {
+  void put(Key key, Depth depth, Value value, Search::EntryType type) {
     put(key, depth, MOVE_NONE, value, type, false);
   }
 
@@ -199,9 +189,10 @@ public:
    * @param isPVNode current node type when probing
    * @return A result of the probe with value and move from the TT in case of hit.
    */
+  template<Search::Node_Type NT>
   TT::Result
-  probe(const Key &key, const Depth &depth, const Value &alpha, const Value &beta,
-        const bool isPVNode, Value &ttValue, Move &ttMove, bool &mateThreat);
+  probe(const Key &key, const Depth &depth, const Value &alpha, const Value &beta, Value &ttValue,
+        Move &ttMove, bool &mateThreat);
 
   /** Age all entries by 1 */
   void ageEntries();
@@ -226,7 +217,7 @@ private:
 
   static void
   writeEntry(Entry* entryPtr, Key key, const Depth depth, const Move move, const Value value,
-             const TT::EntryType type, bool mateThreat, uint8_t age);
+             const Search::EntryType type, bool mateThreat, uint8_t age);
 
   /* This retrieves a direct pointer to the entry of this node from cache */
   Entry* getEntryPtr(Key key) const;
@@ -285,15 +276,15 @@ public:
     TT::noOfThreads = threads;
   }
 
-  static inline std::string str(EntryType type) {
+  static inline std::string str(Search::EntryType type) {
     switch (type) {
-      case TYPE_NONE:
+      case Search::TYPE_NONE:
         return "NONE";
-      case TYPE_EXACT:
+      case Search::TYPE_EXACT:
         return "EXACT";
-      case TYPE_ALPHA:
+      case Search::TYPE_ALPHA:
         return "ALPHA";
-      case TYPE_BETA:
+      case Search::TYPE_BETA:
         return "BETA";
     }
   }

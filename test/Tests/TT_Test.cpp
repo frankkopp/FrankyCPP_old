@@ -25,9 +25,9 @@
 
 #include <random>
 #include <gtest/gtest.h>
-#include "../../src/Logging.h"
-#include "../../src/TT.h"
-#include "../../src/Position.h"
+#include "Logging.h"
+#include "TT.h"
+#include "Search.h"
 
 using testing::Eq;
 
@@ -138,7 +138,7 @@ TEST_F(TT_Test, put) {
 //  const Key key8 = key7 + collisionDistance; // same bucket - collision
 
   // new entry in empty bucket at pos 0
-  tt.put(key1, Depth(6), createMove("e2e4"), Value(101), TT::TYPE_EXACT, true);
+  tt.put(key1, Depth(6), createMove("e2e4"), Value(101), Search::TYPE_EXACT, true);
   ASSERT_EQ(1, tt.getNumberOfPuts());
   ASSERT_EQ(1, tt.getNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfUpdates());
@@ -149,7 +149,7 @@ TEST_F(TT_Test, put) {
   ASSERT_TRUE(tt.getEntry(key1).mateThreat);
 
   // new entry
-  tt.put(key2, Depth(5), createMove("e2e4"), Value(102), TT::TYPE_EXACT, false);
+  tt.put(key2, Depth(5), createMove("e2e4"), Value(102), Search::TYPE_EXACT, false);
   ASSERT_EQ(2, tt.getNumberOfPuts());
   ASSERT_EQ(2, tt.getNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfUpdates());
@@ -161,7 +161,7 @@ TEST_F(TT_Test, put) {
 
 
   // new entry (collision)
-  tt.put(key3, Depth(6), createMove("e2e4"), Value(103), TT::TYPE_EXACT, true);
+  tt.put(key3, Depth(6), createMove("e2e4"), Value(103), Search::TYPE_EXACT, true);
   ASSERT_EQ(3, tt.getNumberOfPuts());
   ASSERT_EQ(2, tt.getNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfUpdates());
@@ -244,17 +244,17 @@ TEST_F(TT_Test, get) {
   const Key key4 = key1 + 17;
 
   // new entry in empty slot
-  tt.put(key1, Depth(6), createMove("e2e4"), Value(101), TT::TYPE_EXACT, false);
+  tt.put(key1, Depth(6), createMove("e2e4"), Value(101), Search::TYPE_EXACT, false);
   TT::Entry e1 = tt.getEntry(key1);
   ASSERT_EQ(101, e1.value);
 
   // new entry in empty slote
-  tt.put(key2, Depth(5), createMove("e2e4"), Value(102), TT::TYPE_EXACT, false);
+  tt.put(key2, Depth(5), createMove("e2e4"), Value(102), Search::TYPE_EXACT, false);
   TT::Entry e2 = tt.getEntry(key2);
   ASSERT_EQ(102, e2.value);
 
   // new entry in occupoied slot
-  tt.put(key3, Depth(7), createMove("e2e4"), Value(103), TT::TYPE_EXACT, false);
+  tt.put(key3, Depth(7), createMove("e2e4"), Value(103), Search::TYPE_EXACT, false);
   TT::Entry e3 = tt.getEntry(key3);
   ASSERT_EQ(103, e3.value);
 
@@ -274,48 +274,48 @@ TEST_F(TT_Test, probe) {
   const Key key2 = key1 + 13; // different bucket
   const Key key3 = key1 + 17; // same bucket - collision
 
-  tt.put(key1, Depth(6), createMove("e2e4"), Value(101), TT::TYPE_EXACT, true);
-  tt.put(key2, Depth(5), createMove("e2e4"), Value(102), TT::TYPE_ALPHA, false);
-  tt.put(key3, Depth(4), createMove("e2e4"), Value(103), TT::TYPE_BETA, false);
+  tt.put(key1, Depth(6), createMove("e2e4"), Value(101), Search::TYPE_EXACT, true);
+  tt.put(key2, Depth(5), createMove("e2e4"), Value(102), Search::TYPE_ALPHA, false);
+  tt.put(key3, Depth(4), createMove("e2e4"), Value(103), Search::TYPE_BETA, false);
 
   Value ttValue = VALUE_NONE;
   Move ttMove = MOVE_NONE;
   bool ttMateThreat = false;
 
   TT::Entry beforeProbe = tt.getEntry(key1);
-  TT::Result r = tt.probe(key1, Depth(5), Value(-1000), Value(1000), false, ttValue, ttMove, ttMateThreat);
+  TT::Result r = tt.probe<Search::NonPV>(key1, Depth(5), Value(-1000), Value(1000), ttValue, ttMove, ttMateThreat);
   const TT::Entry afterProbe = tt.getEntry(key1);
   ASSERT_EQ(beforeProbe.age - 1, afterProbe.age); // has entry aged?
   ASSERT_EQ(TT::TT_HIT, r);
   ASSERT_TRUE(ttMateThreat);
 
   // TT entry has lower depth
-  r = tt.probe(key1, Depth(7), Value(-1000), Value(1000), false, ttValue, ttMove, ttMateThreat);
+  r = tt.probe<Search::NonPV>(key1, Depth(7), Value(-1000), Value(1000), ttValue, ttMove, ttMateThreat);
   ASSERT_EQ(TT::TT_MISS, r);
 
   // TT entry was alpha within of bounds - MISS
-  r = tt.probe(key2, Depth(4), Value(-1000), Value(1000), false, ttValue, ttMove, ttMateThreat);
+  r = tt.probe<Search::NonPV>(key2, Depth(4), Value(-1000), Value(1000), ttValue, ttMove, ttMateThreat);
   ASSERT_EQ(TT::TT_MISS, r);
   ASSERT_FALSE(ttMateThreat);
 
   // TT entry was alpha and value < alpha
-  r = tt.probe(key2, Depth(4), Value(103), Value(1000), false, ttValue, ttMove, ttMateThreat);
+  r = tt.probe<Search::NonPV>(key2, Depth(4), Value(103), Value(1000), ttValue, ttMove, ttMateThreat);
   ASSERT_EQ(TT::TT_HIT, r);
 
   // TT entry was alpha and value < alpha but PV
-  r = tt.probe(key2, Depth(4), Value(103), Value(1000), true, ttValue, ttMove, ttMateThreat);
+  r = tt.probe<Search::NonPV>(key2, Depth(4), Value(103), Value(1000), ttValue, ttMove, ttMateThreat);
   ASSERT_EQ(TT::TT_MISS, r);
 
   // TT entry was beta within of bounds - MISS
-  r = tt.probe(key3, Depth(4), Value(-1000), Value(1000), false, ttValue, ttMove, ttMateThreat);
+  r = tt.probe<Search::NonPV>(key3, Depth(4), Value(-1000), Value(1000), ttValue, ttMove, ttMateThreat);
   ASSERT_EQ(TT::TT_MISS, r);
 
   // TT entry was beta and value > beta - HIT
-  r = tt.probe(key3, Depth(4), Value(-1000), Value(102), false, ttValue, ttMove, ttMateThreat);
+  r = tt.probe<Search::NonPV>(key3, Depth(4), Value(-1000), Value(102), ttValue, ttMove, ttMateThreat);
   ASSERT_EQ(TT::TT_HIT, r);
 
   // TT entry was beta and value > beta but PV - MISS
-  r = tt.probe(key3, Depth(4), Value(-1000), Value(102), true, ttValue, ttMove, ttMateThreat);
+  r = tt.probe<Search::NonPV>(key3, Depth(4), Value(-1000), Value(102), ttValue, ttMove, ttMateThreat);
   ASSERT_EQ(TT::TT_MISS, r);
 
 }
@@ -352,19 +352,18 @@ TEST_F(TT_Test, tt_perft) {
         static_cast<Depth>(randomDepth(rg1)),
         createMove("e2e4"),
         static_cast<Value>(randomValue(rg1)),
-        static_cast<TT::EntryType>(randomType(rg1)),
+        static_cast<Search::EntryType>(randomType(rg1)),
         false, true);
     }
     // probes
     for (int i = 0; i < iterations; ++i) {
-      tt.probe(randomKey(rg1),
-               static_cast<Depth>(randomDepth(rg1)),
-               static_cast<Value>(randomAlpha(rg1)),
-               static_cast<Value>(randomBeta(rg1)),
-               false,
-               ttValue,
-               ttMove,
-               ttMateThreat);
+      tt.probe<Search::NonPV>(randomKey(rg1),
+                              static_cast<Depth>(randomDepth(rg1)),
+                              static_cast<Value>(randomAlpha(rg1)),
+                              static_cast<Value>(randomBeta(rg1)),
+                              ttValue,
+                              ttMove,
+                              ttMateThreat);
     }
     tt.ageEntries();
   }

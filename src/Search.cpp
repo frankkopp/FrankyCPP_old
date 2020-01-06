@@ -27,32 +27,35 @@
 #include "Search.h"
 #include "SearchConfig.h"
 #include "Engine.h"
+#include "TT.h"
 
 ////////////////////////////////////////////////
 ///// CONSTRUCTORS
 
-Search::Search() : Search(nullptr) {
-}
+Search::Search() : Search(nullptr) {}
 
 Search::Search(Engine* pEng) {
   pEngine = pEng;
+
+  tt = new TT;
   if (SearchConfig::USE_TT) {
-    tt.setThreads(4);
+    tt->setThreads(4);
     int hashSize = SearchConfig::TT_SIZE_MB;
     if (pEngine) {
       int tmp = pEngine->getHashSize();
       if (tmp) hashSize = tmp;
     }
-    tt.resize(hashSize * TT::MB);
+    tt->resize(hashSize * TT::MB);
   }
   else {
-    tt.resize(0);
+    tt->resize(0);
   }
 }
 
 Search::~Search() {
   // necessary to avoid err message: terminate called without an active exception
   if (myThread.joinable()) myThread.join();
+  delete tt;
 }
 
 ////////////////////////////////////////////////
@@ -194,7 +197,7 @@ void Search::run(Position position) {
   }
 
   // age TT entries
-  tt.ageEntries();
+  tt->ageEntries();
 
   // search mode
   if (searchLimits.isPerft()) {
@@ -231,7 +234,7 @@ void Search::run(Position position) {
 
   // print result of the search
   LOG->info("Search statistics: {}", searchStats.str());
-  if (SearchConfig::USE_TT) LOG->info(tt.str());
+  if (SearchConfig::USE_TT) LOG->info(tt->str());
   LOG->info("Search Depth was {} ({})", searchStats.currentIterationDepth, searchStats.currentExtraSearchDepth);
   LOG->info("Search took {},{:03} sec ({:n} nps)",
             (searchStats.lastSearchTime % 1'000'000) / 1'000, (searchStats.lastSearchTime % 1'000),
@@ -437,7 +440,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
   Value ttValue = VALUE_NONE;
   Move ttStoreMove = MOVE_NONE;
   Move ttMove = MOVE_NONE;
-  TT::EntryType ttType = TT::TYPE_ALPHA;
+  Search::EntryType ttType = Search::TYPE_ALPHA;
   moveGenerators[ply].resetOnDemand();
   if (ST != ROOT) {
     pv[ply].clear();
@@ -453,10 +456,10 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
 
     // probe the TT and set ttValue and ttMove in case of HIT
     TT::Result result =
-      tt.probe(position.getZobristKey(), depth, alpha, beta, NT == PV, ttValue, ttMove, mateThreat[ply]);
+      tt->probe<NT>(position.getZobristKey(), depth, alpha, beta, ttValue, ttMove, mateThreat[ply]);
 
     /* TT PROBE
-     * tt.probe has two results:
+     * tt->probe has two results:
      * TT_HIT:
      *  If this is a PV node a TT_HIT is an EXACT value of a fully
      *  searched node. In non PV nodes it is also a HIT if it is a value
@@ -506,7 +509,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
     if (standPat >= beta) {
       TRACE(LOG, "{:>{}}Quiescence in ply {}: STANDPAT CUT ({} > {} beta)", "", ply, ply, standPat, beta);
       if (SearchConfig::USE_TT_QSEARCH) {
-        storeTT(position, standPat, TT::TYPE_BETA, DEPTH_NONE, ply, MOVE_NONE, mateThreat[ply]);
+        storeTT(position, standPat, TYPE_BETA, DEPTH_NONE, ply, MOVE_NONE, mateThreat[ply]);
       }
       return standPat; // fail-hard: beta, fail-soft: statEval
     }
@@ -546,7 +549,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
       if (staticEval - evalMargin >= beta) {
         searchStats.rfpPrunings++;
         TRACE(LOG, "{:>{}}Search in ply {} for depth {}: STATIC CUT", "", ply, ply, depth);
-        storeTT(position, staticEval, TT::TYPE_BETA, depth, ply, ttStoreMove, mateThreat[ply]);
+        storeTT(position, staticEval, TYPE_BETA, depth, ply, ttStoreMove, mateThreat[ply]);
         return staticEval - evalMargin; // fail-hard: beta / fail-soft: staticEval - evalMargin;
       }
     }
@@ -588,7 +591,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
       if (nullValue >= beta) {
         TRACE(LOG, "{:>{}}Search in ply {} for depth {}: NULL CUT","", ply, ply, depth);
         searchStats.nullMovePrunings++;
-        storeTT(position, nullValue, TT::TYPE_BETA, depth, ply, ttMove, mateThreat[ply]);
+        storeTT(position, nullValue, TYPE_BETA, depth, ply, ttMove, mateThreat[ply]);
         return nullValue; // fail-hard: beta / fail-soft: nullValue;
       }
     }
@@ -639,7 +642,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
     // fill the pv list and the TT
     search<ST, PV>(position, iidDepth, ply, alpha, beta, Do_Null_Move);
     // no we look in the pv list if we have a best move
-    tt.probe(position.getZobristKey(), depth, alpha, beta, true, ttValue, ttMove, mateThreat[ply]);
+    tt->probe<PV>(position.getZobristKey(), depth, alpha, beta, ttValue, ttMove, mateThreat[ply]);
     //ttMove = pv[ply].empty() ? MOVE_NONE : pv[ply].at(0);
     //    fprintln("****IID SEARCH RESULT: pv={} pv[{}] = {}",
     //             printMoveVerbose(pv[ply].empty() ? MOVE_NONE : pv[ply].at(0)), ply,
@@ -848,7 +851,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
               moveGenerators[ply].storeKiller(move, SearchConfig::NO_KILLER_MOVES);
             }
             searchStats.prunings++;
-            ttType = TT::TYPE_BETA; // store the beta value into the TT later
+            ttType = TYPE_BETA; // store the beta value into the TT later
             TRACE(LOG, "{:>{}} Search in ply {} for depth {}: CUT NODE {} >= {} (beta)", " ", ply, ply, depth, value, beta);
             break; // get out of loop and return the value at the end
           }
@@ -861,7 +864,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
             need to find even better moves or dismiss the moves.
             */
             alpha = value;
-            ttType = TT::TYPE_EXACT;
+            ttType = TYPE_EXACT;
             setValue(ttStoreMove, bestNodeValue);
             savePV(ttStoreMove, pv[ply + 1], pv[ply]);
             TRACE(LOG, "{:>{}}Search in ply {} for depth {}: NEW PV {} ({}) (alpha) PV: {}", "", ply, ply, depth, printMove(move), value, printMoveListUCI(pv[ply]));
@@ -871,7 +874,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
       else { // Minimax
         setValue(move, value);
         savePV(move, pv[ply + 1], pv[ply]);
-        ttType = TT::TYPE_EXACT;
+        ttType = TYPE_EXACT;
         TRACE(LOG, "{:>{}}Search in ply {} for depth {}: NEW PV {} ({}) PV: {}", "", ply, ply, depth, printMove(move), value, printMoveListUCI(pv[ply]));
       }
     }
@@ -889,20 +892,20 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
   // do some checks
   if (!PERFT && SearchConfig::USE_ALPHABETA) {
     // In an EXACT node we should have a best move and a PV
-    if (ttType == TT::TYPE_EXACT) {
+    if (ttType == TYPE_EXACT) {
       assert (ttStoreMove);
       assert (!pv[ply].empty());
       assert (alpha <= bestNodeValue && bestNodeValue <= beta);
     }
 
     // In a BETA node we should have a best move for the TT (might not be the best due to cut off)
-    if (ttType == TT::TYPE_BETA) {
+    if (ttType == TYPE_BETA) {
       assert (ttStoreMove);
       assert (bestNodeValue >= beta);
     }
 
     // We should not have found a best move in an ALPHA node (all moves were worse than alpha)
-    if (ttType == TT::TYPE_ALPHA) {
+    if (ttType == Search::TYPE_ALPHA) {
       assert (ttStoreMove == MOVE_NONE);
       assert (bestNodeValue <= alpha);
     }
@@ -913,14 +916,14 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
   // only quite moves
   if (!movesSearched && !stopSearchFlag) {
     searchStats.nonLeafPositionsEvaluated++;
-    assert (ttType == TT::TYPE_ALPHA);
+    assert (ttType == Search::TYPE_ALPHA);
     TRACE(LOG, "{:>{}}Depth {} cv {} NO LEGAL MOVES", "", ply, ply, printMoveListUCI(currentVariation));
     if (position.hasCheck()) {
       /* If the position has check we have a mate even in
          quiescence as we will have generated all moves
          because of the check. Return a -CHECKMATE. */
       bestNodeValue = -VALUE_CHECKMATE + ply;
-      ttType = TT::TYPE_EXACT;
+      ttType = TYPE_EXACT;
       assert (ttStoreMove == MOVE_NONE);
       TRACE(LOG, "{:>{}} Search in ply {} for depth {}: {} CHECKMATE", " ", ply, ply, depth, bestNodeValue);
     }
@@ -928,7 +931,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
       /* If not in quiescence we have a stale mate.
          Return the draw value. */
       bestNodeValue = VALUE_DRAW;
-      ttType = TT::TYPE_EXACT;
+      ttType = TYPE_EXACT;
       assert (ttStoreMove == MOVE_NONE);
       TRACE(LOG, "{:>{}} Search in ply {} for depth {}: {} STALEMATE", " ", ply, ply, depth, bestNodeValue);
     }
@@ -1044,7 +1047,7 @@ bool Search::goodCapture(Position &position, Move move) {
 }
 
 inline void
-Search::storeTT(Position &position, Value value, TT::EntryType ttType, Depth depth, Ply ply,
+Search::storeTT(Position &position, Value value, Search::EntryType ttType, Depth depth, Ply ply,
                 Move bestMove, bool _mateThreat) {
 
   if (!SearchConfig::USE_TT || searchLimits.isPerft() || stopSearchFlag) return;
@@ -1055,7 +1058,7 @@ Search::storeTT(Position &position, Value value, TT::EntryType ttType, Depth dep
   // store the position in the TT
   // correct the value for mate distance and remove the value from the move to
   // later be able to easier compare it wh read from TT
-  tt.put(position.getZobristKey(), depth, moveOf(bestMove), valueToTT(value, ply), ttType, _mateThreat);
+  tt->put(position.getZobristKey(), depth, moveOf(bestMove), valueToTT(value, ply), ttType, _mateThreat);
 
 }
 
@@ -1174,7 +1177,7 @@ void Search::getPVLine(Position &position, MoveList &pvRoot) {
   pvRoot.clear();
   int counter = 0;
   TT::Entry ttEntry;
-  while ((ttEntry = tt.getEntry(position.getZobristKey())).key != 0 && ttEntry.move != MOVE_NONE) {
+  while ((ttEntry = tt->getEntry(position.getZobristKey())).key != 0 && ttEntry.move != MOVE_NONE) {
     pvRoot.push_back(ttEntry.move);
     position.doMove(ttEntry.move);
     counter++;
@@ -1217,7 +1220,7 @@ void Search::clearHash() {
   TRACE(LOG, "Search: Clear Hash command received!");
   std::chrono::milliseconds timeout(2500);
   if (tt_lock.try_lock_for(timeout)) {
-    tt.clear();
+    tt->clear();
     tt_lock.unlock();
   }
   else {
@@ -1229,7 +1232,7 @@ void Search::setHashSize(int sizeInMB) {
   TRACE(LOG, "Search: Set HashSize to {} MB command received!", sizeInMB);
   std::chrono::milliseconds timeout(2500);
   if (tt_lock.try_lock_for(timeout)) {
-    tt.resize(sizeInMB * TT::MB);
+    tt->resize(sizeInMB * TT::MB);
     tt_lock.unlock();
   }
   else {
@@ -1264,7 +1267,7 @@ void Search::sendSearchUpdateToEngine() {
   if (elapsedTime(lastUciUpdateTime) > UCI_UPDATE_INTERVAL) {
     lastUciUpdateTime = now();
     if (!pEngine) {
-      LOG->info("UCI >> {}", fmt::format("depth {} seldepth {} nodes {:n} nps {:n} time {:n} hashfull {}", searchStats.currentIterationDepth, searchStats.currentExtraSearchDepth, searchStats.nodesVisited, getNps(), elapsedTime(startTime), tt.hashFull()));
+      LOG->info("UCI >> {}", fmt::format("depth {} seldepth {} nodes {:n} nps {:n} time {:n} hashfull {}", searchStats.currentIterationDepth, searchStats.currentExtraSearchDepth, searchStats.nodesVisited, getNps(), elapsedTime(startTime), tt->hashFull()));
     }
     else {
       pEngine->sendSearchUpdate(searchStats.currentIterationDepth, searchStats.currentExtraSearchDepth, searchStats.nodesVisited, getNps(), elapsedTime(startTime), 0);

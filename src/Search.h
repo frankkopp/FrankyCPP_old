@@ -26,19 +26,23 @@
 #ifndef FRANKYCPP_SEARCH_H
 #define FRANKYCPP_SEARCH_H
 
-// forward declared dependencies
-class Engine;
-
 // included dependencies
 #include <iostream>
 #include <thread>
+#include <ostream>
 #include "Logging.h"
 #include "SearchStats.h"
 #include "Semaphore.h"
 #include "Position.h"
 #include "SearchLimits.h"
 #include "Evaluator.h"
-#include "TT.h"
+#include "types.h"
+#include "gtest/gtest_prod.h"
+
+// forward declared dependencies
+class Engine;
+class TT;
+
 
 struct SearchResult {
 public:
@@ -68,21 +72,6 @@ class Search {
   // used to protect the transposition table from clearing and resizing during search
   std::timed_mutex tt_lock;
 
-  // for code re-using through templating we use search types when calling search()
-  enum Search_Type {
-    ROOT, NONROOT, QUIESCENCE
-  };
-
-  // in PV we search the full window in NonPV we try a zero window first
-  enum Node_Type {
-    NonPV, PV
-  };
-
-  enum Do_Null : bool {
-    No_Null_Move = false,
-    Do_Null_Move = true
-  };
-
   // UCI related
   constexpr static MilliSec UCI_UPDATE_INTERVAL = 1'000;
   MilliSec lastUciUpdateTime{};
@@ -107,7 +96,7 @@ class Search {
   SearchResult lastSearchResult;
 
   // transposition table (singleton)
-  TT tt;
+  TT* tt;
 
   // time check every x nodes
   // As time checks are expensive we only do them every x-th node.
@@ -144,14 +133,45 @@ class Search {
   Evaluator evaluator;
 
 public:
+
+  // for code re-using through templating we use search types when calling search()
+  enum Search_Type {
+    ROOT, NONROOT, QUIESCENCE
+  };
+
+  // in PV we search the full window in NonPV we try a zero window first
+  enum Node_Type {
+    NonPV, PV
+  };
+
+  enum Do_Null : bool {
+    No_Null_Move = false,
+    Do_Null_Move = true
+  };
+
+  enum EntryType : u_int8_t {
+    TYPE_NONE = 0,
+    // the node for the value was fully calculated and is exact
+      TYPE_EXACT = 1,
+    // the node for the value has NOT found a value > alpha so alpha is
+    // upper bound (value could be worse)
+      TYPE_ALPHA = 2,
+    // the node for the value has found a refutation (value > beta( and has
+    // been cut off. Value is a lower bound (could be better).
+      TYPE_BETA = 3,
+  };
+
   ////////////////////////////////////////////////
   ///// CONSTRUCTORS
 
   /** Default constructor creates a board with a back reference to the engine */
   Search();
   explicit Search(Engine* pEng);
-  virtual ~Search();
-
+  ~Search();
+  // disallow copies
+  Search(Search const &s) = delete;
+  Search &operator=(const Search &) = delete;
+  
   ////////////////////////////////////////////////
   ///// PUBLIC
 
@@ -186,6 +206,7 @@ public:
   void setHashSize(int sizeInMB);
 
 private:
+
   ////////////////////////////////////////////////
   ///// PRIVATE
 
@@ -223,7 +244,7 @@ private:
   */
   void getPVLine(Position &position, MoveList &pvRoot);
 
-  void storeTT(Position &position, Value value, TT::EntryType ttType, Depth depth, Ply ply,
+  void storeTT(Position &position, Value value, EntryType ttType, Depth depth, Ply ply,
                Move bestMove, bool mateThreat);
 
   /**
