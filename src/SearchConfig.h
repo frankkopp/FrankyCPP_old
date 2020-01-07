@@ -49,6 +49,7 @@ namespace SearchConfig {
   // Pruning features
   inline bool USE_MDP = true; // mate distance pruning
   inline bool USE_MPP = true; // minor promotion pruning
+  inline bool USE_QUIESCENCE_STANDPAT_CUT = true; // RFP for quiescence
   inline bool USE_RFP = true; // Reverse Futility Pruning
   inline Value RFP_MARGIN = static_cast<Value>(300);
   inline bool USE_RAZOR_PRUNING = true; // Razoring - bad move direct into qs
