@@ -99,8 +99,6 @@ void Engine::newGame() {
 
 void Engine::setPosition(const std::string &fen) {
   LOG->info("Engine: Set position to {}", fen);
-  // stop any search - this is necessary in case of ponder miss
-  stopSearch();
   position = Position(fen);
 }
 
@@ -125,6 +123,9 @@ void Engine::startSearch(const UCISearchMode &uciSearchMode) {
     LOG->warn("Engine was already searching. Stopping search to start new search.");
     search.stopSearch();
   }
+
+  // clear last result
+  lastResult = lastResult = {false, MOVE_NONE, MOVE_NONE};
 
   assert(uciSearchMode.whiteTime >= 0 && uciSearchMode.blackTime >= 0 &&
          uciSearchMode.whiteInc >= 0 && uciSearchMode.blackInc >= 0 &&
@@ -208,7 +209,9 @@ void Engine::sendCurrentLine(const MoveList &moveList) const {
     LOG->warn("<no uci handler>: Engine current line: {}", printMoveList(moveList));
 }
 
-void Engine::sendResult(Move bestMove, Move ponderMove) const {
+void Engine::sendResult(Move bestMove, Move ponderMove) {
+  lastResult = {true, bestMove, ponderMove};
+
   if (pUciHandler) pUciHandler->sendResult(bestMove, ponderMove);
   else
     LOG->warn("<no uci handler>: Engine Result: Best Move = {} ({}) Ponder Move = {}",
@@ -247,10 +250,6 @@ void Engine::updateConfig() {
         EngineConfig::ponder = to_bool(option.getCurrentValue());
       }
   }
-}
-
-int Engine::getHashSize() {
-  return EngineConfig::hash;
 }
 
 int Engine::getInt(const std::string &value) const {

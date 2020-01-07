@@ -60,6 +60,14 @@ class Engine {
   // engine's search limits
   SearchLimits searchLimits;
 
+  // last result
+  struct Result {
+    bool valid = false;
+    Move bestMove = MOVE_NONE;
+    Move ponderMove = MOVE_NONE;
+  };
+  Result lastResult = Result();
+
 public:
 
   ////////////////////////////////////////////////
@@ -98,14 +106,15 @@ public:
   void
   sendSearchUpdate(int depth, int seldepth, long nodes, int nps, MilliSec time, int hashfull) const;
   void sendCurrentLine(const MoveList& moveList) const;
-  void sendResult(Move bestMove, Move ponderMove) const;
+  void sendResult(Move bestMove, Move ponderMove);
 
   // other
   void waitWhileSearching();
 
   // getter
-  inline const SearchLimits &getSearchLimits() const { return searchLimits; };
-  int getHashSize();
+  const SearchLimits &getSearchLimits() const { return searchLimits; };
+  int getHashSize() { return EngineConfig::hash; };
+  const Result &getLastResult() const { return lastResult; }
 
 private:
 

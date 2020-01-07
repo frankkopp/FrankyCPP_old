@@ -45,11 +45,13 @@ public:
     auto UCI_LOG = spdlog::get("UCI_Logger");
     UCI_LOG->set_level(spdlog::level::debug);
   }
+
   shared_ptr<spdlog::logger> LOG = spdlog::get("Test_Logger");
 protected:
   void SetUp() override {
     LOG->set_level(spdlog::level::debug);
   }
+
   void TearDown() override {}
 };
 
@@ -95,8 +97,8 @@ TEST_F(UCITest, setoptionTest) {
   istringstream is(command);
   UCI::Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
-//  ASSERT_EQ("2048", engine.getOption("Hash"));
-//  ASSERT_EQ(2048, engine.config.hash);
+  //  ASSERT_EQ("2048", engine.getOption("Hash"));
+  //  ASSERT_EQ(2048, engine.config.hash);
 
   command = "setoption name Ponder value false";
   LOG->info("COMMAND: " + command);
@@ -491,7 +493,7 @@ TEST_F(UCITest, goNodesDepth) {
 
   engine.stopSearch();
   engine.waitWhileSearching();
-  
+
   ASSERT_FALSE(engine.getSearchLimits().isPerft());
   ASSERT_FALSE(engine.getSearchLimits().isInfinite());
   ASSERT_FALSE(engine.getSearchLimits().isPonder());
@@ -569,12 +571,11 @@ TEST_F(UCITest, moveTestDepth) {
 
 }
 
-TEST_F(UCITest, ponderMiss) {
+TEST_F(UCITest, ponderRunningStop) {
   ostringstream os;
   Engine engine;
 
-  EngineConfig::ponder = true;
-
+  // stop while pondering
   string command = "position startpos moves e2e4 e7e5";
   LOG->info("COMMAND: " + command);
   istringstream is(command);
@@ -589,22 +590,187 @@ TEST_F(UCITest, ponderMiss) {
   sleep(1);
   ASSERT_TRUE(engine.isSearching());
   ASSERT_TRUE(engine.getSearchLimits().isPonder());
-  sleep(1);
 
-  command = "position startpos moves e2e4 e7e6";
+  command = "stop";
   LOG->info("COMMAND: " + command);
   is = istringstream(command);
   uciHandler.loop(&is);
 
   sleep(1);
   ASSERT_FALSE(engine.isSearching());
+  ASSERT_TRUE(engine.getLastResult().valid);
+
+  // mate position should finish search quickly
+  // position startpos moves d2d4 d7d5 e2e4 d5e4 d4d5 g8f6 b1c3 c7c6 g1f3 e4f3 g2f3 c6d5 f1b5 c8d7 b5d7 d8d7 e1e2 d5d4 d1d4 d7d4 c3d5 d4c4 e2d1 c4d5 d1e1 d5f3 e1d2 b8c6 h1d1 e8c8
+  // go wtime 37776 btime 45570 movestogo 25 ponder
+}
+
+TEST_F(UCITest, ponderFinishedStop) {
+  ostringstream os;
+  Engine engine;
+
+  // stop when pondering has already finished
+  string command = "position fen 8/8/8/8/8/6K1/R7/6k1 w - - 0 8";
+  LOG->info("COMMAND: " + command);
+  istringstream is(command);
+  UCI::Handler uciHandler(&engine, &is, &os);
+  uciHandler.loop();
+
+  command = "go ponder wtime 600000 btime 600000";
+  LOG->info("COMMAND: " + command);
+  is = istringstream(command);
+  uciHandler.loop(&is);
+
+  sleep(1);
+
+  ASSERT_TRUE(engine.isSearching());
+  ASSERT_TRUE(engine.getSearchLimits().isPonder());
+
+  command = "stop";
+  LOG->info("COMMAND: " + command);
+  is = istringstream(command);
+  uciHandler.loop(&is);
+
+  sleep(1);
+  ASSERT_FALSE(engine.isSearching());
+  ASSERT_TRUE(engine.getLastResult().valid);
+
+}
+
+TEST_F(UCITest, ponderMiss) {
+  ostringstream os;
+  Engine engine;
+
+  EngineConfig::ponder = true;
+
+  // black just played e7e6 and sent ponder on d2d4
+  string command = "position startpos moves e2e4 e7e6 d2d4";
+  LOG->info("COMMAND: " + command);
+  istringstream is(command);
+  UCI::Handler uciHandler(&engine, &is, &os);
+  uciHandler.loop();
+
+  // black to ponder on d2d4
+  command = "go wtime 600000 btime 600000 ponder";
+  LOG->info("COMMAND: " + command);
+  is = istringstream(command);
+  uciHandler.loop(&is);
+
+  sleep(1);
+  ASSERT_TRUE(engine.isSearching());
+  ASSERT_TRUE(engine.getSearchLimits().isPonder());
+  sleep(1);
+
+  // user played different move (g1h3) - ponder miss
+  command = "stop";
+  LOG->info("COMMAND: " + command);
+  is = istringstream(command);
+  uciHandler.loop(&is);
+
+  sleep(1);
+  ASSERT_FALSE(engine.isSearching());
+  ASSERT_FALSE(engine.getSearchLimits().isPonder());
+  sleep(1);
+
+  // black getting new position after ponder miss 
+  command = "position startpos moves e2e4 e7e6 g1h3";
+  LOG->info("COMMAND: " + command);
+  is = istringstream(command);
+  uciHandler.loop(&is);
+
+  // black to search on new position
+  command = "go wtime 600000 btime 600000";
+  LOG->info("COMMAND: " + command);
+  is = istringstream(command);
+  uciHandler.loop(&is);
+
+  sleep(1);
+  ASSERT_TRUE(engine.isSearching());
+  ASSERT_FALSE(engine.getSearchLimits().isPonder());
+
+  // stop search
+  command = "stop";
+  LOG->info("COMMAND: " + command);
+  is = istringstream(command);
+  uciHandler.loop(&is);
+
+  sleep(1);
+  ASSERT_FALSE(engine.isSearching());
+  ASSERT_FALSE(engine.getSearchLimits().isPonder());
 
   LOG->debug("Waiting until search ends...");
   engine.waitWhileSearching();
   LOG->debug("SEARCH ENDED");
 }
 
-TEST_F(UCITest, ponderHit) {
+
+TEST_F(UCITest, ponderFinishedMiss) {
+  ostringstream os;
+  Engine engine;
+
+  EngineConfig::ponder = true;
+
+  // black just played e7e6 and sent ponder on d2d4
+  string command = "position fen 8/8/8/8/8/6K1/R7/6k1 w - - 0 8";
+  LOG->info("COMMAND: " + command);
+  istringstream is(command);
+  UCI::Handler uciHandler(&engine, &is, &os);
+  uciHandler.loop();
+
+  // black to ponder on d2d4
+  command = "go wtime 600000 btime 600000 ponder";
+  LOG->info("COMMAND: " + command);
+  is = istringstream(command);
+  uciHandler.loop(&is);
+
+  sleep(1);
+  ASSERT_TRUE(engine.isSearching());
+  ASSERT_TRUE(engine.getSearchLimits().isPonder());
+  sleep(1);
+
+  // user played different move (g1h3) - ponder miss
+  command = "stop";
+  LOG->info("COMMAND: " + command);
+  is = istringstream(command);
+  uciHandler.loop(&is);
+
+  sleep(1);
+  ASSERT_FALSE(engine.isSearching());
+  ASSERT_FALSE(engine.getSearchLimits().isPonder());
+  sleep(1);
+
+  // black getting new position after ponder miss
+  command = "position startpos moves e2e4 e7e6 g1h3";
+  LOG->info("COMMAND: " + command);
+  is = istringstream(command);
+  uciHandler.loop(&is);
+
+  // black to search on new position
+  command = "go wtime 600000 btime 600000";
+  LOG->info("COMMAND: " + command);
+  is = istringstream(command);
+  uciHandler.loop(&is);
+
+  sleep(1);
+  ASSERT_TRUE(engine.isSearching());
+  ASSERT_FALSE(engine.getSearchLimits().isPonder());
+
+  // stop search
+  command = "stop";
+  LOG->info("COMMAND: " + command);
+  is = istringstream(command);
+  uciHandler.loop(&is);
+
+  sleep(1);
+  ASSERT_FALSE(engine.isSearching());
+  ASSERT_FALSE(engine.getSearchLimits().isPonder());
+
+  LOG->debug("Waiting until search ends...");
+  engine.waitWhileSearching();
+  LOG->debug("SEARCH ENDED");
+}
+
+TEST_F(UCITest, ponderFinishedHit) {
   ostringstream os;
   Engine engine;
 
@@ -616,12 +782,12 @@ TEST_F(UCITest, ponderHit) {
   UCI::Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
-  command = "position startpos moves e2e4 e7e5";
+  command = "position fen 8/8/8/8/8/6K1/R7/6k1 w - - 0 8";
   LOG->info("COMMAND: " + command);
   is = istringstream(command);
   uciHandler.loop();
 
-  command = "go ponder wtime 300000 btime 300000";
+  command = "go wtime 300000 btime 300000 ponder";
   LOG->info("COMMAND: " + command);
   is = istringstream(command);
   uciHandler.loop(&is);
@@ -637,7 +803,70 @@ TEST_F(UCITest, ponderHit) {
   uciHandler.loop(&is);
 
   sleep(1);
+  ASSERT_FALSE(engine.isSearching());
+  ASSERT_FALSE(engine.getSearchLimits().isPonder());
+
+  // stop search
+  command = "stop";
+  LOG->info("COMMAND: " + command);
+  is = istringstream(command);
+  uciHandler.loop(&is);
+
+  sleep(1);
+  ASSERT_FALSE(engine.isSearching());
+  ASSERT_FALSE(engine.getSearchLimits().isPonder());
+
+  LOG->debug("Waiting until search ends...");
+  engine.waitWhileSearching();
+  LOG->debug("SEARCH ENDED");
+}
+
+
+TEST_F(UCITest, ponderHit) {
+  ostringstream os;
+  Engine engine;
+
+  EngineConfig::ponder = true;
+
+  string command = "setoption name Ponder value true";
+  LOG->info("COMMAND: " + command);
+  istringstream is = istringstream(command);
+  UCI::Handler uciHandler(&engine, &is, &os);
+  uciHandler.loop();
+
+  command = "position startpos moves e2e4 e7e6 d2d4";
+  LOG->info("COMMAND: " + command);
+  is = istringstream(command);
+  uciHandler.loop();
+
+  command = "go wtime 300000 btime 300000 ponder";
+  LOG->info("COMMAND: " + command);
+  is = istringstream(command);
+  uciHandler.loop(&is);
+
+  sleep(1);
   ASSERT_TRUE(engine.isSearching());
+  ASSERT_TRUE(engine.getSearchLimits().isPonder());
+  sleep(1);
+
+  command = "ponderhit";
+  LOG->info("COMMAND: " + command);
+  is = istringstream(command);
+  uciHandler.loop(&is);
+
+  sleep(2);
+  ASSERT_TRUE(engine.isSearching());
+  ASSERT_FALSE(engine.getSearchLimits().isPonder());
+
+  // stop search
+  command = "stop";
+  LOG->info("COMMAND: " + command);
+  is = istringstream(command);
+  uciHandler.loop(&is);
+
+  sleep(1);
+  ASSERT_FALSE(engine.isSearching());
+  ASSERT_FALSE(engine.getSearchLimits().isPonder());
 
   LOG->debug("Waiting until search ends...");
   engine.waitWhileSearching();

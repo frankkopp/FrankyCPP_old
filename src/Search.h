@@ -85,12 +85,13 @@ class Search {
   Engine* pEngine{nullptr};
 
   // search mode
-  SearchLimits searchLimits;
+  SearchLimits* searchLimitsPtr{nullptr};
   SearchStats searchStats;
 
   // search state
-  std::atomic_bool running = false;
+  std::atomic_bool _isRunning = false;
   std::atomic_bool stopSearchFlag = false;
+  std::atomic_bool _hasResult = false;
 
   // search result
   SearchResult lastSearchResult;
@@ -171,6 +172,9 @@ public:
 
   /** checks if the search is already running */
   bool isRunning() const;
+
+  /** signals if we have a result */
+  bool hasResult() const;
 
   /** wait while searching */
   void waitWhileSearching();

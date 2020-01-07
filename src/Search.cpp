@@ -62,7 +62,7 @@ Search::~Search() {
 ///// PUBLIC
 
 void Search::startSearch(const Position &pos, SearchLimits &limits) {
-  if (running) {
+  if (_isRunning) {
     LOG->error("Start Search: Search already running");
     return;
   }
@@ -70,7 +70,7 @@ void Search::startSearch(const Position &pos, SearchLimits &limits) {
   // make sure we have a semaphore available
   searchSemaphore.reset();
 
-  searchLimits = limits;
+  searchLimitsPtr = &limits;
 
   // join() previous thread
   if (myThread.joinable()) myThread.join();
@@ -82,30 +82,30 @@ void Search::startSearch(const Position &pos, SearchLimits &limits) {
 
   // wait until thread is initialized before returning to caller
   initSemaphore.getOrWait();
-  assert(running);
+  assert(_isRunning);
   LOG->info("Search started.");
 }
 
 void Search::stopSearch() {
-  if (!running) {
+  if (!_isRunning) {
     LOG->warn("Stop search called when search was not running");
     return;
   }
-  LOG->debug("Stopping search.");
 
-  // stop pondering if we are
-  if (searchLimits.isPonder()) {
-    if (!isRunning()) {
-      // Ponder search has finished before we stopped it
-      // Per UCI protocol we need to send the result anyway although a miss
-      LOG->info("Pondering has been stopped after ponder search has finished. Send obsolete result");
-      LOG->info("Search result was: {} PV {}", lastSearchResult.str(), printMoveListUCI(pv[PLY_ROOT]));
-      sendResultToEngine();
-    }
-    else {
-      LOG->info("Pondering has been stopped. Ponder Miss!");
-    }
-    searchLimits.ponderStop();
+  if (searchLimitsPtr->isPonder()) {
+    LOG->info("Stopping pondering...");
+    searchLimitsPtr->ponderStop();
+  }
+  else if (searchLimitsPtr->isInfinite()) {
+    LOG->info("Stopping infinite search...");
+  }
+  else {
+    LOG->info("Stopping search...");
+  }
+
+  if (hasResult()) {
+    LOG->info("Search has been stopped after search has finished. Sending result");
+    LOG->info("Search result was: {} PV {}", lastSearchResult.str(), printMoveListUCI(pv[PLY_ROOT]));
   }
 
   // set stop flag - search needs to check regularly and stop accordingly
@@ -115,43 +115,44 @@ void Search::stopSearch() {
   if (myThread.joinable()) myThread.join();
   waitWhileSearching();
 
-  assert(!running);
-  LOG->info("Search stopped.", running);
+  assert(!_isRunning);
+  LOG->info("Search stopped.");
 }
 
 bool Search::isRunning() const {
-  return running;
+  return _isRunning;
+}
+
+bool Search::hasResult() const {
+  return _hasResult;
 }
 
 void Search::waitWhileSearching() {
   TRACE(LOG, "Wait while searching");
-  if (!running) return;
+  if (!_isRunning) return;
   searchSemaphore.getOrWait();
   searchSemaphore.reset();
 }
 
 void Search::ponderhit() {
-  if (searchLimits.isPonder()) {
-    LOG->info("****** PONDERHIT *******");
-    if (isRunning()) {
+  if (searchLimitsPtr->isPonder()) {
+    LOG->debug("****** PONDERHIT *******");
+    if (isRunning() && !_hasResult) {
       LOG->info("Ponderhit when ponder search still running. Continue searching.");
-      // store the start time of the search
-      startTime = now();
-      configureTimeLimits();
-      searchLimits.ponderHit();
       // if time based game setup the time limits
-      if (searchLimits.isTimeControl()) {
-        LOG->debug("Time Management: {} Time limit: {:n}", (searchLimits.isTimeControl() ? "ON"
-                                                                                         : "OFF"), timeLimit);
+      if (searchLimitsPtr->isTimeControl()) {
+        LOG->info("Time Management: {} Time limit: {:n}",
+                  (searchLimitsPtr->isTimeControl() ? "ON" : "OFF"), timeLimit);
       }
     }
-    else {
+    else if (isRunning() && _hasResult) {
       LOG->info("Ponderhit when ponder search already ended. Sending result.");
       LOG->info("Search Result: {}", lastSearchResult.str());
-      if (pEngine) {
-        pEngine->sendResult(lastSearchResult.bestMove, lastSearchResult.ponderMove);
-      }
     }
+    // continue searching or send result (done in run())
+    startTime = now();
+    configureTimeLimits();
+    searchLimitsPtr->ponderHit();
   }
   else {
     LOG->warn("Ponderhit when not pondering!");
@@ -176,7 +177,8 @@ void Search::run(Position position) {
 
   // get the search lock
   searchSemaphore.getOrWait();
-  running = true;
+  _isRunning = true;
+  _hasResult = false;
 
   // store the start time of the search
   startTime = lastUciUpdateTime = now();
@@ -200,34 +202,39 @@ void Search::run(Position position) {
   tt->ageEntries();
 
   // search mode
-  if (searchLimits.isPerft()) {
-    LOG->info("Search Mode: PERFT SEARCH ({})", searchLimits.getMaxDepth());
+  if (searchLimitsPtr->isPerft()) {
+    LOG->info("Search Mode: PERFT SEARCH ({})", searchLimitsPtr->getMaxDepth());
   }
-  if (searchLimits.isInfinite()) {
+  if (searchLimitsPtr->isInfinite()) {
     LOG->info("Search Mode: INFINITE SEARCH");
   }
-  if (searchLimits.isPonder()) {
+  if (searchLimitsPtr->isPonder()) {
     LOG->info("Search Mode: PONDER SEARCH");
   }
-  if (searchLimits.getMate()) {
-    LOG->info("Search Mode: MATE SEARCH ({})", searchLimits.getMate());
+  if (searchLimitsPtr->getMate()) {
+    LOG->info("Search Mode: MATE SEARCH ({})", searchLimitsPtr->getMate());
   }
 
   // initialization done
   initSemaphore.release();
 
   // if time based game setup the soft and hard time limits
-  if (searchLimits.isTimeControl()) configureTimeLimits();
+  if (searchLimitsPtr->isTimeControl()) configureTimeLimits();
 
+  // ###########################################################################
   // start iterative deepening
   lastSearchResult = iterativeDeepening(position);
+  // ###########################################################################
 
-  // if the mode still is ponder at this point we finished the ponder
-  // search early before a miss or hit has been signaled. We need to
-  // wait with sending the result until we get a miss (stop) or a hit.
-  if (searchLimits.isPonder()) {
-    LOG->info("Ponder Search finished! Waiting for Ponderhit to send result");
-    return;
+  _hasResult = true;
+
+  // if we arrive here and the search is not stopped it means that the search
+  // was finished before it has been stopped (by stopSearchFlag or ponderhit)
+  if (!stopSearchFlag && (searchLimitsPtr->isPonder() || searchLimitsPtr->isInfinite())) {
+    LOG->info("Search finished before stopped or ponderhit! Waiting for stop/ponderhit to send result");
+    while (!stopSearchFlag && (searchLimitsPtr->isPonder() || searchLimitsPtr->isInfinite())) {
+      std::this_thread::sleep_for(std::chrono::milliseconds (1));
+    }
   }
 
   sendResultToEngine();
@@ -240,7 +247,7 @@ void Search::run(Position position) {
             (searchStats.lastSearchTime % 1'000'000) / 1'000, (searchStats.lastSearchTime % 1'000),
             (searchStats.nodesVisited * 1'000) / (searchStats.lastSearchTime + 1));
 
-  running = false;
+  _isRunning = false;
   searchSemaphore.reset();
   TRACE(LOG, "Search thread ended.");
 }
@@ -271,7 +278,7 @@ SearchResult Search::iterativeDeepening(Position &position) {
     return searchResult;
   }
 
-  Depth iterationDepth = searchLimits.getStartDepth();
+  Depth iterationDepth = searchLimitsPtr->getStartDepth();
 
   // current search iterationDepth
   searchStats.currentSearchDepth = PLY_ROOT;
@@ -284,10 +291,10 @@ SearchResult Search::iterativeDeepening(Position &position) {
   LOG->info("Searching in position: {}", position.printFen());
   LOG->debug("Root moves: {}", printMoveList(rootMoves));
   LOG->info("Searching these moves: {}", printMoveList(rootMoves));
-  LOG->info("Search mode: {}", searchLimits.str());
-  LOG->info("Time Management: {} time limit: {:n}", (searchLimits.isTimeControl() ? "ON"
-                                                                                  : "OFF"), timeLimit);
-  LOG->info("Start Depth: {} Max Depth: {}", iterationDepth, searchLimits.getMaxDepth());
+  LOG->info("Search mode: {}", searchLimitsPtr->str());
+  LOG->info("Time Management: {} time limit: {:n}", (searchLimitsPtr->isTimeControl() ? "ON"
+                                                                                     : "OFF"), timeLimit);
+  LOG->info("Start Depth: {} Max Depth: {}", iterationDepth, searchLimitsPtr->getMaxDepth());
   LOG->debug("Starting iterative deepening now...");
 
   // max window search - preparation for aspiration window search
@@ -321,8 +328,8 @@ SearchResult Search::iterativeDeepening(Position &position) {
     // here should have a best root move with a value.
     if (!stopSearchFlag) {
       assert (
-        searchLimits.isPerft() || (pv[PLY_ROOT].at(0) != MOVE_NONE && "Best root move missing!"));
-      assert (searchLimits.isPerft() ||
+        searchLimitsPtr->isPerft() || (pv[PLY_ROOT].at(0) != MOVE_NONE && "Best root move missing!"));
+      assert (searchLimitsPtr->isPerft() ||
               (valueOf(pv[PLY_ROOT].at(0)) != VALUE_NONE && "Best root move has no value!"));
     }
 
@@ -348,7 +355,7 @@ SearchResult Search::iterativeDeepening(Position &position) {
 
     TRACE(LOG, "Iteration Depth={} END", iterationDepth);
 
-  } while (++iterationDepth <= searchLimits.getMaxDepth());
+  } while (++iterationDepth <= searchLimitsPtr->getMaxDepth());
   // ### ENDOF Iterative Deepening
   // ###########################################
 
@@ -380,7 +387,7 @@ Value
 Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta, Do_Null doNull) {
   assert (alpha >= VALUE_MIN && beta <= VALUE_MAX && "alpha/beta out if range");
 
-  const bool PERFT = searchLimits.isPerft();
+  const bool PERFT = searchLimitsPtr->isPerft();
 
   TRACE(LOG, "{:>{}}Search {} in ply {} for depth {}: START alpha={} beta={} currline={}", "", ply, (
     ST == ROOT ? "ROOT" : ST == NONROOT ? "NONROOT"
@@ -451,7 +458,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
 
   // ###############################################
   // TT Lookup
-  const TT::Entry* ttEntryPtr;
+  const TT::Entry* ttEntryPtr = nullptr;
   if (SearchConfig::USE_TT
       && (SearchConfig::USE_TT_QSEARCH || ST != QUIESCENCE) && !PERFT) {
 
@@ -994,7 +1001,7 @@ Value Search::evaluate(Position &position) {
   searchStats.leafPositionsEvaluated++;
 
   // PERFT stats
-  if (searchLimits.isPerft()) {
+  if (searchLimitsPtr->isPerft()) {
     //    Move lastMove = position.getLastMove();
     //    if (position.getLastCapturedPiece() != PIECE_NONE) searchStats.captureCounter++;
     //    if (typeOf(lastMove) == ENPASSANT) searchStats.enPassantCounter++;
@@ -1073,7 +1080,7 @@ inline void
 Search::storeTT(Position &position, Value value, Value_Type ttType, Depth depth, Ply ply,
                 Move bestMove, bool _mateThreat) {
 
-  if (!SearchConfig::USE_TT || searchLimits.isPerft() || stopSearchFlag) return;
+  if (!SearchConfig::USE_TT || searchLimitsPtr->isPerft() || stopSearchFlag) return;
 
   assert (depth >= 0 && depth <= DEPTH_MAX);
   assert ((value >= VALUE_MIN && value <= VALUE_MAX));
@@ -1097,7 +1104,7 @@ inline Value Search::valueFromTT(Value value, Ply ply) {
 inline bool Search::stopConditions(bool shouldTimeCheck) {
   if (stopSearchFlag) return true;
   if ((shouldTimeCheck && timeLimitReached()) ||
-      (searchLimits.getNodes() && searchStats.nodesVisited >= searchLimits.getNodes())) {
+      (searchLimitsPtr->getNodes() && searchStats.nodesVisited >= searchLimitsPtr->getNodes())) {
     stopSearchFlag = true;
   }
   return stopSearchFlag;
@@ -1124,30 +1131,30 @@ bool Search::checkDrawRepAnd50(Position &position) const {
 }
 
 void Search::configureTimeLimits() {
-  if (searchLimits.getMoveTime() > 0) { // mode time per move
-    timeLimit = searchLimits.getMoveTime();
+  if (searchLimitsPtr->getMoveTime() > 0) { // mode time per move
+    timeLimit = searchLimitsPtr->getMoveTime();
   }
   else { // remaining time - estimated time per move
 
     // retrieve time left from search mode
     assert (
-      (searchLimits.getWhiteTime() && searchLimits.getBlackTime()) && "move times must be > 0");
-    MilliSec timeLeft = (myColor == WHITE) ? searchLimits.getWhiteTime()
-                                           : searchLimits.getBlackTime();
+      (searchLimitsPtr->getWhiteTime() && searchLimitsPtr->getBlackTime()) && "move times must be > 0");
+    MilliSec timeLeft = (myColor == WHITE) ? searchLimitsPtr->getWhiteTime()
+                                           : searchLimitsPtr->getBlackTime();
 
     // Give some overhead time so that in games with very low available time we
     // do not run out of time
     timeLeft -= 1'000; // this should do
 
     // when we know the move to go (until next time control) use them otherwise assume 40
-    int movesLeft = searchLimits.getMovesToGo() > 0 ? searchLimits.getMovesToGo() : 40;
+    int movesLeft = searchLimitsPtr->getMovesToGo() > 0 ? searchLimitsPtr->getMovesToGo() : 40;
 
     // when we have a time increase per move we estimate the additional time we should have
     if (myColor == WHITE) {
-      timeLeft += 40 * searchLimits.getWhiteInc();
+      timeLeft += 40 * searchLimitsPtr->getWhiteInc();
     }
     else {
-      timeLeft += 40 * searchLimits.getBlackInc();
+      timeLeft += 40 * searchLimitsPtr->getBlackInc();
     }
 
     // for timed games with remaining time
@@ -1161,14 +1168,14 @@ void Search::configureTimeLimits() {
 }
 
 void Search::addExtraTime(const double d) {
-  if (!searchLimits.getMoveTime()) {
+  if (!searchLimitsPtr->getMoveTime()) {
     extraTime += timeLimit * (d - 1);
     LOG->debug("Time added {:n} ms to {:n} ms", extraTime, timeLimit + extraTime);
   }
 }
 
 inline bool Search::timeLimitReached() {
-  if (!searchLimits.isTimeControl()) return false;
+  if (!searchLimitsPtr->isTimeControl()) return false;
   return elapsedTime(startTime) >= timeLimit + extraTime;
 }
 
@@ -1216,7 +1223,7 @@ MoveList Search::generateRootMoves(Position &position) {
 
   //for (Move m : *legalMoves) TRACE(LOG, "before: {} {}", printMoveVerbose(m), m);
   MoveList moveList;
-  if (searchLimits.getMoves().empty()) { // if UCI searchmoves is empty then add all
+  if (searchLimitsPtr->getMoves().empty()) { // if UCI searchmoves is empty then add all
     for (auto legalMove : *legalMoves) {
       setValue(legalMove, VALUE_NONE);
       moveList.push_back(legalMove);
@@ -1224,7 +1231,7 @@ MoveList Search::generateRootMoves(Position &position) {
   }
   else { // only add if in the UCI searchmoves list
     for (auto legalMove : *legalMoves) {
-      for (auto move : searchLimits.getMoves()) {
+      for (auto move : searchLimitsPtr->getMoves()) {
         if (moveOf(move) == moveOf(legalMove)) {
           setValue(legalMove, VALUE_NONE);
           moveList.push_back(legalMove);
@@ -1265,12 +1272,12 @@ void Search::setHashSize(int sizeInMB) {
 
 void Search::sendIterationEndInfoToEngine() const {
   if (!pEngine) {
-    LOG->info("UCI >> {}", fmt::format("depth {} seldepth {} multipv 1 {} nodes {:n} nps {:n} time {:n} pv {}", searchStats.currentIterationDepth, searchStats.currentExtraSearchDepth, (searchLimits.isPerft()
+    LOG->info("UCI >> {}", fmt::format("depth {} seldepth {} multipv 1 {} nodes {:n} nps {:n} time {:n} pv {}", searchStats.currentIterationDepth, searchStats.currentExtraSearchDepth, (searchLimitsPtr->isPerft()
                                                                                                                                                                                          ? VALUE_ZERO
                                                                                                                                                                                          : valueOf(pv[PLY_ROOT].at(0))), searchStats.nodesVisited, getNps(), elapsedTime(startTime), printMoveListUCI(pv[PLY_ROOT])));
   }
   else {
-    pEngine->sendIterationEndInfo(searchStats.currentIterationDepth, searchStats.currentExtraSearchDepth, searchLimits.isPerft()
+    pEngine->sendIterationEndInfo(searchStats.currentIterationDepth, searchStats.currentExtraSearchDepth, searchLimitsPtr->isPerft()
                                                                                                           ? VALUE_ZERO
                                                                                                           : valueOf(pv[PLY_ROOT].at(0)), searchStats.nodesVisited, getNps(), elapsedTime(startTime), pv[PLY_ROOT]);
   }
@@ -1302,6 +1309,9 @@ void Search::sendSearchUpdateToEngine() {
     else {
       pEngine->sendCurrentLine(currentVariation);
     }
+
+    LOG->info("Search statistics: {}", searchStats.str());
+    LOG->info("TT     statistics; {}", tt->str());
   }
 }
 

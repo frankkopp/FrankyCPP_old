@@ -18,6 +18,7 @@ v 0.x (plan)
 v 0.4 (in progress)
 ================================================================================
 - TODO:
+    - Debug and harden play with UCI GUI - XBoard, Arena, etc.
     - LFP. LFR, ...
     - Extended Evaluation
     - EvalCache

@@ -161,6 +161,8 @@ namespace UCI {
 
   void Handler::goCommand(std::istringstream &inStream) {
     std::string token, startFen;
+
+    // resetting search mode
     searchMode = UCISearchMode();
 
     while (inStream >> token) {

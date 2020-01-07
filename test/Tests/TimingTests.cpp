@@ -26,6 +26,7 @@
 #include <gtest/gtest.h>
 #include <chrono>
 #include <random>
+#include <thread>
 
 #include "Logging.h"
 #include "Bitboards.h"
@@ -172,6 +173,22 @@ unsigned popcount16(unsigned u) {
   return (u * 0x0101U) >> 8U;
 }
 
+TEST_F(TimingTests, busyWait) {
+  ostringstream os;
+  //// TESTS START
+  std::function<void()> f1 = [&]() {
+    int i = 0;
+    while (i++ < 10'000) {
+      std::this_thread::sleep_for(chrono::milliseconds (1));
+    }
+  };
+  vector<std::function<void()>> tests;
+  tests.push_back(f1);
+  //// TESTS END
+  testTiming(os, 3, 1, 1, tests);
+  cout << os.str();
+}
+
 TEST_F(TimingTests, bitCount) {
   ostringstream os;
 
@@ -206,6 +223,7 @@ TEST_F(TimingTests, bitCount) {
 
   cout << os.str();
 }
+
 
 void
 TimingTests::testTiming(ostringstream &os, int rounds, int iterations, int repetitions,
@@ -249,7 +267,8 @@ TimingTests::testTiming(ostringstream &os, int rounds, int iterations, int repet
          << ": " << std::setfill(' ') << setw(12) << avgTimes.wall << " ns"
          << " (" << std::setfill(' ') << setw(6) << (percentFromLast / 100) << "%)"
          << " (" << std::setfill(' ') << setw(12) << (avgTimes.wall / 1e9) << " sec)"
-         << " (" << std::setfill(' ') << setw(12) << static_cast<double>(avgTimes.wall) / (repetitions * iterations) << " ns avg per test)"
+         << " (" << std::setfill(' ') << setw(12)
+         << static_cast<double>(avgTimes.wall) / (repetitions * iterations) << " ns avg per test)"
          << " >> " << boost::timer::format(avgTimes, default_places);
 
       last = avgTimes.wall;
