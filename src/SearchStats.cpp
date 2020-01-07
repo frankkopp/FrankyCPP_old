@@ -36,8 +36,8 @@ std::string SearchStats::str() const {
   os.imbue(deLocale);
   os
     << "nodesVisited: " << nodesVisited
-    << " tt_Hits: " << tt_Hits
-    << " tt_Misses: " << tt_Misses
+    << " tt_Cutss: " << tt_Cuts
+    << " tt_NoCuts: " << tt_NoCuts
     << " leafPositionsEvaluated: " << leafPositionsEvaluated
     << " nonLeafPositionsEvaluated: " << nonLeafPositionsEvaluated
     << " prunings: " << prunings
@@ -47,7 +47,6 @@ std::string SearchStats::str() const {
     << " pvs_cutoffs: " << pvs_cutoffs
     << " iid searches: " << iidSearches
     << " movesGenerated: " << movesGenerated
-    << " currentIterationDepth: " << currentIterationDepth
     << " currentSearchDepth: " << currentSearchDepth
     << " currentExtraSearchDepth: " << currentExtraSearchDepth
     << " lastSearchTime: " << lastSearchTime

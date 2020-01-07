@@ -63,9 +63,9 @@ public:
 
   enum Result {
     // TT probe has not found an entry or the value does not lead to a cut off.
-      TT_MISS,
+      TT_NOCUT,
     // TT probe has found an entry and the value leads to a cut off
-      TT_HIT
+      TT_CUT
   };
 
   struct Entry {
@@ -201,10 +201,7 @@ public:
    * @param isPVNode current node type when probing
    * @return A result of the probe with value and move from the TT in case of hit.
    */
-  template<bool NT>
-  const Entry*
-  probe(const Key &key, const Depth &depth, const Value &alpha, const Value &beta,
-        Result &result);
+  const TT::Entry* probe(const Key &key);
 
   /** Age all entries by 1 */
   void ageEntries();

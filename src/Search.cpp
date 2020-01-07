@@ -74,7 +74,7 @@ void Search::startSearch(const Position &pos, SearchLimits &limits) {
 
   // join() previous thread
   if (myThread.joinable()) myThread.join();
-  stopSearchFlag = false;
+  _stopSearchFlag = false;
 
   // start search in a separate thread
   LOG->debug("Starting search in separate thread.");
@@ -109,7 +109,7 @@ void Search::stopSearch() {
   }
 
   // set stop flag - search needs to check regularly and stop accordingly
-  stopSearchFlag = true;
+  _stopSearchFlag = true;
 
   // Wait for the thread to die
   if (myThread.joinable()) myThread.join();
@@ -230,10 +230,10 @@ void Search::run(Position position) {
 
   // if we arrive here and the search is not stopped it means that the search
   // was finished before it has been stopped (by stopSearchFlag or ponderhit)
-  if (!stopSearchFlag && (searchLimitsPtr->isPonder() || searchLimitsPtr->isInfinite())) {
+  if (!_stopSearchFlag && (searchLimitsPtr->isPonder() || searchLimitsPtr->isInfinite())) {
     LOG->info("Search finished before stopped or ponderhit! Waiting for stop/ponderhit to send result");
-    while (!stopSearchFlag && (searchLimitsPtr->isPonder() || searchLimitsPtr->isInfinite())) {
-      std::this_thread::sleep_for(std::chrono::milliseconds (1));
+    while (!_stopSearchFlag && (searchLimitsPtr->isPonder() || searchLimitsPtr->isInfinite())) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
   }
 
@@ -242,7 +242,7 @@ void Search::run(Position position) {
   // print result of the search
   LOG->info("Search statistics: {}", searchStats.str());
   if (SearchConfig::USE_TT) LOG->info(tt->str());
-  LOG->info("Search Depth was {} ({})", searchStats.currentIterationDepth, searchStats.currentExtraSearchDepth);
+  LOG->info("Search Depth was {} ({})", searchStats.currentSearchDepth, searchStats.currentExtraSearchDepth);
   LOG->info("Search took {},{:03} sec ({:n} nps)",
             (searchStats.lastSearchTime % 1'000'000) / 1'000, (searchStats.lastSearchTime % 1'000),
             (searchStats.nodesVisited * 1'000) / (searchStats.lastSearchTime + 1));
@@ -293,7 +293,7 @@ SearchResult Search::iterativeDeepening(Position &position) {
   LOG->info("Searching these moves: {}", printMoveList(rootMoves));
   LOG->info("Search mode: {}", searchLimitsPtr->str());
   LOG->info("Time Management: {} time limit: {:n}", (searchLimitsPtr->isTimeControl() ? "ON"
-                                                                                     : "OFF"), timeLimit);
+                                                                                      : "OFF"), timeLimit);
   LOG->info("Start Depth: {} Max Depth: {}", iterationDepth, searchLimitsPtr->getMaxDepth());
   LOG->debug("Starting iterative deepening now...");
 
@@ -310,7 +310,7 @@ SearchResult Search::iterativeDeepening(Position &position) {
   do {
     TRACE(LOG, "Iteration Depth {} START", iterationDepth);
 
-    searchStats.currentIterationDepth = iterationDepth;
+    currentIterationDepth = iterationDepth;
     searchStats.bestMoveChanges = 0;
     searchStats.nodesVisited++;
 
@@ -319,39 +319,31 @@ SearchResult Search::iterativeDeepening(Position &position) {
 
     // ###########################################
     // ### CALL SEARCH for iterationDepth
-    search<ROOT, PV>(position, iterationDepth, PLY_ROOT, alpha, beta, Do_Null_Move);
+    if (searchLimitsPtr->isPerft()) {
+      search<PERFT, PV>(position, iterationDepth, PLY_ROOT, alpha, beta, Do_Null_Move);
+    }
+    else {
+      search<ROOT, PV>(position, iterationDepth, PLY_ROOT, alpha, beta, Do_Null_Move);
+    }
     // ###########################################
 
     // release lock on TT
     tt_lock.unlock();
 
     // here should have a best root move with a value.
-    if (!stopSearchFlag) {
-      assert (
-        searchLimitsPtr->isPerft() || (pv[PLY_ROOT].at(0) != MOVE_NONE && "Best root move missing!"));
-      assert (searchLimitsPtr->isPerft() ||
-              (valueOf(pv[PLY_ROOT].at(0)) != VALUE_NONE && "Best root move has no value!"));
+    if (!_stopSearchFlag) {
+      assert (searchLimitsPtr->isPerft() || (pv[PLY_ROOT].at(0) != MOVE_NONE && "Best root move missing!"));
+      assert (searchLimitsPtr->isPerft() || (valueOf(pv[PLY_ROOT].at(0)) != VALUE_NONE && "Best root move has no value!"));
     }
 
     // break on stop signal or time
     if (stopConditions(true)) break;
 
+    // update UCI GUI
     sendIterationEndInfoToEngine();
-
-    //    fmt::print("Before: ");
-    //    for (auto m : rootMoves) {
-    //      fmt::print("{} ", printMoveVerbose(m));
-    //    }
-    //    NEWLINE;
 
     // sort root moves based on value for the next iteration
     std::stable_sort(rootMoves.begin(), rootMoves.end(), rootMovesSort);
-
-    //    fmt::print("After : ");
-    //    for (auto m : rootMoves) {
-    //      fmt::print("{} ", printMoveVerbose(m));
-    //    }
-    //    NEWLINE;
 
     TRACE(LOG, "Iteration Depth={} END", iterationDepth);
 
@@ -385,13 +377,9 @@ SearchResult Search::iterativeDeepening(Position &position) {
 template<Search::Search_Type ST, Search::Node_Type NT>
 Value
 Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta, Do_Null doNull) {
+
   assert (alpha >= VALUE_MIN && beta <= VALUE_MAX && "alpha/beta out if range");
-
-  const bool PERFT = searchLimitsPtr->isPerft();
-
-  TRACE(LOG, "{:>{}}Search {} in ply {} for depth {}: START alpha={} beta={} currline={}", "", ply, (
-    ST == ROOT ? "ROOT" : ST == NONROOT ? "NONROOT"
-                                        : "QUIESCENCE"), ply, depth, alpha, beta, printMoveListUCI(currentVariation));
+  TRACE(LOG, "{:>{}}Search {} in ply {} for depth {}: START alpha={} beta={} currline={}", "", ply, (ST == ROOT ? "ROOT" : ST == NONROOT ? "NONROOT" : "QUIESCENCE"), ply, depth, alpha, beta, printMoveListUCI(currentVariation));
 
   // Check if search should be stopped
   if (stopConditions(shouldTimeCheck())) {
@@ -405,7 +393,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
       searchStats.currentSearchDepth = std::max(searchStats.currentSearchDepth, ply);
       searchStats.currentExtraSearchDepth = std::max(searchStats.currentExtraSearchDepth, ply);
       if (depth <= DEPTH_NONE || ply >= PLY_MAX - 1) {
-        if (SearchConfig::USE_QUIESCENCE && !PERFT) {
+        if (SearchConfig::USE_QUIESCENCE) {
           return search<QUIESCENCE, NT>(position, depth, ply, alpha, beta, doNull);
         }
         else {
@@ -416,13 +404,21 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
       }
       break;
     case QUIESCENCE:
-      if (ply >= PLY_MAX - 1) {
+      // limit max quiescence depth
+      if (ply > static_cast<Ply>(currentIterationDepth + SearchConfig::MAX_EXTRA_QDEPTH)
+          || ply >= PLY_MAX - 1) {
         Value eval = evaluate(position);
         TRACE(LOG, "{:>{}} Evaluation: {} {}", " ", ply, printMoveListUCI(currentVariation), eval);
         return eval;
       }
       searchStats.currentExtraSearchDepth = std::max(searchStats.currentExtraSearchDepth, ply);
       break;
+    case PERFT:
+      if (depth <= DEPTH_NONE || ply >= PLY_MAX - 1) {
+        Value eval = evaluate(position);
+        TRACE(LOG, "{:>{}} Evaluation: {} {}", " ", ply, printMoveListUCI(currentVariation), eval);
+        return eval;
+      }
   }
 
   // ###############################################
@@ -430,7 +426,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
   // Did we already find a shorter mate then ignore
   // this one.
   if (SearchConfig::USE_MDP
-      && ST != ROOT && !PERFT) {
+      && ST != ROOT && ST != PERFT) {
     alpha = std::max(-VALUE_CHECKMATE + ply, alpha);
     beta = std::min(VALUE_CHECKMATE - ply, beta);
     if (alpha >= beta) {
@@ -449,63 +445,104 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
   Move ttMove = MOVE_NONE;
   Value_Type ttType = TYPE_ALPHA;
   moveGenerators[ply].resetOnDemand();
-  if (ST != ROOT) {
-    pv[ply].clear();
+  if (ST == ROOT) {
+    currentMoveIndex = 0;
   }
   else {
-    currentMoveIndex = 0;
+    pv[ply].clear();
   }
 
   // ###############################################
   // TT Lookup
   const TT::Entry* ttEntryPtr = nullptr;
   if (SearchConfig::USE_TT
-      && (SearchConfig::USE_TT_QSEARCH || ST != QUIESCENCE) && !PERFT) {
-
+      && (SearchConfig::USE_TT_QSEARCH || ST != QUIESCENCE) && ST != PERFT) {
     /* TT PROBE
-     * tt->probe has two results:
-     * TT_HIT:
-     *  If this is a PV node a TT_HIT is an EXACT value of a fully
-     *  searched node. In non PV nodes it is also a HIT if it is a value
-     *  outside  of our current alpha/beta bound with the corresponding
-     *  type stored in the TT. (for ALPHA value<=alpha, for BETA value>=beta)
-     *  In case of a TT_HIT we can immediately stop the search and return the
-     *  value.
+     *  If this is a PV node and value is an EXACT value of a fully
+     *  searched node we can cut off the search immediately.
+     *  In non PV nodes the value needs to be EXACT or outside
+     *  of our current alpha/beta bounds with the corresponding
+     *  type stored in the TT for a cut. (for ALPHA value<=alpha,
+     *  for BETA value>=beta)
+     *  
      *  If we are in the ROOT ply this means we have already searched this
      *  position to the depth (or deeper) of the current depth to go.
      *  We will then try to get the PV line from the TT to be sent to the UI.
-     * TT_MISS:
-     *  If we have a miss we can't use the value for a cut off and have to
-     *  search the node.
+     *
      *  We might have a best move to try first from previous searches of this
      *  node (e.g. lower or equal depth, beta cut off).
+     *  We also might have a mateThreat flag from previous null move searches
+     *  we can use.
      */
-    TT::Result ttHit = TT::TT_MISS;
-    ttEntryPtr = tt->probe<NT == PV>(position.getZobristKey(), depth, alpha, beta, ttHit);
+    ttEntryPtr = tt->probe(position.getZobristKey());
     if (ttEntryPtr) {
       ttMove = ttEntryPtr->move;
       assert(!ttMove || moveGenerators[ply].validateMove(position, ttMove));
       mateThreat[ply] = ttEntryPtr->mateThreat;
-      ttValue = valueFromTT(ttEntryPtr->value, ply);
-      switch (ttHit) {
-        case TT::TT_HIT:
-          searchStats.tt_Hits++;
-          // correct mate values
+      // use value only if tt depth was equal or deeper
+      if (ttEntryPtr->depth >= depth) {
+        assert (ttEntryPtr->value != VALUE_NONE);
+        ttValue = valueFromTT(ttEntryPtr->value, ply);
+        bool cut = false;
+        if (ttEntryPtr->type == TYPE_EXACT) {
+          cut = true;
+        }
+        else if (NT == NonPV) {
+          if (ttEntryPtr->type == TYPE_ALPHA && ttValue <= alpha) {
+            cut = true;
+          }
+          else if (ttEntryPtr->type == TYPE_ALPHA && ttValue < beta) {
+            // should actually not happen
+            LOG->debug("TT BETA");
+            beta = ttValue;
+          }
+          else if (ttEntryPtr->type == TYPE_BETA && ttValue >= beta) {
+            cut = true;
+          }
+          else if (ttEntryPtr->type == TYPE_BETA && ttValue > alpha) {
+            // should actually not happen
+            LOG->debug("TT ALPHA");
+            alpha = ttValue;
+          }
+        }
+        if (cut) {
+          // set PV for root move
           if (ST == ROOT) {
+            // root move tt hits should always be exact values
+            assert (ttEntryPtr->type == TYPE_EXACT);
             getPVLine(position, pv[PLY_ROOT]);
             setValue(rootMoves.at(currentMoveIndex), ttValue);
             setValue(pv[PLY_ROOT].at(0), ttValue);
           }
+          searchStats.tt_Cuts++;
           return ttValue;
-        case TT::TT_MISS:
-          // no usable value
-          searchStats.tt_Misses++;
-          break;
+        }
+        else {
+          searchStats.tt_NoCuts++;
+        }
       }
     }
   }
   // End TT Lookup
   // ###############################################
+
+  // get an evaluation for the position
+  Value staticEval = VALUE_NONE;
+  if (!position.
+                 hasCheck() &&
+      ST != PERFT) {
+    staticEval = evaluate(position);
+    /*if (ttEntryPtr && ttValue != VALUE_NONE) {
+      if ((ttValue > staticEval && ttEntryPtr->type == TYPE_BETA)
+          || (ttValue <= staticEval && ttEntryPtr->type == TYPE_ALPHA)) {
+        staticEval = ttValue;
+      }
+    }
+    else {
+      // NULL move adjustment
+      // Stockfish saves this into TT (separate value eval)
+    }*/
+  }
 
   // ###############################################
   // Quiescence StandPat
@@ -513,71 +550,55 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
   // https://www.chessprogramming.org/Quiescence_Search#Standing_Pat
   // Assumption is that there is at least on move which would improve the
   // current position. So if we are already >beta we don't need to look at it.
-  if (ST == QUIESCENCE && !position.hasCheck()) {
-    Value standPat = evaluate(position);
-    bestNodeValue = standPat;
-    TRACE(LOG, "{:>{}}Quiescence in ply {}: STANDPAT {}", "", ply, ply, standPat);
-    if (standPat >= beta) {
+  if (ST == QUIESCENCE && !position.
+                                     hasCheck()
+    ) {
+    if (staticEval >= beta) {
       TRACE(LOG, "{:>{}}Quiescence in ply {}: STANDPAT CUT ({} > {} beta)", "", ply, ply, standPat, beta);
       if (SearchConfig::USE_TT_QSEARCH) {
-        storeTT(position, standPat, TYPE_BETA, DEPTH_NONE, ply, MOVE_NONE, mateThreat[ply]);
+        storeTT(position, staticEval, TYPE_BETA, DEPTH_NONE, ply, MOVE_NONE, mateThreat[ply]
+        );
       }
-      return standPat; // fail-hard: beta, fail-soft: statEval
+      return
+        staticEval; // fail-hard: beta, fail-soft: statEval
     }
-    if (standPat > alpha) {
-      alpha = standPat;
+    if (staticEval > alpha) {
+      alpha = staticEval;
     }
+    bestNodeValue = staticEval;
+    TRACE(LOG, "{:>{}}Quiescence in ply {}: STANDPAT {}", "", ply, ply, standPat);
+
   }
   // ###############################################
-
-  // get an evaluation for the position
-  Value staticEval = VALUE_NONE;
-  if (!position.hasCheck() && !PERFT) {
-    staticEval = evaluate(position);
-    if (ttEntryPtr && ttValue != VALUE_NONE) {
-      if ((ttValue > staticEval && ttEntryPtr->type == TYPE_BETA)
-          || (ttValue <= staticEval && ttEntryPtr->type == TYPE_ALPHA)) {
-        staticEval = ttValue;
-      }
-    }
-    //    else {
-    //      // NULL move adjustment
-    //      // Stockfish saves this into TT (separate value eval)
-    //    }
-  }
 
   // ###############################################
   // FORWARD PRUNING BETA
   // Prunings which return a beta value and not just
   // skip moves.
-  // - Static Eval
-  // - RFP
-  // - NMP
-  // - RAZOR
-  if (!PERFT
-      && ST != ROOT
-      && NT == NonPV
-      && !position.hasCheck()
-      && doNull
-    ) {
+  if (ST !=
+      ROOT && ST
+              != PERFT) {
 
     // ###############################################
     // Reverse Futility Pruning, (RFP, Static Null Move Pruning)
     // https://www.chessprogramming.org/Reverse_Futility_Pruning
     // Anticipate likely alpha low in the next ply by a beta cut
     // off before making and evaluating the move
-    if (SearchConfig::USE_RFP
+    /* if (SearchConfig::USE_RFP
         && depth == DEPTH_FRONTIER
+        && NT == NonPV
+        && !position.hasCheck()
+        && ST != QUIESCENCE // we did quiescence RFP already above
       ) {
       Value evalMargin = SearchConfig::RFP_MARGIN * static_cast<int>(depth);
       if (staticEval - evalMargin >= beta) {
         searchStats.rfpPrunings++;
         TRACE(LOG, "{:>{}}Search in ply {} for depth {}: STATIC CUT", "", ply, ply, depth);
-        storeTT(position, staticEval, TYPE_BETA, depth, ply, ttStoreMove, mateThreat[ply]);
+        storeTT(position, staticEval, TYPE_BETA, depth, ply, MOVE_NONE, mateThreat[ply]);
         return staticEval - evalMargin; // fail-hard: beta / fail-soft: staticEval - evalMargin;
       }
     }
-    // ###############################################
+    // ###############################################*/
 
     // ###############################################
     // NULL MOVE PRUNING
@@ -585,48 +606,65 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
     // If the next player would skip a move and would still be ahead (>beta)
     // we can prune this move. It also detects mate threats by
     // assuming the opponent could do two moves in a row.
-    if (SearchConfig::USE_NMP
-        && depth > SearchConfig::NMP_DEPTH
+    /* if (SearchConfig::USE_NMP
+        && depth >= SearchConfig::NMP_DEPTH // don't do it too close to leaf nodes
+        && doNull // don't do recursive null moves
         && position.getMaterialNonPawn(myColor) // to avoid Zugzwang
-        && !mateThreat[ply]
-        && staticEval >= beta
+        && !position.hasCheck() // not in check
+        && ST != QUIESCENCE // NMP will be removed from the compiler for qsearch
       ) {
       // reduce more on higher depths
-      auto r = static_cast<Depth>(depth > 6 ? 3 : 2);
+      Depth r = static_cast<Depth>(depth > 6 ? 3 : 2);
+      // reduce move when verify is enabled
       if (SearchConfig::USE_VERIFY_NMP) ++r;
 
+      Value nullValue = VALUE_NONE;
       position.doNullMove();
-      Value nullValue = -search<ST, NT>(position, depth - r, ply + 1, -beta, -beta + 1, No_Null_Move);
-      position.undoNullMove();
-
-      // Check for mate threat
-      if (isCheckMateValue(nullValue)) mateThreat[ply] = true;
-
-      // Verify on fail high
-      if (SearchConfig::USE_VERIFY_NMP
-          && depth > SearchConfig::NMP_VERIFICATION_DEPTH
-          && nullValue >= beta
-        ) {
-        searchStats.nullMoveVerifications++;
-        nullValue = search<ST, NT>(position, depth - SearchConfig::NMP_VERIFICATION_DEPTH, ply, alpha, beta, No_Null_Move);
+      if (depth > r) {
+        nullValue = -search<NONROOT, NT>(position, depth - r, ply + 1, -beta, -beta + 1, No_Null_Move);
       }
+      else {
+        nullValue = -search<QUIESCENCE, NT>(position, DEPTH_NONE, ply + 1, -beta, -beta + 1, No_Null_Move);
+      }
+      position.undoNullMove();
 
       // pruning
       if (nullValue >= beta) {
-        TRACE(LOG, "{:>{}}Search in ply {} for depth {}: NULL CUT", "", ply, ply, depth);
-        searchStats.nullMovePrunings++;
-        storeTT(position, nullValue, TYPE_BETA, depth, ply, ttMove, mateThreat[ply]);
-        return nullValue; // fail-hard: beta / fail-soft: nullValue;
+
+        // Do not return unproven mate scores if we don't verify
+        if (nullValue >= VALUE_CHECKMATE_THRESHOLD) {
+          nullValue = beta;
+        }
+
+        // Verify on fail high and depths larger the the reduction to not go
+        // directly into qsearch
+        if (SearchConfig::USE_VERIFY_NMP
+            && depth  > r + SearchConfig::NMP_VERIFICATION_DEPTH
+          ) {
+          searchStats.nullMoveVerifications++;
+          nullValue = search<ST, NT>(position, depth - r + SearchConfig::NMP_VERIFICATION_DEPTH, ply, alpha, beta, No_Null_Move);
+        }
+
+        // Check for mate threat
+        if (isCheckMateValue(nullValue)) mateThreat[ply] = true;
+
+        // still a fail high after verification?
+        if (nullValue >= beta) {
+          searchStats.nullMovePrunings++;
+          TRACE(LOG, "{:>{}}Search in ply {} for depth {}: NULL CUT", "", ply, ply, depth);
+          storeTT(position, nullValue, TYPE_BETA, depth - r, ply, ttMove, mateThreat[ply]);
+          return nullValue; // fail-hard: beta / fail-soft: nullValue;
+        }
       }
     }
-    // ###############################################
+    // ###############################################*/
 
     // ###############################################
     // RAZORING
     // If this position is already weaker as alpha (<alpha)
     // by a large margin we jump into qsearch to see if there
     // are any capturing moves which might improve the situation
-    if (SearchConfig::USE_RAZOR_PRUNING
+    /*if (SearchConfig::USE_RAZOR_PRUNING
         && ST == NONROOT
         && depth < SearchConfig::RAZOR_DEPTH
         //&& !mateThreat[ply]  // TODO
@@ -637,7 +675,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
       TRACE(LOG, "{:>{}}Search in ply %d for depth %d: RAZOR CUT", "", ply, ply, depth);
       return search<QUIESCENCE, NT>(position, DEPTH_NONE, ply, alpha, beta, Do_Null_Move);
     }
-    // ###############################################
+    // ###############################################*/
   }
   // ###############################################
 
@@ -648,7 +686,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
   // one. This is most effective with bad move ordering.
   // If move ordering is quite good this might be
   // a waste of search time.
-  if (SearchConfig::USE_IID
+  /*if (SearchConfig::USE_IID
       && SearchConfig::USE_TT // TODO: only works with TT for now.
       && !PERFT
       && ST != ROOT
@@ -660,33 +698,35 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
     //      "**ST={:<10} NT={:<5} depth={:<2} ply={:<2} alpha={:>6} beta={:>6} ttValue={:>6} ttMove={:<30} ",
     //      ST == ROOT ? "ROOT" : ST == NONROOT ? "NONROOT" : "QUIESCENCE", NT == PV ? "PV" : "NonPV",
     //      depth, ply, alpha, beta, ttValue, printMoveVerbose(ttMove));
-
     searchStats.iidSearches++;
     auto iidDepth = static_cast<Depth>(depth >> 1); // div by 2
     // do the iterative search which will eventually
     // fill the pv list and the TT
     search<ST, PV>(position, iidDepth, ply, alpha, beta, Do_Null_Move);
     // no we look in the pv list if we have a best move
-    TT::Result ttHit = TT::TT_MISS;
+    TT::Result ttHit = TT::TT_NOCUT;
     const TT::Entry* pEntry = tt->probe<true>(position.getZobristKey(), depth, alpha, beta, ttHit);
     if (pEntry) {
       ttMove = pEntry->move;
       assert(!ttMove || moveGenerators[ply].validateMove(position, ttMove));
-      ttValue = ttHit ? valueFromTT(pEntry->value, ply) : VALUE_NONE; // TODO: might be used later
+      // ttValue = ttHit ? valueFromTT(pEntry->value, ply) : VALUE_NONE; // TODO: might be used later
     }
-
-    //ttMove = pv[ply].empty() ? MOVE_NONE : pv[ply].at(0);
     //    fprintln("****IID SEARCH RESULT: pv={} pv[{}] = {}",
     //             printMoveVerbose(pv[ply].empty() ? MOVE_NONE : pv[ply].at(0)), ply,
     //             printMoveList(pv[ply]));
     //    fprintln("****IID SEARCH RESULT: ttMove={} ttValue={}\n", printMoveVerbose(ttMove), ttValue);
   }
-  // ###############################################
+  // ###############################################*/
 
   // make sure the pv move is returned first
-  if (ST != ROOT && SearchConfig::USE_PV_MOVE_SORTING && ttMove) {
+  if (
+    SearchConfig::USE_PV_MOVE_SORTING && ttMove
+    && ST !=
+       ROOT && ST
+               != PERFT) {
     assert(moveGenerators[ply].validateMove(position, ttMove));
-    moveGenerators[ply].setPV(ttMove);
+    moveGenerators[ply].
+                         setPV(ttMove);
   }
 
   // prepare move loop
@@ -696,7 +736,9 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
 
   // ###########################################################################
   // MOVE LOOP
-  while ((move = getMove<ST>(position, ply)) != MOVE_NONE) {
+  while ((
+           move = getMove<ST>(position, ply)
+         ) != MOVE_NONE) {
 
     if (ST == ROOT) {
       TRACE(LOG, "Root Move {} START", printMove(move));
@@ -710,7 +752,11 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
 
     // reduce number of moves searched in quiescence
     // by looking at good captures only
-    if (ST == QUIESCENCE && !position.hasCheck() && !goodCapture(position, move)) {
+    if (ST == QUIESCENCE && !position.
+                                       hasCheck() &&
+        !
+          goodCapture(position, move
+          )) {
       continue;
     }
 
@@ -719,26 +765,14 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
     // Some positions should be searched to a higher
     // depth or at least they should not be reduced.
     int extension = 0;
-    if (SearchConfig::USE_EXTENSIONS
-        && ST == NONROOT
-        && NT == PV
-        && !PERFT) {
-      //      if (mateThreat[ply]
-      //          || Move.getMoveType(move) == MoveType.PROMOTION
-      //          || (Move.getPiece(move).getType() == PieceType.PAWN
-      //              && (position.getNextPlayer().isWhite()
-      //                  ? Move.getEnd(move).getRank() == Square.Rank.r7
-      //                  : Move.getEnd(move).getRank() == Square.Rank.r2))
-      //          || Move.getMoveType(move) == MoveType.CASTLING
-      //          //|| position.hasCheck()
-      //          || givesCheck
-      //        ) {
-      //        extension = 1;
-      //        newDepth += extension;
-      //        if (TRACE) {
-      //          trace("%sSearch in ply %d for depth %d: PRE EXTENSION %d",
-      //                getSpaces(ply), ply, depth, newDepth);
-      //        }
+    if (
+      SearchConfig::USE_EXTENSIONS
+      && ST
+         ==
+         NONROOT
+      && NT
+         == PV
+      ) {
     }
     // ###############################################
 
@@ -749,10 +783,13 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
     // Will not be done when in a pvNode search or when
     // already any search extensions has been determined.
     // Also not when in check.
-    if (!PERFT
-        && NT == NonPV
+    if (ST !=
+        PERFT
+        && NT
+           == NonPV
         && !extension
-        && !position.hasCheck()
+        && !position.
+                      hasCheck()
       ) {
 
     }
@@ -762,10 +799,22 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
     // Skip non queen or knight promotion as they are
     // redundant. Exception would be stale mate situations
     // which we ignore.
-    if (SearchConfig::USE_MPP
-        && !PERFT && ST != ROOT) {
-      if (typeOf(move) == PROMOTION && promotionType(move) != QUEEN &&
-          promotionType(move) != KNIGHT) {
+    if (
+      SearchConfig::USE_MPP
+      && ST
+         !=
+         ROOT
+      && ST
+         != PERFT
+      ) {
+      if (
+        typeOf(move)
+        ==
+        PROMOTION
+        && promotionType(move)
+           !=
+           QUEEN && promotionType(move)
+                    != KNIGHT) {
         searchStats.minorPromotionPrunings++;
         TRACE(LOG, "{:>{}}Search in ply {} for depth {}: Move {} MPP CUT", "", ply, ply, depth, printMove(move));
         continue;
@@ -775,15 +824,21 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
 
     // ************************************
     // Execute move
-    position.doMove(move);
+    position.
+              doMove(move);
     TT_PREFETCH
     searchStats.nodesVisited++;
-    if (position.isLegalPosition()) {
-      currentVariation.push_back(move);
+    if (position.
+                  isLegalPosition()
+      ) {
+      currentVariation.
+                        push_back(move);
       sendSearchUpdateToEngine();
 
       // check for repetition or 50-move-rule draws
-      if (checkDrawRepAnd50<ST>(position)) {
+      if (
+        checkDrawRepAnd50<ST>(position)
+        ) {
         value = VALUE_DRAW;
       }
       else {
@@ -793,7 +848,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
         // ROOT is used only at the start - changes directly to NONROOT
         const Search::Search_Type nextST = ST == ROOT ? NONROOT : ST;
 
-        if (!SearchConfig::USE_PVS || movesSearched == 0 || PERFT) {
+        if (!SearchConfig::USE_PVS || movesSearched == 0 || ST == PERFT) {
           // AlphaBeta Search or initial search in PVS
           value = -search<nextST, PV>(position, newDepth, ply + 1, -beta, -alpha, doNull);
         }
@@ -801,39 +856,56 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
           // #############################
           // PVS Search /START
           value = -search<nextST, NonPV>(position, newDepth, ply + 1, -alpha - 1, -alpha, doNull);
-          if (value > alpha && value < beta && !stopSearchFlag) {
-            if (ST == ROOT) { searchStats.pvs_root_researches++; }
-            else { searchStats.pvs_researches++; }
+          if (value >
+              alpha && value < beta &&
+              !_stopSearchFlag) {
+            if (ST == ROOT) {
+              searchStats.pvs_root_researches++;
+            }
+            else {
+              searchStats.pvs_researches++;
+            }
             value = -search<nextST, PV>(position, newDepth, ply + 1, -beta, -alpha, doNull);
           }
           else {
-            if (ST == ROOT) { searchStats.pvs_root_cutoffs++; }
-            else { searchStats.pvs_cutoffs++; }
+            if (ST == ROOT) {
+              searchStats.pvs_root_cutoffs++;
+            }
+            else {
+              searchStats.pvs_cutoffs++;
+            }
           }
           // PVS Search /END
           // #############################
         }
       }
-      assert ((value != VALUE_NONE || stopSearchFlag) && "Value should not be NONE at this point.");
+      assert ((value != VALUE_NONE || _stopSearchFlag) && "Value should not be NONE at this point.");
 
       movesSearched++;
-      currentVariation.pop_back();
+      currentVariation.
+                        pop_back();
     } // if (position.isLegalPosition())
-    position.undoMove();
+    position.
+              undoMove();
     // ************************************
 
     if (stopConditions(false)) {
-      return VALUE_NONE;
+      return
+        VALUE_NONE;
     }
 
     // For root moves encode value into the move
     // so we can sort the move before the next iteration
     if (ST == ROOT) {
-      setValue(rootMoves.at(currentMoveIndex++), value);
+      setValue(rootMoves
+                 .
+                   at(currentMoveIndex
+                        ++), value);
     }
 
     // In PERFT we can ignore values and pruning
-    if (PERFT) {
+    if (ST == PERFT) {
+      if (ply == PLY_ROOT) currentMoveIndex++;
       value = VALUE_ONE;
       continue;
     }
@@ -848,7 +920,8 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
 
       if (ST == ROOT) {
         searchStats.bestMoveChanges++;
-        searchStats.bestMoveDepth = depth;
+        searchStats.
+                     bestMoveDepth = depth;
       }
 
       // AlphaBeta
@@ -877,8 +950,12 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
            earlier in another node of the ply.
           */
           if (value >= beta) {
-            if (SearchConfig::USE_KILLER_MOVES && !position.isCapturingMove(move)) {
-              moveGenerators[ply].storeKiller(move, SearchConfig::NO_KILLER_MOVES);
+            if (SearchConfig::USE_KILLER_MOVES && !position.
+                                                             isCapturingMove(move)
+              ) {
+              moveGenerators[ply].
+                                   storeKiller(move, SearchConfig::NO_KILLER_MOVES
+              );
             }
             searchStats.prunings++;
             ttType = TYPE_BETA; // store the beta value into the TT later
@@ -895,15 +972,19 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
             */
             alpha = value;
             ttType = TYPE_EXACT;
-            setValue(ttStoreMove, bestNodeValue);
-            savePV(ttStoreMove, pv[ply + 1], pv[ply]);
+            setValue(ttStoreMove, bestNodeValue
+            );
+            savePV(ttStoreMove, pv[ply + 1], pv[ply]
+            );
             TRACE(LOG, "{:>{}}Search in ply {} for depth {}: NEW PV {} ({}) (alpha) PV: {}", "", ply, ply, depth, printMove(move), value, printMoveListUCI(pv[ply]));
           }
         }
       }
       else { // Minimax
-        setValue(move, value);
-        savePV(move, pv[ply + 1], pv[ply]);
+        setValue(move, value
+        );
+        savePV(move, pv[ply + 1], pv[ply]
+        );
         ttType = TYPE_EXACT;
         TRACE(LOG, "{:>{}}Search in ply {} for depth {}: NEW PV {} ({}) PV: {}", "", ply, ply, depth, printMove(move), value, printMoveListUCI(pv[ply]));
       }
@@ -920,7 +1001,9 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
   // ###########################################################################
 
   // do some checks
-  if (!PERFT && SearchConfig::USE_ALPHABETA) {
+  if (ST !=
+      PERFT && SearchConfig::USE_ALPHABETA
+    ) {
     // In an EXACT node we should have a best move and a PV
     if (ttType == TYPE_EXACT) {
       assert (ttStoreMove);
@@ -944,11 +1027,13 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
   // if we did not have at least one legal move
   // then we might have a mate or in quiescence
   // only quite moves
-  if (!movesSearched && !stopSearchFlag) {
+  if (!movesSearched && !_stopSearchFlag) {
     searchStats.nonLeafPositionsEvaluated++;
     assert (ttType == TYPE_ALPHA);
     TRACE(LOG, "{:>{}}Depth {} cv {} NO LEGAL MOVES", "", ply, ply, printMoveListUCI(currentVariation));
-    if (position.hasCheck()) {
+    if (position.
+                  hasCheck()
+      ) {
       /* If the position has check we have a mate even in
          quiescence as we will have generated all moves
          because of the check. Return a -CHECKMATE. */
@@ -980,20 +1065,27 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
   switch (ST) {
     case ROOT: // fall through
     case NONROOT:
-      if (!PERFT && SearchConfig::USE_TT) {
+      if (SearchConfig::USE_TT) {
         TRACE(LOG, "{:>{}}Search storing into TT: {} {} {} {} {} {} {}", "", ply, position.getZobristKey(), bestNodeValue, TT::str(ttType), depth, printMove(ttStoreMove), false, position.printFen());
-        storeTT(position, bestNodeValue, ttType, depth, ply, ttStoreMove, mateThreat[ply]);
+        storeTT(position, bestNodeValue, ttType, depth, ply, ttStoreMove, mateThreat[ply]
+        );
       }
       break;
     case QUIESCENCE:
-      if (!PERFT && SearchConfig::USE_TT && SearchConfig::USE_TT_QSEARCH) {
+      if (
+        SearchConfig::USE_TT && SearchConfig::USE_TT_QSEARCH
+        ) {
         TRACE(LOG, "{:>{}}Quiescence storing into TT: {} {} {} {} {} {} {}", "", ply, position.getZobristKey(), bestNodeValue, TT::str(ttType), depth, printMove(ttStoreMove), false, position.printFen());
-        storeTT(position, bestNodeValue, ttType, DEPTH_NONE, ply, ttStoreMove, mateThreat[ply]);
+        storeTT(position, bestNodeValue, ttType, DEPTH_NONE, ply, ttStoreMove, mateThreat[ply]
+        );
       }
+      break;
+    case PERFT:
       break;
   }
 
-  return bestNodeValue;
+  return
+    bestNodeValue;
 }
 
 Value Search::evaluate(Position &position) {
@@ -1024,8 +1116,7 @@ template<Search::Search_Type ST>
 Move Search::getMove(Position &position, int ply) {
   TRACE(LOG, "{:>{}}Get move for position {} in ply {}", "", ply, position.getZobristKey(), ply);
   Move move = MOVE_NONE;
-  constexpr Search_Type type = ST;
-  switch (type) {
+  switch (ST) {
     case ROOT:
       if (currentMoveIndex < rootMoves.size()) {
         move = rootMoves.at(currentMoveIndex);
@@ -1041,6 +1132,17 @@ Move Search::getMove(Position &position, int ply) {
       }
       else { // if not in check only look at captures
         move = moveGenerators[ply].getNextPseudoLegalMove<MoveGenerator::GENCAP>(position);
+      }
+      break;
+    case PERFT:
+      if (ply == PLY_ROOT) {
+        if (currentMoveIndex < rootMoves.size()) {
+          move = rootMoves.at(currentMoveIndex);
+          searchStats.currentRootMove = move;
+        }
+      }
+      else {
+        move = moveGenerators[ply].getNextPseudoLegalMove<MoveGenerator::GENALL>(position);
       }
       break;
   }
@@ -1080,7 +1182,7 @@ inline void
 Search::storeTT(Position &position, Value value, Value_Type ttType, Depth depth, Ply ply,
                 Move bestMove, bool _mateThreat) {
 
-  if (!SearchConfig::USE_TT || searchLimitsPtr->isPerft() || stopSearchFlag) return;
+  if (!SearchConfig::USE_TT || searchLimitsPtr->isPerft() || _stopSearchFlag) return;
 
   assert (depth >= 0 && depth <= DEPTH_MAX);
   assert ((value >= VALUE_MIN && value <= VALUE_MAX));
@@ -1102,12 +1204,12 @@ inline Value Search::valueFromTT(Value value, Ply ply) {
 }
 
 inline bool Search::stopConditions(bool shouldTimeCheck) {
-  if (stopSearchFlag) return true;
+  if (_stopSearchFlag) return true;
   if ((shouldTimeCheck && timeLimitReached()) ||
       (searchLimitsPtr->getNodes() && searchStats.nodesVisited >= searchLimitsPtr->getNodes())) {
-    stopSearchFlag = true;
+    _stopSearchFlag = true;
   }
-  return stopSearchFlag;
+  return _stopSearchFlag;
 }
 
 inline bool Search::shouldTimeCheck() const {
@@ -1272,14 +1374,22 @@ void Search::setHashSize(int sizeInMB) {
 
 void Search::sendIterationEndInfoToEngine() const {
   if (!pEngine) {
-    LOG->info("UCI >> {}", fmt::format("depth {} seldepth {} multipv 1 {} nodes {:n} nps {:n} time {:n} pv {}", searchStats.currentIterationDepth, searchStats.currentExtraSearchDepth, (searchLimitsPtr->isPerft()
-                                                                                                                                                                                         ? VALUE_ZERO
-                                                                                                                                                                                         : valueOf(pv[PLY_ROOT].at(0))), searchStats.nodesVisited, getNps(), elapsedTime(startTime), printMoveListUCI(pv[PLY_ROOT])));
+    LOG->info(
+      "UCI >> {}",
+      fmt::format("depth {} seldepth {} multipv 1 {} nodes {:n} nps {:n} time {:n} pv {}",
+                  searchStats.currentSearchDepth, searchStats.currentExtraSearchDepth,
+                  (searchLimitsPtr->isPerft() ? VALUE_ZERO : valueOf(pv[PLY_ROOT].at(0))),
+                  searchStats.nodesVisited, getNps(), elapsedTime(startTime),
+                  printMoveListUCI(pv[PLY_ROOT])));
   }
   else {
-    pEngine->sendIterationEndInfo(searchStats.currentIterationDepth, searchStats.currentExtraSearchDepth, searchLimitsPtr->isPerft()
-                                                                                                          ? VALUE_ZERO
-                                                                                                          : valueOf(pv[PLY_ROOT].at(0)), searchStats.nodesVisited, getNps(), elapsedTime(startTime), pv[PLY_ROOT]);
+    pEngine->sendIterationEndInfo(searchStats.currentSearchDepth,
+                                  searchStats.currentExtraSearchDepth,
+                                  searchLimitsPtr->isPerft()
+                                  ? VALUE_ZERO
+                                  : valueOf(pv[PLY_ROOT].at(0)),
+                                  searchStats.nodesVisited, getNps(),
+                                  elapsedTime(startTime), pv[PLY_ROOT]);
   }
 }
 
@@ -1296,11 +1406,22 @@ void Search::sendCurrentRootMoveToEngine() const {
 void Search::sendSearchUpdateToEngine() {
   if (elapsedTime(lastUciUpdateTime) > UCI_UPDATE_INTERVAL) {
     lastUciUpdateTime = now();
+
+    LOG->info("Search statistics: {}", searchStats.str());
+    LOG->info("TT     statistics; {}", tt->str());
+
     if (!pEngine) {
-      LOG->info("UCI >> {}", fmt::format("depth {} seldepth {} nodes {:n} nps {:n} time {:n} hashfull {}", searchStats.currentIterationDepth, searchStats.currentExtraSearchDepth, searchStats.nodesVisited, getNps(), elapsedTime(startTime), tt->hashFull()));
+      LOG->info(
+        "UCI >> {}",
+        fmt::format("depth {} seldepth {} nodes {:n} nps {:n} time {:n} hashfull {}",
+                    searchStats.currentSearchDepth, searchStats.currentExtraSearchDepth,
+                    searchStats.nodesVisited, getNps(), elapsedTime(startTime), tt->hashFull()));
     }
     else {
-      pEngine->sendSearchUpdate(searchStats.currentIterationDepth, searchStats.currentExtraSearchDepth, searchStats.nodesVisited, getNps(), elapsedTime(startTime), 0);
+      pEngine->sendSearchUpdate(
+        searchStats.currentSearchDepth,
+        searchStats.currentExtraSearchDepth, searchStats.nodesVisited,
+        getNps(), elapsedTime(startTime), 0);
     }
 
     if (!pEngine) {
@@ -1309,9 +1430,6 @@ void Search::sendSearchUpdateToEngine() {
     else {
       pEngine->sendCurrentLine(currentVariation);
     }
-
-    LOG->info("Search statistics: {}", searchStats.str());
-    LOG->info("TT     statistics; {}", tt->str());
   }
 }
 
@@ -1322,7 +1440,6 @@ void Search::sendResultToEngine() const {
   else {
     pEngine->sendResult(lastSearchResult.bestMove, lastSearchResult.ponderMove);
   }
-
 }
 
 

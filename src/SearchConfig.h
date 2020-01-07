@@ -30,6 +30,7 @@ namespace SearchConfig {
 
   // basic search strategies and features
   inline bool USE_QUIESCENCE = true; // use quiescence search
+  inline Depth MAX_EXTRA_QDEPTH = static_cast<Depth>(20);
   inline bool USE_ALPHABETA = true; // use ALPHA_BETA instead of MinMax
   inline bool USE_PVS = true; // use PVS null window search
 
@@ -56,11 +57,11 @@ namespace SearchConfig {
   inline bool USE_NMP = true;
   inline Depth NMP_DEPTH = static_cast<Depth>(2);
   inline bool USE_VERIFY_NMP = true;
-  inline Depth NMP_VERIFICATION_DEPTH = static_cast<Depth>(3);
-
+  inline Depth NMP_VERIFICATION_DEPTH = static_cast<Depth>(1); // depth - NMP_DEPTH > NMP_VERIFICATION_DEPTH
 
   // tactical features
   inline bool USE_EXTENSIONS = true;
+
 }
 
 #endif //FRANKYCPP_SEARCHCONFIG_H

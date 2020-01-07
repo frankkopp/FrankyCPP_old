@@ -389,10 +389,10 @@ TEST_F(SearchTest, TT) {
             search.getSearchStats().lastSearchTime, (search.getSearchStats().nodesVisited * 1'000) /
                                                     search.getSearchStats().lastSearchTime);
   LOG->info("TT Hits: {:n} TT Misses: {:n} TT Hit rate: {}%",
-            search.getSearchStats().tt_Hits,
-            search.getSearchStats().tt_Misses,
-            (static_cast<double>(search.getSearchStats().tt_Hits * 100) /
-             (search.getSearchStats().tt_Hits + search.getSearchStats().tt_Misses)));
+            search.getSearchStats().tt_Cuts,
+            search.getSearchStats().tt_NoCuts,
+            (static_cast<double>(search.getSearchStats().tt_Cuts * 100) /
+             (search.getSearchStats().tt_Cuts + search.getSearchStats().tt_NoCuts)));
 }
 
 TEST_F(SearchTest, NULLMOVE) {
@@ -418,7 +418,7 @@ TEST_F(SearchTest, NULLMOVE) {
 
 TEST_F(SearchTest, perft) {
 
-  int DEPTH = 6;
+  int DEPTH = 5;
 
   long perftResults[] = {0, 20, 400, 8'902, 197'281, 4'865'609, 119'060'324, 3'195'901'860};
 
@@ -455,15 +455,19 @@ TEST_F(SearchTest, nps) {
 TEST_F(SearchTest, debugging) {
   Search search;
   SearchLimits searchLimits;
-  Position position;
 
+  //Position position;
+  //Position position("rn2kbnr/ppp1pppp/8/8/6b1/2NP1N2/PPP2P1P/R1BQKB1q w Qkq - 1 6");
+  Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
   //Position position("8/7p/R7/5p1k/5P2/7P/P1P1nP1K/5q2 w - - 3 33");
   //Position position("r3k2r/1ppn3p/2q1q1n1/4P3/4q3/5Pp1/pb4PP/2q2RK1 w kq - 0 1"); //
   //position = Position("2r3k1/pppR1pp1/4p3/4P1P1/5P2/1P4K1/P1P5/8 w - -");
 
-  //searchLimits.setDepth(8);
+  SearchConfig::USE_TT = true;
+
+  searchLimits.setDepth(8);
   //searchLimits.setNodes(30'000'000);
-  searchLimits.setMoveTime(5'000);
+  //  searchLimits.setMoveTime(5'000);
 
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();

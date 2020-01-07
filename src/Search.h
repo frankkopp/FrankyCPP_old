@@ -90,7 +90,7 @@ class Search {
 
   // search state
   std::atomic_bool _isRunning = false;
-  std::atomic_bool stopSearchFlag = false;
+  std::atomic_bool _stopSearchFlag = false;
   std::atomic_bool _hasResult = false;
 
   // search result
@@ -121,6 +121,9 @@ class Search {
   // store the current variation
   MoveList currentVariation;
 
+  // store current iteration depth to limit max quiescence depth
+  Depth currentIterationDepth = static_cast<Depth>(0);
+
   // store the current principal variation
   MoveList pv[DEPTH_MAX]{};
 
@@ -137,7 +140,7 @@ public:
 
   // for code re-using through templating we use search types when calling search()
   enum Search_Type {
-    ROOT, NONROOT, QUIESCENCE
+    ROOT, NONROOT, QUIESCENCE, PERFT
   };
 
   // in PV we search the full window in NonPV we try a zero window first

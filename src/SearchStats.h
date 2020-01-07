@@ -36,7 +36,6 @@ struct SearchStats {
   // long[] betaCutOffs = new long[MAX_MOVES];
 
   // Search info values
-  Depth currentIterationDepth = DEPTH_NONE;
   Ply currentSearchDepth = PLY_ROOT;
   Ply currentExtraSearchDepth = PLY_ROOT;
   Move currentRootMove = MOVE_NONE;
@@ -57,8 +56,8 @@ struct SearchStats {
   uint64_t enPassantCounter = 0;
 
   // TT Statistics
-  uint64_t tt_Hits = 0;
-  uint64_t tt_Misses = 0;
+  uint64_t tt_Cuts = 0;
+  uint64_t tt_NoCuts = 0;
 
   // Optimization Values
   uint64_t aspirationResearches = 0;

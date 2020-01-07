@@ -137,42 +137,15 @@ void TT::put(Key key, Depth depth, Move move, Value value, Value_Type type, bool
   assert (numberOfPuts == (numberOfEntries + numberOfCollisions + numberOfUpdates));
 }
 
-template<bool NT>
-const TT::Entry*
-TT::probe(const Key &key, const Depth &depth, const Value &alpha, const Value &beta,
-          Result &result) {
-  // result = TT_MISS at this point
+const TT::Entry* TT::probe(const Key &key) {
   numberOfProbes++;
-  //Entry* ttEntryPtr = getEntryPtr(key);
-  Entry* ttEntryPtr = &_data[(key & hashKeyMask)];
-  // result is a logical TT result considering node type, alpha and beta bounds
+  Entry* ttEntryPtr = getEntryPtr(key);
   if (ttEntryPtr->key == key) {
     numberOfHits++; // entries with identical keys found
     ttEntryPtr->age = std::max(0, ttEntryPtr->age - 1);
-    // use value only if tt depth was equal or deeper
-    if (ttEntryPtr->depth >= depth) {
-      // In a PV node use the value only for a cut off if it is exact.
-      // In non PV nodes we use it only if it is exact or outside our
-      // current bounds.
-      const Value_Type entryType = ttEntryPtr->type;
-      if (NT) {
-        if (entryType == TYPE_EXACT) {
-          result = TT_HIT;
-          return ttEntryPtr;
-        }
-      }
-      else {
-        if (entryType == TYPE_EXACT ||
-            (entryType == TYPE_ALPHA && ttEntryPtr->value <= alpha) ||
-            (entryType == TYPE_BETA && ttEntryPtr->value >= beta)) {
-          result = TT_HIT;
-          return ttEntryPtr;
-        }
-      }
-    }
+    return ttEntryPtr;
   }
   numberOfMisses++; // keys not found (not equal to TT misses)
-  result = TT_MISS;
   return nullptr;
 }
 
@@ -228,10 +201,3 @@ std::ostream &operator<<(std::ostream &os, const TT::Entry &entry) {
 
 }
 
-// explicit template instantiation
-template const TT::Entry*
-TT::probe<true>(const Key &key, const Depth &depth, const Value &alpha, const Value &beta,
-                Result &result);
-template const TT::Entry*
-TT::probe<false>(const Key &key, const Depth &depth, const Value &alpha, const Value &beta,
-                 Result &result);
