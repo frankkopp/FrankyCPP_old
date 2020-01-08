@@ -173,7 +173,7 @@ unsigned popcount16(unsigned u) {
   return (u * 0x0101U) >> 8U;
 }
 
-TEST_F(TimingTests, busyWait) {
+TEST_F(TimingTests, DISABLED_busyWait) {
   ostringstream os;
   //// TESTS START
   std::function<void()> f1 = [&]() {
@@ -189,7 +189,55 @@ TEST_F(TimingTests, busyWait) {
   cout << os.str();
 }
 
-TEST_F(TimingTests, bitCount) {
+
+TEST_F(TimingTests, moveUnion) {
+  ostringstream os;
+
+  Move move = createMove<PROMOTION>("a2a1q");
+  setValue(move, Value(999));
+
+
+  union NewMove {
+    uint32_t move;
+    struct { uint16_t pureMove; uint16_t value;  } part;
+  };
+
+  NewMove nMove{};
+  nMove.part.pureMove = moveOf(move);
+  nMove.part.value = valueOf(move) + VALUE_NONE;
+
+  fprintln("Move:         {} puremove {} value {:7} bits {}", move, moveOf(move), valueOf(move), printBitString(move));
+  fprintln("NewMove: move {} puremove {} value {:7} bits {}", nMove.move, nMove.part.pureMove, nMove.part.value - VALUE_NONE, printBitString(nMove.move));
+
+  fprintln("Size Move {} Size NewMove {}", sizeof(Move), sizeof(NewMove));
+
+  NEWLINE;
+
+  Move m = MOVE_NONE;
+  Value v = VALUE_NONE;
+  //// TESTS START
+  std::function<void()> f1 = [&]() {
+    m = moveOf(move);
+    ASSERT_EQ(29184, m);
+    v = valueOf(move);
+    ASSERT_EQ(999, v);
+  };
+  std::function<void()> f2 = [&]() {
+    m = static_cast<Move>(nMove.part.pureMove);
+    ASSERT_EQ(29184, m);
+    v = static_cast<Value>(nMove.part.value) - VALUE_NONE;
+    ASSERT_EQ(999, v);
+
+  };
+  vector<std::function<void()>> tests;
+  tests.push_back(f1);
+  tests.push_back(f2);
+  //// TESTS END
+  testTiming(os, 5, 100, 1'000'000, tests);
+  cout << os.str();
+}
+
+TEST_F(TimingTests, DISABLED_bitCount) {
   ostringstream os;
 
   std::mt19937_64 rg(12345);
