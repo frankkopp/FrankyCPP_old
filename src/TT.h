@@ -129,13 +129,16 @@ public:
    * @param newSizeInByte in Byte which will be reduced to the next
    * lowest power of 2 size
    */
-  void resize(uint64_t newSizeInByte);
+  void resize(const uint64_t newSizeInByte);
 
   /** Clears the transposition table be resetting all entries to 0. */
   void clear();
 
   /**
     * Stores the node value and the depth it has been calculated at.
+    * Also stores the best move for the node.
+    * OBS: move will be stripped of any value before storing as we store value
+    * separately and it may be surprising that a MOVE_NONE has a value.
     * @param forced when true skips age check (mostly for unit testing)
     * @param key Position key (usually Zobrist key)
     * @param depth 0-DEPTH_MAX (usually 127)
@@ -145,8 +148,8 @@ public:
     * @param mateThreat node had a mate threat in the ply
     */
   void
-  put(Key key, Depth depth, Move move, Value value, Value_Type type, bool mateThreat,
-      bool forced);
+  put(const Key key, const Depth depth, const Move move, const Value value, const Value_Type type, const bool mateThreat,
+      const bool forced);
 
   /**
     * Stores the node value and the depth it has been calculated at.
@@ -179,7 +182,7 @@ public:
    * @param key Position key (usually Zobrist key)
    * @return Entry for key or 0 if not found
    */
-  Entry getEntry(Key key) const;
+  Entry getEntry(const Key key) const;
 
   /**
    * Looks up and returns a result using get(Key key).
@@ -225,14 +228,14 @@ public:
 private:
 
   static void
-  writeEntry(Entry* entryPtr, Key key, const Depth depth, const Move move, const Value value,
+  writeEntry(Entry* const entryPtr, const Key key, const Depth depth, const Move move, const Value value,
              const Value_Type type, bool mateThreat, uint8_t age);
 
   /* This retrieves a direct pointer to the entry of this node from cache */
-  Entry* getEntryPtr(Key key) const;
+  Entry* getEntryPtr(const Key key) const;
 
   /* generates the index hash key from the position key  */
-  std::size_t getHash(Key key) const;
+  std::size_t getHash(const Key key) const;
 
   /** GETTER and SETTER */
 public:
@@ -285,7 +288,7 @@ public:
     TT::noOfThreads = threads;
   }
 
-  static inline std::string str(Value_Type type) {
+  static inline std::string str(const Value_Type type) {
     switch (type) {
       case TYPE_NONE:
         return "NONE";

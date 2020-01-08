@@ -303,14 +303,15 @@ enum Move : uint32_t {
 
 /* @formatter:off
 BITMAP 32-bit
-0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
-0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
----------------------------------------------------------------
-1 1 1 1 1 1                                                     to
-            1 1 1 1 1 1                                         from
-                        1 1                                     promotion piece type (pt-2 > 0-3)
-                            1 1                                 move type
-                                1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 move sort value
+|-Value ------------------------|-Move -------------------------|
+3	3	2	2	2	2	2	2	2	2	2	2	1	1	1	1 | 1	1	1	1	1	1	0	0	0	0	0	0	0	0	0	0
+1	0	9	8	7	6	5	4	3	2	1	0	9	8	7	6	| 5	4	3	2	1	0	9	8	7	6	5	4	3	2	1	0
+--------------------------------|--------------------------------
+																| 										1	1	1	1	1	1  to
+																| 				1	1	1	1	1	1						   from
+																| 		1	1												   promotion piece type (pt-2 > 0-3)
+																| 1	1														   move type
+1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	| 															   move sort value
 */ // @formatter:on
 
 namespace MoveShifts {
@@ -468,7 +469,7 @@ constexpr Move moveOf(Move m) { return Move(m & MoveShifts::MOVE_MASK); }
 /** sets the value for the move. E.g. used by the move generator for move sorting */
 constexpr void setValue(Move &m, Value v) {
   assert(v >= VALUE_NONE && v <= -VALUE_NONE);
-  if (!moveOf(m)) return;
+  if (moveOf(m) == MOVE_NONE) return; // can't store a value on a MOVE_NONE
   // when saving a value to a move we shift value to a positive integer (0-VALUE_NONE) and
   // encode it into the move
   // for retrieving we then shift the value back to a range from VALUE_NONE to VALUE_INF
@@ -485,7 +486,7 @@ inline std::string printMove(const Move move) {
 
 /** returns a verbose representation of the move as string */
 inline std::string printMoveVerbose(const Move move) {
-  if (!move) return "NOMOVE";
+  if (!move) return "NOMOVE " + std::to_string(move);
   std::string tp;
   std::string promPt;
   switch (typeOf(move)) {

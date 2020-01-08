@@ -476,6 +476,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
     ttEntryPtr = tt->probe(position.getZobristKey());
     if (ttEntryPtr) {
       ttMove = ttEntryPtr->move;
+      assert(moveOf(ttMove) == ttMove);
       assert(!ttMove || moveGenerators[ply].validateMove(position, ttMove));
       mateThreat[ply] = ttEntryPtr->mateThreat;
       // use value only if tt depth was equal or deeper
@@ -546,6 +547,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
         storeTT(position, staticEval, TYPE_BETA, DEPTH_NONE, ply, MOVE_NONE, mateThreat[ply]);
       }
       TRACE(LOG, "{:>{}}Quiescence in ply {}: STANDPAT CUT ({} > {} beta)", "", ply, ply, standPat, beta);
+      searchStats.qStandpatCuts++;
       return staticEval; // fail-hard: beta, fail-soft: statEval
     }
     if (staticEval > alpha) {
@@ -567,17 +569,16 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
     // https://www.chessprogramming.org/Reverse_Futility_Pruning
     // Anticipate likely alpha low in the next ply by a beta cut
     // off before making and evaluating the move
-    /* if (SearchConfig::USE_RFP
-        && depth == DEPTH_FRONTIER
+    if (SearchConfig::USE_RFP
         && NT == NonPV
+        && depth == DEPTH_FRONTIER
         && !position.hasCheck()
-        && ST != QUIESCENCE // we did quiescence RFP already above
+        && ST != QUIESCENCE // to let compiler remove it - is redundant to depth == 0
       ) {
-      Value evalMargin = SearchConfig::RFP_MARGIN * static_cast<int>(depth);
+      const Value evalMargin = SearchConfig::RFP_MARGIN * static_cast<int>(depth);
       if (staticEval - evalMargin >= beta) {
         searchStats.rfpPrunings++;
-        TRACE(LOG, "{:>{}}Search in ply {} for depth {}: STATIC CUT", "", ply, ply, depth);
-        storeTT(position, staticEval, TYPE_BETA, depth, ply, MOVE_NONE, mateThreat[ply]);
+        TRACE(LOG, "{:>{}}Search in ply {} for depth {}: RFP CUT", "", ply, ply, depth);
         return staticEval - evalMargin; // fail-hard: beta / fail-soft: staticEval - evalMargin;
       }
     }
@@ -607,7 +608,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
       const int r = SearchConfig::NMP_REDUCTION;
 
       // don't go into quiescence directly
-      int newDepth = static_cast<int>(depth) -1 -r;
+      int newDepth = static_cast<int>(depth) - 1 - r;
       newDepth = newDepth > 0 ? newDepth : 1;
 
       position.doNullMove();
@@ -620,7 +621,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
       if (nullValue >= beta) {
         searchStats.nullMovePrunings++;
         TRACE(LOG, "{:>{}}Search in ply {} for depth {}: NULL CUT", "", ply, ply, depth);
-        storeTT(position, nullValue, TYPE_BETA, depth - r, ply, ttMove, mateThreat[ply]);
+        storeTT(position, nullValue, TYPE_BETA, depth - r, ply, MOVE_NONE, mateThreat[ply]);
         return nullValue;
       }
     }
@@ -653,44 +654,36 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
   // one. This is most effective with bad move ordering.
   // If move ordering is quite good this might be
   // a waste of search time.
-  /*if (SearchConfig::USE_IID
-      && SearchConfig::USE_TT // TODO: only works with TT for now.
-      && !PERFT
-      && ST != ROOT
+  /* if (SearchConfig::USE_IID && SearchConfig::USE_TT
+      && ST != PERFT && ST != ROOT
       && NT == PV
+      && doNull
       && !ttMove
-      && depth > SearchConfig::IID_REDUCTION) {
-    //    fprintln("\n**IID SEARCH");
-    //    fprintln(
-    //      "**ST={:<10} NT={:<5} depth={:<2} ply={:<2} alpha={:>6} beta={:>6} ttValue={:>6} ttMove={:<30} ",
-    //      ST == ROOT ? "ROOT" : ST == NONROOT ? "NONROOT" : "QUIESCENCE", NT == PV ? "PV" : "NonPV",
-    //      depth, ply, alpha, beta, ttValue, printMoveVerbose(ttMove));
+      && depth >= SearchConfig::IID_DEPTH
+    ) {
     searchStats.iidSearches++;
-    auto iidDepth = static_cast<Depth>(depth >> 1); // div by 2
-    // do the iterative search which will eventually
-    // fill the pv list and the TT
-    search<ST, PV>(position, iidDepth, ply, alpha, beta, Do_Null_Move);
-    // no we look in the pv list if we have a best move
-    TT::Result ttHit = TT::TT_NOCUT;
-    const TT::Entry* pEntry = tt->probe<true>(position.getZobristKey(), depth, alpha, beta, ttHit);
+    auto iidDepth = static_cast<Depth>(depth - 2);
+    // do the iterative search which will eventually fill the TT
+    search<ST, PV>(position, iidDepth, ply, alpha, beta, doNull);
+    // no we look into the TT to see if we have a move
+    const TT::Entry* pEntry = tt->probe(position.getZobristKey());
     if (pEntry) {
       ttMove = pEntry->move;
       assert(!ttMove || moveGenerators[ply].validateMove(position, ttMove));
-      // ttValue = ttHit ? valueFromTT(pEntry->value, ply) : VALUE_NONE; // TODO: might be used later
     }
-    //    fprintln("****IID SEARCH RESULT: pv={} pv[{}] = {}",
-    //             printMoveVerbose(pv[ply].empty() ? MOVE_NONE : pv[ply].at(0)), ply,
-    //             printMoveList(pv[ply]));
-    //    fprintln("****IID SEARCH RESULT: ttMove={} ttValue={}\n", printMoveVerbose(ttMove), ttValue);
-  }
-  // ###############################################*/
+  } */
+  // ###############################################
 
-  // make sure the pv move is returned first
-  if (
-    SearchConfig::USE_PV_MOVE_SORTING && ttMove
-    && ST != ROOT && ST != PERFT) {
-    assert(moveGenerators[ply].validateMove(position, ttMove));
-    moveGenerators[ply].setPV(ttMove);
+  // make sure the pv move is returned first by the move generator
+  if (SearchConfig::USE_PV_MOVE_SORTING && ST != ROOT && ST != PERFT) {
+    if (ttMove) {
+      assert(moveGenerators[ply].validateMove(position, ttMove));
+      moveGenerators[ply].setPV(ttMove);
+      searchStats.pv_sortings++;
+    }
+    else {
+      searchStats.no_moveForPVsorting++;
+    }
   }
 
   // prepare move loop

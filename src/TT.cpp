@@ -35,7 +35,7 @@ TT::~TT() {
   delete[] _data;
 }
 
-void TT::resize(uint64_t newSizeInByte) {
+void TT::resize(const uint64_t newSizeInByte) {
   LOG->trace("Resizing TT from {:n} to {:n}", sizeInByte, newSizeInByte);
   delete[] _data;
   // number of entries
@@ -84,30 +84,38 @@ void TT::clear() {
             noOfThreads);
 }
 
-inline std::size_t TT::getHash(Key key) const {
+inline std::size_t TT::getHash(const Key key) const {
   return key & hashKeyMask;
 }
 
-void TT::put(Key key, Depth depth, Move move, Value value, Value_Type type, bool mateThreat,
-             bool forced) {
+inline TT::Entry* TT::getEntryPtr(const Key key) const {
+  return &_data[getHash(key)];
+}
+
+TT::Entry TT::getEntry(const Key key) const {
+  const Entry* const entryPtr = getEntryPtr(key);
+  return entryPtr->key == key ? *entryPtr : Entry();
+}
+
+void TT::put(const Key key, const Depth depth, const Move move, const Value value,
+             const Value_Type type, const bool mateThreat, const bool forced) {
   assert (value > VALUE_NONE);
 
   // if the size of the TT = 0 we
   // do not store anything
   if (!maxNumberOfEntries) return;
 
-  // get hash key
-  std::size_t hash = getHash(key);
-
-  // read the entries f0r this hash
-  Entry* entryDataPtr = &_data[hash];
-
+  // read the entries for this hash
+  Entry* entryDataPtr = getEntryPtr(key);
   numberOfPuts++;
+
+  // cleanup move
+  const Move pureMove = moveOf(move);
 
   // New entry
   if (entryDataPtr->key == 0) {
     numberOfEntries++;
-    writeEntry(entryDataPtr, key, depth, move, value, type, mateThreat, 1);
+    writeEntry(entryDataPtr, key, depth, pureMove, value, type, mateThreat, 1);
     return;
   }
 
@@ -120,7 +128,7 @@ void TT::put(Key key, Depth depth, Move move, Value value, Value_Type type, bool
     if (depth > entryDataPtr->depth ||
         (depth == entryDataPtr->depth && (forced || entryDataPtr->age > 0))) {
       numberOfOverwrites++;
-      writeEntry(entryDataPtr, key, depth, move, value, type, mateThreat, 1);
+      writeEntry(entryDataPtr, key, depth, pureMove, value, type, mateThreat, 1);
     }
     return;
   }
@@ -131,9 +139,10 @@ void TT::put(Key key, Depth depth, Move move, Value value, Value_Type type, bool
     // we always update as the stored moved can't be any good otherwise
     // we would have found this during the search in a previous probe
     // and we would not have come to store it again
-    writeEntry(entryDataPtr, key, depth, move ? move : entryDataPtr->move, value, type, mateThreat, 1);
+    writeEntry(entryDataPtr, key, depth, pureMove ? pureMove : entryDataPtr->move, value, type, mateThreat, 1);
     return;
   }
+  
   assert (numberOfPuts == (numberOfEntries + numberOfCollisions + numberOfUpdates));
 }
 
@@ -149,14 +158,9 @@ const TT::Entry* TT::probe(const Key &key) {
   return nullptr;
 }
 
-TT::Entry TT::getEntry(Key key) const {
-  const Entry* const entryPtr = getEntryPtr(key);
-  return entryPtr->key == key ? *entryPtr : Entry();
-}
-
 inline void
-TT::writeEntry(Entry* entryPtr, Key key, const Depth depth, const Move move, const Value value,
-               const Value_Type type, bool mateThreat, uint8_t age) {
+TT::writeEntry(Entry* const entryPtr, const Key key, const Depth depth, const Move move,
+               const Value value, const Value_Type type, bool mateThreat, uint8_t age) {
   entryPtr->key = key;
   entryPtr->move = move;
   entryPtr->depth = depth;
@@ -164,10 +168,6 @@ TT::writeEntry(Entry* entryPtr, Key key, const Depth depth, const Move move, con
   entryPtr->type = type;
   entryPtr->age = age;
   entryPtr->mateThreat = mateThreat;
-}
-
-inline TT::Entry* TT::getEntryPtr(Key key) const {
-  return &_data[getHash(key)];
 }
 
 void TT::ageEntries() {

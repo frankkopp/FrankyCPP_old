@@ -30,9 +30,6 @@ namespace SearchConfig {
 
   // basic search strategies and features
   inline bool USE_QUIESCENCE = true; // use quiescence search
-#ifndef USE_QUIESCENCE_
-#define USE_QUIESCENCE_ 1
-#endif
   inline Depth MAX_EXTRA_QDEPTH = static_cast<Depth>(20);
   inline bool USE_ALPHABETA = true; // use ALPHA_BETA instead of MinMax
   inline bool USE_PVS = true; // use PVS null window search
@@ -47,22 +44,22 @@ namespace SearchConfig {
   inline int NO_KILLER_MOVES = 2; // number of killers stored
   inline bool USE_PV_MOVE_SORTING = true; // tell the move gen the current pv to return first
   inline bool USE_IID = true; // internal iterative deepening if we did not get a TT move
-  inline Depth IID_REDUCTION = static_cast<Depth>(4); // reduction of search depth for IID
+  inline Depth IID_DEPTH = static_cast<Depth>(3); // reduction of search depth for IID
 
   // Pruning features
   inline bool USE_MDP = true; // mate distance pruning
   inline bool USE_MPP = true; // minor promotion pruning
   inline bool USE_QUIESCENCE_STANDPAT_CUT = true; // RFP for quiescence
-  inline bool USE_RFP = true; // Reverse Futility Pruning
-  inline Value RFP_MARGIN = static_cast<Value>(300);
-  inline bool USE_RAZOR_PRUNING = true; // Razoring - bad move direct into qs
-  inline Depth RAZOR_DEPTH = static_cast<Depth>(2);
-  inline Value RAZOR_MARGIN = static_cast<Value>(600);
   inline bool USE_NMP = true;
   inline Depth NMP_DEPTH = static_cast<Depth>(3);  // at least 2
   inline Depth NMP_REDUCTION = static_cast<Depth>(2); // at least 1
   inline bool USE_VERIFY_NMP = true;
   inline Depth NMP_VERIFICATION_DEPTH = static_cast<Depth>(1); // depth - NMP_DEPTH > NMP_VERIFICATION_DEPTH
+  inline bool USE_RFP = true; // Reverse Futility Pruning
+  inline Value RFP_MARGIN = static_cast<Value>(99); // less than 3 pawns per depth
+  inline bool USE_RAZOR_PRUNING = true; // Razoring - bad move direct into qs
+  inline Depth RAZOR_DEPTH = static_cast<Depth>(2);
+  inline Value RAZOR_MARGIN = static_cast<Value>(600);
 
   // tactical features
   inline bool USE_EXTENSIONS = true;
