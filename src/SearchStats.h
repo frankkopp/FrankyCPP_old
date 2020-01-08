@@ -67,6 +67,7 @@ struct SearchStats {
   uint64_t pvs_researches = 0;
   uint64_t pvs_cutoffs = 0;
   uint64_t positionsNonQuiet = 0;
+  uint64_t qStandpatCuts = 0;
   uint64_t minorPromotionPrunings = 0;
   uint64_t mateDistancePrunings = 0;
   uint64_t rfpPrunings = 0;
@@ -80,11 +81,11 @@ struct SearchStats {
   uint64_t qfpPrunings = 0;
   uint64_t lmpPrunings = 0;
   uint64_t lmrReductions = 0;
+
   uint64_t deltaPrunings = 0;
-
   std::string str() const;
-  friend std::ostream &operator<<(std::ostream &os, const SearchStats &stats);
 
+  friend std::ostream &operator<<(std::ostream &os, const SearchStats &stats);
 };
 
 

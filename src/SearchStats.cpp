@@ -45,6 +45,7 @@ std::string SearchStats::str() const {
     << " pvs_root_cutoffs: " << pvs_root_cutoffs
     << " pvs_researches: " << pvs_researches
     << " pvs_cutoffs: " << pvs_cutoffs
+    << " quiescenceStandpatCuts: " << qStandpatCuts
     << " iid searches: " << iidSearches
     << " movesGenerated: " << movesGenerated
     << " currentSearchDepth: " << currentSearchDepth
