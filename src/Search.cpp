@@ -586,61 +586,45 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
     // ###############################################
     // NULL MOVE PRUNING
     // https://www.chessprogramming.org/Null_Move_Pruning
-    // If the next player would skip a move and would still be ahead (>beta)
-    // we can prune this move. It also detects mate threats by
-    // assuming the opponent could do two moves in a row.
-    /* if (SearchConfig::USE_NMP
-        && depth >= SearchConfig::NMP_DEPTH // don't do it too close to leaf nodes
+    // Under the assumption the in most chess position it would be better
+    // do make a move than to not make a move we can assume that if
+    // our positional value after a null move is already above beta (>beta)
+    // it would be above beta when doing a move in any case.
+    // Certain situations need to be considered though:
+    // - Zugzwang - it would be better not to move
+    // - in check - this would lead to an illegal situation where the king is captured
+    // - recursive null moves should be avoided
+    if (SearchConfig::USE_NMP
+        && ply > 1 // start with my color
+        && depth >= SearchConfig::NMP_DEPTH// don't do it too close to leaf nodes (excl. QUIESCENCE)
         && doNull // don't do recursive null moves
         && position.getMaterialNonPawn(myColor) // to avoid Zugzwang
         && !position.hasCheck() // not in check
         && ST != QUIESCENCE // NMP will be removed from the compiler for qsearch
       ) {
-      // reduce more on higher depths
-      Depth r = static_cast<Depth>(depth > 6 ? 3 : 2);
-      // reduce move when verify is enabled
-      if (SearchConfig::USE_VERIFY_NMP) ++r;
 
-      Value nullValue = VALUE_NONE;
+      // reduce more on higher depths
+      const int r = SearchConfig::NMP_REDUCTION;
+
+      // don't go into quiescence directly
+      int newDepth = static_cast<int>(depth) -1 -r;
+      newDepth = newDepth > 0 ? newDepth : 1;
+
       position.doNullMove();
-      if (depth > r) {
-        nullValue = -search<NONROOT, NT>(position, depth - r, ply + 1, -beta, -beta + 1, No_Null_Move);
-      }
-      else {
-        nullValue = -search<QUIESCENCE, NT>(position, DEPTH_NONE, ply + 1, -beta, -beta + 1, No_Null_Move);
-      }
+      Value nullValue = -search<NONROOT, NT>(position, static_cast<Depth>(newDepth), ply + 1, -beta, -beta + 1, No_Null_Move);
       position.undoNullMove();
 
-      // pruning
+      // Check for mate threat
+      if (isCheckMateValue(nullValue)) mateThreat[ply] = true;
+
       if (nullValue >= beta) {
-
-        // Do not return unproven mate scores if we don't verify
-        if (nullValue >= VALUE_CHECKMATE_THRESHOLD) {
-          nullValue = beta;
-        }
-
-        // Verify on fail high and depths larger the the reduction to not go
-        // directly into qsearch
-        if (SearchConfig::USE_VERIFY_NMP
-            && depth  > r + SearchConfig::NMP_VERIFICATION_DEPTH
-          ) {
-          searchStats.nullMoveVerifications++;
-          nullValue = search<ST, NT>(position, depth - r + SearchConfig::NMP_VERIFICATION_DEPTH, ply, alpha, beta, No_Null_Move);
-        }
-
-        // Check for mate threat
-        if (isCheckMateValue(nullValue)) mateThreat[ply] = true;
-
-        // still a fail high after verification?
-        if (nullValue >= beta) {
-          searchStats.nullMovePrunings++;
-          TRACE(LOG, "{:>{}}Search in ply {} for depth {}: NULL CUT", "", ply, ply, depth);
-          storeTT(position, nullValue, TYPE_BETA, depth - r, ply, ttMove, mateThreat[ply]);
-          return nullValue; // fail-hard: beta / fail-soft: nullValue;
-        }
+        searchStats.nullMovePrunings++;
+        TRACE(LOG, "{:>{}}Search in ply {} for depth {}: NULL CUT", "", ply, ply, depth);
+        storeTT(position, nullValue, TYPE_BETA, depth - r, ply, ttMove, mateThreat[ply]);
+        return nullValue;
       }
     }
-    // ###############################################*/
+    // ###############################################
 
     // ###############################################
     // RAZORING

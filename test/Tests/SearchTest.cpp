@@ -452,25 +452,109 @@ TEST_F(SearchTest, nps) {
 }
 
 // for debugging
+TEST_F(SearchTest, nmpStats) {
+  Search search;
+  SearchLimits searchLimits;
+
+  //Position position;
+  //Position position("rn2kbnr/ppp1pppp/8/8/6b1/2NP1N2/PPP2P1P/R1BQKB1q w Qkq - 1 6");
+  //Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
+  //Position position("r1b2rk1/2q1b1pp/p2ppn2/1p6/3QP3/1BN1B3/PPP3PP/R4RK1 w - - ");
+  //Position position("2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - -");
+  //Position position("8/7p/R7/5p1k/5P2/7P/P1P1nP1K/5q2 w - - 3 33");
+  //Position position("r3k2r/1ppn3p/2q1q1n1/4P3/4q3/5Pp1/pb4PP/2q2RK1 w kq - 0 1"); //
+  Position position("rbr5/3q1p2/pPp1pBpk/P1QpP2p/7P/6P1/4RP2/2R3K1 w - -");
+
+  const int depth = 8;
+  searchLimits.setDepth(depth);
+
+  std::stringstream str;
+  SearchConfig::USE_NMP = false;
+  SearchConfig::NMP_DEPTH = static_cast<Depth>(0);
+  SearchConfig::NMP_REDUCTION = static_cast<Depth>(0);
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+  search.clearHash();
+  str << fmt::format("NMP {:5s} DEPTH {:2d} RED {:2d} : value = {:5d} nodes = {:11n} time = {:7}\n",
+                     boolStr(0), 0, 0,
+                     search.getLastSearchResult().bestMoveValue,
+                     search.getSearchStats().nodesVisited,
+                     search.getSearchStats().lastSearchTime);
+
+  for (int dep = 2; dep <= depth; dep++) {
+    for (int red = 1; red <= dep; red++) {
+      SearchConfig::USE_NMP = true;
+      SearchConfig::NMP_DEPTH = static_cast<Depth>(dep);
+      SearchConfig::NMP_REDUCTION = static_cast<Depth>(red);
+      search.startSearch(position, searchLimits);
+      search.waitWhileSearching();
+      search.clearHash();
+      str << fmt::format(
+        "NMP {:5s} DEPTH {:2d} RED {:2d} : value = {:5d} nodes = {:11n} time = {:7}\n",
+        boolStr(1), dep, red,
+        search.getLastSearchResult().bestMoveValue,
+        search.getSearchStats().nodesVisited,
+        search.getSearchStats().lastSearchTime);
+
+    }
+  }
+  std::cout << str.str();
+}
+
 TEST_F(SearchTest, debugging) {
   Search search;
   SearchLimits searchLimits;
 
   //Position position;
   //Position position("rn2kbnr/ppp1pppp/8/8/6b1/2NP1N2/PPP2P1P/R1BQKB1q w Qkq - 1 6");
-  Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
+  //Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
+  Position position("r1b2rk1/2q1b1pp/p2ppn2/1p6/3QP3/1BN1B3/PPP3PP/R4RK1 w - - ");
+  //Position position("2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - -");
   //Position position("8/7p/R7/5p1k/5P2/7P/P1P1nP1K/5q2 w - - 3 33");
   //Position position("r3k2r/1ppn3p/2q1q1n1/4P3/4q3/5Pp1/pb4PP/2q2RK1 w kq - 0 1"); //
   //position = Position("2r3k1/pppR1pp1/4p3/4P1P1/5P2/1P4K1/P1P5/8 w - -");
 
-  SearchConfig::USE_TT = true;
 
-  searchLimits.setDepth(8);
-  //searchLimits.setNodes(30'000'000);
-  //  searchLimits.setMoveTime(5'000);
 
+  //00 -TT          |   b1e1 |    -9990 |      73.483.186 |    7.615.627 |        9.648 | b1e1 c4e4 e1f1 a2a1q h2h3 f4g3 f2f3 b2d4 g1h1 a1f1 | r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -
+  //10 +TT          |   b1e1 |    -9990 |      32.242.296 |    6.945.776 |        4.641 | b1e1 c4e4 e1f1 a2a1q h2h3 f4g3 f2f3 b2d4 g1h1 a1f1 | r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -
+  //20 NMP          |   b1e1 |    -6277 |       1.879.704 |    5.929.665 |          316 | b1e1 a2a1q g3e3 f4e3 h2h3 a1e1 g1h2 c2c1q | r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -
+
+  const int depth = 9;
+  searchLimits.setDepth(depth);
+
+  std::stringstream str;
+  SearchConfig::USE_NMP = false;
+  SearchConfig::NMP_DEPTH = static_cast<Depth>(0);
+  SearchConfig::NMP_REDUCTION = static_cast<Depth>(0);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
+  search.clearHash();
+  str << fmt::format("NMP {:5s} DEPTH {:2d} RED {:2d} : value = {:5d} nodes = {:11n} time = {:7}\n",
+                     boolStr(0), 0, 0,
+                     search.getLastSearchResult().bestMoveValue,
+                     search.getSearchStats().nodesVisited,
+                     search.getSearchStats().lastSearchTime);
+
+  for (int dep = 2; dep <= depth; dep++) {
+    for (int red = 1; red <= dep; red++) {
+      SearchConfig::USE_NMP = true;
+      SearchConfig::NMP_DEPTH = static_cast<Depth>(dep);
+      SearchConfig::NMP_REDUCTION = static_cast<Depth>(red);
+      search.startSearch(position, searchLimits);
+      search.waitWhileSearching();
+      search.clearHash();
+      str << fmt::format(
+        "NMP {:5s} DEPTH {:2d} RED {:2d} : value = {:5d} nodes = {:11n} time = {:7}\n",
+        boolStr(1), dep, red,
+        search.getLastSearchResult().bestMoveValue,
+        search.getSearchStats().nodesVisited,
+        search.getSearchStats().lastSearchTime);
+
+    }
+  }
+  std::cout << str.str();
+
 
 }
 
