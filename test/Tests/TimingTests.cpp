@@ -179,7 +179,7 @@ TEST_F(TimingTests, DISABLED_busyWait) {
   std::function<void()> f1 = [&]() {
     int i = 0;
     while (i++ < 10'000) {
-      std::this_thread::sleep_for(chrono::milliseconds (1));
+      std::this_thread::sleep_for(chrono::milliseconds(1));
     }
   };
   vector<std::function<void()>> tests;
@@ -190,44 +190,67 @@ TEST_F(TimingTests, DISABLED_busyWait) {
 }
 
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-variable"
 TEST_F(TimingTests, moveUnion) {
   ostringstream os;
 
-  Move move = createMove<PROMOTION>("a2a1q");
-  setValue(move, Value(999));
+  const Square from = SQ_A2;
+  const Square to = SQ_A1;
+  const PieceType promPT = BISHOP;
+  const MoveType type = PROMOTION;
+  const Value value = static_cast<const Value>(999);
 
+  union ValuedMove {
+    uint32_t all;
+    struct {
+      union {
+        uint16_t all;
+        struct {
+          uint8_t from:6;
+          uint8_t to:6;
+          uint8_t promType:2;
+          uint8_t moveType:2;
+        } __attribute__((packed)) data;
+      } __attribute__((packed)) move;
+      int16_t value;
+    } __attribute__((packed)) moveValue;
+  } __attribute__((packed));
 
-  union NewMove {
-    uint32_t move;
-    struct { uint16_t pureMove; uint16_t value;  } part;
-  };
+  fprintln("Size Move {} \nSize NewMove {}", sizeof(Move), sizeof(ValuedMove));
+  fprintln("{}", sizeof(ValuedMove::moveValue));
+  fprintln("{}", sizeof(ValuedMove::moveValue.move));
+  fprintln("{}", sizeof(ValuedMove::moveValue.value));
 
-  NewMove nMove{};
-  nMove.part.pureMove = moveOf(move);
-  nMove.part.value = valueOf(move) + VALUE_NONE;
+  ValuedMove newMove = {};
+  newMove.moveValue.move.data.from = from;
+  newMove.moveValue.move.data.to = to;
+  newMove.moveValue.move.data.promType = promPT - 3;
+  newMove.moveValue.move.data.moveType = type >> MoveShifts::TYPE_SHIFT;
+  newMove.moveValue.value = value;
+  fprintln("{} {}", static_cast<uint32_t>(newMove.all), printBitString(static_cast<uint32_t>(newMove.all)));
 
-  fprintln("Move:         {} puremove {} value {:7} bits {}", move, moveOf(move), valueOf(move), printBitString(move));
-  fprintln("NewMove: move {} puremove {} value {:7} bits {}", nMove.move, nMove.part.pureMove, nMove.part.value - VALUE_NONE, printBitString(nMove.move));
-
-  fprintln("Size Move {} Size NewMove {}", sizeof(Move), sizeof(NewMove));
-
-  NEWLINE;
-
-  Move m = MOVE_NONE;
-  Value v = VALUE_NONE;
   //// TESTS START
   std::function<void()> f1 = [&]() {
-    m = moveOf(move);
-    ASSERT_EQ(29184, m);
-    v = valueOf(move);
-    ASSERT_EQ(999, v);
+    Move m = createMove<PROMOTION>(from, to, value, promPT);
+    ASSERT_EQ(from, getFromSquare(m));
+    ASSERT_EQ(to, getToSquare(m));
+    ASSERT_EQ(promPT, promotionType(m));
+    ASSERT_EQ(type, typeOf(m));
+    ASSERT_EQ(value, valueOf(m));
   };
   std::function<void()> f2 = [&]() {
-    m = static_cast<Move>(nMove.part.pureMove);
-    ASSERT_EQ(29184, m);
-    v = static_cast<Value>(nMove.part.value) - VALUE_NONE;
-    ASSERT_EQ(999, v);
-
+    ValuedMove n = {};
+    n.moveValue.move.data.from = from;
+    n.moveValue.move.data.to = to;
+    n.moveValue.move.data.promType = promPT - 3;
+    n.moveValue.move.data.moveType = type >> MoveShifts::TYPE_SHIFT;
+    n.moveValue.value = value;
+    ASSERT_EQ(from, n.moveValue.move.data.from);
+    ASSERT_EQ(to, n.moveValue.move.data.to);
+    ASSERT_EQ(promPT, n.moveValue.move.data.promType + 3);
+    ASSERT_EQ(type, n.moveValue.move.data.moveType << MoveShifts::TYPE_SHIFT);
+    ASSERT_EQ(value, n.moveValue.value);
   };
   vector<std::function<void()>> tests;
   tests.push_back(f1);
@@ -236,6 +259,8 @@ TEST_F(TimingTests, moveUnion) {
   testTiming(os, 5, 100, 1'000'000, tests);
   cout << os.str();
 }
+
+#pragma clang diagnostic pop
 
 TEST_F(TimingTests, DISABLED_bitCount) {
   ostringstream os;
