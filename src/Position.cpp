@@ -153,7 +153,7 @@ void Position::doMove(const Move move) {
     case ENPASSANT: {
       assert(fromPC == makePiece(myColor, PAWN));
       assert(enPassantSquare != SQ_NONE);
-      Square capSq(toSq + pawnDir[~myColor]);
+      const Square capSq(toSq + pawnDir[~myColor]);
       assert(getPiece(capSq) == makePiece(~myColor, PAWN));
       removePiece(capSq);
       movePiece(fromSq, toSq);
@@ -456,7 +456,7 @@ bool Position::isLegalMove(const Move move) const {
 
 bool Position::isLegalPosition() const {
   if (historyCounter > 0) {
-    Move lastMove = moveHistory[historyCounter - 1];
+    const Move lastMove = moveHistory[historyCounter - 1];
     if (typeOf(lastMove) == CASTLING) {
       // king is not allowed to pass a square which is attacked by opponent
       switch (getToSquare(lastMove)) {
@@ -625,7 +625,7 @@ bool Position::givesCheck(const Move move) const {
   // target square
   Square toSquare = getToSquare(move);
   // the moving piece
-  Piece fromPc = getPiece(fromSquare);
+  const Piece fromPc = getPiece(fromSquare);
   PieceType fromPt = typeOf(fromPc);
   // the square captured by en passant capture
   Square epTargetSquare = SQ_NONE;
@@ -676,7 +676,7 @@ bool Position::givesCheck(const Move move) const {
   }
 
   // get all pieces to check occupied intermediate squares
-  Bitboard allOccupiedBitboard = getOccupiedBB();
+  const Bitboard allOccupiedBitboard = getOccupiedBB();
   Bitboard intermediate, boardAfterMove;
 
   // #########################################################################
