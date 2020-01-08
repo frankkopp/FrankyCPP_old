@@ -88,7 +88,7 @@ public:
     * @param moves - generated moves will be added to this list
     */
   template<GenMode GM>
-  const MoveList* generateLegalMoves(Position  &position);
+  const MoveList* generateLegalMoves(const Position &position);
 
   /**
    * Returns the next move for the given position. Usually this would be used in a loop
@@ -150,7 +150,7 @@ public:
    * @param move
    * @return true if move is a valid move on the current position.
    */
-  bool validateMove(Position &position, Move move);
+  bool validateMove(const Position &position, const Move move);
 
 private:
 
