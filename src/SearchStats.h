@@ -66,6 +66,8 @@ struct SearchStats {
   uint64_t pvs_root_cutoffs = 0;
   uint64_t pvs_researches = 0;
   uint64_t pvs_cutoffs = 0;
+  uint64_t pv_sortings = 0;
+  uint64_t no_moveForPVsorting = 0;
   uint64_t positionsNonQuiet = 0;
   uint64_t qStandpatCuts = 0;
   uint64_t minorPromotionPrunings = 0;
