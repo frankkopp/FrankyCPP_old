@@ -47,14 +47,13 @@ const MoveList* MoveGenerator::generatePseudoLegalMoves(const Position &position
   generateCastling<GM>(position, &pseudoLegalMoves);
   generateMoves<GM>(position, &pseudoLegalMoves);
   generateKingMoves<GM>(position, &pseudoLegalMoves);
-  MoveList &list = pseudoLegalMoves;
-  stable_sort(list.begin(), list.end());
+  stable_sort(pseudoLegalMoves.begin(), pseudoLegalMoves.end());
   return &pseudoLegalMoves;
 }
 
 
 template<MoveGenerator::GenMode GM>
-const MoveList* MoveGenerator::generateLegalMoves(Position &position) {
+const MoveList* MoveGenerator::generateLegalMoves(const Position &position) {
   legalMoves.clear();
   generatePseudoLegalMoves<GM>(position);
   for (Move m : pseudoLegalMoves) if (position.isLegalMove(m)) legalMoves.push_back(m);
@@ -90,13 +89,7 @@ Move MoveGenerator::getNextPseudoLegalMove(const Position &position) {
          */
         if (pvMove) {
           pvIsCapture = position.isCapturingMove(pvMove);
-          if (GM == GENALL) {
-            onDemandMoves.push_back(pvMove);
-          }
-          else if (GM == GENCAP && pvIsCapture) {
-            onDemandMoves.push_back(pvMove);
-          }
-          else if (GM == GENNONCAP && !pvIsCapture) {
+          if (GM == GENALL|| (GM == GENCAP && pvIsCapture) || (GM == GENNONCAP && !pvIsCapture)) {
             onDemandMoves.push_back(pvMove);
           }
         }
@@ -168,7 +161,7 @@ Move MoveGenerator::getNextPseudoLegalMove(const Position &position) {
     return MOVE_NONE;
   }
   else {
-    Move move = onDemandMoves.front();
+    const Move move = onDemandMoves.front();
     onDemandMoves.pop_front();
     return move;
   }
@@ -192,7 +185,7 @@ void MoveGenerator::resetOnDemand() {
   killerMoves.clear();
 }
 
-void MoveGenerator::storeKiller(Move move, int maxKillers) {
+void MoveGenerator::storeKiller(const Move move, const int maxKillers) {
   maxNumberOfKiller = maxKillers;
   // only store if not already in list
   if (std::find(killerMoves.begin(), killerMoves.end(), move) == killerMoves.end()) {
@@ -205,9 +198,9 @@ inline void MoveGenerator::pushKiller(MoveList &list) {
   for (auto k : killerMoves) {
     // Find the move in the list. If move not found ignore killer.
     // Otherwise move element to the front. 
-    auto element = std::find(list.begin(), list.end(), k);
+    const auto element = std::find(list.begin(), list.end(), k);
     if (element != list.end()) {
-      Move tmp = *element;
+      const Move tmp = *element;
       list.erase(element);
       list.push_front(tmp);
     }
@@ -310,7 +303,6 @@ bool MoveGenerator::hasLegalMove(const Position &position) {
   // OFFICERS
   for (PieceType pt = KNIGHT; pt <= QUEEN; ++pt) {
     Bitboard pieces = position.getPieceBB(nextPlayer, pt);
-
     while (pieces) {
       const Square fromSquare = Bitboards::popLSB(&pieces);
       const Bitboard pseudoMoves = Bitboards::pseudoAttacks[pt][fromSquare];
@@ -335,7 +327,7 @@ bool MoveGenerator::hasLegalMove(const Position &position) {
   return false;
 }
 
-bool MoveGenerator::validateMove(Position &position, Move move) {
+bool MoveGenerator::validateMove(const Position &position, const Move move) {
   const Move moveOf1 = moveOf(move);
   if (!moveOf1) return false;
   const MoveList* lm = generateLegalMoves<GENALL>(position);
@@ -639,9 +631,9 @@ template const MoveList* MoveGenerator::generatePseudoLegalMoves<MoveGenerator::
 template const MoveList* MoveGenerator::generatePseudoLegalMoves<MoveGenerator::GENNONCAP>(const Position &position);
 template const MoveList* MoveGenerator::generatePseudoLegalMoves<MoveGenerator::GENALL>(const Position &position);
 
-template const MoveList* MoveGenerator::generateLegalMoves<MoveGenerator::GENCAP>(Position &position);
-template const MoveList* MoveGenerator::generateLegalMoves<MoveGenerator::GENNONCAP>(Position &position);
-template const MoveList* MoveGenerator::generateLegalMoves<MoveGenerator::GENALL>(Position &position);
+template const MoveList* MoveGenerator::generateLegalMoves<MoveGenerator::GENCAP>(const Position &position);
+template const MoveList* MoveGenerator::generateLegalMoves<MoveGenerator::GENNONCAP>(const Position &position);
+template const MoveList* MoveGenerator::generateLegalMoves<MoveGenerator::GENALL>(const Position &position);
 
 template Move MoveGenerator::getNextPseudoLegalMove<MoveGenerator::GENCAP>(const Position &position);
 template Move MoveGenerator::getNextPseudoLegalMove<MoveGenerator::GENNONCAP>(const Position &position);
