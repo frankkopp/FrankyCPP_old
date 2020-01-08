@@ -482,8 +482,6 @@ namespace Bitboards {
       case NORTH_WEST:
         return (b << 7) & ~FileHBB;
     }
-    assert(false);
-    return b;
   }
 
   /**
@@ -494,7 +492,7 @@ namespace Bitboards {
     // content = the pieces currently on the board and maybe blocking the moves
     // no rotation necessary for ranks - their squares are already in a row
     // shift to the least significant bit
-    Bitboard contentIdx = content >> 8 * rankOf(sq);
+    const Bitboard contentIdx = content >> 8 * rankOf(sq);
     // retrieve all possible moves for this square with the current content
     // and mask with the first row to erase any other pieces
     return movesRank[sq][contentIdx & 255];
@@ -508,8 +506,7 @@ namespace Bitboards {
   Bitboard getMovesFile(Square sq, Bitboard content) {
     // content = the pieces currently on the board and maybe blocking the moves
     // rotate the content of the board to get all file squares in a row
-    Bitboard rotated = rotateL90(content);
-    return getMovesFileR(sq, rotated);
+    return getMovesFileR(sq, rotateL90(content));
   }
 
   /**
@@ -519,7 +516,7 @@ namespace Bitboards {
    */
   Bitboard getMovesFileR(Square sq, Bitboard rotated) {
     // shift to the first byte (to the right in Java)
-    Bitboard contentIdx = rotated >> fileOf(sq) * 8;
+    const Bitboard contentIdx = rotated >> fileOf(sq) * 8;
     // retrieve all possible moves for this square with the current content
     // and mask with the first row to erase any other pieces not erased by shift
     return movesFile[sq][contentIdx & 255];
@@ -542,10 +539,10 @@ namespace Bitboards {
    */
   Bitboard getMovesDiagUpR(Square sq, Bitboard rotated) {
     // shift the correct row to the first byte (to the right in Java)
-    Bitboard shifted = rotated >> shiftsDiagUp[sq];
+    const Bitboard shifted = rotated >> shiftsDiagUp[sq];
     // mask the content with the length of the diagonal to erase any other pieces
     // which have not been erased by the shift
-    Bitboard contentMasked = shifted & lengthDiagUpMask(sq);
+    const Bitboard contentMasked = shifted & lengthDiagUpMask(sq);
     // retrieve all possible moves for this square with the current content
     return movesDiagUp[sq][contentMasked];
   }
@@ -567,10 +564,10 @@ namespace Bitboards {
    */
   Bitboard getMovesDiagDownR(Square sq, Bitboard rotated) {
     // shift the correct row to the first byte (to the right in Java)
-    Bitboard shifted = rotated >> shiftsDiagDown[sq];
+    const Bitboard shifted = rotated >> shiftsDiagDown[sq];
     // mask the content with the length of the diagonal to erase any other pieces
     // which have not been erased by the shift
-    Bitboard contentMasked = shifted & lengthDiagDownMask(sq);
+    const Bitboard contentMasked = shifted & lengthDiagDownMask(sq);
     // retrieve all possible moves for this square with the current content
     return movesDiagDown[sq][contentMasked];
   }
