@@ -334,7 +334,7 @@ namespace UCI {
       fmt::format(
         "bestmove {}{}",
         printMove(bestMove),
-        (isMove(ponderMove) ? " ponder " + printMove(ponderMove) : "")));
+        (ponderMove ? " ponder " + printMove(ponderMove) : "")));
   }
 
   void Handler::sendCurrentLine(const MoveList &moveList) {

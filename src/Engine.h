@@ -54,6 +54,8 @@ class Engine {
   // engine's search instance
   Search search = Search(this);
 
+private:
+
   // engine's current position
   Position position;
 
@@ -106,7 +108,7 @@ public:
   void
   sendSearchUpdate(int depth, int seldepth, long nodes, int nps, MilliSec time, int hashfull) const;
   void sendCurrentLine(const MoveList& moveList) const;
-  void sendResult(Move bestMove, Move ponderMove);
+  void sendResult(const Move bestMove, const Value value, const Move ponderMove);
 
   // other
   void waitWhileSearching();
@@ -115,6 +117,7 @@ public:
   const SearchLimits &getSearchLimits() const { return searchLimits; };
   int getHashSize() { return EngineConfig::hash; };
   const Result &getLastResult() const { return lastResult; }
+  const Search* getSearch() const { return &search; }
 
 private:
 

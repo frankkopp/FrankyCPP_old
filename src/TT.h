@@ -182,7 +182,7 @@ public:
    * @param key Position key (usually Zobrist key)
    * @return Entry for key or 0 if not found
    */
-  Entry getEntry(const Key key) const;
+  const Entry* getMatch(const Key key) const;
 
   /**
    * Looks up and returns a result using get(Key key).

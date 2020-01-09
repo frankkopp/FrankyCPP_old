@@ -26,6 +26,8 @@
 #ifndef FRANKYCPP_SEARCHCONFIG_H
 #define FRANKYCPP_SEARCHCONFIG_H
 
+#include "types.h"
+
 namespace SearchConfig {
 
   // basic search strategies and features

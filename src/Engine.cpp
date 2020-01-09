@@ -209,13 +209,13 @@ void Engine::sendCurrentLine(const MoveList &moveList) const {
     LOG->warn("<no uci handler>: Engine current line: {}", printMoveList(moveList));
 }
 
-void Engine::sendResult(Move bestMove, Move ponderMove) {
+void Engine::sendResult(const Move bestMove, const Value value, const Move ponderMove) {
   lastResult = {true, bestMove, ponderMove};
 
   if (pUciHandler) pUciHandler->sendResult(bestMove, ponderMove);
   else
     LOG->warn("<no uci handler>: Engine Result: Best Move = {} ({}) Ponder Move = {}",
-              printMoveVerbose(bestMove), valueOf(bestMove), printMoveVerbose(ponderMove));
+              printMoveVerbose(bestMove), printValue(value), printMoveVerbose(ponderMove));
 }
 
 void Engine::waitWhileSearching() {

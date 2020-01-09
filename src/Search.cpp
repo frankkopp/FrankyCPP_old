@@ -265,15 +265,26 @@ SearchResult Search::iterativeDeepening(Position &position) {
   // prepare search result
   SearchResult searchResult = SearchResult();
 
+  // check repetition and 50 moves
+  if (checkDrawRepAnd50<ROOT>(position)) {
+    LOG->warn("Search called when DRAW by Repetition or 50-moves-rule");
+    searchResult.bestMove = MOVE_NONE;
+    searchResult.bestMoveValue = VALUE_DRAW;
+    return searchResult;
+  }
+
   // no legal root moves - game already ended!
   if (!MoveGenerator::hasLegalMove(position)) {
     if (position.hasCheck()) {
       searchResult.bestMove = MOVE_NONE;
       searchResult.bestMoveValue = -VALUE_CHECKMATE;
+      LOG->warn("Search called on a CHECKMATE position");
     }
     else {
       searchResult.bestMove = MOVE_NONE;
       searchResult.bestMoveValue = VALUE_DRAW;
+      LOG->warn("Search called on a STALEMATE position");
+
     }
     return searchResult;
   }
@@ -292,8 +303,7 @@ SearchResult Search::iterativeDeepening(Position &position) {
   LOG->debug("Root moves: {}", printMoveList(rootMoves));
   LOG->info("Searching these moves: {}", printMoveList(rootMoves));
   LOG->info("Search mode: {}", searchLimitsPtr->str());
-  LOG->info("Time Management: {} time limit: {:n}", (searchLimitsPtr->isTimeControl() ? "ON"
-                                                                                      : "OFF"), timeLimit);
+  LOG->info("Time Management: {} time limit: {:n}", (searchLimitsPtr->isTimeControl() ? "ON" : "OFF"), timeLimit);
   LOG->info("Start Depth: {} Max Depth: {}", iterationDepth, searchLimitsPtr->getMaxDepth());
   LOG->debug("Starting iterative deepening now...");
 
@@ -475,7 +485,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
      */
     ttEntryPtr = tt->probe(position.getZobristKey());
     if (ttEntryPtr) {
-      ttMove = ttEntryPtr->move;
+      if (ST != ROOT) ttMove = ttEntryPtr->move;
       assert(moveOf(ttMove) == ttMove);
       assert(!ttMove || moveGenerators[ply].validateMove(position, ttMove));
       mateThreat[ply] = ttEntryPtr->mateThreat;
@@ -510,9 +520,11 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
           if (ST == ROOT) {
             // root move tt hits should always be exact values
             assert (ttEntryPtr->type == TYPE_EXACT);
-            getPVLine(position, pv[PLY_ROOT]);
+            getPVLine(position, pv[PLY_ROOT], depth);
             setValue(rootMoves.at(currentMoveIndex), ttValue);
             setValue(pv[PLY_ROOT].at(0), ttValue);
+            // to update UI correctly
+            searchStats.currentSearchDepth = static_cast<Ply>(depth);
           }
           searchStats.tt_Cuts++;
           return ttValue;
@@ -1073,7 +1085,7 @@ bool Search::goodCapture(Position &position, Move move) {
 
 inline void
 Search::storeTT(Position &position, Value value, Value_Type ttType, Depth depth, Ply ply,
-                Move bestMove, bool _mateThreat) {
+                Move move, bool _mateThreat) {
 
   if (!SearchConfig::USE_TT || searchLimitsPtr->isPerft() || _stopSearchFlag) return;
 
@@ -1083,7 +1095,7 @@ Search::storeTT(Position &position, Value value, Value_Type ttType, Depth depth,
   // store the position in the TT
   // correct the value for mate distance and remove the value from the move to
   // later be able to easier compare it wh read from TT
-  tt->put(position.getZobristKey(), depth, moveOf(bestMove), valueToTT(value, ply), ttType, _mateThreat);
+  tt->put(position.getZobristKey(), depth, moveOf(move), valueToTT(value, ply), ttType, _mateThreat);
 
 }
 
@@ -1197,14 +1209,19 @@ inline void Search::savePV(Move move, MoveList &src, MoveList &dest) {
   dest.push_front(move);
 }
 
-void Search::getPVLine(Position &position, MoveList &pvRoot) {
+void Search::getPVLine(Position &position, MoveList &pvRoot, const Depth depth) {
   // Recursion-less reading of the chain of pv moves
   pvRoot.clear();
   int counter = 0;
-  TT::Entry ttEntry;
-  while ((ttEntry = tt->getEntry(position.getZobristKey())).key != 0 && ttEntry.move != MOVE_NONE) {
-    pvRoot.push_back(ttEntry.move);
-    position.doMove(ttEntry.move);
+  const TT::Entry* ttMatchPtr = nullptr;
+  ttMatchPtr = tt->getMatch(position.getZobristKey());
+  while (ttMatchPtr != nullptr
+         && ttMatchPtr->move != MOVE_NONE
+         && counter < depth
+    ) {
+    pvRoot.push_back(ttMatchPtr->move);
+    position.doMove(ttMatchPtr->move);
+    ttMatchPtr = tt->getMatch(position.getZobristKey());
     counter++;
   }
   for (int i = 0; i < counter; ++i) {
@@ -1327,11 +1344,14 @@ void Search::sendSearchUpdateToEngine() {
 }
 
 void Search::sendResultToEngine() const {
-  if (!pEngine) {
-    LOG->info("UCI >> {}", fmt::format("Engine got Best Move: {} ({}) [Ponder {}] from depth {}", printMove(lastSearchResult.bestMove), printValue(valueOf(lastSearchResult.bestMove)), printMove(lastSearchResult.ponderMove), searchStats.bestMoveDepth));
-  }
-  else {
-    pEngine->sendResult(lastSearchResult.bestMove, lastSearchResult.ponderMove);
+  LOG->info("UCI >> {}", fmt::format("Engine got Best Move: {} ({}) [Ponder {}] from depth {}",
+                                     printMove(lastSearchResult.bestMove),
+                                     printValue(lastSearchResult.bestMoveValue),
+                                     printMove(lastSearchResult.ponderMove),
+                                     searchStats.bestMoveDepth));
+  if (pEngine) {
+    pEngine->sendResult(lastSearchResult.bestMove, lastSearchResult.bestMoveValue,
+                        lastSearchResult.ponderMove);
   }
 }
 

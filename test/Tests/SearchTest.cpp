@@ -381,7 +381,20 @@ TEST_F(SearchTest, TT) {
 
   search.setHashSize(256);
 
-  searchLimits.setMoveTime(15'000);
+  searchLimits.setDepth(6);
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+
+  LOG->info("Nodes: {:n} Time: {:n} ms NPS: {:n}", search.getSearchStats().nodesVisited,
+            search.getSearchStats().lastSearchTime, (search.getSearchStats().nodesVisited * 1'000) /
+                                                    search.getSearchStats().lastSearchTime);
+  LOG->info("TT Hits: {:n} TT Misses: {:n} TT Hit rate: {}%",
+            search.getSearchStats().tt_Cuts,
+            search.getSearchStats().tt_NoCuts,
+            (static_cast<double>(search.getSearchStats().tt_Cuts * 100) /
+             (search.getSearchStats().tt_Cuts + search.getSearchStats().tt_NoCuts)));
+
+  searchLimits.setDepth(6);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 
@@ -501,7 +514,7 @@ TEST_F(SearchTest, nmpStats) {
   std::cout << str.str();
 }
 
-TEST_F(SearchTest, debugging) {
+TEST_F(SearchTest, debuggingIID) {
   Search search;
   SearchLimits searchLimits;
   Position position;
@@ -515,6 +528,20 @@ TEST_F(SearchTest, debugging) {
   SearchConfig::USE_RFP = false;
   SearchConfig::USE_NMP= false;
   SearchConfig::USE_IID = true;
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+
+}
+
+TEST_F(SearchTest, debuggingTTMove) {
+  Search search;
+  SearchLimits searchLimits;
+  Position position;
+
+  const int depth = 8;
+  position = Position("2b2rk1/3pR1p1/3p2Q1/pp1P3p/7q/P1N5/1P4PK/4R3 w - - 0 32");
+  searchLimits.setDepth(depth);
+  
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 

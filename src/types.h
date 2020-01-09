@@ -522,9 +522,9 @@ typedef std::deque<Move> MoveList;
 inline std::string printMoveList(const MoveList &moveList) {
   std::ostringstream os;
   os << "MoveList: size=" << moveList.size() << " [";
-  for (Move m : moveList) {
-    os << m;
-    if (m != moveList.back()) os << ", ";
+  for (auto itr = moveList.begin(); itr != moveList.end(); ++itr) {
+    os << *itr;
+    if (itr != moveList.end() - 1) os << ", ";
   }
   os << "]";
   return os.str();
@@ -679,7 +679,9 @@ inline std::string printBitString(uint64_t b) {
 
 struct deLocaleDecimals : std::numpunct<char> {
   char do_decimal_point() const override { return ','; }
+
   char do_thousands_sep() const override { return '.'; }
+
   std::string do_grouping() const override { return "\03"; }
 };
 

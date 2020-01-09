@@ -237,10 +237,10 @@ private:
   * @param depth
   * @param pvRoot
   */
-  void getPVLine(Position &position, MoveList &pvRoot);
+  void getPVLine(Position &position, MoveList &pvRoot, const Depth depth);
 
   void storeTT(Position &position, Value value, Value_Type ttType, Depth depth, Ply ply,
-               Move bestMove, bool mateThreat);
+               Move move, bool mateThreat);
 
   /**
    * correct any mate values which are sent to TT so that

@@ -1,6 +1,7 @@
 v 0.x (plan)
 ================================================================================
 - TODO:
+    - IID (with TT - needs to be revisited)
     - Simple Opening Book
     - IID check
     - ATACKS / SEE

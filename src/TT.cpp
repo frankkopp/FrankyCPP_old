@@ -92,9 +92,9 @@ inline TT::Entry* TT::getEntryPtr(const Key key) const {
   return &_data[getHash(key)];
 }
 
-TT::Entry TT::getEntry(const Key key) const {
+const TT::Entry* TT::getMatch(const Key key) const {
   const Entry* const entryPtr = getEntryPtr(key);
-  return entryPtr->key == key ? *entryPtr : Entry();
+  return entryPtr->key == key ? entryPtr : nullptr;
 }
 
 void TT::put(const Key key, const Depth depth, const Move move, const Value value,
