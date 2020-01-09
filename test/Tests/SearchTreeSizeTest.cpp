@@ -93,7 +93,7 @@ protected:
 
 TEST_F(SearchTreeSizeTest, size_test) {
 
-  LOG->info("Start SIZE Test for depth {}", DEPTH);
+  LOG__INFO(LOG, "Start SIZE Test for depth {}", DEPTH);
 
   std::vector<std::string> fens = getFENs();
   std::vector<Result> results{};
@@ -217,8 +217,8 @@ SearchTreeSizeTest::SingleTest
 SearchTreeSizeTest::measureTreeSize(Search &search, const Position &position,
                                     SearchLimits searchLimits, const std::string &featureName) {
 
-  LOG->info("");
-  LOG->info("Testing {}", featureName);
+  LOG__INFO(LOG, "");
+  LOG__INFO(LOG, "Testing {}", featureName);
   search.clearHash();
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();

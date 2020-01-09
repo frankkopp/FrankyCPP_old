@@ -31,20 +31,56 @@
 #include "spdlog/sinks/basic_file_sink.h"
 
 // uncomment this if tracing macros are needed.
-// #define TRACE_MACRO_LOGGING
+#define SEARCH_LOG_LEVEL spdlog::level::info
 
-#ifdef TRACE_MACRO_LOGGING
-#define LOGGER_TRACE(logger, ...) SPDLOG_LOGGER_CALL(logger, spdlog::level::trace, __VA_ARGS__)
-#define TRACE(logger, ...) LOGGER_TRACE(logger, __VA_ARGS__)
-#define SEARCH_LOG_LEVEL spdlog::level::trace
+#define CRITICAL__LVL 1
+#define ERROR__LVL 2
+#define WARN__LVL 3
+#define INFO__LVL 4
+#define DEBUG__LVL 5
+#define TRACE__LVL 6
+
+#define LOG__LEVEL DEBUG__LVL
+
+#if LOG__LEVEL > 0
+#define LOG__CRITICAL(logger, ...) logger->critical(__VA_ARGS__)
 #else
-#define LOGGER_TRACE(logger, ...) (void)0
-#define TRACE(logger, ...) (void)0
-#define SEARCH_LOG_LEVEL spdlog::level::debug
+#define LOG__CRITICAL(logger, ...) void(0)
+#endif
+
+#if LOG__LEVEL > 1
+#define LOG__ERROR(logger, ...) logger->error(__VA_ARGS__)
+#else
+#define LOG__ERROR(logger, ...) void(0)
+#endif
+
+#if LOG__LEVEL > 2
+#define LOG__WARN(logger, ...) logger->warn(__VA_ARGS__)
+#else
+#define LOG__WARN(logger, ...) void(0)
+#endif
+
+#if LOG__LEVEL > 3
+#define LOG__INFO(logger, ...) logger->info(__VA_ARGS__)
+#else
+#define LOG__INFO(logger, ...) void(0)
+#endif
+
+#if LOG__LEVEL > 4
+#define LOG__DEBUG(logger, ...) logger->debug(__VA_ARGS__)
+#else
+#define LOG__DEBUG(logger, ...) void(0)
+#endif
+
+#if LOG__LEVEL > 5
+#define LOG__TRACE(logger, ...) logger->trace(__VA_ARGS__)
+#else
+#define LOG__TRACE(logger, ...) void(0)
 #endif
 
 namespace LOGGING {
   extern void init();
 }
+
 
 #endif //FRANKYCPP_LOGGING_H

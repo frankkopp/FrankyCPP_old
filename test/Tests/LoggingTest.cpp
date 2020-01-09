@@ -50,96 +50,101 @@ protected:
   void TearDown() override {}
 };
 
+TEST_F(LoggingTest, macro) {
+  LOG__CRITICAL(TEST_LOG, "CRITICAL {:n}", 1234567890);
+  LOG__ERROR(TEST_LOG, "ERROR {:n}", 1234567890);
+  LOG__WARN(TEST_LOG, "WARN {:n}", 1234567890);
+  LOG__INFO(TEST_LOG, "INFO {:n}", 1234567890);
+  LOG__DEBUG(TEST_LOG, "DEBUG {:n}", 1234567890);
+  LOG__TRACE(TEST_LOG, "TRACE {:n}", 1234567890);
+}
+
+
 TEST_F(LoggingTest, decimal) {
   auto s = fmt::format(deLocale, "{:n}", 1234567890);
   std::cout << "Direct cout  : " << s << std::endl;
   fprintln("Macro with ln: {:n}", 1234567890);
-  TEST_LOG->info("INFO {:n}", 1234567890);
+  LOG__INFO(TEST_LOG, "INFO {:n}", 1234567890);
   ASSERT_EQ("1.234.567.890", s);
   s = fmt::format("{:n}", 1234567890);
   std::cout << "Direct cout  : " << s << std::endl;
-  TEST_LOG->info("INFO {:n}", 1234567890);
+  LOG__INFO(TEST_LOG, "INFO {:n}", 1234567890);
   ASSERT_EQ("1.234.567.890", s);
 
   s = fmt::format("{:n}", std::numeric_limits<__int128_t>::max());
   std::cout << "Direct cout  : " << s << std::endl;
-  TEST_LOG->info("INFO {:n}", std::numeric_limits<__int128_t>::max());
+  LOG__INFO(TEST_LOG, "INFO {:n}", std::numeric_limits<__int128_t>::max());
   ASSERT_EQ("170.141.183.460.469.231.731.687.303.715.884.105.727", s);
 }
 
 TEST_F(LoggingTest, basic) {
   // Logger test
-  TEST_LOG->info("TEST LOGGER:");
-  TEST_LOG->critical("CRITICAL");
-  TEST_LOG->error("ERROR");
-  TEST_LOG->warn("WARN");
-  TEST_LOG->info("INFO");
-  TEST_LOG->debug("DEBUG");
-  SPDLOG_DEBUG(TEST_LOG, "DEBUG {}", "MARCO");
-  TEST_LOG->trace("TRACE");
-  TRACE(TEST_LOG, "TRACE {}", "MARCO");
-  TEST_LOG->info("INFO {}", 123456789);
-  TEST_LOG->info("INFO {:d}", 123456789);
-  TEST_LOG->info("INFO {:n}", 123456789);
-  TEST_LOG->info("INFO {:.5n}", double(123456789.12345));
+  LOG__INFO(TEST_LOG, "TEST LOGGER:");
+ LOG__CRITICAL(TEST_LOG, "CRITICAL");
+  LOG__ERROR(TEST_LOG, "ERROR");
+  LOG__WARN(TEST_LOG, "WARN");
+  LOG__INFO(TEST_LOG, "INFO");
+  LOG__DEBUG(TEST_LOG, "DEBUG");
+  LOG__TRACE(TEST_LOG, "TRACE");
+  LOG__TRACE(TEST_LOG, "TRACE {}",  "MARCO");
+  LOG__INFO(TEST_LOG, "INFO {}", 123456789);
+  LOG__INFO(TEST_LOG, "INFO {:d}", 123456789);
+  LOG__INFO(TEST_LOG, "INFO {:n}", 123456789);
+  LOG__INFO(TEST_LOG, "INFO {:.5n}", double(123456789.12345));
 
   // Logger test
-  MAIN_LOG->info("MAIN LOGGER TESTS:");
-  MAIN_LOG->critical("CRITICAL");
-  MAIN_LOG->error("ERROR");
-  MAIN_LOG->warn("WARN");
-  MAIN_LOG->info("INFO");
-  MAIN_LOG->debug("DEBUG");
-  SPDLOG_DEBUG(MAIN_LOG, "DEBUG {}", "MARCO");
-  MAIN_LOG->trace("TRACE");
-  TRACE(MAIN_LOG, "TRACE {}", "MARCO");
-  MAIN_LOG->info("INFO {}", 123456789);
-  MAIN_LOG->info("INFO {:d}", 123456789);
-  MAIN_LOG->info("INFO {:n}", 123456789);
-  MAIN_LOG->info("INFO {:.5n}", double(123456789.12345));
+  LOG__INFO(MAIN_LOG, "MAIN LOGGER TESTS:");
+ LOG__CRITICAL(MAIN_LOG, "CRITICAL");
+  LOG__ERROR(MAIN_LOG, "ERROR");
+  LOG__WARN(MAIN_LOG, "WARN");
+  LOG__INFO(MAIN_LOG, "INFO");
+  LOG__DEBUG(MAIN_LOG, "DEBUG");
+  LOG__TRACE(MAIN_LOG, "TRACE");
+  LOG__TRACE(MAIN_LOG, "TRACE {}",  "MARCO");
+  LOG__INFO(MAIN_LOG, "INFO {}", 123456789);
+  LOG__INFO(MAIN_LOG, "INFO {:d}", 123456789);
+  LOG__INFO(MAIN_LOG, "INFO {:n}", 123456789);
+  LOG__INFO(MAIN_LOG, "INFO {:.5n}", double(123456789.12345));
 
   // Logger test
-  ENGINE_LOG->info("ENGINE LOGGER TESTS:");
-  ENGINE_LOG->critical("CRITICAL");
-  ENGINE_LOG->error("ERROR");
-  ENGINE_LOG->warn("WARN");
-  ENGINE_LOG->info("INFO");
-  ENGINE_LOG->debug("DEBUG");
-  SPDLOG_DEBUG(ENGINE_LOG, "DEBUG {}", "MARCO");
-  ENGINE_LOG->trace("TRACE");
-  TRACE(ENGINE_LOG, "TRACE {}", "MARCO");
-  ENGINE_LOG->info("INFO {}", 123456789);
-  ENGINE_LOG->info("INFO {:d}", 123456789);
-  ENGINE_LOG->info("INFO {:n}", 123456789);
-  ENGINE_LOG->info("INFO {:.5n}", double(123456789.12345));
+  LOG__INFO(ENGINE_LOG, "ENGINE LOGGER TESTS:");
+  LOG__CRITICAL(ENGINE_LOG, "CRITICAL");
+  LOG__ERROR(ENGINE_LOG, "ERROR");
+  LOG__WARN(ENGINE_LOG, "WARN");
+  LOG__INFO(ENGINE_LOG, "INFO");
+  LOG__DEBUG(ENGINE_LOG, "DEBUG");
+  LOG__TRACE(ENGINE_LOG, "TRACE");
+  LOG__TRACE(ENGINE_LOG, "TRACE {}",  "MARCO");
+  LOG__INFO(ENGINE_LOG, "INFO {}", 123456789);
+  LOG__INFO(ENGINE_LOG, "INFO {:d}", 123456789);
+  LOG__INFO(ENGINE_LOG, "INFO {:n}", 123456789);
+  LOG__INFO(ENGINE_LOG, "INFO {:.5n}", double(123456789.12345));
 
   // Logger test
-  SEARCH_LOG->info("SEARCH LOGGER TESTS:");
-  SEARCH_LOG->critical("CRITICAL");
-  SEARCH_LOG->error("ERROR");
-  SEARCH_LOG->warn("WARN");
-  SEARCH_LOG->info("INFO");
-  SEARCH_LOG->debug("DEBUG");
-  SPDLOG_DEBUG(SEARCH_LOG, "DEBUG {}", "MARCO");
-  SEARCH_LOG->trace("TRACE");
-  TRACE(SEARCH_LOG, "TRACE {}", "MARCO");
-  SEARCH_LOG->info("INFO {}", 123456789);
-  SEARCH_LOG->info("INFO {:d}", 123456789);
-  SEARCH_LOG->info("INFO {:n}", 123456789);
-  SEARCH_LOG->info("INFO {:.5n}", double(123456789.12345));
+  LOG__INFO(SEARCH_LOG, "SEARCH LOGGER TESTS:");
+  LOG__CRITICAL(SEARCH_LOG, "CRITICAL");
+  LOG__ERROR(SEARCH_LOG, "ERROR");
+  LOG__WARN(SEARCH_LOG, "WARN");
+  LOG__INFO(SEARCH_LOG, "INFO");
+  LOG__DEBUG(SEARCH_LOG, "DEBUG");
+  LOG__TRACE(SEARCH_LOG, "TRACE");
+  LOG__TRACE(SEARCH_LOG, "TRACE {}",  "MARCO");
+  LOG__INFO(SEARCH_LOG, "INFO {}", 123456789);
+  LOG__INFO(SEARCH_LOG, "INFO {:d}", 123456789);
+  LOG__INFO(SEARCH_LOG, "INFO {:n}", 123456789);
+  LOG__INFO(SEARCH_LOG, "INFO {:.5n}", double(123456789.12345));
 
   // Logger test
-  UCI_LOG->info("UCI LOGGER TESTS:");
-  UCI_LOG->critical("CRITICAL");
-  UCI_LOG->error("ERROR");
-  UCI_LOG->warn("WARN");
-  UCI_LOG->info("INFO");
-  UCI_LOG->debug("DEBUG");
-  SPDLOG_DEBUG(UCI_LOG, "DEBUG {}", "MARCO");
-  UCI_LOG->trace("TRACE");
-  TRACE(UCI_LOG, "TRACE {}", "MARCO");
-  UCI_LOG->info("INFO {}", 123456789);
-  UCI_LOG->info("INFO {:d}", 123456789);
-  UCI_LOG->info("INFO {:n}", 123456789);
-  UCI_LOG->info("INFO {:.5n}", double(123456789.12345));
+  LOG__INFO(UCI_LOG, "UCI LOGGER TESTS:");
+  LOG__CRITICAL(UCI_LOG, "CRITICAL");
+  LOG__ERROR(UCI_LOG, "ERROR");
+  LOG__WARN(UCI_LOG, "WARN");
+  LOG__INFO(UCI_LOG, "INFO");
+  LOG__DEBUG(UCI_LOG, "DEBUG");
+  LOG__TRACE(UCI_LOG, "TRACE");
+  LOG__TRACE(UCI_LOG, "TRACE {}",  "MARCO");
+  LOG__INFO(UCI_LOG, "INFO {}", 123456789);
+  LOG__INFO(UCI_LOG, "INFO {:d}", 123456789);
+  LOG__INFO(UCI_LOG, "INFO {:n}", 123456789);
+  LOG__INFO(UCI_LOG, "INFO {:.5n}", double(123456789.12345));
 }

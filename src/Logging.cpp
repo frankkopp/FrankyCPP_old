@@ -36,7 +36,8 @@ namespace LOGGING {
       std::cerr << "failed to set locale" << std::endl;
     }
 
-    std::string defaultPattern = "[%H:%M:%S:%f] [%-13n] [%L] [t:%t] %v";
+    std::string defaultPattern = fmt::format("[%H:%M:%S:%f] [t:%t] [%-14n] [%-8l]: %v");
+    spdlog::set_pattern(defaultPattern);
 
     // Shared file sink
     auto sharedFileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("FrankyCPP.log");
@@ -98,8 +99,8 @@ namespace LOGGING {
     TEST_LOG->set_level(spdlog::level::trace);
     TEST_LOG->flush_on(spdlog::level::trace);
 
-    MAIN_LOG->info("Logging initialized.");
-    MAIN_LOG->info("Locale is set to: {}", std::locale().name());
+    LOG__INFO(MAIN_LOG, "Logging initialized.");
+    LOG__INFO(MAIN_LOG, "Locale is set to: {}", std::locale().name());
 
   }
 }

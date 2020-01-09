@@ -174,7 +174,7 @@ TEST_F(SearchTest, repetitionForce) {
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 
-  LOG->info("Repetition move: {}", printMoveVerbose(search.getLastSearchResult().bestMove));
+  LOG__INFO(LOG, "Repetition move: {}", printMoveVerbose(search.getLastSearchResult().bestMove));
 
   ASSERT_EQ("d8h4", printMove(search.getLastSearchResult().bestMove));
   ASSERT_EQ(VALUE_DRAW, valueOf(search.getLastSearchResult().bestMove));
@@ -199,7 +199,7 @@ TEST_F(SearchTest, repetitionAvoid) {
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 
-  LOG->info("Repetition avoidance move: {}",
+  LOG__INFO(LOG, "Repetition avoidance move: {}",
             printMoveVerbose(search.getLastSearchResult().bestMove));
 
   ASSERT_NE("g8f7", printMove(search.getLastSearchResult().bestMove));
@@ -278,8 +278,8 @@ TEST_F(SearchTest, quiescenceTest) {
   auto nodes2 = search.getSearchStats().nodesVisited;
   auto extra2 = search.getSearchStats().currentExtraSearchDepth;
 
-  LOG->info("Nodes without Quiescence: {:n} Nodes with Quiescence: {:n}", nodes1, nodes2);
-  LOG->info("Extra without Quiescence: {:n} Extra with Quiescence: {:n}", extra1, extra2);
+  LOG__INFO(LOG, "Nodes without Quiescence: {:n} Nodes with Quiescence: {:n}", nodes1, nodes2);
+  LOG__INFO(LOG, "Extra without Quiescence: {:n} Extra with Quiescence: {:n}", extra1, extra2);
 
   ASSERT_GT(nodes2, nodes1);
   ASSERT_GT(extra2, extra1);
@@ -306,9 +306,9 @@ TEST_F(SearchTest, alphaBetaTest) {
   auto leafPositionsEvaluated2 = search.getSearchStats().leafPositionsEvaluated;
   auto nodesVisited2 = search.getSearchStats().nodesVisited;
 
-  LOG->info("Nodes without AlphaBeta: Visited: {:n} Evaluated {:n}", nodesVisited1,
+  LOG__INFO(LOG, "Nodes without AlphaBeta: Visited: {:n} Evaluated {:n}", nodesVisited1,
             leafPositionsEvaluated1);
-  LOG->info("Nodes with AlphaBeta: Visited: {:n} Evaluated {:n}", nodesVisited2,
+  LOG__INFO(LOG, "Nodes with AlphaBeta: Visited: {:n} Evaluated {:n}", nodesVisited2,
             leafPositionsEvaluated2);
 
   ASSERT_GT(nodesVisited1, nodesVisited2);
@@ -331,7 +331,7 @@ TEST_F(SearchTest, MDPMPP) {
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 
-  LOG->info("MDP: {:n} MPP: {:n}", search.getSearchStats().mateDistancePrunings,
+  LOG__INFO(LOG, "MDP: {:n} MPP: {:n}", search.getSearchStats().mateDistancePrunings,
             search.getSearchStats().minorPromotionPrunings);
   ASSERT_GT(search.getSearchStats().mateDistancePrunings, 1'000);
   ASSERT_GT(search.getSearchStats().minorPromotionPrunings, 1'000);
@@ -349,7 +349,7 @@ TEST_F(SearchTest, PV_MOVE) {
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 
-  LOG->info("PVS ROOT CUTS {:n} PVS ROOT RE-SEARCH {:n} PVS CUTS: {:n} PVS RE-SEARCH: {:n}",
+  LOG__INFO(LOG, "PVS ROOT CUTS {:n} PVS ROOT RE-SEARCH {:n} PVS CUTS: {:n} PVS RE-SEARCH: {:n}",
             search.getSearchStats().pvs_root_cutoffs, search.getSearchStats().pvs_root_researches,
             search.getSearchStats().pvs_cutoffs, search.getSearchStats().pvs_root_researches);
   ASSERT_GT(search.getSearchStats().pvs_cutoffs, 10);
@@ -370,7 +370,7 @@ TEST_F(SearchTest, IID) {
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 
-  LOG->info("IID Searches {:n}", search.getSearchStats().iidSearches);
+  LOG__INFO(LOG, "IID Searches {:n}", search.getSearchStats().iidSearches);
   ASSERT_GT(search.getSearchStats().iidSearches, 0);
 }
 
@@ -385,10 +385,10 @@ TEST_F(SearchTest, TT) {
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 
-  LOG->info("Nodes: {:n} Time: {:n} ms NPS: {:n}", search.getSearchStats().nodesVisited,
+  LOG__INFO(LOG, "Nodes: {:n} Time: {:n} ms NPS: {:n}", search.getSearchStats().nodesVisited,
             search.getSearchStats().lastSearchTime, (search.getSearchStats().nodesVisited * 1'000) /
                                                     search.getSearchStats().lastSearchTime);
-  LOG->info("TT Hits: {:n} TT Misses: {:n} TT Hit rate: {}%",
+  LOG__INFO(LOG, "TT Hits: {:n} TT Misses: {:n} TT Hit rate: {}%",
             search.getSearchStats().tt_Cuts,
             search.getSearchStats().tt_NoCuts,
             (static_cast<double>(search.getSearchStats().tt_Cuts * 100) /
@@ -398,10 +398,10 @@ TEST_F(SearchTest, TT) {
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 
-  LOG->info("Nodes: {:n} Time: {:n} ms NPS: {:n}", search.getSearchStats().nodesVisited,
+  LOG__INFO(LOG, "Nodes: {:n} Time: {:n} ms NPS: {:n}", search.getSearchStats().nodesVisited,
             search.getSearchStats().lastSearchTime, (search.getSearchStats().nodesVisited * 1'000) /
                                                     search.getSearchStats().lastSearchTime);
-  LOG->info("TT Hits: {:n} TT Misses: {:n} TT Hit rate: {}%",
+  LOG__INFO(LOG, "TT Hits: {:n} TT Misses: {:n} TT Hit rate: {}%",
             search.getSearchStats().tt_Cuts,
             search.getSearchStats().tt_NoCuts,
             (static_cast<double>(search.getSearchStats().tt_Cuts * 100) /
@@ -419,11 +419,11 @@ TEST_F(SearchTest, NULLMOVE) {
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 
-  LOG->info("Nodes: {:n} Time: {:n} ms NPS: {:n}", search.getSearchStats().nodesVisited,
+  LOG__INFO(LOG, "Nodes: {:n} Time: {:n} ms NPS: {:n}", search.getSearchStats().nodesVisited,
             search.getSearchStats().lastSearchTime, (search.getSearchStats().nodesVisited * 1'000) /
                                                     search.getSearchStats().lastSearchTime);
 
-  LOG->info("Number of Null Moves Prunings: {:n} Verifications {:n}",
+  LOG__INFO(LOG, "Number of Null Moves Prunings: {:n} Verifications {:n}",
             search.getSearchStats().nullMovePrunings,
             search.getSearchStats().nullMoveVerifications
   );
@@ -442,9 +442,9 @@ TEST_F(SearchTest, perft) {
   searchLimits.setDepth(DEPTH);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
-  LOG->info("Leaf nodes per sec: {:n}", (search.getSearchStats().leafPositionsEvaluated * 1'000) /
+  LOG__INFO(LOG, "Leaf nodes per sec: {:n}", (search.getSearchStats().leafPositionsEvaluated * 1'000) /
                                         search.getSearchStats().lastSearchTime);
-  LOG->info("Leaf nodes:         {:n}", search.getSearchStats().leafPositionsEvaluated);
+  LOG__INFO(LOG, "Leaf nodes:         {:n}", search.getSearchStats().leafPositionsEvaluated);
   ASSERT_EQ(perftResults[DEPTH], search.getSearchStats().leafPositionsEvaluated);
 }
 
@@ -459,7 +459,7 @@ TEST_F(SearchTest, nps) {
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 
-  LOG->info("Nodes: {:n} Time: {:n} ms NPS: {:n}", search.getSearchStats().nodesVisited,
+  LOG__INFO(LOG, "Nodes: {:n} Time: {:n} ms NPS: {:n}", search.getSearchStats().nodesVisited,
             search.getSearchStats().lastSearchTime, (search.getSearchStats().nodesVisited * 1'000) /
                                                     search.getSearchStats().lastSearchTime);
 }

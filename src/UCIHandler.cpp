@@ -82,7 +82,7 @@ namespace UCI {
       else if (token == "register") registerCommand();
       else if (token == "debug") debugCommand();
       else if (token == "noop") /* noop */;
-      else LOG->warn("Unknown UCI command: {}", token);
+      else LOG__WARN(LOG, "Unknown UCI command: {}", token);
 
       LOG->info("UCI Handler processed command: {}", token);
 
@@ -106,7 +106,7 @@ namespace UCI {
     string token, name, value;
 
     if (inStream >> token && token != "name") {
-      LOG->warn("Command setoption is malformed - expected 'name': {}", token);
+      LOG__WARN(LOG, "Command setoption is malformed - expected 'name': {}", token);
       return;
     }
 
@@ -186,7 +186,7 @@ namespace UCI {
           cerr << "PANIK";
         }
         if (searchMode.whiteTime <= 0) {
-          LOG->warn("Invalid wtime. Was '{}'", token);
+          LOG__WARN(LOG, "Invalid wtime. Was '{}'", token);
           return;
         }
       }
@@ -198,7 +198,7 @@ namespace UCI {
           cerr << "PANIK";
         }
         if (searchMode.blackTime <= 0) {
-          LOG->warn("Invalid btime. Was '{}'", token);
+          LOG__WARN(LOG, "Invalid btime. Was '{}'", token);
           return;
         }
       }
@@ -210,7 +210,7 @@ namespace UCI {
           cerr << "PANIK";
         }
         if (searchMode.whiteInc < 0) {
-          LOG->warn("Invalid winc. Was '{}'", token);
+          LOG__WARN(LOG, "Invalid winc. Was '{}'", token);
           return;
         }
       }
@@ -222,7 +222,7 @@ namespace UCI {
           cerr << "PANIK";
         }
         if (searchMode.blackInc < 0) {
-          LOG->warn("Invalid binc. Was '{}'", token);
+          LOG__WARN(LOG, "Invalid binc. Was '{}'", token);
           return;
         }
       }
@@ -234,7 +234,7 @@ namespace UCI {
           cerr << "PANIK";
         }
         if (searchMode.movesToGo <= 0) {
-          LOG->warn("Invalid movestogo. Was '{}'", token);
+          LOG__WARN(LOG, "Invalid movestogo. Was '{}'", token);
           return;
         }
       }
@@ -246,7 +246,7 @@ namespace UCI {
           cerr << "PANIK";
         }
         if (searchMode.depth <= 0 || searchMode.depth > PLY_MAX) {
-          LOG->warn("depth not between 1 and {}. Was '{}'", PLY_MAX, token);
+          LOG__WARN(LOG, "depth not between 1 and {}. Was '{}'", PLY_MAX, token);
           return;
         }
       }
@@ -258,7 +258,7 @@ namespace UCI {
           cerr << "PANIK";
         }
         if (searchMode.nodes <= 0) {
-          LOG->warn("Invalid nodes. Was '{}'", token);
+          LOG__WARN(LOG, "Invalid nodes. Was '{}'", token);
           return;
         }
       }
@@ -270,7 +270,7 @@ namespace UCI {
           cerr << "PANIK";
         }
         if (searchMode.mate <= 0 || searchMode.mate > PLY_MAX) {
-          LOG->warn("mate not between 1 and {}. Was '{}'", PLY_MAX, token);
+          LOG__WARN(LOG, "mate not between 1 and {}. Was '{}'", PLY_MAX, token);
           return;
         }
       }
@@ -282,7 +282,7 @@ namespace UCI {
           cerr << "PANIK";
         }
         if (searchMode.movetime <= 0) {
-          LOG->warn("Invalid movetime. Was '{}'", token);
+          LOG__WARN(LOG, "Invalid movetime. Was '{}'", token);
           return;
         }
       }
@@ -298,7 +298,7 @@ namespace UCI {
           cerr << "PANIK";
         }
         if (searchMode.depth <= 0 || searchMode.depth > PLY_MAX) {
-          LOG->warn("perft depth not between 1 and {}. Was '{}'", PLY_MAX, token);
+          LOG__WARN(LOG, "perft depth not between 1 and {}. Was '{}'", PLY_MAX, token);
           return;
         }
       }
@@ -317,11 +317,11 @@ namespace UCI {
   }
 
   void Handler::registerCommand() {
-    LOG->warn("UCI Protocol Command: register not implemented!");
+    LOG__WARN(LOG, "UCI Protocol Command: register not implemented!");
   }
 
   void Handler::debugCommand() {
-    LOG->warn("UCI Protocol Command: debug not implemented!");
+    LOG__WARN(LOG, "UCI Protocol Command: debug not implemented!");
   }
 
   void Handler::send(const std::string &toSend) const {

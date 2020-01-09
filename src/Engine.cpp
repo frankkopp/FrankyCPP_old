@@ -61,7 +61,7 @@ std::string Engine::str() const {
 
 
 void Engine::setOption(const std::string &name, const std::string &value) {
-  LOG->info("Engine: Set option {} = {}", name, value);
+  LOG__INFO(LOG, "Engine: Set option {} = {}", name, value);
 
   const auto mapIterator = optionMap.find(name);
   if (mapIterator != optionMap.end()) {
@@ -75,35 +75,35 @@ void Engine::setOption(const std::string &name, const std::string &value) {
     updateConfig();
   }
   else {
-    LOG->warn("No such option: {}", name);
+    LOG__WARN(LOG, "No such option: {}", name);
   }
 
 }
 
 std::string Engine::getOption(const std::string &name) {
-  LOG->info("Engine: Get option {}", name);
+  LOG__INFO(LOG, "Engine: Get option {}", name);
   const auto pos = optionMap.find(name);
   if (pos != optionMap.end())
     return pos->second.getCurrentValue();
   else {
-    LOG->warn("No such option: {}", name);
+    LOG__WARN(LOG, "No such option: {}", name);
     return "";
   }
 }
 
 void Engine::newGame() {
-  LOG->info("Engine: New Game");
+  LOG__INFO(LOG, "Engine: New Game",0);
   // stop any search - this is necessary in case of ponder miss
   stopSearch();
 }
 
 void Engine::setPosition(const std::string &fen) {
-  LOG->info("Engine: Set position to {}", fen);
+  LOG__INFO(LOG, "Engine: Set position to {}", fen);
   position = Position(fen);
 }
 
 void Engine::doMove(const std::string &moveStr) {
-  LOG->info("Engine: Do move {}", moveStr);
+  LOG__INFO(LOG, "Engine: Do move {}", moveStr);
   MoveGenerator moveGenerator;
   MoveList moves = *moveGenerator.generateLegalMoves<MoveGenerator::GENALL>(position);
   for (Move m : moves) {
@@ -112,15 +112,15 @@ void Engine::doMove(const std::string &moveStr) {
       return;
     }
   }
-  LOG->warn("Invalid move {}", moveStr);
+  LOG__WARN(LOG, "Invalid move {}", moveStr);
 }
 
 void Engine::startSearch(const UCISearchMode &uciSearchMode) {
-  LOG->info("Engine: Start Search");
+  LOG__INFO(LOG, "Engine: Start Search");
 
   if (search.isRunning()) {
     // Previous search was still running. Stopping to start new search!
-    LOG->warn("Engine was already searching. Stopping search to start new search.");
+    LOG__WARN(LOG, "Engine was already searching. Stopping search to start new search.");
     search.stopSearch();
   }
 
@@ -143,7 +143,7 @@ void Engine::startSearch(const UCISearchMode &uciSearchMode) {
 
   // do not start pondering if not ponder option is set
   if (searchLimits.isPonder() && !EngineConfig::ponder) {
-    LOG->warn("Engine: go ponder command but ponder option is set to false.");
+    LOG__WARN(LOG, "Engine: go ponder command but ponder option is set to false.");
     return;
   }
 
@@ -151,17 +151,17 @@ void Engine::startSearch(const UCISearchMode &uciSearchMode) {
 }
 
 void Engine::stopSearch() {
-  LOG->info("Engine: Stop Search");
+  LOG__INFO(LOG, "Engine: Stop Search");
   search.stopSearch();
 }
 
 void Engine::ponderHit() {
-  LOG->info("Engine: Ponder Hit");
+  LOG__INFO(LOG, "Engine: Ponder Hit");
   search.ponderhit();
 }
 
 void Engine::clearHash() {
-  LOG->info("Engine: Clear Hash");
+  LOG__INFO(LOG, "Engine: Clear Hash");
   search.clearHash();
 }
 
@@ -170,7 +170,7 @@ void Engine::sendIterationEndInfo(int depth, int seldepth, Value value, long nod
   if (pUciHandler)
     pUciHandler->sendIterationEndInfo(depth, seldepth, value, nodes, nps, time, pv);
   else
-    LOG->warn(
+    LOG__WARN(LOG,
       "<no uci handler>: Engine iteration end: depth {} seldepth {} multipv 1 {} nodes {} nps {} time {} pv {}",
       depth,
       seldepth,
@@ -184,7 +184,7 @@ void Engine::sendIterationEndInfo(int depth, int seldepth, Value value, long nod
 void Engine::sendCurrentRootMove(Move currmove, MoveList::size_type movenumber) const {
   if (pUciHandler) pUciHandler->sendCurrentRootMove(currmove, movenumber);
   else
-    LOG->warn("<no uci handler>: Engine current move: currmove {} currmovenumber {}",
+    LOG__WARN(LOG, "<no uci handler>: Engine current move: currmove {} currmovenumber {}",
               printMove(currmove),
               movenumber);
 }
@@ -193,7 +193,7 @@ void Engine::sendSearchUpdate(int depth, int seldepth, long nodes, int nps, Mill
                               int hashfull) const {
   if (pUciHandler) pUciHandler->sendSearchUpdate(depth, seldepth, nodes, nps, time, hashfull);
   else
-    LOG->warn(
+    LOG__WARN(LOG,
       "<no uci handler>: Engine search update: depth {} seldepth {} nodes {} nps {} time {} hashfull {}",
       depth,
       seldepth,
@@ -206,7 +206,7 @@ void Engine::sendSearchUpdate(int depth, int seldepth, long nodes, int nps, Mill
 void Engine::sendCurrentLine(const MoveList &moveList) const {
   if (pUciHandler) pUciHandler->sendCurrentLine(moveList);
   else
-    LOG->warn("<no uci handler>: Engine current line: {}", printMoveList(moveList));
+    LOG__WARN(LOG, "<no uci handler>: Engine current line: {}", printMoveList(moveList));
 }
 
 void Engine::sendResult(const Move bestMove, const Value value, const Move ponderMove) {
@@ -214,7 +214,7 @@ void Engine::sendResult(const Move bestMove, const Value value, const Move ponde
 
   if (pUciHandler) pUciHandler->sendResult(bestMove, ponderMove);
   else
-    LOG->warn("<no uci handler>: Engine Result: Best Move = {} ({}) Ponder Move = {}",
+    LOG__WARN(LOG, "<no uci handler>: Engine Result: Best Move = {} ({}) Ponder Move = {}",
               printMoveVerbose(bestMove), printValue(value), printMoveVerbose(ponderMove));
 }
 
@@ -242,7 +242,7 @@ void Engine::updateConfig() {
 
     if (name == "Hash") {
       EngineConfig::hash = getInt(option.getCurrentValue());
-      LOG->info("Setting hash table size to {} MB", EngineConfig::hash);
+      LOG__INFO(LOG, "Setting hash table size to {} MB", EngineConfig::hash);
       search.setHashSize(EngineConfig::hash);
     }
     else
@@ -258,10 +258,10 @@ int Engine::getInt(const std::string &value) const {
     intValue = stoi(value);
   }
   catch (std::invalid_argument &e) {
-    LOG->warn("depth invalid - expected numeric value. Was {}", value);
+    LOG__WARN(LOG, "depth invalid - expected numeric value. Was {}", value);
   }
   catch (std::out_of_range &e) {
-    LOG->warn("depth invalid - numeric value out of range of int. Was {}", value);
+    LOG__WARN(LOG, "depth invalid - numeric value out of range of int. Was {}", value);
   }
   return intValue;
 }

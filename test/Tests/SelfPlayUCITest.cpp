@@ -54,7 +54,7 @@ protected:
   void TearDown() override {}
 
   std::string sendCommand(Engine &engine, const std::string &command) {
-    LOG->info("COMMAND: " + command);
+    LOG__INFO(LOG, "COMMAND: " + command);
     std::istringstream is(command);
     std::ostringstream os = std::ostringstream();
     UCI::Handler uciHandler(&engine, &is, &os);
@@ -69,7 +69,7 @@ protected:
   }
 
   void expect(std::string test, std::string str) {
-    LOG->debug("{}", str);
+    LOG__DEBUG(LOG, "{}", str);
     ASSERT_EQ(test, str.substr(0, test.length()));
   }
 };
@@ -100,7 +100,7 @@ TEST_F(UCISelfPlayUCITest, uciTest) {
     engine.waitWhileSearching();
     Move move = engine.getLastResult().bestMove;
     if (!move) break;
-    LOG->info("UCI NEXT MOVE: {} on position {} (key={})", printMoveVerbose(move), position.printFen(), position.getZobristKey());
+    LOG__INFO(LOG, "UCI NEXT MOVE: {} on position {} (key={})", printMoveVerbose(move), position.printFen(), position.getZobristKey());
     position.doMove(move);
   } while (1);
 
