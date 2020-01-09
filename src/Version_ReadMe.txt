@@ -19,11 +19,11 @@ v 0.x (plan)
 v 0.4 (in progress)
 ================================================================================
 - TODO:
-    - Debug and harden play with UCI GUI - XBoard, Arena, etc.
     - Extended Evaluation
     - EvalCache
     - Aspiration Window Search
     - LFP. LFR, ...
+    - Debug and harden play with UCI GUI - XBoard, Arena, etc.
 
 v 0.3 (done)
 ================================================================================
@@ -35,7 +35,7 @@ v 0.3 (done)
     - MDP, MPP
 
 v 0.2 (done)
-================================================================================
+================================================================================           
 - DONE:
     - Testing & Debugging
     - TT in qsearch

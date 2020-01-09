@@ -87,8 +87,8 @@ TEST_F(UCISelfPlayUCITest, uciTest) {
   Position position;
 
   SearchConfig::USE_TT = true;
-  SearchConfig::USE_TT_QSEARCH = false;
-  SearchConfig::USE_PV_MOVE_SORTING = false;
+  SearchConfig::USE_TT_QSEARCH = true;
+  SearchConfig::USE_PV_MOVE_SORTING = true;
 
   expect("id name FrankyCPP", sendCommand(engine, "uci"));
   expect("readyok", sendCommand(engine, "isready"));

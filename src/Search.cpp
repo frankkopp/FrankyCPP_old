@@ -666,7 +666,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
   // one. This is most effective with bad move ordering.
   // If move ordering is quite good this might be
   // a waste of search time.
-  /* if (SearchConfig::USE_IID && SearchConfig::USE_TT
+  if (SearchConfig::USE_IID && SearchConfig::USE_TT
       && ST != PERFT && ST != ROOT
       && NT == PV
       && doNull
@@ -674,7 +674,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
       && depth >= SearchConfig::IID_DEPTH
     ) {
     searchStats.iidSearches++;
-    auto iidDepth = static_cast<Depth>(depth - 2);
+    auto iidDepth = depth - SearchConfig::IID_DEPTH_REDUCTION;
     // do the iterative search which will eventually fill the TT
     search<ST, PV>(position, iidDepth, ply, alpha, beta, doNull);
     // no we look into the TT to see if we have a move
@@ -683,7 +683,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
       ttMove = pEntry->move;
       assert(!ttMove || moveGenerators[ply].validateMove(position, ttMove));
     }
-  } */
+  }
   // ###############################################
 
   // make sure the pv move is returned first by the move generator

@@ -443,7 +443,7 @@ TEST_F(SearchTest, perft) {
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
   LOG__INFO(LOG, "Leaf nodes per sec: {:n}", (search.getSearchStats().leafPositionsEvaluated * 1'000) /
-                                        search.getSearchStats().lastSearchTime);
+                                             search.getSearchStats().lastSearchTime);
   LOG__INFO(LOG, "Leaf nodes:         {:n}", search.getSearchStats().leafPositionsEvaluated);
   ASSERT_EQ(perftResults[DEPTH], search.getSearchStats().leafPositionsEvaluated);
 }
@@ -519,14 +519,15 @@ TEST_F(SearchTest, debuggingIID) {
   SearchLimits searchLimits;
   Position position;
 
-  const int depth = 8;
   position = Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
-  searchLimits.setDepth(depth);
+  // const int depth = 8;
+  // searchLimits.setDepth(depth);
+  searchLimits.setInfinite(true);
 
   SearchConfig::USE_TT = true;
   SearchConfig::USE_TT_QSEARCH = true;
-  SearchConfig::USE_RFP = false;
-  SearchConfig::USE_NMP= false;
+  SearchConfig::USE_RFP = true;
+  SearchConfig::USE_NMP = true;
   SearchConfig::USE_IID = true;
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
@@ -541,7 +542,7 @@ TEST_F(SearchTest, debuggingTTMove) {
   const int depth = 8;
   position = Position("2b2rk1/3pR1p1/3p2Q1/pp1P3p/7q/P1N5/1P4PK/4R3 w - - 0 32");
   searchLimits.setDepth(depth);
-  
+
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 

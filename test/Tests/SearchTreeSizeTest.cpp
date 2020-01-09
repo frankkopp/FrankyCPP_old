@@ -193,17 +193,17 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   SearchConfig::USE_PV_MOVE_SORTING = true;
   SearchConfig::USE_MPP = true;
   SearchConfig::USE_MDP = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 -TT"));
+//  result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 -TT"));
 
   SearchConfig::USE_TT = true;
   SearchConfig::USE_TT_QSEARCH = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "10 +TT"));
 
-//  SearchConfig::USE_NMP = true;
-//  result.tests.push_back(measureTreeSize(search, position, searchLimits, "20 NMP"));
-//
-//  SearchConfig::USE_RFP = true;
-//  result.tests.push_back(measureTreeSize(search, position, searchLimits, "30 RFP"));
+  SearchConfig::USE_NMP = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "20 NMP"));
+
+  SearchConfig::USE_RFP = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "30 RFP"));
 
   SearchConfig::USE_IID = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "40 IID"));
