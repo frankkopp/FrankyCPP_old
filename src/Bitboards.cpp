@@ -140,7 +140,7 @@ namespace Bitboards {
    * @param rotMap - array with mapping for rotation
    * @return rotated bitboard
    */
-  Bitboard rotate(Bitboard b, const int *rotMap) {
+  Bitboard rotate(Bitboard b, const int* rotMap) {
     Bitboard rotated = EMPTY_BB;
     for (Square sq = SQ_A1; sq < SQ_LENGTH; ++sq) {
       if ((b & Square(rotMap[sq])) != 0) rotated |= squareBB[sq];
@@ -174,35 +174,35 @@ namespace Bitboards {
       squareBB[sq] = ONE_BB << sq;
 
       // square diagonals
-      if (DiagUpA8 & sq) squareDiagUpBB[sq] = DiagUpA8;
-      else if (DiagUpA7 & sq) squareDiagUpBB[sq] = DiagUpA7;
-      else if (DiagUpA6 & sq) squareDiagUpBB[sq] = DiagUpA6;
-      else if (DiagUpA5 & sq) squareDiagUpBB[sq] = DiagUpA5;
-      else if (DiagUpA4 & sq) squareDiagUpBB[sq] = DiagUpA4;
-      else if (DiagUpA3 & sq) squareDiagUpBB[sq] = DiagUpA3;
-      else if (DiagUpA2 & sq) squareDiagUpBB[sq] = DiagUpA2;
-      else if (DiagUpA1 & sq) squareDiagUpBB[sq] = DiagUpA1;
-      else if (DiagUpB1 & sq) squareDiagUpBB[sq] = DiagUpB1;
-      else if (DiagUpC1 & sq) squareDiagUpBB[sq] = DiagUpC1;
-      else if (DiagUpD1 & sq) squareDiagUpBB[sq] = DiagUpD1;
-      else if (DiagUpE1 & sq) squareDiagUpBB[sq] = DiagUpE1;
-      else if (DiagUpF1 & sq) squareDiagUpBB[sq] = DiagUpF1;
-      else if (DiagUpG1 & sq) squareDiagUpBB[sq] = DiagUpG1;
+      if (DiagUpA8 & sq) { squareDiagUpBB[sq] = DiagUpA8; }
+      else if (DiagUpA7 & sq) { squareDiagUpBB[sq] = DiagUpA7; }
+      else if (DiagUpA6 & sq) { squareDiagUpBB[sq] = DiagUpA6; }
+      else if (DiagUpA5 & sq) { squareDiagUpBB[sq] = DiagUpA5; }
+      else if (DiagUpA4 & sq) { squareDiagUpBB[sq] = DiagUpA4; }
+      else if (DiagUpA3 & sq) { squareDiagUpBB[sq] = DiagUpA3; }
+      else if (DiagUpA2 & sq) { squareDiagUpBB[sq] = DiagUpA2; }
+      else if (DiagUpA1 & sq) { squareDiagUpBB[sq] = DiagUpA1; }
+      else if (DiagUpB1 & sq) { squareDiagUpBB[sq] = DiagUpB1; }
+      else if (DiagUpC1 & sq) { squareDiagUpBB[sq] = DiagUpC1; }
+      else if (DiagUpD1 & sq) { squareDiagUpBB[sq] = DiagUpD1; }
+      else if (DiagUpE1 & sq) { squareDiagUpBB[sq] = DiagUpE1; }
+      else if (DiagUpF1 & sq) { squareDiagUpBB[sq] = DiagUpF1; }
+      else if (DiagUpG1 & sq) { squareDiagUpBB[sq] = DiagUpG1; }
       else if (DiagUpH1 & sq) squareDiagUpBB[sq] = DiagUpH1;
-      if (DiagDownH8 & sq) squareDiagDownBB[sq] = DiagDownH8;
-      else if (DiagDownH7 & sq) squareDiagDownBB[sq] = DiagDownH7;
-      else if (DiagDownH6 & sq) squareDiagDownBB[sq] = DiagDownH6;
-      else if (DiagDownH5 & sq) squareDiagDownBB[sq] = DiagDownH5;
-      else if (DiagDownH4 & sq) squareDiagDownBB[sq] = DiagDownH4;
-      else if (DiagDownH3 & sq) squareDiagDownBB[sq] = DiagDownH3;
-      else if (DiagDownH2 & sq) squareDiagDownBB[sq] = DiagDownH2;
-      else if (DiagDownH1 & sq) squareDiagDownBB[sq] = DiagDownH1;
-      else if (DiagDownG1 & sq) squareDiagDownBB[sq] = DiagDownG1;
-      else if (DiagDownF1 & sq) squareDiagDownBB[sq] = DiagDownF1;
-      else if (DiagDownE1 & sq) squareDiagDownBB[sq] = DiagDownE1;
-      else if (DiagDownD1 & sq) squareDiagDownBB[sq] = DiagDownD1;
-      else if (DiagDownC1 & sq) squareDiagDownBB[sq] = DiagDownC1;
-      else if (DiagDownB1 & sq) squareDiagDownBB[sq] = DiagDownB1;
+      if (DiagDownH8 & sq) { squareDiagDownBB[sq] = DiagDownH8; }
+      else if (DiagDownH7 & sq) { squareDiagDownBB[sq] = DiagDownH7; }
+      else if (DiagDownH6 & sq) { squareDiagDownBB[sq] = DiagDownH6; }
+      else if (DiagDownH5 & sq) { squareDiagDownBB[sq] = DiagDownH5; }
+      else if (DiagDownH4 & sq) { squareDiagDownBB[sq] = DiagDownH4; }
+      else if (DiagDownH3 & sq) { squareDiagDownBB[sq] = DiagDownH3; }
+      else if (DiagDownH2 & sq) { squareDiagDownBB[sq] = DiagDownH2; }
+      else if (DiagDownH1 & sq) { squareDiagDownBB[sq] = DiagDownH1; }
+      else if (DiagDownG1 & sq) { squareDiagDownBB[sq] = DiagDownG1; }
+      else if (DiagDownF1 & sq) { squareDiagDownBB[sq] = DiagDownF1; }
+      else if (DiagDownE1 & sq) { squareDiagDownBB[sq] = DiagDownE1; }
+      else if (DiagDownD1 & sq) { squareDiagDownBB[sq] = DiagDownD1; }
+      else if (DiagDownC1 & sq) { squareDiagDownBB[sq] = DiagDownC1; }
+      else if (DiagDownB1 & sq) { squareDiagDownBB[sq] = DiagDownB1; }
       else if (DiagDownA1 & sq) squareDiagDownBB[sq] = DiagDownA1;
     }
 
@@ -346,8 +346,8 @@ namespace Bitboards {
           for (int i = 0; steps[pt][i]; ++i) {
             Square to = s + Direction(c == WHITE ? steps[pt][i] : -steps[pt][i]);
             if (isSquare(to) && distance(s, to) < 3) {
-              if (pt == PAWN) pawnAttacks[c][s] |= to;
-              else pseudoAttacks[pt][s] |= to;
+              if (pt == PAWN) { pawnAttacks[c][s] |= to; }
+              else { pseudoAttacks[pt][s] |= to; }
             }
           }
         }
@@ -375,8 +375,8 @@ namespace Bitboards {
         if (7 - j > r) ranksNorthMask[square] |= rankBB(7 - j);
         if (j < r) ranksSouthMask[square] |= rankBB(j);
       }
-      if (f > 0) fileWestMask[square] = fileBB(f);
-      if (f < 7) fileEastMask[square] = fileBB(f + 2);
+      if (f > 0) fileWestMask[square] = fileBB(f - 1);
+      if (f < 7) fileEastMask[square] = fileBB(f + 1);
     }
 
     // rays
@@ -428,8 +428,8 @@ namespace Bitboards {
     for (Square square = SQ_A1; square <= SQ_H8; ++square) {
       int f = fileOf(square);
       int r = rankOf(square);
-      if ((f + r) % 2 == 0) tmpB |= 1L << square;
-      else tmpW |= 1L << square;
+      if ((f + r) % 2 == 0) { tmpB |= 1L << square; }
+      else { tmpW |= 1L << square; }
     }
     whiteSquaresBB = tmpW;
     blackSquaresBB = tmpB;
