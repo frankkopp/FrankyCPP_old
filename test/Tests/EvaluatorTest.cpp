@@ -93,7 +93,7 @@ TEST_F(EvaluatorTest, total) {
 
   position.doMove(createMove("e2e4"));
   value = evaluator.evaluate(position);
-  ASSERT_EQ(-102, value);
+  ASSERT_EQ(-100, value);
 
   position.doMove(createMove("e7e5"));
   value = evaluator.evaluate(position);
@@ -128,10 +128,6 @@ TEST_F(EvaluatorTest, evaluatePieceMobility) {
   ASSERT_EQ(0 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
   actual = evaluator.evaluatePiece<BLACK, QUEEN>(position);
   ASSERT_EQ(0 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
-  actual = evaluator.evaluatePiece<WHITE, KING>(position);
-  ASSERT_EQ(0 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
-  actual = evaluator.evaluatePiece<BLACK, KING>(position);
-  ASSERT_EQ(0 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
 
   // total
   actual = 0;
@@ -139,7 +135,6 @@ TEST_F(EvaluatorTest, evaluatePieceMobility) {
   actual += evaluator.evaluatePiece<WHITE, BISHOP>(position) - evaluator.evaluatePiece<BLACK, BISHOP>(position);
   actual += evaluator.evaluatePiece<WHITE, ROOK>(position) - evaluator.evaluatePiece<BLACK, ROOK>(position);
   actual += evaluator.evaluatePiece<WHITE, QUEEN>(position) - evaluator.evaluatePiece<BLACK, QUEEN>(position);
-  actual += evaluator.evaluatePiece<WHITE, KING>(position) - evaluator.evaluatePiece<BLACK, KING>(position);
   ASSERT_EQ(0 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
 
   // complex pos
@@ -161,10 +156,6 @@ TEST_F(EvaluatorTest, evaluatePieceMobility) {
   ASSERT_EQ(0 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
   actual = evaluator.evaluatePiece<BLACK, QUEEN>(position);
   ASSERT_EQ(31 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
-  actual = evaluator.evaluatePiece<WHITE, KING>(position);
-  ASSERT_EQ(2 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
-  actual = evaluator.evaluatePiece<BLACK, KING>(position);
-  ASSERT_EQ(4 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
 
   // total
   actual = 0;
@@ -172,8 +163,7 @@ TEST_F(EvaluatorTest, evaluatePieceMobility) {
   actual += evaluator.evaluatePiece<WHITE, BISHOP>(position) - evaluator.evaluatePiece<BLACK, BISHOP>(position);
   actual += evaluator.evaluatePiece<WHITE, ROOK>(position) - evaluator.evaluatePiece<BLACK, ROOK>(position);
   actual += evaluator.evaluatePiece<WHITE, QUEEN>(position) - evaluator.evaluatePiece<BLACK, QUEEN>(position);
-  actual += evaluator.evaluatePiece<WHITE, KING>(position) - evaluator.evaluatePiece<BLACK, KING>(position);
-  ASSERT_EQ(-38 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
+  ASSERT_EQ(-36 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
 }
 
 

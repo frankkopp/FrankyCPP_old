@@ -52,6 +52,9 @@ private:
   template <Color C>
   int evaluatePawn(const Position &position);
 
+  template <Color C>
+  int evaluateKing(const Position &position);
+
   template <Color C, PieceType PT>
   int evaluatePiece(const Position &position);
 

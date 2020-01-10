@@ -54,6 +54,7 @@ Value Evaluator::evaluate(const Position &position) {
 
   // evaluate pawns
   if (USE_PAWNEVAL) {
+    // TODO: pawn cache?
     value += evaluatePawn<WHITE>(position) - evaluatePawn<BLACK>(position);
   }
 
@@ -64,13 +65,12 @@ Value Evaluator::evaluate(const Position &position) {
   value += evaluatePiece<WHITE, QUEEN>(position) - evaluatePiece<BLACK, QUEEN>(position);
 
   // evaluate king
-  value += evaluatePiece<WHITE, KING>(position) - evaluatePiece<BLACK, KING>(position);
+  value += evaluateKing<WHITE>(position) - evaluateKing<BLACK>(position);
 
   // value is always from the view of the next player
   if (position.getNextPlayer() == BLACK) value *= -1;
   return static_cast<Value>(value);
 }
-
 
 template<Color C>
 int Evaluator::evaluatePawn(const Position &position) {
@@ -145,6 +145,7 @@ int Evaluator::evaluatePawn(const Position &position) {
 
 template<Color C, PieceType PT>
 int Evaluator::evaluatePiece(const Position &position) {
+  assert (PT != PAWN && PT != KING);
   const Bitboard occupiedBB = position.getOccupiedBB();
   const Bitboard myPiecesBB = position.getOccupiedBB(C);
   int mobility = 0;
@@ -156,7 +157,7 @@ int Evaluator::evaluatePiece(const Position &position) {
     // MOBILITY
     if (USE_MOBILITY) {
       const Bitboard pseudoMoves = Bitboards::pseudoAttacks[PT][fromSquare];
-      if (PT == KNIGHT || PT == KING) {
+      if (PT == KNIGHT) {
         // knights and kings can't be blocked
         Bitboard moves = pseudoMoves & ~myPiecesBB;
         mobility += Bitboards::popcount(moves);
@@ -175,6 +176,11 @@ int Evaluator::evaluatePiece(const Position &position) {
     }
   }
   return mobility * MOBILITY_WEIGHT;
+}
+
+template<Color C>
+int Evaluator::evaluateKing(const Position &position) {
+  return 0;
 }
 
 // explicitly instantiate all template definitions so other classes can see them
