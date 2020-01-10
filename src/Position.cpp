@@ -739,7 +739,7 @@ bool Position::givesCheck(const Move move) const {
   if (Bitboards::pseudoAttacks[ROOK][kingSq] & rooks) {
     // iterate over all pieces
     while (rooks) {
-      const Square sq = Bitboards::popLSB(&rooks);
+      const Square sq = Bitboards::popLSB(rooks);
       // if the square is not reachable from the piece's square we can skip this
       if ((Bitboards::pseudoAttacks[ROOK][sq] & kingSq) == 0) continue;
       // if there are no occupied squares between the piece square and the
@@ -760,7 +760,7 @@ bool Position::givesCheck(const Move move) const {
   if ((Bitboards::pseudoAttacks[BISHOP][kingSq] & bishops)) {
     // iterate over all pieces
     while (bishops) {
-      const Square sq = Bitboards::popLSB(&bishops);
+      const Square sq = Bitboards::popLSB(bishops);
       // if the square is not reachable from the piece's square we can skip this
       if ((Bitboards::pseudoAttacks[BISHOP][sq] & kingSq) == 0) continue;
       // if there are no occupied squares between the piece square and the
@@ -781,7 +781,7 @@ bool Position::givesCheck(const Move move) const {
   if ((Bitboards::pseudoAttacks[QUEEN][kingSq] & queens)) {
     // iterate over all pieces
     while (queens) {
-      const Square sq = Bitboards::popLSB(&queens);
+      const Square sq = Bitboards::popLSB(queens);
       // if the square is not reachable from the piece's square we can skip this
       if ((Bitboards::pseudoAttacks[QUEEN][sq] & kingSq) == 0) continue;
       // if there are no occupied squares between the piece square and the

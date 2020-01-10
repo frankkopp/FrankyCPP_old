@@ -238,18 +238,21 @@ TEST_F(EvaluatorTest, PERFT_eps) {
 
   fen = "r3k2r/1ppn3p/2q1q1nb/4P2N/2q1Pp2/B5RP/pbp2PP1/1R4K1 w kq - 0 1";
   position = Position(fen);
-  const uint64_t iterations = 1'000'000;
+  const uint64_t iterations = 10'000'000;
   const uint64_t rounds = 10;
 
   for (uint64_t round = 0; round < rounds; ++round) {
+    fprintln("ROUND: {}", round);
     auto timer = cpu_timer();
     for (uint64_t i = 0; i < iterations; ++i) {
       e.evaluate(position);
     }
     timer.stop();
-    fprint("Time: {}", timer.format());
-    fprintln("EPS: {:n}", (iterations * nano_sec) / timer.elapsed().wall);
-    fprintln("TPE: {:n} ns", timer.elapsed().wall / iterations);
+    const nanosecond_type cpuTime = timer.elapsed().user + timer.elapsed().system;
+    fprintln("WALL Time: {:n} ns ({:3f} sec)", timer.elapsed().wall, static_cast<double>(timer.elapsed().wall)/nano_sec);
+    fprintln("CPU  Time: {:n} ns ({:3f} sec)", cpuTime, static_cast<double>(cpuTime)/nano_sec);
+    fprintln("EPS:       {:n} eps", (iterations * nano_sec) / cpuTime);
+    fprintln("TPE:       {:n} ns", cpuTime / iterations);
     NEWLINE;
   }
 }

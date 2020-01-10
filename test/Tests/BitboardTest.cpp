@@ -166,7 +166,7 @@ TEST_F(BitboardsTest, bitScans) {
   int i = 0;
   while (tmp) {
     i++;
-    popLSB(&tmp);
+    popLSB(tmp);
   }
   ASSERT_EQ(8, i);
 }
@@ -1320,7 +1320,7 @@ TEST_F(BitboardsTest, debug) {
 
   Bitboard allSquares = ALL_BB;
   while (allSquares) {
-    const Square sq = popLSB(&allSquares);
+    const Square sq = popLSB(allSquares);
     
     fprintln("Square: {}", squareLabel(sq));
     fprintln("{}", print(passedPawnMask[WHITE][sq]));

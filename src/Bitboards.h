@@ -329,7 +329,7 @@ namespace Bitboards {
 
 /// lsb() and msb() return the least/most significant bit in a non-zero bitboard
   inline Square lsb(Bitboard b) {
-    assert(b);
+    assert(b); // __builtin_ctzll is undefined on 0
 #if defined(__GNUC__)  // GCC, Clang, ICC
     return Square(__builtin_ctzll(b));
 #else  // Compiler is not GCC
@@ -343,7 +343,7 @@ namespace Bitboards {
 
 /// lsb() and msb() return the least/most significant bit in a non-zero bitboard
   inline Square msb(Bitboard b) {
-    assert(b);
+    assert(b); // __builtin_clzll is undefined on 0
 #if defined(__GNUC__)  // GCC, Clang, ICC
     return Square(63 ^ __builtin_clzll(b));
 #else  // Compiler is not GCC
@@ -352,11 +352,16 @@ namespace Bitboards {
   }
 
 /// pop_lsb() finds and clears the least significant bit in a non-zero bitboard
-  inline Square popLSB(Bitboard *b) {
-    assert (*b);
-    const Square s = lsb(*b);
-    *b &= *b - 1;
+  inline Square popLSB(Bitboard &b) {
+    assert (b); // lsb is undefined on 0
+    const Square s = lsb(b);
+    b &= b - 1;
     return s;
+  }
+  inline void popLSB2(Bitboard &b, Square &sq) {
+    assert (b); // lsb is undefined on 0
+    sq = lsb(b);
+    b &= b - 1;
   }
 
 } // namespace Bitboards

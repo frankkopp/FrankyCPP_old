@@ -59,10 +59,12 @@ Value Evaluator::evaluate(const Position &position) {
   }
 
   // evaluate pieces
+  // @formatter:off
   value += evaluatePiece<WHITE, KNIGHT>(position) - evaluatePiece<BLACK, KNIGHT>(position);
   value += evaluatePiece<WHITE, BISHOP>(position) - evaluatePiece<BLACK, BISHOP>(position);
-  value += evaluatePiece<WHITE, ROOK>(position) - evaluatePiece<BLACK, ROOK>(position);
-  value += evaluatePiece<WHITE, QUEEN>(position) - evaluatePiece<BLACK, QUEEN>(position);
+  value += evaluatePiece<WHITE, ROOK  >(position) - evaluatePiece<BLACK, ROOK  >(position);
+  value += evaluatePiece<WHITE, QUEEN >(position) - evaluatePiece<BLACK, QUEEN >(position);
+  // @formatter:on
 
   // evaluate king
   value += evaluateKing<WHITE>(position) - evaluateKing<BLACK>(position);
@@ -89,9 +91,8 @@ int Evaluator::evaluatePawn(const Position &position) {
 
   // LOOP through all pawns of this color and type
   Bitboard pawns = myPawns;
-  //  fprintln("MY PAWNS:\n{}", Bitboards::print(pawns));
   while (pawns) {
-    const Square sq = popLSB(&pawns);
+    const Square sq = popLSB(pawns);
     const Bitboard neighbours = myPawns & neighbourFilesMask[sq];
     // isolated pawns
     isolated |= neighbours ? EMPTY_BB : squareBB[sq];
@@ -152,20 +153,20 @@ int Evaluator::evaluatePiece(const Position &position) {
   // LOOP through all piece of this color and type
   Bitboard pieces = position.getPieceBB(C, PT);
   while (pieces) {
-    const Square fromSquare = Bitboards::popLSB(&pieces);
+    const Square fromSquare = Bitboards::popLSB(pieces);
     // TODO: ADD EVALS
     // MOBILITY
     if (USE_MOBILITY) {
       const Bitboard pseudoMoves = Bitboards::pseudoAttacks[PT][fromSquare];
       if (PT == KNIGHT) {
-        // knights and kings can't be blocked
+        // knights can't be blocked
         Bitboard moves = pseudoMoves & ~myPiecesBB;
         mobility += Bitboards::popcount(moves);
       }
       else { // sliding pieces
         Bitboard pseudoTo = pseudoMoves & ~myPiecesBB;
         while (pseudoTo) {
-          const Square toSquare = Bitboards::popLSB(&pseudoTo);
+          const Square toSquare = Bitboards::popLSB(pseudoTo);
           if (USE_MOBILITY) {
             if (!(Bitboards::intermediateBB[fromSquare][toSquare] & occupiedBB)) {
               mobility += 1;

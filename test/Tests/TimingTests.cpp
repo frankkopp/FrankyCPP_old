@@ -192,7 +192,7 @@ TEST_F(TimingTests, DISABLED_busyWait) {
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
-TEST_F(TimingTests, moveUnion) {
+TEST_F(TimingTests, DISABLED_moveUnion) {
   ostringstream os;
 
   const Square from = SQ_A2;
@@ -298,6 +298,33 @@ TEST_F(TimingTests, DISABLED_bitCount) {
 }
 
 
+TEST_F(TimingTests,  DISABLED_popLSB) {
+ostringstream os;
+
+std::mt19937_64 rg(12345);
+std::uniform_int_distribution<unsigned long long> randomU64;
+
+Square result;
+
+//// TESTS START
+std::function<void()> f1 = [&]() {
+  Bitboard b = randomU64(rg);
+  result = Bitboards::popLSB(b);
+};
+std::function<void()> f2 = [&]() {
+  Bitboard b = randomU64(rg);
+  Bitboards::popLSB2(b, result);
+};
+vector<std::function<void()>> tests;
+tests.push_back(f1);
+tests.push_back(f2);
+//// TESTS END
+
+testTiming(os, 5, 50, 50'000'000, tests);
+
+cout << os.str();
+}
+
 TEST_F(TimingTests,  DISABLED_Skeleton) {
 ostringstream os;
 
@@ -355,17 +382,18 @@ TimingTests::testTiming(ostringstream &os, int rounds, int iterations, int repet
       cpu_times avgTimes = cpu_times{cpuTime.wall / iterations, cpuTime.user / iterations,
                                      cpuTime.system / iterations};
 
-      int percentFromLast = last ? (avgTimes.wall * 10'000) / last : 10'000;
+      const nanosecond_type avgCpu = avgTimes.user + avgTimes.system;
+      int percentFromLast = last ? (avgCpu * 10'000) / last : 10'000;
 
       os << "Round " << std::setfill(' ') << setw(2) << round << " Test " << setw(2) << testNr++
-         << ": " << std::setfill(' ') << setw(12) << avgTimes.wall << " ns"
+         << ": " << std::setfill(' ') << setw(12) << avgCpu << " ns"
          << " (" << std::setfill(' ') << setw(6) << (percentFromLast / 100) << "%)"
-         << " (" << std::setfill(' ') << setw(12) << (avgTimes.wall / 1e9) << " sec)"
+         << " (" << std::setfill(' ') << setw(12) << (avgCpu / 1e9) << " sec)"
          << " (" << std::setfill(' ') << setw(12)
-         << static_cast<double>(avgTimes.wall) / (repetitions * iterations) << " ns avg per test)"
+         << static_cast<double>(avgCpu) / (repetitions * iterations) << " ns avg per test)"
          << " >> " << boost::timer::format(avgTimes, default_places);
 
-      last = avgTimes.wall;
+      last = avgCpu;
     }
     os << endl;
     last = 0;
