@@ -1314,3 +1314,18 @@ TEST_F(BitboardsTest, centerDistance) {
   ASSERT_EQ(3, centerDistance[SQ_H1]);
   ASSERT_EQ(3, centerDistance[SQ_H7]);
 }
+
+TEST_F(BitboardsTest, debug) {
+  string expected, actual;
+
+  Bitboard allSquares = ALL_BB;
+  while (allSquares) {
+    const Square sq = popLSB(&allSquares);
+    
+    fprintln("Square: {}", squareLabel(sq));
+    fprintln("{}", print(passedPawnMask[WHITE][sq]));
+    NEWLINE;
+
+  }
+
+}

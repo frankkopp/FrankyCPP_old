@@ -53,6 +53,7 @@ namespace Bitboards {
   Bitboard filesEastMask[SQ_LENGTH];
   Bitboard fileWestMask[SQ_LENGTH];
   Bitboard fileEastMask[SQ_LENGTH];
+  Bitboard neighbourFilesMask[SQ_LENGTH];
   Bitboard ranksNorthMask[SQ_LENGTH];
   Bitboard ranksSouthMask[SQ_LENGTH];
 
@@ -377,6 +378,7 @@ namespace Bitboards {
       }
       if (f > 0) fileWestMask[square] = fileBB(f - 1);
       if (f < 7) fileEastMask[square] = fileBB(f + 1);
+      neighbourFilesMask[square] = fileEastMask[square] | fileWestMask[square];
     }
 
     // rays
@@ -402,12 +404,12 @@ namespace Bitboards {
       int r = rankOf(square);
       // white pawn - ignore that pawns can'*t be on all squares
       passedPawnMask[WHITE][square] |= rays[N][square];
-      if (f > 0 && r < 7) passedPawnMask[WHITE][square] |= rays[N][square + W];
-      if (f < 7 && r < 7) passedPawnMask[WHITE][square] |= rays[N][square + E];
+      if (f < 7 && r < 7) passedPawnMask[WHITE][square] |= rays[N][square + EAST];
+      if (f > 0 && r < 7) passedPawnMask[WHITE][square] |= rays[N][square + WEST];
       // black pawn - ignore that pawns can'*t be on all squares
       passedPawnMask[BLACK][square] |= rays[S][square];
-      if (f > 0 && r > 0) passedPawnMask[BLACK][square] |= rays[S][square + W];
-      if (f < 7 && r > 0) passedPawnMask[BLACK][square] |= rays[S][square + E];
+      if (f < 7 && r > 0) passedPawnMask[BLACK][square] |= rays[S][square + EAST];
+      if (f > 0 && r > 0) passedPawnMask[BLACK][square] |= rays[S][square + WEST];
     }
 
     // mask for intermediate squares in between two squares

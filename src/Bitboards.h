@@ -49,9 +49,9 @@ namespace Bitboards {
   Bitboard getMovesDiagDown(Square square, Bitboard content);
   Bitboard getMovesDiagDownR(Square square, Bitboard rotated);
 
-  constexpr Bitboard EMPTY_BB = Bitboard(0U);
+  constexpr Bitboard EMPTY_BB = Bitboard(0);
   constexpr Bitboard ALL_BB = ~EMPTY_BB;
-  constexpr Bitboard ONE_BB = Bitboard(1U);
+  constexpr Bitboard ONE_BB = Bitboard(1);
 
   constexpr Bitboard FileABB = 0x0101010101010101ULL;
   constexpr Bitboard FileBBB = FileABB << 1;
@@ -101,6 +101,7 @@ namespace Bitboards {
   extern Bitboard filesEastMask[SQ_LENGTH];
   extern Bitboard fileWestMask[SQ_LENGTH];
   extern Bitboard fileEastMask[SQ_LENGTH];
+  extern Bitboard neighbourFilesMask[SQ_LENGTH];
   extern Bitboard ranksNorthMask[SQ_LENGTH];
   extern Bitboard ranksSouthMask[SQ_LENGTH];
 
