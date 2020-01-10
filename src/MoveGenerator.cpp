@@ -626,7 +626,7 @@ void MoveGenerator::generateCastling(const Position &position, MoveList* const p
 
 // @formatter:off
 
-// explicitly instantiate all template definitions
+// explicitly instantiate all template definitions so other classes can see them
 template const MoveList* MoveGenerator::generatePseudoLegalMoves<MoveGenerator::GENCAP>(const Position &position);
 template const MoveList* MoveGenerator::generatePseudoLegalMoves<MoveGenerator::GENNONCAP>(const Position &position);
 template const MoveList* MoveGenerator::generatePseudoLegalMoves<MoveGenerator::GENALL>(const Position &position);

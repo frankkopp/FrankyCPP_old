@@ -439,8 +439,8 @@ constexpr Square getToSquare(Move m) { return Square(m & MoveShifts::SQUARE_MASK
 
 /** checks if this a valid move */
 constexpr bool isMove(Move m) {
-  Square fromSquare = getFromSquare(m);
-  Square toSquare = getToSquare(m);
+  const Square fromSquare = getFromSquare(m);
+  const Square toSquare = getToSquare(m);
   return fromSquare >= SQ_A1
          && fromSquare <= SQ_H8
          && toSquare >= SQ_A1
@@ -688,6 +688,7 @@ struct deLocaleDecimals : std::numpunct<char> {
 const std::locale deLocale(std::locale("de_DE.UTF-8"), new deLocaleDecimals);
 
 #define println(s) std::cout << (s) << std::endl
-#define fprintln(...) std::cout << fmt::format(deLocale, __VA_ARGS__) << std::endl
+#define fprint(...) std::cout << fmt::format(deLocale, __VA_ARGS__)
+#define fprintln(...) fprint(__VA_ARGS__) << std::endl
 
 #endif //FRANKYCPP_TYPES_H

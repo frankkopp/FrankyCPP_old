@@ -1,11 +1,13 @@
 v 0.x (plan)
 ================================================================================
 - TODO:
+    - TestSuites
     - IID (with TT - needs to be revisited)
     - Simple Opening Book
     - IID check
     - ATACKS / SEE
-    - WIN MSC 
+    - EvalCache
+    - WIN MSC
         // GTEST - nice examples
         // Windows:  _MSC_VER
         // _BitScanForward64/_BitScanReverse64
@@ -20,7 +22,6 @@ v 0.4 (in progress)
 ================================================================================
 - TODO:
     - Extended Evaluation
-    - EvalCache
     - Aspiration Window Search
     - LFP. LFR, ...
     - Debug and harden play with UCI GUI - XBoard, Arena, etc.

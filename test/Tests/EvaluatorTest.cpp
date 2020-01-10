@@ -24,10 +24,14 @@
  */
 
 #include <gtest/gtest.h>
+#include <EvaluatorConfig.h>
+#include <boost/timer/timer.hpp>
+#include "types.h"
 #include "Logging.h"
 #include "Evaluator.h"
 #include "Position.h"
 
+#include <boost/timer/timer.hpp>
 
 using testing::Eq;
 
@@ -41,11 +45,13 @@ public:
     // turn off info and below logging in the application
     spdlog::set_level(spdlog::level::trace);
   }
+
   std::shared_ptr<spdlog::logger> LOG = spdlog::get("Test_Logger");
 protected:
   void SetUp() override {
     LOG->set_level(spdlog::level::info);
   }
+
   void TearDown() override {}
 };
 
@@ -53,6 +59,10 @@ TEST_F(EvaluatorTest, basic) {
 
   Position position;
   Evaluator evaluator;
+
+  // only test basic material and position
+  EvaluatorConfig::USE_MOBILITY = false;
+  EvaluatorConfig::USE_PAWNEVAL = false;
 
   int value = evaluator.evaluate(position);
   ASSERT_EQ(0, value);
@@ -64,6 +74,139 @@ TEST_F(EvaluatorTest, basic) {
   position.doMove(createMove("d7d5"));
   value = evaluator.evaluate(position);
   ASSERT_EQ(0, value);
+
+}
+
+
+TEST_F(EvaluatorTest, total) {
+
+  Position position;
+  Evaluator evaluator;
+
+  EvaluatorConfig::USE_MOBILITY = true;
+  EvaluatorConfig::USE_PAWNEVAL = true;
+
+  // only test basic material and position
+
+  int value = evaluator.evaluate(position);
+  ASSERT_EQ(0, value);
+
+  position.doMove(createMove("e2e4"));
+  value = evaluator.evaluate(position);
+  ASSERT_EQ(-102, value);
+
+  position.doMove(createMove("e7e5"));
+  value = evaluator.evaluate(position);
+  ASSERT_EQ(0, value);
+
+}
+
+
+TEST_F(EvaluatorTest, evaluatePieceMobility) {
+  Position position;
+  Evaluator evaluator;
+  std::string fen;
+  int actual;
+
+  // turn off all other piece evaluations but mobility
+  EvaluatorConfig::USE_MOBILITY = true;
+
+  // start position
+  actual = evaluator.evaluatePiece<WHITE, KNIGHT>(position);
+  ASSERT_EQ(4 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
+  actual = evaluator.evaluatePiece<BLACK, KNIGHT>(position);
+  ASSERT_EQ(4 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
+  actual = evaluator.evaluatePiece<WHITE, BISHOP>(position);
+  ASSERT_EQ(0 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
+  actual = evaluator.evaluatePiece<BLACK, BISHOP>(position);
+  ASSERT_EQ(0 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
+  actual = evaluator.evaluatePiece<WHITE, ROOK>(position);
+  ASSERT_EQ(0 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
+  actual = evaluator.evaluatePiece<BLACK, ROOK>(position);
+  ASSERT_EQ(0 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
+  actual = evaluator.evaluatePiece<WHITE, QUEEN>(position);
+  ASSERT_EQ(0 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
+  actual = evaluator.evaluatePiece<BLACK, QUEEN>(position);
+  ASSERT_EQ(0 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
+  actual = evaluator.evaluatePiece<WHITE, KING>(position);
+  ASSERT_EQ(0 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
+  actual = evaluator.evaluatePiece<BLACK, KING>(position);
+  ASSERT_EQ(0 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
+
+  // total
+  actual = 0;
+  actual += evaluator.evaluatePiece<WHITE, KNIGHT>(position) - evaluator.evaluatePiece<BLACK, KNIGHT>(position);
+  actual += evaluator.evaluatePiece<WHITE, BISHOP>(position) - evaluator.evaluatePiece<BLACK, BISHOP>(position);
+  actual += evaluator.evaluatePiece<WHITE, ROOK>(position) - evaluator.evaluatePiece<BLACK, ROOK>(position);
+  actual += evaluator.evaluatePiece<WHITE, QUEEN>(position) - evaluator.evaluatePiece<BLACK, QUEEN>(position);
+  actual += evaluator.evaluatePiece<WHITE, KING>(position) - evaluator.evaluatePiece<BLACK, KING>(position);
+  ASSERT_EQ(0 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
+
+  // complex pos
+  fen = "r3k2r/1ppn3p/2q1q1nb/4P2N/2q1Pp2/B5R1/pbp2PPP/1R4K1 w kq - 0 1";
+  position = Position(fen);
+  actual = evaluator.evaluatePiece<WHITE, KNIGHT>(position);
+  ASSERT_EQ(3 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
+  actual = evaluator.evaluatePiece<BLACK, KNIGHT>(position);
+  ASSERT_EQ(10 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
+  actual = evaluator.evaluatePiece<WHITE, BISHOP>(position);
+  ASSERT_EQ(6 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
+  actual = evaluator.evaluatePiece<BLACK, BISHOP>(position);
+  ASSERT_EQ(9 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
+  actual = evaluator.evaluatePiece<WHITE, ROOK>(position);
+  ASSERT_EQ(15 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
+  actual = evaluator.evaluatePiece<BLACK, ROOK>(position);
+  ASSERT_EQ(10 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
+  actual = evaluator.evaluatePiece<WHITE, QUEEN>(position);
+  ASSERT_EQ(0 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
+  actual = evaluator.evaluatePiece<BLACK, QUEEN>(position);
+  ASSERT_EQ(31 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
+  actual = evaluator.evaluatePiece<WHITE, KING>(position);
+  ASSERT_EQ(2 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
+  actual = evaluator.evaluatePiece<BLACK, KING>(position);
+  ASSERT_EQ(4 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
+
+  // total
+  actual = 0;
+  actual += evaluator.evaluatePiece<WHITE, KNIGHT>(position) - evaluator.evaluatePiece<BLACK, KNIGHT>(position);
+  actual += evaluator.evaluatePiece<WHITE, BISHOP>(position) - evaluator.evaluatePiece<BLACK, BISHOP>(position);
+  actual += evaluator.evaluatePiece<WHITE, ROOK>(position) - evaluator.evaluatePiece<BLACK, ROOK>(position);
+  actual += evaluator.evaluatePiece<WHITE, QUEEN>(position) - evaluator.evaluatePiece<BLACK, QUEEN>(position);
+  actual += evaluator.evaluatePiece<WHITE, KING>(position) - evaluator.evaluatePiece<BLACK, KING>(position);
+  ASSERT_EQ(-38 * EvaluatorConfig::MOBILITY_WEIGHT, actual);
+}
+
+
+TEST_F(EvaluatorTest, evaluatePawn) {
+  Position position;
+  Evaluator evaluator;
+  std::string fen;
+  int actual;
+
+  EvaluatorConfig::USE_PAWNEVAL = true;
+
+  // start position
+  actual = evaluator.evaluatePawn<WHITE>(position);
+  ASSERT_EQ(-277 * EvaluatorConfig::PAWNEVAL_WEIGHT, actual);
+  actual = evaluator.evaluatePawn<BLACK>(position);
+  ASSERT_EQ(-277 * EvaluatorConfig::PAWNEVAL_WEIGHT, actual);
+
+  // total
+  actual = 0;
+  actual += evaluator.evaluatePawn<WHITE>(position) - evaluator.evaluatePawn<BLACK>(position);
+  ASSERT_EQ(0, actual);
+
+  // complex pos
+  fen = "r3k2r/1ppn3p/2q1q1nb/4P2N/2q1Pp2/B5RP/pbp2PP1/1R4K1 w kq - 0 1";
+  position = Position(fen);
+  actual = evaluator.evaluatePawn<WHITE>(position);
+  ASSERT_EQ(-376 * EvaluatorConfig::PAWNEVAL_WEIGHT, actual);
+  actual = evaluator.evaluatePawn<BLACK>(position);
+  ASSERT_EQ(-895 * EvaluatorConfig::PAWNEVAL_WEIGHT, actual);
+
+  // total
+  actual = 0;
+  ASSERT_EQ(0 * EvaluatorConfig::PAWNEVAL_WEIGHT, actual);
 
 }
 
@@ -79,7 +222,7 @@ TEST_F(EvaluatorTest, debugging) {
   position = Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/1b3PPP/R1q3K1 w kq - 0 3");
   value = evaluator.evaluate(position);
   fmt::print("Value {}\n", value);
-  
+
   position = Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3 0 1");
   position.doMove(createMove<PROMOTION>("a2a1q"));
   position.doMove(createMove("b1a1"));
@@ -94,4 +237,29 @@ TEST_F(EvaluatorTest, debugging) {
   value = evaluator.evaluate(position);
   fmt::print("Value {}\n", value);
 
+}
+
+TEST_F(EvaluatorTest, PERFT_eps) {
+  using namespace boost::timer;
+  std::string fen;
+  Evaluator e;
+  Position position;
+  const int nano_sec = 1'000'000'000;
+
+  fen = "r3k2r/1ppn3p/2q1q1nb/4P2N/2q1Pp2/B5RP/pbp2PP1/1R4K1 w kq - 0 1";
+  position = Position(fen);
+  const uint64_t iterations = 1'000'000;
+  const uint64_t rounds = 10;
+
+  for (uint64_t round = 0; round < rounds; ++round) {
+    auto timer = cpu_timer();
+    for (uint64_t i = 0; i < iterations; ++i) {
+      e.evaluate(position);
+    }
+    timer.stop();
+    fprint("Time: {}", timer.format());
+    fprintln("EPS: {:n}", (iterations * nano_sec) / timer.elapsed().wall);
+    fprintln("TPE: {:n} ns", timer.elapsed().wall / iterations);
+    NEWLINE;
+  }
 }

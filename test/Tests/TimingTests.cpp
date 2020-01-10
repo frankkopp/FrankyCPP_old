@@ -298,6 +298,27 @@ TEST_F(TimingTests, DISABLED_bitCount) {
 }
 
 
+TEST_F(TimingTests,  DISABLED_Skeleton) {
+ostringstream os;
+
+std::mt19937_64 rg(12345);
+std::uniform_int_distribution<unsigned long long> randomU64;
+
+//// TESTS START
+std::function<void()> f1 = [&]() {
+};
+std::function<void()> f2 = [&]() {
+};
+vector<std::function<void()>> tests;
+tests.push_back(f1);
+tests.push_back(f2);
+//// TESTS END
+
+testTiming(os, 5, 50, 10'000'000, tests);
+
+cout << os.str();
+}
+
 void
 TimingTests::testTiming(ostringstream &os, int rounds, int iterations, int repetitions,
                         vector<function<void()>> tests) {

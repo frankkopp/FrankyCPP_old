@@ -379,8 +379,13 @@ public:
   int getPosValue(const Color c) const {
     return getGamePhaseFactor() * psqMidValue[c] + (1 - getGamePhaseFactor()) * psqEndValue[c];
   }
+
+  /** 24 for beginning, 0 at the end */
   int getGamePhase() const { return std::min(GAME_PHASE_MAX, gamePhase); }
+
+  /** 1.0 for beginning to 0.0 t the end) */
   float getGamePhaseFactor() const { return float(getGamePhase()) / GAME_PHASE_MAX; }
+  
   CastlingRights getCastlingRights() const { return castlingRights; }
   int getHalfMoveClock() const { return halfMoveClock; }
   int getNextHalfMoveNumber() const { return nextHalfMoveNumber; }

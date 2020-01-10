@@ -26,6 +26,7 @@
 #ifndef FRANKYCPP_EVALUATOR_H
 #define FRANKYCPP_EVALUATOR_H
 
+#include "gtest/gtest_prod.h"
 #include "Logging.h"
 #include "types.h"
 
@@ -36,12 +37,30 @@ class Evaluator {
 
   std::shared_ptr<spdlog::logger> LOG = spdlog::get("Eval_Logger");
 
+  struct Score {
+    int16_t midGameScore = 0;
+    int16_t endGameScore = 0;
+  };
+
 public:
   Evaluator();
 
   Value evaluate(const Position &position);
 
+private:
+
+  template <Color C>
+  int evaluatePawn(const Position &position);
+
+  template <Color C, PieceType PT>
+  int evaluatePiece(const Position &position);
+
+  FRIEND_TEST(EvaluatorTest, evaluatePieceMobility);
+  FRIEND_TEST(EvaluatorTest, evaluatePawn);
+
 };
+
+
 
 
 #endif //FRANKYCPP_EVALUATOR_H

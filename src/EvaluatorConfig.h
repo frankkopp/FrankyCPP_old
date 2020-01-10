@@ -31,8 +31,27 @@ namespace EvaluatorConfig {
   inline bool USE_MATERIAL = true;
   inline int MATERIAL_WEIGHT = 1;
 
-  inline int POSITION_WEIGHT = 1;
   inline bool USE_POSITION = true;
+  inline int POSITION_WEIGHT = 1;
+
+  inline bool USE_MOBILITY = true;
+  inline int MOBILITY_WEIGHT = 2;
+
+  inline bool USE_PAWNEVAL = true;
+  inline int PAWNEVAL_WEIGHT = 1;
+  inline int ISOLATED_PAWN_MID_WEIGHT = -5;
+  inline int ISOLATED_PAWN_END_WEIGHT = -15;
+  inline int DOUBLED_PAWN_MID_WEIGHT = -5;
+  inline int DOUBLED_PAWN_END_WEIGHT = -15;
+  inline int PASSED_PAWN_MID_WEIGHT = 10;
+  inline int PASSED_PAWN_END_WEIGHT = 20;
+  inline int BLOCKED_PAWN_MID_WEIGHT = -1;
+  inline int BLOCKED_PAWN_END_WEIGHT = -10;
+  inline int PHALANX_PAWN_MID_WEIGHT = 10;
+  inline int PHALANX_PAWN_END_WEIGHT = 5;
+  inline int SUPPORTED_PAWN_MID_WEIGHT = 5;
+  inline int SUPPORTED_PAWN_END_WEIGHT = 5;
+
 };
 
 #endif //FRANKYCPP_EVALUATORCONFIG_H
