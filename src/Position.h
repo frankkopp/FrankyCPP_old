@@ -184,6 +184,18 @@ public:
   Position &operator=(const Position &other) = default;
 
   /**
+    * Move constructor - creates a copy of the given Position
+    * @param op
+    */
+  Position(Position &&other) = default;
+
+  /**
+   * Move assignment operator
+   * @param other
+   */
+  Position &operator=(Position &&other) = default;
+  
+  /**
    * Destructor
    */
   ~Position() = default;

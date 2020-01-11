@@ -196,15 +196,15 @@ void Evaluator::evaluatePawns(const Position &position, Entry* const entry) {
       // isolated pawns
       isolated |= neighbours ? EMPTY_BB : squareBB[sq];
       // doubled pawns - any other of my pawns on same file
-      doubled |= ~squareBB[sq] & myPawns & fileBB(sq);
+      doubled |= ~squareBB[sq] & myPawns & sqToFileBB[sq];
       // passed pawns - no opponent pawns in the area before me and no own pawn before me
-      passed |= ((myPawns & fileBB(sq)) | oppPawns) & passedPawnMask[color][sq] ? EMPTY_BB : squareBB[sq];
+      passed |= ((myPawns & sqToFileBB[sq]) | oppPawns) & passedPawnMask[color][sq] ? EMPTY_BB : squareBB[sq];
       // blocked pawns
-      blocked |= ((myPawns & fileBB(sq)) | oppPawns) & rays[color == WHITE ? N : S][sq] ? squareBB[sq] : EMPTY_BB;
+      blocked |= ((myPawns & sqToFileBB[sq]) | oppPawns) & rays[color == WHITE ? N : S][sq] ? squareBB[sq] : EMPTY_BB;
       // pawns as neighbours in a row = phalanx
-      phalanx |= myPawns & neighbours & rankBB(sq);
+      phalanx |= myPawns & neighbours & sqToRankBB[sq];
       // pawn as neighbours in the row forward = supported pawns
-      supported |= myPawns & neighbours & rankBB(sq + (color == WHITE ? NORTH : SOUTH));
+      supported |= myPawns & neighbours &  sqToRankBB[sq + (color == WHITE ? NORTH : SOUTH)];
     }
 
     /*

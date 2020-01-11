@@ -97,6 +97,8 @@ namespace Bitboards {
   extern Bitboard pawnMoves[COLOR_LENGTH][SQ_LENGTH];
   extern Bitboard pseudoAttacks[PT_LENGTH][SQ_LENGTH];
 
+  extern Bitboard sqToFileBB[SQ_LENGTH];
+  extern Bitboard sqToRankBB[SQ_LENGTH];
   extern Bitboard filesWestMask[SQ_LENGTH];
   extern Bitboard filesEastMask[SQ_LENGTH];
   extern Bitboard fileWestMask[SQ_LENGTH];
@@ -288,8 +290,7 @@ namespace Bitboards {
   constexpr Bitboard DiagDownA1 = (DiagDownB1 >> 1) & ~FileHBB;
 // @formatter:on
 
-  //// Get bitboards for ranks or files
-
+  // Get bitboards for ranks or files
   inline Bitboard rankBB(int r) {
     return Rank1BB << (8 * r);
   }
@@ -298,6 +299,7 @@ namespace Bitboards {
     return Rank1BB << (8 * r);
   }
 
+  // use pre-computed sqToRankBB[] array instead
   inline Bitboard rankBB(Square s) {
     return rankBB(rankOf(s));
   }
@@ -310,6 +312,7 @@ namespace Bitboards {
     return FileABB << f;
   }
 
+  // use pre-computed sqToFileBB[] array instead
   inline Bitboard fileBB(Square s) {
     return fileBB(fileOf(s));
   }

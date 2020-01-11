@@ -49,6 +49,8 @@ namespace Bitboards {
   Square indexMapR45[SQ_LENGTH];
   Square indexMapL45[SQ_LENGTH];
 
+  Bitboard sqToFileBB[SQ_LENGTH];
+  Bitboard sqToRankBB[SQ_LENGTH];
   Bitboard filesWestMask[SQ_LENGTH];
   Bitboard filesEastMask[SQ_LENGTH];
   Bitboard fileWestMask[SQ_LENGTH];
@@ -88,6 +90,10 @@ namespace Bitboards {
 
       // square bitboard
       squareBB[sq] = ONE_BB << sq;
+
+      // file and rank bitboards
+      sqToFileBB[sq] = fileBB(sq);
+      sqToRankBB[sq] = rankBB(sq);
 
       // square diagonals
       if (DiagUpA8 & sq) { squareDiagUpBB[sq] = DiagUpA8; }
