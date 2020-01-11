@@ -57,16 +57,10 @@
 class TT {
 public:
 
+  static constexpr int CacheLineSize = 64;
   static constexpr uint64_t KB = 1024;
   static constexpr uint64_t MB = KB * KB;
   static constexpr uint64_t DEFAULT_TT_SIZE = 2 * MB; // byte
-
-  enum Result {
-    // TT probe has not found an entry or the value does not lead to a cut off.
-      TT_NOCUT,
-    // TT probe has found an entry and the value leads to a cut off
-      TT_CUT
-  };
 
   struct Entry {
     // sorted by size to achieve smallest struct size
@@ -83,6 +77,8 @@ public:
 
   // struct Entry has 16 Byte
   static constexpr uint64_t ENTRY_SIZE = sizeof(Entry);
+
+  static_assert(CacheLineSize % ENTRY_SIZE == 0, "Cluster size incorrect");
 
 private:
 
@@ -112,13 +108,18 @@ private:
 public:
 
   // TT default size is 2 MB
-  TT() : TT(DEFAULT_TT_SIZE) {};
+  TT() : TT(DEFAULT_TT_SIZE) {}
 
   /** @param sizeInByte Size of TT in bytes which will be reduced to the next
    * lowest power of 2 size */
-  TT(uint64_t sizeInByte);
+  explicit TT(uint64_t sizeInByte) {
+    resize(sizeInByte);
+  }
 
-  ~TT();
+  ~TT() {
+    LOG__TRACE(LOG, "Dtor: Delete previous memory allocation");
+    delete[] _data;
+  };
 
   // disallow copies
   TT(TT const &tt) = delete; // copy
@@ -131,7 +132,7 @@ public:
    * @param newSizeInByte in Byte which will be reduced to the next
    * lowest power of 2 size
    */
-  void resize(const uint64_t newSizeInByte);
+  void resize(uint64_t newSizeInByte);
 
   /** Clears the transposition table be resetting all entries to 0. */
   void clear();
@@ -150,8 +151,7 @@ public:
     * @param mateThreat node had a mate threat in the ply
     */
   void
-  put(const Key key, const Depth depth, const Move move, const Value value, const Value_Type type, const bool mateThreat,
-      const bool forced);
+  put(Key key, Depth depth, Move move, Value value, Value_Type type, bool mateThreat, bool forced);
 
   /**
     * Stores the node value and the depth it has been calculated at.
@@ -184,7 +184,10 @@ public:
    * @param key Position key (usually Zobrist key)
    * @return Entry for key or 0 if not found
    */
-  const Entry* getMatch(const Key key) const;
+  inline const TT::Entry* getMatch(const Key key) const {
+    const Entry* const entryPtr = getEntryPtr(key);
+    return entryPtr->key == key ? entryPtr : nullptr;
+  }
 
   /**
    * Looks up and returns a result using get(Key key).
@@ -230,14 +233,19 @@ public:
 private:
 
   static void
-  writeEntry(Entry* const entryPtr, const Key key, const Depth depth, const Move move, const Value value,
-             const Value_Type type, bool mateThreat, uint8_t age);
+  writeEntry(Entry* entryPtr, Key key, Depth depth, Move move,
+             Value value, Value_Type type, bool mateThreat, uint8_t age);
 
-  /* This retrieves a direct pointer to the entry of this node from cache */
-  Entry* getEntryPtr(const Key key) const;
 
   /* generates the index hash key from the position key  */
-  std::size_t getHash(const Key key) const;
+  inline std::size_t getHash(const Key key) const {
+    return key & hashKeyMask;
+  }
+
+  /* This retrieves a direct pointer to the entry of this node from cache */
+  inline TT::Entry* getEntryPtr(const Key key) const {
+    return &_data[getHash(key)];
+  }
 
   /** GETTER and SETTER */
 public:

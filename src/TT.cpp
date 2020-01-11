@@ -26,15 +26,6 @@
 #include "Logging.h"
 #include "TT.h"
 
-TT::TT(uint64_t sizeInByte) {
-  resize(sizeInByte);
-}
-
-TT::~TT() {
-  LOG__TRACE(LOG, "Dtor: Delete previous memory allocation");
-  delete[] _data;
-}
-
 void TT::resize(const uint64_t newSizeInByte) {
   LOG__TRACE(LOG, "Resizing TT from {:n} to {:n}", sizeInByte, newSizeInByte);
   delete[] _data;
@@ -80,21 +71,7 @@ void TT::clear() {
   for (std::thread &th: threads) th.join();
   auto finish = std::chrono::high_resolution_clock::now();
   auto time = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start).count();
-  LOG__INFO(LOG, "TT cleared {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time,
-            noOfThreads);
-}
-
-inline std::size_t TT::getHash(const Key key) const {
-  return key & hashKeyMask;
-}
-
-inline TT::Entry* TT::getEntryPtr(const Key key) const {
-  return &_data[getHash(key)];
-}
-
-const TT::Entry* TT::getMatch(const Key key) const {
-  const Entry* const entryPtr = getEntryPtr(key);
-  return entryPtr->key == key ? entryPtr : nullptr;
+  LOG__INFO(LOG, "TT cleared {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
 }
 
 void TT::put(const Key key, const Depth depth, const Move move, const Value value,

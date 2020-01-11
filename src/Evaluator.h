@@ -100,8 +100,6 @@ public:
   Value evaluate(const Position &position);
 
   std::string pawnTableStats() {
-    assert (cacheEntries == static_cast<std::size_t>(std::count_if(pawnTable.begin(), pawnTable.end(), [&](
-      Entry e) { return e.pawnBitboard != 0; })));
     return fmt::format("Cache stats: capacity {:n} entries {:n} hits {:n} misses {:n} replace {:n}",
                        pawnTable.capacity(),
                        cacheEntries, cacheHits, cacheMisses, cacheReplace);

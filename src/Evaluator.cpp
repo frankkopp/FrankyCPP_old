@@ -39,7 +39,7 @@ Evaluator::Evaluator(std::size_t pawnEvalCacheSize) {
 
 void Evaluator::resizePawnTable(std::size_t size) {
   if (config.USE_PAWN_TABLE) {
-    pawnTable = Table(size);
+    pawnTable.resize(size);
     LOG__INFO(LOG, "Evaluator pawn table of size {:.2F} MB created with {:n} entries",
               static_cast<double>(sizeof(Entry) * config.PAWN_TABLE_SIZE) / (1024 * 1024), config.PAWN_TABLE_SIZE);
   }
@@ -160,14 +160,14 @@ int Evaluator::pawnEval(const Position &position) {
 
   // we have found a matching entry - add the respective mid and end values
   // for the current game phase
-  value += entryPtr->midvalue * gamePhaseFactor + entryPtr->endvalue * revGamePhaseFactor;
+  value += static_cast<int>(entryPtr->midvalue * gamePhaseFactor + entryPtr->endvalue * revGamePhaseFactor);
   LOG__TRACE(LOG, "Game phase adjusted pawn eval results in {} (midvalue={}, endvalue={}, weight={})",
              value * config.PAWNEVAL_WEIGHT,
              entryPtr->midvalue * gamePhaseFactor,
              entryPtr->endvalue * revGamePhaseFactor,
              config.PAWNEVAL_WEIGHT);
 
-  return value * config.PAWNEVAL_WEIGHT;;
+  return value * config.PAWNEVAL_WEIGHT;
 }
 
 void Evaluator::evaluatePawns(const Position &position, Entry* const entry) {
