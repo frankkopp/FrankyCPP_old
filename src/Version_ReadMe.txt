@@ -18,13 +18,20 @@ v 0.x (plan)
         if there is a king capture in one of the succeeding nodes we jump back
         and dismiss this move.
 
+v 0.5 (plan)
+================================================================================
+- TODO:
+    - Aspiration Window Search
+    - LFP. LFR, ...
+
 v 0.4 (in progress)
 ================================================================================
 - TODO:
-    - Extended Evaluation
-    - Aspiration Window Search
-    - LFP. LFR, ...
     - Debug and harden play with UCI GUI - XBoard, Arena, etc.
+
+- DONE:
+    - Extended Evaluation
+    - Eval pawn cache
 
 v 0.3 (done)
 ================================================================================
