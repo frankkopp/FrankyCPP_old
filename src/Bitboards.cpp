@@ -373,8 +373,8 @@ namespace Bitboards {
       int r = rankOf(square);
       for (int j = 0; j <= 7; j++) {
         // file masks
-        if (j < f) filesEastMask[square] |= fileBB(j);
-        if (7 - j > f) filesWestMask[square] |= fileBB(7 - j);
+        if (j < f) filesWestMask[square] |= fileBB(j);
+        if (7 - j > f) filesEastMask[square] |= fileBB(7 - j);
         // rank masks
         if (7 - j > r) ranksNorthMask[square] |= rankBB(7 - j);
         if (j < r) ranksSouthMask[square] |= rankBB(j);
