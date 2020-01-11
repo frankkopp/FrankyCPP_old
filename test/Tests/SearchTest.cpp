@@ -453,8 +453,8 @@ TEST_F(SearchTest, nps) {
   SearchLimits searchLimits;
   Position position;
 
-  search.setHashSize(1'024);
-  searchLimits.setMoveTime(30'000);
+  search.setHashSize(4'096);
+  searchLimits.setMoveTime(600'000);
 
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();

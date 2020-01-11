@@ -339,7 +339,7 @@ public:
   *
   * @return int representing a move
   */
-  Move getLastMove() const {
+  inline Move getLastMove() const {
     return historyCounter > 0 ? moveHistory[historyCounter - 1] : MOVE_NONE;
   };
 
@@ -354,42 +354,42 @@ public:
 
   ////////////////////////////////////////////////
   ///// GETTER / SETTER
-  Piece getPiece(const Square square) const { return board[square]; }
-  Key getZobristKey() const { return zobristKey; }
-  Color getNextPlayer() const { return nextPlayer; }
-  Square getEnPassantSquare() const { return enPassantSquare; }
-  Square getKingSquare(const Color color) const { return kingSquare[color]; };
+  inline Piece getPiece(const Square square) const { return board[square]; }
+  inline Key getZobristKey() const { return zobristKey; }
+  inline Color getNextPlayer() const { return nextPlayer; }
+  inline Square getEnPassantSquare() const { return enPassantSquare; }
+  inline Square getKingSquare(const Color color) const { return kingSquare[color]; };
 
-  Bitboard getPieceBB(const Color c, const PieceType pt) const { return piecesBB[c][pt]; }
-  Bitboard getOccupiedBB() const { return occupiedBB[WHITE] | occupiedBB[BLACK]; }
-  Bitboard getOccupiedBB(const Color c) const { return occupiedBB[c]; }
-  Bitboard getOccupiedBBR90() const { return occupiedBBR90[WHITE] | occupiedBBR90[BLACK]; }
-  Bitboard getOccupiedBBR90(const Color c) const { return occupiedBBR90[c]; }
-  Bitboard getOccupiedBBL90() const { return occupiedBBL90[WHITE] | occupiedBBL90[BLACK]; }
-  Bitboard getOccupiedBBL90(const Color c) const { return occupiedBBL90[c]; }
-  Bitboard getOccupiedBBR45() const { return occupiedBBR45[WHITE] | occupiedBBR45[BLACK]; }
-  Bitboard getOccupiedBBR45(const Color c) const { return occupiedBBR45[c]; }
-  Bitboard getOccupiedBBL45() const { return occupiedBBL45[WHITE] | occupiedBBL45[BLACK]; }
-  Bitboard getOccupiedBBL45(const Color c) const { return occupiedBBL45[c]; }
+  inline Bitboard getPieceBB(const Color c, const PieceType pt) const { return piecesBB[c][pt]; }
+  inline Bitboard getOccupiedBB() const { return occupiedBB[WHITE] | occupiedBB[BLACK]; }
+  inline Bitboard getOccupiedBB(const Color c) const { return occupiedBB[c]; }
+  inline Bitboard getOccupiedBBR90() const { return occupiedBBR90[WHITE] | occupiedBBR90[BLACK]; }
+  inline Bitboard getOccupiedBBR90(const Color c) const { return occupiedBBR90[c]; }
+  inline Bitboard getOccupiedBBL90() const { return occupiedBBL90[WHITE] | occupiedBBL90[BLACK]; }
+  inline Bitboard getOccupiedBBL90(const Color c) const { return occupiedBBL90[c]; }
+  inline Bitboard getOccupiedBBR45() const { return occupiedBBR45[WHITE] | occupiedBBR45[BLACK]; }
+  inline Bitboard getOccupiedBBR45(const Color c) const { return occupiedBBR45[c]; }
+  inline Bitboard getOccupiedBBL45() const { return occupiedBBL45[WHITE] | occupiedBBL45[BLACK]; }
+  inline Bitboard getOccupiedBBL45(const Color c) const { return occupiedBBL45[c]; }
 
-  int getMaterial(const Color c) const { return material[c]; }
-  int getMaterialNonPawn(const Color c) const { return materialNonPawn[c]; }
-  int getMidPosValue(const Color c) const { return psqMidValue[c]; }
-  int getEndPosValue(const Color c) const { return psqEndValue[c]; }
-  int getPosValue(const Color c) const {
+  inline int getMaterial(const Color c) const { return material[c]; }
+  inline int getMaterialNonPawn(const Color c) const { return materialNonPawn[c]; }
+  inline int getMidPosValue(const Color c) const { return psqMidValue[c]; }
+  inline int getEndPosValue(const Color c) const { return psqEndValue[c]; }
+  inline int getPosValue(const Color c) const {
     return getGamePhaseFactor() * psqMidValue[c] + (1 - getGamePhaseFactor()) * psqEndValue[c];
   }
 
   /** 24 for beginning, 0 at the end */
-  int getGamePhase() const { return std::min(GAME_PHASE_MAX, gamePhase); }
+  inline int getGamePhase() const { return std::min(GAME_PHASE_MAX, gamePhase); }
 
   /** 1.0 for beginning to 0.0 t the end) */
-  double getGamePhaseFactor() const { return float(getGamePhase()) / GAME_PHASE_MAX; }
-  
-  CastlingRights getCastlingRights() const { return castlingRights; }
-  int getHalfMoveClock() const { return halfMoveClock; }
-  int getNextHalfMoveNumber() const { return nextHalfMoveNumber; }
-  Piece getLastCapturedPiece() const {
+  inline double getGamePhaseFactor() const { return float(getGamePhase()) / GAME_PHASE_MAX; }
+
+  inline CastlingRights getCastlingRights() const { return castlingRights; }
+  inline int getHalfMoveClock() const { return halfMoveClock; }
+  inline int getNextHalfMoveNumber() const { return nextHalfMoveNumber; }
+  inline Piece getLastCapturedPiece() const {
     return historyCounter > 0
            ? capturedPieceHistory[historyCounter - 1] : PIECE_NONE;
   };

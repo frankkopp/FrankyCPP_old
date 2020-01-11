@@ -757,7 +757,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
     }
     // ###############################################
 
-    // ************************************
+    // ###############################################
     // Execute move
     position.doMove(move);
     TT_PREFETCH
@@ -813,7 +813,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
       currentVariation.pop_back();
     } // if (position.isLegalPosition())
     position.undoMove();
-    // ************************************
+    //  ###############################################
 
     if (stopConditions(false)) {
       return VALUE_NONE;
