@@ -1037,7 +1037,7 @@ TEST_F(BitboardsTest, masks) {
              "+---+---+---+---+---+---+---+---+\n"
              "| X | X | X | X |   |   |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n";
-  actual = print(filesWestMask[SQ_E4]);
+  actual = print(filesEastMask[SQ_E4]);
 //  cout << actual;
   ASSERT_EQ(expected, actual);
 
@@ -1058,7 +1058,7 @@ TEST_F(BitboardsTest, masks) {
              "+---+---+---+---+---+---+---+---+\n"
              "|   |   |   |   |   | X | X | X |\n"
              "+---+---+---+---+---+---+---+---+\n";
-  actual = print(filesEastMask[SQ_E4]);
+  actual = print(filesWestMask[SQ_E4]);
 //  cout << actual;
   ASSERT_EQ(expected, actual);
 

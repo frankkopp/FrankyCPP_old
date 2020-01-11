@@ -109,6 +109,9 @@ namespace Bitboards {
 
   extern Bitboard passedPawnMask[COLOR_LENGTH][SQ_LENGTH];
 
+  extern Bitboard kingSideCastleMask[COLOR_LENGTH];
+  extern Bitboard queenSideCastleMask[COLOR_LENGTH];
+
   extern Bitboard whiteSquaresBB;
   extern Bitboard blackSquaresBB;
 
@@ -366,29 +369,37 @@ namespace Bitboards {
 
 } // namespace Bitboards
 
-//// Operators for testing of Bitboards and Squares
+//// Operators for Squares as Bitboards
+inline Bitboard operator&(const Square lhs, const Square rhs) {
+  return Bitboards::squareBB[lhs] & Bitboards::squareBB[rhs];
+}
 
-inline Bitboard operator&(Bitboard b, Square s) {
+inline Bitboard operator|(const Square lhs, const Square rhs) {
+  return Bitboards::squareBB[lhs] | Bitboards::squareBB[rhs];
+}
+
+//// Operators for testing of Bitboards and Squares
+inline Bitboard operator&(const Bitboard b, const Square s) {
   assert(s >= SQ_A1 && s <= SQ_H8);
   return b & Bitboards::squareBB[s];
 }
 
-inline Bitboard operator|(Bitboard b, Square s) {
+inline Bitboard operator|(const Bitboard b, const Square s) {
   assert(s >= SQ_A1 && s <= SQ_H8);
   return b | Bitboards::squareBB[s];
 }
 
-inline Bitboard operator^(Bitboard b, Square s) {
+inline Bitboard operator^(const Bitboard b, const Square s) {
   assert(s >= SQ_A1 && s <= SQ_H8);
   return b ^ Bitboards::squareBB[s];
 }
 
-inline Bitboard &operator|=(Bitboard &b, Square s) {
+inline Bitboard &operator|=(Bitboard &b, const Square s) {
   assert(s >= SQ_A1 && s <= SQ_H8);
   return b |= Bitboards::squareBB[s];
 }
 
-inline Bitboard &operator^=(Bitboard &b, Square s) {
+inline Bitboard &operator^=(Bitboard &b, const Square s) {
   assert(s >= SQ_A1 && s <= SQ_H8);
   return b ^= Bitboards::squareBB[s];
 }

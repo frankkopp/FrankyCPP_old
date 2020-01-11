@@ -61,6 +61,9 @@ namespace Bitboards {
 
   Bitboard passedPawnMask[COLOR_LENGTH][SQ_LENGTH];
 
+  Bitboard kingSideCastleMask[COLOR_LENGTH];
+  Bitboard queenSideCastleMask[COLOR_LENGTH];
+
   Bitboard whiteSquaresBB;
   Bitboard blackSquaresBB;
 
@@ -370,8 +373,8 @@ namespace Bitboards {
       int r = rankOf(square);
       for (int j = 0; j <= 7; j++) {
         // file masks
-        if (j < f) filesWestMask[square] |= fileBB(j);
-        if (7 - j > f) filesEastMask[square] |= fileBB(7 - j);
+        if (j < f) filesEastMask[square] |= fileBB(j);
+        if (7 - j > f) filesWestMask[square] |= fileBB(7 - j);
         // rank masks
         if (7 - j > r) ranksNorthMask[square] |= rankBB(7 - j);
         if (j < r) ranksSouthMask[square] |= rankBB(j);
@@ -387,6 +390,7 @@ namespace Bitboards {
       rays[E][square] = pseudoAttacks[ROOK][square] & filesEastMask[square];
       rays[S][square] = pseudoAttacks[ROOK][square] & ranksSouthMask[square];
       rays[W][square] = pseudoAttacks[ROOK][square] & filesWestMask[square];
+
       rays[NW][square] =
         pseudoAttacks[BISHOP][square] & filesWestMask[square] & ranksNorthMask[square];
       rays[NE][square] =
@@ -423,6 +427,11 @@ namespace Bitboards {
         }
       }
     }
+
+    kingSideCastleMask[WHITE] = squareBB[SQ_F1] | squareBB[SQ_G1] | squareBB[SQ_H1];
+    kingSideCastleMask[BLACK] = squareBB[SQ_F8] | squareBB[SQ_G8] | squareBB[SQ_H8];
+    queenSideCastleMask[WHITE] = squareBB[SQ_D1] | squareBB[SQ_C1] | squareBB[SQ_B1] | squareBB[SQ_A1];
+    queenSideCastleMask[BLACK] = squareBB[SQ_D8] | squareBB[SQ_C8] | squareBB[SQ_B8] | squareBB[SQ_A8];
 
     // masks for each square color (good for bishops vs bishops or pawns)
     Bitboard tmpW = EMPTY_BB;
