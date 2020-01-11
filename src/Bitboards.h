@@ -314,7 +314,7 @@ namespace Bitboards {
     return fileBB(fileOf(s));
   }
 
-  /// popcount() counts the number of non-zero bits in a bitboard
+  /** popcount() counts the number of non-zero bits in a bitboard */
   inline int popcount(Bitboard b) {
 #if defined(__GNUC__)  // GCC, Clang, ICC
     return __builtin_popcountll(b);
@@ -330,7 +330,18 @@ namespace Bitboards {
 #endif
   }
 
-/// lsb() and msb() return the least/most significant bit in a non-zero bitboard
+  /**
+   * Used when no build in popcount is available for compiler.
+   * @return popcount16() counts the non-zero bits using SWAR-Popcount algorithm
+   */
+  inline unsigned popcount16(unsigned u) {
+    u -= (u >> 1U) & 0x5555U;
+    u = ((u >> 2U) & 0x3333U) + (u & 0x3333U);
+    u = ((u >> 4U) + u) & 0x0F0FU;
+    return (u * 0x0101U) >> 8U;
+  }
+
+  /** lsb() and msb() return the least/most significant bit in a non-zero bitboard */
   inline Square lsb(Bitboard b) {
     assert(b); // __builtin_ctzll is undefined on 0
 #if defined(__GNUC__)  // GCC, Clang, ICC
@@ -344,7 +355,7 @@ namespace Bitboards {
 #endif
   }
 
-/// lsb() and msb() return the least/most significant bit in a non-zero bitboard
+  /** lsb() and msb() return the least/most significant bit in a non-zero bitboard */
   inline Square msb(Bitboard b) {
     assert(b); // __builtin_clzll is undefined on 0
 #if defined(__GNUC__)  // GCC, Clang, ICC
@@ -354,7 +365,7 @@ namespace Bitboards {
 #endif
   }
 
-/// pop_lsb() finds and clears the least significant bit in a non-zero bitboard
+  /** pop_lsb() finds and clears the least significant bit in a non-zero bitboard */
   inline Square popLSB(Bitboard &b) {
     assert (b); // lsb is undefined on 0
     const Square s = lsb(b);
@@ -365,6 +376,201 @@ namespace Bitboards {
     assert (b); // lsb is undefined on 0
     sq = lsb(b);
     b &= b - 1;
+  }
+
+  /**
+  * Shifts a bitboard in the given direction.
+  * @param d Direction
+  * @param b Bitboard
+  * @return shifted bitboard
+  */
+  inline Bitboard shift(Direction d, Bitboard b) {
+    // move the bits and clear the left our right file
+    // after the shift to erase bit jumping over
+    switch (d) {
+      case NORTH:
+        return (b << 8);
+      case EAST:
+        return (b << 1) & ~FileABB;
+      case SOUTH:
+        return (b >> 8);
+      case WEST:
+        return (b >> 1) & ~FileHBB;
+      case NORTH_EAST:
+        return (b << 9) & ~FileABB;
+      case SOUTH_EAST:
+        return (b >> 7) & ~FileABB;
+      case SOUTH_WEST:
+        return (b >> 9) & ~FileHBB;
+      case NORTH_WEST:
+        return (b << 7) & ~FileHBB;
+    }
+  }
+
+  /**
+   * Rotates a Bitboard
+   * @param b
+   * @return rotated bitboard
+   */
+  inline Bitboard rotateR90(Bitboard b) {
+    return rotate(b, rotateMapR90);
+  }
+
+  /**
+   * Rotates a Bitboard
+   * @param b
+   * @return rotated bitboard
+   */
+  inline Bitboard rotateL90(Bitboard b) {
+    return rotate(b, rotateMapL90);
+  }
+
+  /**
+   * Rotates a Bitboard
+   * @param b
+   * @return rotated bitboard
+   */
+  inline Bitboard rotateR45(Bitboard b) {
+    return rotate(b, rotateMapR45);
+  }
+
+  /**
+   * Rotates a Bitboard
+   * @param b
+   * @return rotated bitboard
+   */
+  inline Bitboard rotateL45(Bitboard b) {
+    return rotate(b, rotateMapL45);
+  }
+
+  /**
+   * Rotates a Bitboard
+   * @param b
+   * @param rotMap - array with mapping for rotation
+   * @return rotated bitboard
+   */
+  inline Bitboard rotate(Bitboard b, const int* rotMap) {
+    Bitboard rotated = EMPTY_BB;
+    for (Square sq = SQ_A1; sq < SQ_LENGTH; ++sq) {
+      if ((b & Square(rotMap[sq])) != 0) rotated |= squareBB[sq];
+    }
+    return rotated;
+  }
+
+  /**
+   * Bitboard for all possible horizontal moves on the rank of the square with
+   * the rank content (blocking pieces) determined from the given pieces bitboard.
+   */
+  inline Bitboard getMovesRank(Square sq, Bitboard content) {
+    // content = the pieces currently on the board and maybe blocking the moves
+    // no rotation necessary for ranks - their squares are already in a row
+    // shift to the least significant bit
+    const Bitboard contentIdx = content >> 8 * rankOf(sq);
+    // retrieve all possible moves for this square with the current content
+    // and mask with the first row to erase any other pieces
+    return movesRank[sq][contentIdx & 255];
+  }
+
+  /**
+   * Bitboard for all possible horizontal moves on the rank of the square with
+   * the rank content (blocking pieces) determined from the given non-rotated
+   * bitboard.
+   */
+  inline Bitboard getMovesFile(Square sq, Bitboard content) {
+    // content = the pieces currently on the board and maybe blocking the moves
+    // rotate the content of the board to get all file squares in a row
+    return getMovesFileR(sq, rotateL90(content));
+  }
+
+  /**
+   * Bitboard for all possible horizontal moves on the rank of the square with
+   * the rank content (blocking pieces) determined from the given L90 rotated
+   * bitboard.
+   */
+  inline Bitboard getMovesFileR(Square sq, Bitboard rotated) {
+    // shift to the first byte (to the right in Java)
+    const Bitboard contentIdx = rotated >> fileOf(sq) * 8;
+    // retrieve all possible moves for this square with the current content
+    // and mask with the first row to erase any other pieces not erased by shift
+    return movesFile[sq][contentIdx & 255];
+  }
+
+  /**
+  * Bitboard for all possible diagonal up moves of the square with
+  * the content (blocking pieces) determined from the given non rotated bitboard.
+  */
+  inline Bitboard getMovesDiagUp(Square square, Bitboard content) {
+    // content = the pieces currently on the board and maybe blocking the moves
+    // rotate the content of the board to get all diagonals in a row
+    return getMovesDiagUpR(square, rotateR45(content));
+  }
+
+  /**
+   * Bitboard for all possible diagonal up moves of the square with
+   * the content (blocking pieces) determined from the given R45 rotated
+   * bitboard.
+   */
+  inline Bitboard getMovesDiagUpR(Square sq, Bitboard rotated) {
+    // shift the correct row to the first byte (to the right in Java)
+    const Bitboard shifted = rotated >> shiftsDiagUp[sq];
+    // mask the content with the length of the diagonal to erase any other pieces
+    // which have not been erased by the shift
+    const Bitboard contentMasked = shifted & lengthDiagUpMask(sq);
+    // retrieve all possible moves for this square with the current content
+    return movesDiagUp[sq][contentMasked];
+  }
+
+  /**
+   * Bitboard for all possible diagonal up moves of the square with
+   * the content (blocking pieces) determined from the given non rotated bitboard.
+   */
+  inline Bitboard getMovesDiagDown(Square square, Bitboard content) {
+    // content = the pieces currently on the board and maybe blocking the moves
+    // rotate the content of the board to get all diagonals in a row
+    return getMovesDiagDownR(square, rotateL45(content));
+  }
+
+  /**
+   * Bitboard for all possible diagonal up moves of the square with
+   * the content (blocking pieces) determined from the given L45 rotated
+   * bitboard.
+   */
+  inline Bitboard getMovesDiagDownR(Square sq, Bitboard rotated) {
+    // shift the correct row to the first byte (to the right in Java)
+    const Bitboard shifted = rotated >> shiftsDiagDown[sq];
+    // mask the content with the length of the diagonal to erase any other pieces
+    // which have not been erased by the shift
+    const Bitboard contentMasked = shifted & lengthDiagDownMask(sq);
+    // retrieve all possible moves for this square with the current content
+    return movesDiagDown[sq][contentMasked];
+  }
+
+  /**
+  * Prints a bitboard a an 8x8 matrix for output on a console
+  */
+  inline std::string print(Bitboard b) {
+    std::string s = "+---+---+---+---+---+---+---+---+\n";
+    for (Rank r = RANK_8; r >= RANK_1; --r) {
+      for (File f = FILE_A; f <= FILE_H; ++f) {
+        s += b & getSquare(f, r) ? "| X " : "|   ";
+      }
+      s += "|\n+---+---+---+---+---+---+---+---+\n";
+    }
+    return s;
+  }
+
+  /**
+   * Prints a bitboard as a series of 0 and 1 grouped in 8 bits
+   * beginning with the LSB (0) on the left and the MSB (63) on the right
+   */
+  inline std::string printFlat(Bitboard b) {
+    std::string s;
+    for (int i = 0; i < 64; i++) {
+      if (i > 0 && i % 8 == 0) s += ".";
+      s += b & (1L << i) ? "1" : "0";
+    }
+    s += " (" + std::to_string(b) + ")";
+    return s;
   }
 
 } // namespace Bitboards
