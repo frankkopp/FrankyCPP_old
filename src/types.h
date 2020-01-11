@@ -82,7 +82,9 @@ enum Ply : uint8_t {
 ///////////////////////////////////
 //// COLOR
 enum Color {
-  WHITE, BLACK, NOCOLOR,
+  WHITE = 0,
+  BLACK = 1,
+  NOCOLOR = 2,
   COLOR_LENGTH = 2
 };
 
@@ -182,6 +184,17 @@ enum PieceType : int {
 
 /** returns a char representing the piece type - "kpnbrq" */
 inline const char* pieceTypeToChar = " kpnbrq";
+
+/** returns a string representing the piece type */
+inline const std::string pieceTypeToString[] = {
+  "NOPIECE",
+  "KING",
+  "PAWN",
+  "KNIGHT",
+  "BISHOP",
+  "ROOK",
+  "QUEEN"
+};
 
 /** Game phase values */
 inline const int gamePhaseValue[] = {

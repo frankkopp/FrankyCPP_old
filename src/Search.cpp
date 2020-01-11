@@ -761,6 +761,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
     // Execute move
     position.doMove(move);
     TT_PREFETCH
+    EVAL_PREFETCH
     searchStats.nodesVisited++;
     if (position.isLegalPosition()) {
       currentVariation.push_back(move);
@@ -1318,7 +1319,8 @@ void Search::sendSearchUpdateToEngine() {
     lastUciUpdateTime = now();
 
     LOG__INFO(LOG, "Search statistics: {}", searchStats.str());
-    LOG__INFO(LOG, "TT     statistics; {}", tt->str());
+    LOG__INFO(LOG, "Eval   statistics: {}", evaluator.pawnTableStats());
+    LOG__INFO(LOG, "TT     statistics: {}", tt->str());
 
     if (!pEngine) {
       LOG__INFO(LOG,

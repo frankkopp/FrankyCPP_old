@@ -384,7 +384,7 @@ public:
   int getGamePhase() const { return std::min(GAME_PHASE_MAX, gamePhase); }
 
   /** 1.0 for beginning to 0.0 t the end) */
-  float getGamePhaseFactor() const { return float(getGamePhase()) / GAME_PHASE_MAX; }
+  double getGamePhaseFactor() const { return float(getGamePhase()) / GAME_PHASE_MAX; }
   
   CastlingRights getCastlingRights() const { return castlingRights; }
   int getHalfMoveClock() const { return halfMoveClock; }

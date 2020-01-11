@@ -160,9 +160,11 @@ public:
   Search();
   explicit Search(Engine* pEng);
   ~Search();
-  // disallow copies
-  Search(Search const &s) = delete;
+  // disallow copies and moves
+  Search(Search const &) = delete;
   Search &operator=(const Search &) = delete;
+  Search(Search const &&) = delete;
+  Search &operator=(const Search &&) = delete;
   
   ////////////////////////////////////////////////
   ///// PUBLIC

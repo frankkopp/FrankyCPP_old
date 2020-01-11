@@ -31,7 +31,7 @@
 #include "spdlog/sinks/basic_file_sink.h"
 
 // uncomment this if tracing macros are needed.
-#define SEARCH_LOG_LEVEL spdlog::level::info
+#define SEARCH_LOG_LEVEL spdlog::level::trace
 
 #define CRITICAL__LVL 1
 #define ERROR__LVL 2

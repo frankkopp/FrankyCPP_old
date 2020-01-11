@@ -29,7 +29,7 @@
 struct EvaluatorConfig {
 
   bool USE_PAWN_TABLE = true;
-  std::size_t PAWN_TABLE_SIZE = 262'144; // 2^18
+  std::size_t PAWN_TABLE_SIZE = 1'048'576; // 2^20
 
   // set values for bonus > 0 and for penalty < 0
 

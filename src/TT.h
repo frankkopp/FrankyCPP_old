@@ -121,8 +121,10 @@ public:
   ~TT();
 
   // disallow copies
-  TT(TT const &tt) = delete;
-  TT &operator=(const TT &) = delete;
+  TT(TT const &tt) = delete; // copy
+  TT &operator=(const TT &) = delete; // copy assignment
+  TT(TT const &&tt) = delete; // move
+  TT &operator=(const TT &&) = delete; // move assignment
 
   /**
    * Changes the size of the transposition table and clears all entries.
