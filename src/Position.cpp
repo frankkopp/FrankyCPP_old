@@ -914,20 +914,25 @@ void Position::putPiece(const Piece piece, const Square square) {
   const Color color = colorOf(piece);
 
   // bitboards
-  assert ((piecesBB[color][pieceType] & square) == 0);
+  assert((piecesBB[color][pieceType] & square) == 0);
   piecesBB[color][pieceType] |= square;
-  assert ((occupiedBB[color] & square) == 0);
+  assert((occupiedBB[color] & square) == 0);
   occupiedBB[color] |= square;
   // pre-rotated bb / expensive - ~30% hit
-  occupiedBBR90[color] |= Bitboards::rotateSquareR90(square);
-  occupiedBBL90[color] |= Bitboards::rotateSquareL90(square);
-  occupiedBBR45[color] |= Bitboards::rotateSquareR45(square);
-  occupiedBBL45[color] |= Bitboards::rotateSquareL45(square);
+  occupiedBBR90[color] |=
+      Bitboards::indexMapR90[square]; // Bitboards::rotateSquareR90(square);
+  occupiedBBL90[color] |=
+      Bitboards::indexMapL90[square]; // Bitboards::rotateSquareL90(square);
+  occupiedBBR45[color] |=
+      Bitboards::indexMapR45[square]; // Bitboards::rotateSquareR45(square);
+  occupiedBBL45[color] |=
+      Bitboards::indexMapL45[square]; // Bitboards::rotateSquareL45(square);
 
   // piece board
-  assert (getPiece(square) == PIECE_NONE);
+  assert(getPiece(square) == PIECE_NONE);
   board[square] = piece;
-  if (pieceType == KING) kingSquare[color] = square;
+  if (pieceType == KING)
+    kingSquare[color] = square;
 
   // zobrist
   zobristKey ^= Zobrist::pieces[piece][square];
@@ -947,18 +952,22 @@ Piece Position::removePiece(const Square square) {
   const PieceType pieceType = typeOf(old);
 
   // bitboards
-  assert (piecesBB[color][pieceType] & square);
+  assert(piecesBB[color][pieceType] & square);
   piecesBB[color][pieceType] ^= square;
-  assert (occupiedBB[color] & square);
+  assert(occupiedBB[color] & square);
   occupiedBB[color] ^= square;
   // pre-rotated bb / expensive - ~30% hit
-  occupiedBBR90[color] ^= Bitboards::rotateSquareR90(square);
-  occupiedBBL90[color] ^= Bitboards::rotateSquareL90(square);
-  occupiedBBR45[color] ^= Bitboards::rotateSquareR45(square);
-  occupiedBBL45[color] ^= Bitboards::rotateSquareL45(square);
+  occupiedBBR90[color] ^=
+      Bitboards::indexMapR90[square]; // Bitboards::rotateSquareR90(square);
+  occupiedBBL90[color] ^=
+      Bitboards::indexMapL90[square]; // Bitboards::rotateSquareL90(square);
+  occupiedBBR45[color] ^=
+      Bitboards::indexMapR45[square]; // Bitboards::rotateSquareR45(square);
+  occupiedBBL45[color] ^=
+      Bitboards::indexMapL45[square]; // Bitboards::rotateSquareL45(square);
 
   // piece board
-  assert (getPiece(square) != PIECE_NONE);
+  assert(getPiece(square) != PIECE_NONE);
   board[square] = PIECE_NONE;
 
   // zobrist

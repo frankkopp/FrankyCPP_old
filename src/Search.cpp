@@ -460,6 +460,8 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
         std::max(searchStats.currentExtraSearchDepth, ply);
     break;
   case PERFT:
+    searchStats.currentSearchDepth =
+        std::max(searchStats.currentSearchDepth, ply);
     if (depth <= DEPTH_NONE || ply >= PLY_MAX - 1) {
       Value eval = evaluate(position);
       LOG__TRACE(LOG, "{:>{}} Evaluation: {} {}", " ", ply,
@@ -561,6 +563,17 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
           if (ST == ROOT) {
             // root move tt hits should always be exact values
             assert(ttEntryPtr->type == TYPE_EXACT);
+            ASSERT_START
+            if (ttEntryPtr->type != TYPE_EXACT) {
+              LOG__ERROR(LOG, "{}:{} Cache hit in ROOT ply but type not EXACT",
+                         __func__, __LINE__);
+            }
+            if (ttEntryPtr->move == MOVE_NONE) {
+              LOG__ERROR(LOG,
+                         "{}:{} Cache hit in ROOT ply but no root in Entry",
+                         __func__, __LINE__);
+            }
+            ASSERT_END
             getPVLine(position, pv[PLY_ROOT], depth);
             setValue(rootMoves.at(currentMoveIndex), ttValue);
             if (!pv[PLY_ROOT].empty()) {
@@ -1320,8 +1333,7 @@ void Search::getPVLine(Position &position, MoveList &pvRoot,
   // Recursion-less reading of the chain of pv moves
   pvRoot.clear();
   int counter = 0;
-  const TT::Entry *ttMatchPtr = nullptr;
-  ttMatchPtr = tt->getMatch(position.getZobristKey());
+  const TT::Entry *ttMatchPtr = tt->getMatch(position.getZobristKey());
   while (ttMatchPtr != nullptr && ttMatchPtr->move != MOVE_NONE &&
          counter < depth) {
     pvRoot.push_back(ttMatchPtr->move);

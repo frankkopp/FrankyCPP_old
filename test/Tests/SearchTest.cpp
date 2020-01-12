@@ -452,10 +452,16 @@ TEST_F(SearchTest, NULLMOVE) {
 
 TEST_F(SearchTest, perft) {
 
-  int DEPTH = 5;
+  int DEPTH = 6;
 
-  long perftResults[] = {0,       20,        400,         8'902,
-                         197'281, 4'865'609, 119'060'324, 3'195'901'860};
+  long perftResults[] = {0,
+                         20,             // 1
+                         400,            // 2
+                         8'902,          // 3
+                         197'281,        // 4
+                         4'865'609,      // 5
+                         119'060'324,    // 6
+                         3'195'901'860}; // 7
 
   Search search;
   SearchLimits searchLimits;
