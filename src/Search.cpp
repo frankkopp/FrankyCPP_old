@@ -492,8 +492,14 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
     ttEntryPtr = tt->probe(position.getZobristKey());
     if (ttEntryPtr) {
       if (ST != ROOT) ttMove = ttEntryPtr->move;
-      assert(moveOf(ttMove) == ttMove);
-      assert(!ttMove || moveGenerators[ply].validateMove(position, ttMove));
+      ASSERT_START
+      if (moveOf(ttMove) != ttMove) {
+        LOG__ERROR(LOG, "{}:{} Move from TT should not have internal value.", __func__, __LINE__);
+      };
+      if (ttMove && !moveGenerators[ply].validateMove(position, ttMove)) {
+        LOG__ERROR(LOG, "{}:{} Move from TT should not have value.", __func__, __LINE__);
+      };
+      ASSERT_END
       mateThreat[ply] = ttEntryPtr->mateThreat;
       // use value only if tt depth was equal or deeper
       if (ttEntryPtr->depth >= depth) {
@@ -509,7 +515,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
           }
           else if (ttEntryPtr->type == TYPE_ALPHA && ttValue < beta) {
             // should actually not happen
-            LOG__DEBUG(LOG, "TT BETA");
+            LOG__ERROR(LOG, "TT ALPHA type smaller beta - should not happen");
             beta = ttValue;
           }
           else if (ttEntryPtr->type == TYPE_BETA && ttValue >= beta) {
@@ -517,7 +523,7 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
           }
           else if (ttEntryPtr->type == TYPE_BETA && ttValue > alpha) {
             // should actually not happen
-            LOG__DEBUG(LOG, "TT ALPHA");
+            LOG__ERROR(LOG, "TT BETA type greater alpha - should not happen");
             alpha = ttValue;
           }
         }
@@ -528,11 +534,6 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
             assert (ttEntryPtr->type == TYPE_EXACT);
             getPVLine(position, pv[PLY_ROOT], depth);
             setValue(rootMoves.at(currentMoveIndex), ttValue);
-            // 9  FrankyCPP_Dbg	0x000000010dfbdab5 std::__1::__throw_out_of_range(char const*) + 69 (stdexcept:241)
-            //10  FrankyCPP_Dbg	0x000000010dfbda68 std::__1::__deque_base_common<true>::__throw_out_of_range() const + 24
-            //11  FrankyCPP_Dbg	0x000000010df7f191 std::__1::deque<Move, std::__1::allocator<Move> >::at(unsigned long) + 65
-            //12  FrankyCPP_Dbg	0x000000010df7e1a6 Value Search::search<(Search::Search_Type)0, (Search::Node_Type)1>(Position&, Depth, Ply, Value, Value, Search::Do_Null) + 1590 (Search.cpp:525)
-            //13  FrankyCPP_Dbg	0x000000010df7bc71 Search::iterativeDeepening(Position&) + 1777 (Search.cpp:336)
             if (!pv[PLY_ROOT].empty()) {
               setValue(pv[PLY_ROOT].at(0), ttValue);
             }

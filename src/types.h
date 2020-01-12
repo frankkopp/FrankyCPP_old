@@ -157,7 +157,7 @@ enum Direction : int {
 };
 
 /** return direction of pawns for the color */
-const static Direction pawnDir[COLOR_LENGTH] = {NORTH, SOUTH};
+constexpr Direction pawnDir[COLOR_LENGTH] = {NORTH, SOUTH};
 
 /// Additional operators to add a Direction to a Square
 constexpr Square operator+(Square s, Direction d) { return Square(int(s) + int(d)); }
@@ -183,10 +183,10 @@ enum PieceType : int {
 };
 
 /** returns a char representing the piece type - "kpnbrq" */
-inline const char* pieceTypeToChar = " kpnbrq";
+constexpr const char* pieceTypeToChar = " kpnbrq";
 
 /** returns a string representing the piece type */
-inline const std::string pieceTypeToString[] = {
+constexpr const char* pieceTypeToString[] = {
   "NOPIECE",
   "KING",
   "PAWN",
@@ -197,7 +197,7 @@ inline const std::string pieceTypeToString[] = {
 };
 
 /** Game phase values */
-inline const int gamePhaseValue[] = {
+constexpr const int gamePhaseValue[] = {
   0, // no type
   0, // king
   0, // pawn
@@ -217,7 +217,7 @@ enum Piece : int {
 };
 
 /** returns a char representing the piece. Upper case letters for white, lower case for black */
-inline const char* pieceToChar = " KPNBRQ  kpnbrq   ";
+constexpr const char* pieceToChar = " KPNBRQ  kpnbrq   ";
 
 /** creates the piece given by color and piece type */
 constexpr Piece makePiece(Color c, PieceType pt) { return Piece((c << 3) + pt); }
@@ -248,7 +248,7 @@ inline std::ostream &operator<<(std::ostream &os, const Value v) {
 }
 
 /** PieceType values */
-inline const Value pieceTypeValue[] = {
+constexpr const Value pieceTypeValue[] = {
   Value(0),    // no type
   Value(2000), // king
   Value(100),  // pawn
@@ -259,10 +259,10 @@ inline const Value pieceTypeValue[] = {
 };
 
 /** returns the value of the given piece type */
-inline Value valueOf(const PieceType pt) { return pieceTypeValue[pt]; }
+constexpr Value valueOf(const PieceType pt) { return pieceTypeValue[pt]; }
 
 /** returns the value of the given piece */
-inline Value valueOf(const Piece p) { return pieceTypeValue[typeOf(p)]; }
+constexpr Value valueOf(const Piece p) { return pieceTypeValue[typeOf(p)]; }
 
 /** Returns true if value is considered a checkmate */
 inline bool isCheckMateValue(const Value value) {
