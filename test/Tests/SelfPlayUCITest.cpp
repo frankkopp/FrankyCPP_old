@@ -10,8 +10,8 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -23,14 +23,14 @@
  *
  */
 
+#include <SearchConfig.h>
 #include <gtest/gtest.h>
 #include <random>
-#include <SearchConfig.h>
 
-#include "Logging.h"
-#include "types.h"
-#include "UCIHandler.h"
 #include "Engine.h"
+#include "Logging.h"
+#include "UCIHandler.h"
+#include "types.h"
 
 using testing::Eq;
 
@@ -46,7 +46,6 @@ public:
   }
 
   std::shared_ptr<spdlog::logger> LOG = spdlog::get("Test_Logger");
-
 
 protected:
   void SetUp() override { LOG->set_level(spdlog::level::debug); }
@@ -95,19 +94,17 @@ TEST_F(UCISelfPlayUCITest, uciTest) {
 
   do {
     sendCommand(engine, "position fen " + position.printFen());
-    //sendCommand(engine, "go depth 4");
+    // sendCommand(engine, "go depth 4");
     sendCommand(engine, "go movetime " + std::to_string(moveTime(rg)));
     engine.waitWhileSearching();
     Move move = engine.getLastResult().bestMove;
-    if (!move) break;
-    LOG__INFO(LOG, "UCI NEXT MOVE: {} on position {} (key={})", printMoveVerbose(move), position.printFen(), position.getZobristKey());
+    if (!move)
+      break;
+    LOG__INFO(LOG, "UCI NEXT MOVE: {} on position {} (key={})",
+              printMoveVerbose(move), position.printFen(),
+              position.getZobristKey());
     position.doMove(move);
   } while (1);
 
   engine.waitWhileSearching();
-
 }
-
-
-
-

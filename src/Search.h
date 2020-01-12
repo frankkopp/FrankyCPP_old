@@ -27,22 +27,21 @@
 #define FRANKYCPP_SEARCH_H
 
 // included dependencies
-#include <iostream>
-#include <thread>
-#include <ostream>
+#include "Evaluator.h"
 #include "Logging.h"
-#include "SearchStats.h"
-#include "Semaphore.h"
 #include "Position.h"
 #include "SearchLimits.h"
-#include "Evaluator.h"
+#include "SearchStats.h"
+#include "Semaphore.h"
 #include "types.h"
 #include "gtest/gtest_prod.h"
+#include <iostream>
+#include <ostream>
+#include <thread>
 
 // forward declared dependencies
 class Engine;
 class TT;
-
 
 struct SearchResult {
   Move bestMove = MOVE_NONE;
@@ -53,13 +52,16 @@ struct SearchResult {
   int extraDepth = 0;
 
   std::string str() const {
-    return "Best Move: " + printMove(bestMove) + " (" + std::to_string(bestMoveValue) + ") "
-           + "Ponder Move: " + printMove(ponderMove) + " Depth: " + std::to_string(depth) + "/" +
+    return "Best Move: " + printMove(bestMove) + " (" +
+           std::to_string(bestMoveValue) + ") " +
+           "Ponder Move: " + printMove(ponderMove) +
+           " Depth: " + std::to_string(depth) + "/" +
            std::to_string(extraDepth);
   }
 };
 
-inline std::ostream &operator<<(std::ostream &os, const SearchResult &searchResult) {
+inline std::ostream &operator<<(std::ostream &os,
+                                const SearchResult &searchResult) {
   os << searchResult.str();
   return os;
 }
@@ -68,7 +70,8 @@ class Search {
 
   std::shared_ptr<spdlog::logger> LOG = spdlog::get("Search_Logger");
 
-  // used to protect the transposition table from clearing and resizing during search
+  // used to protect the transposition table from clearing and resizing during
+  // search
   std::timed_mutex tt_lock;
 
   // UCI related
@@ -76,15 +79,15 @@ class Search {
   MilliSec lastUciUpdateTime{};
 
   // thread control
-  Semaphore initSemaphore; // used to block while initializing thread
+  Semaphore initSemaphore;   // used to block while initializing thread
   Semaphore searchSemaphore; // used to block while searching
   std::thread myThread;
 
   // pointer to engine of available
-  Engine* pEngine{nullptr};
+  Engine *pEngine{nullptr};
 
   // search mode
-  SearchLimits* searchLimitsPtr{nullptr};
+  SearchLimits *searchLimitsPtr{nullptr};
   SearchStats searchStats;
 
   // search state
@@ -96,7 +99,7 @@ class Search {
   SearchResult lastSearchResult;
 
   // transposition table (singleton)
-  TT* tt;
+  TT *tt;
 
   // time check every x nodes
   // As time checks are expensive we only do them every x-th node.
@@ -136,28 +139,21 @@ class Search {
   Evaluator evaluator;
 
 public:
-
-  // for code re-using through templating we use search types when calling search()
-  enum Search_Type {
-    ROOT, NONROOT, QUIESCENCE, PERFT
-  };
+  // for code re-using through templating we use search types when calling
+  // search()
+  enum Search_Type { ROOT, NONROOT, QUIESCENCE, PERFT };
 
   // in PV we search the full window in NonPV we try a zero window first
-  enum Node_Type {
-    NonPV, PV
-  };
+  enum Node_Type { NonPV, PV };
 
-  enum Do_Null : bool {
-    No_Null_Move = false,
-    Do_Null_Move = true
-  };
+  enum Do_Null : bool { No_Null_Move = false, Do_Null_Move = true };
 
   ////////////////////////////////////////////////
   ///// CONSTRUCTORS
 
   /** Default constructor creates a board with a back reference to the engine */
   Search();
-  explicit Search(Engine* pEng);
+  explicit Search(Engine *pEng);
   ~Search();
   // disallow copies and moves
   Search(Search const &) = delete;
@@ -171,7 +167,8 @@ public:
   /** starts the search in a separate thread with the given search limits */
   void startSearch(const Position &position, SearchLimits &limits);
 
-  /** Stops a running search gracefully - e.g. returns the best move found so far */
+  /** Stops a running search gracefully - e.g. returns the best move found so
+   * far */
   void stopSearch();
 
   /** checks if the search is already running */
@@ -187,7 +184,9 @@ public:
   inline const SearchStats &getSearchStats() const { return searchStats; }
 
   /** return the last search result */
-  inline const SearchResult &getLastSearchResult() const { return lastSearchResult; };
+  inline const SearchResult &getLastSearchResult() const {
+    return lastSearchResult;
+  };
 
   /** to signal the search that pondering was successful */
   void ponderhit();
@@ -202,7 +201,6 @@ public:
   void setHashSize(int sizeInMB);
 
 private:
-
   ////////////////////////////////////////////////
   ///// PRIVATE
 
@@ -210,14 +208,13 @@ private:
 
   SearchResult iterativeDeepening(Position &refPosition);
 
-  template<Search_Type ST, Node_Type NT>
-  Value search(Position &position, Depth depth, Ply ply, Value alpha, Value beta, Do_Null doNull);
+  template <Search_Type ST, Node_Type NT>
+  Value search(Position &position, Depth depth, Ply ply, Value alpha,
+               Value beta, Do_Null doNull);
 
-  template<Search_Type ST>
-  Move getMove(Position &position, int ply);
+  template <Search_Type ST> Move getMove(Position &position, int ply);
 
-  template<Search_Type ST>
-  bool checkDrawRepAnd50(Position &position) const;
+  template <Search_Type ST> bool checkDrawRepAnd50(Position &position) const;
 
   Value evaluate(Position &position);
 
@@ -232,16 +229,16 @@ private:
   static void savePV(Move move, MoveList &src, MoveList &dest);
 
   /**
-  * Retrieves the PV line from the transposition table in root search.
-  *
-  * @param position
-  * @param depth
-  * @param pvRoot
-  */
-  void getPVLine(Position &position, MoveList &pvRoot, const Depth depth);
+   * Retrieves the PV line from the transposition table in root search.
+   *
+   * @param position
+   * @param depth
+   * @param pvRoot
+   */
+  void getPVLine(Position &position, MoveList &pvRoot, Depth depth);
 
-  void storeTT(Position &position, Value value, Value_Type ttType, Depth depth, Ply ply,
-               Move move, bool mateThreat);
+  void storeTT(Position &position, Value value, Value_Type ttType, Depth depth,
+               Ply ply, Move move, bool mateThreat);
 
   /**
    * correct any mate values which are sent to TT so that
@@ -265,20 +262,20 @@ private:
   inline bool stopConditions(bool shouldTimeCheck);
 
   /**
-   * Changes the time limit by the given factor and also sets the soft time limit
-   * to 0.8 of the hard time limit.
-   * Factor 1 is neutral. <1 shortens the time, >1 adds time<br/>
-   * Example: factor 0.8 is 20% less time. Factor 1.2 is 20% additional time
-   * Always calculated from the initial time budget.
+   * Changes the time limit by the given factor and also sets the soft time
+   * limit to 0.8 of the hard time limit. Factor 1 is neutral. <1 shortens the
+   * time, >1 adds time<br/> Example: factor 0.8 is 20% less time. Factor 1.2 is
+   * 20% additional time Always calculated from the initial time budget.
    *
    * @param d
    */
-  void addExtraTime(const double d);
+  void addExtraTime(double d);
 
   /**
-   * Time limit is used to check time regularly in the search to stop the search when
-   * time is out
-   * IDEA instead of checking this regularly we could use a timer thread to set stopSearch to true.
+   * Time limit is used to check time regularly in the search to stop the search
+   * when time is out
+   * IDEA instead of checking this regularly we could use a
+   *  timer thread to set stopSearch to true.
    *
    * @return true if hard time limit is reached, false otherwise
    */
@@ -290,14 +287,14 @@ private:
    * @param t time point since the elapsed time
    * @return the elapsed time from the start of the search to the given t
    */
-  static inline MilliSec elapsedTime(const MilliSec t);
+  static inline MilliSec elapsedTime(MilliSec t);
 
   /**
    * @param t1 Earlier time point
    * @param t2 Later time point
    * @return Duration between time points in milliseconds
    */
-  static inline MilliSec elapsedTime(const MilliSec t1, const MilliSec t2);
+  static inline MilliSec elapsedTime(MilliSec t1, MilliSec t2);
 
   /**
    * Returns the current time in ms
