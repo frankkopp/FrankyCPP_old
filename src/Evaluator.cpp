@@ -29,7 +29,7 @@
 
 using namespace Bitboards;
 
-Evaluator::Evaluator(){
+Evaluator::Evaluator() {
   resizePawnTable(config.PAWN_TABLE_SIZE);
 }
 
@@ -56,19 +56,16 @@ Value Evaluator::evaluate(const Position &position) {
     return VALUE_DRAW;
   }
 
-  int value = 0;
-
   // MATERIAL & POSITION
-  value = (config.USE_MATERIAL
-           ? position.getMaterial(WHITE) -
-             position.getMaterial(BLACK) : 0) * config.MATERIAL_WEIGHT;
+  int value = (config.USE_MATERIAL
+               ? position.getMaterial(WHITE) -
+                 position.getMaterial(BLACK) : 0) * config.MATERIAL_WEIGHT;
   LOG__TRACE(LOG, "Eval value after material: {}", value);
 
   value += (config.USE_POSITION
             ? position.getPosValue(WHITE) -
               position.getPosValue(BLACK) : 0) * config.POSITION_WEIGHT;
   LOG__TRACE(LOG, "Eval value after position: {}", value);
-
 
   // TODO: Early exit if score is very high
 
@@ -78,7 +75,6 @@ Value Evaluator::evaluate(const Position &position) {
   }
   LOG__TRACE(LOG, "Eval value after pawns: {}", value);
 
-
   // evaluate pieces                                                         @formatter:off
   value += evaluatePiece<WHITE, KNIGHT>(position) - evaluatePiece<BLACK, KNIGHT>(position);
   value += evaluatePiece<WHITE, BISHOP>(position) - evaluatePiece<BLACK, BISHOP>(position);
@@ -87,13 +83,11 @@ Value Evaluator::evaluate(const Position &position) {
   // @formatter:on
   LOG__TRACE(LOG, "Eval value after pieces: {}", value);
 
-
   // evaluate king
   value += evaluateKing<WHITE>(position) - evaluateKing<BLACK>(position);
   LOG__TRACE(LOG, "Eval value after king: {}", value);
 
-
-  // CHECK Bonus: Giving check or being in check has value as it forces evasion moves
+  // check bonus: giving check or being in check has value as it forces evasion moves
   if (config.USE_CHECK_BONUS) {
     value += position.isAttacked(position.getKingSquare(BLACK), WHITE) ? config.CHECK_VALUE : 0;
     value -= position.isAttacked(position.getKingSquare(WHITE), BLACK) ? config.CHECK_VALUE : 0;
@@ -116,30 +110,31 @@ int Evaluator::pawnEval(const Position &position) {
   const double gamePhaseFactor = position.getGamePhaseFactor();
   const double revGamePhaseFactor = 1.0 - gamePhaseFactor;
   const Bitboard pawnsBitboard = position.getPieceBB(WHITE, PAWN) | position.getPieceBB(BLACK, PAWN);
-  Entry* entryPtr;
-  int value = 0;
 
-  // Get a pointer to a value entry for pawns
-  // Either from the cache or from the default entry.
-  if (config.USE_PAWN_TABLE) {
-    entryPtr = &pawnTable[getTableIndex(pawnsBitboard)];
-    LOG__TRACE(LOG, "Using pawn table on {}", pawnsBitboard);
-  }
-  else {
-    // reset the default entry every time it is used
-    defaultEntry = {0, 0, 0};
-    entryPtr = &defaultEntry;
-    LOG__TRACE(LOG, "Not using pawn table.");
-  }
+  Entry* const entryPtr = [&] {  // lambda initialization
+    // Get a pointer to a value entry for pawns
+    // Either from the cache or from the default entry.
+    if (config.USE_PAWN_TABLE) {
+      LOG__TRACE(LOG, "Using pawn table on {}", pawnsBitboard);
+      return &pawnTable[getTableIndex(pawnsBitboard)];;
+    }
+    else {
+      // reset the default entry every time it is used
+      defaultEntry = {0, 0, 0};
+      LOG__TRACE(LOG, "Not using pawn table.");
+      return &defaultEntry;
+    }
+  }();
+
   // we have an entry here - either from the cache or the default entry
 
-  if (entryPtr->pawnBitboard != 0 && entryPtr->pawnBitboard == pawnsBitboard) {
+  if (entryPtr->pawnBitboard != EMPTY_BB && entryPtr->pawnBitboard == pawnsBitboard) {
     cacheHits++;
     LOG__TRACE(LOG, "Found cache hit: {}", entryPtr->str());
   }
   else {
     cacheMisses++;
-    // we did not find an entry or have the default entry
+    // we did not find an entry or have the default entry when cache is turned off
     if (config.USE_PAWN_TABLE) {
       if (entryPtr->pawnBitboard == 0) {
         cacheEntries++;
@@ -160,7 +155,7 @@ int Evaluator::pawnEval(const Position &position) {
 
   // we have found a matching entry - add the respective mid and end values
   // for the current game phase
-  value += static_cast<int>(entryPtr->midvalue * gamePhaseFactor + entryPtr->endvalue * revGamePhaseFactor);
+  const int value = static_cast<int>(entryPtr->midvalue * gamePhaseFactor + entryPtr->endvalue * revGamePhaseFactor);
   LOG__TRACE(LOG, "Game phase adjusted pawn eval results in {} (midvalue={}, endvalue={}, weight={})",
              value * config.PAWNEVAL_WEIGHT,
              entryPtr->midvalue * gamePhaseFactor,
@@ -170,6 +165,7 @@ int Evaluator::pawnEval(const Position &position) {
   return value * config.PAWNEVAL_WEIGHT;
 }
 
+// TODO - template it
 void Evaluator::evaluatePawns(const Position &position, Entry* const entry) {
 
   // compiler will likely unroll this
@@ -177,9 +173,6 @@ void Evaluator::evaluatePawns(const Position &position, Entry* const entry) {
     const Bitboard myPawns = position.getPieceBB(color, PAWN);
     const Bitboard oppPawns = position.getPieceBB(~color, PAWN);
     // evals inspired by Stockfish
-
-    int midvalue = 0;
-    int endvalue = 0;
 
     Bitboard isolated = EMPTY_BB;
     Bitboard doubled = EMPTY_BB; // both pawns are counted
@@ -204,7 +197,7 @@ void Evaluator::evaluatePawns(const Position &position, Entry* const entry) {
       // pawns as neighbours in a row = phalanx
       phalanx |= myPawns & neighbours & sqToRankBB[sq];
       // pawn as neighbours in the row forward = supported pawns
-      supported |= myPawns & neighbours &  sqToRankBB[sq + (color == WHITE ? NORTH : SOUTH)];
+      supported |= myPawns & neighbours & sqToRankBB[sq + (color == WHITE ? NORTH : SOUTH)];
     }
 
     /*
@@ -217,18 +210,18 @@ void Evaluator::evaluatePawns(const Position &position, Entry* const entry) {
     */
 
     // @formatter:off
-    midvalue +=  popcount(isolated)  * config.ISOLATED_PAWN_MID_WEIGHT ;
-    endvalue +=  popcount(isolated)  * config.ISOLATED_PAWN_END_WEIGHT ;
-    midvalue += (popcount(doubled)   * config.DOUBLED_PAWN_MID_WEIGHT  )/2;
-    endvalue += (popcount(doubled)   * config.DOUBLED_PAWN_END_WEIGHT  )/2;
-    midvalue +=  popcount(passed)    * config.PASSED_PAWN_MID_WEIGHT   ;
-    endvalue +=  popcount(passed)    * config.PASSED_PAWN_END_WEIGHT   ;
-    midvalue +=  popcount(blocked)   * config.BLOCKED_PAWN_MID_WEIGHT  ;
-    endvalue +=  popcount(blocked)   * config.BLOCKED_PAWN_END_WEIGHT  ;
-    midvalue += (popcount(phalanx)   * config.PHALANX_PAWN_MID_WEIGHT  )/2;
-    endvalue += (popcount(phalanx)   * config.PHALANX_PAWN_END_WEIGHT  )/2;
-    midvalue +=  popcount(supported) * config.SUPPORTED_PAWN_MID_WEIGHT;
-    endvalue +=  popcount(supported) * config.SUPPORTED_PAWN_END_WEIGHT;
+    int midvalue =  popcount(isolated)  * config.ISOLATED_PAWN_MID_WEIGHT ;
+    int endvalue =  popcount(isolated)  * config.ISOLATED_PAWN_END_WEIGHT ;
+    midvalue    += (popcount(doubled)   * config.DOUBLED_PAWN_MID_WEIGHT  )/2;
+    endvalue    += (popcount(doubled)   * config.DOUBLED_PAWN_END_WEIGHT  )/2;
+    midvalue    +=  popcount(passed)    * config.PASSED_PAWN_MID_WEIGHT   ;
+    endvalue    +=  popcount(passed)    * config.PASSED_PAWN_END_WEIGHT   ;
+    midvalue    +=  popcount(blocked)   * config.BLOCKED_PAWN_MID_WEIGHT  ;
+    endvalue    +=  popcount(blocked)   * config.BLOCKED_PAWN_END_WEIGHT  ;
+    midvalue    += (popcount(phalanx)   * config.PHALANX_PAWN_MID_WEIGHT  )/2;
+    endvalue    += (popcount(phalanx)   * config.PHALANX_PAWN_END_WEIGHT  )/2;
+    midvalue    +=  popcount(supported) * config.SUPPORTED_PAWN_MID_WEIGHT;
+    endvalue    +=  popcount(supported) * config.SUPPORTED_PAWN_END_WEIGHT;
     // @formatter:on
 
     if (color == WHITE) {
