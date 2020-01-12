@@ -110,6 +110,7 @@ TEST_F(SearchTreeSizeTest, size_test) {
   spdlog::set_level(spdlog::level::trace);
 
   // Print result
+  // @formatter:off
   NEWLINE;
   fmt::print("################## RESULTS for depth {} ##########################\n", DEPTH);
   NEWLINE;
@@ -117,6 +118,7 @@ TEST_F(SearchTreeSizeTest, size_test) {
              "Move", "Value", "Nodes", "Nps", "Time", "Special", "PV", "Fen");
   println("-----------------------------------------------------------------------"
           "-----------------------------------------------------------------------");
+  // @formatter:on
 
   setlocale(LC_NUMERIC, "de_DE.UTF-8");
   std::map<std::string, TestSums> sums{};

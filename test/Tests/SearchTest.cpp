@@ -10,8 +10,8 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -23,11 +23,11 @@
  *
  */
 
-#include <gtest/gtest.h>
-#include "Logging.h"
 #include "Search.h"
-#include "SearchConfig.h"
 #include "Engine.h"
+#include "Logging.h"
+#include "SearchConfig.h"
+#include <gtest/gtest.h>
 
 using testing::Eq;
 
@@ -41,6 +41,7 @@ public:
   }
 
   std::shared_ptr<spdlog::logger> LOG = spdlog::get("Test_Logger");
+
 protected:
   void SetUp() override {}
 
@@ -66,7 +67,8 @@ TEST_F(SearchTest, selective_moves) {
   searchLimits.setMoves(MoveList({createMove("a2a4")}));
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
-  ASSERT_EQ(moveOf(createMove("a2a4")), moveOf(search.getLastSearchResult().bestMove));
+  ASSERT_EQ(moveOf(createMove("a2a4")),
+            moveOf(search.getLastSearchResult().bestMove));
 }
 
 TEST_F(SearchTest, depth) {
@@ -96,7 +98,8 @@ TEST_F(SearchTest, movetime) {
   searchLimits.setMoveTime(2'000);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
-  ASSERT_TRUE(search.getSearchStats().lastSearchTime < (searchLimits.getMoveTime() + 100));
+  ASSERT_TRUE(search.getSearchStats().lastSearchTime <
+              (searchLimits.getMoveTime() + 100));
 }
 
 TEST_F(SearchTest, timewhite) {
@@ -107,7 +110,8 @@ TEST_F(SearchTest, timewhite) {
   searchLimits.setBlackTime(60'000);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
-  ASSERT_TRUE(search.getSearchStats().lastSearchTime < (searchLimits.getWhiteTime() / 40) + 200);
+  ASSERT_TRUE(search.getSearchStats().lastSearchTime <
+              (searchLimits.getWhiteTime() / 40) + 200);
 }
 
 TEST_F(SearchTest, timeblack) {
@@ -119,7 +123,8 @@ TEST_F(SearchTest, timeblack) {
   searchLimits.setBlackTime(60'000);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
-  ASSERT_TRUE(search.getSearchStats().lastSearchTime < (searchLimits.getBlackTime() / 40) + 200);
+  ASSERT_TRUE(search.getSearchStats().lastSearchTime <
+              (searchLimits.getBlackTime() / 40) + 200);
 }
 
 TEST_F(SearchTest, mate0Search) {
@@ -141,7 +146,8 @@ TEST_F(SearchTest, mate1Search) {
   searchLimits.setDepth(4);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
-  ASSERT_EQ(VALUE_CHECKMATE - 1, valueOf(search.getLastSearchResult().bestMove));
+  ASSERT_EQ(VALUE_CHECKMATE - 1,
+            valueOf(search.getLastSearchResult().bestMove));
 }
 
 TEST_F(SearchTest, mate2Search) {
@@ -152,7 +158,8 @@ TEST_F(SearchTest, mate2Search) {
   searchLimits.setDepth(4);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
-  ASSERT_EQ(VALUE_CHECKMATE - 3, valueOf(search.getLastSearchResult().bestMove));
+  ASSERT_EQ(VALUE_CHECKMATE - 3,
+            valueOf(search.getLastSearchResult().bestMove));
 }
 
 TEST_F(SearchTest, repetitionForce) {
@@ -174,7 +181,8 @@ TEST_F(SearchTest, repetitionForce) {
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 
-  LOG__INFO(LOG, "Repetition move: {}", printMoveVerbose(search.getLastSearchResult().bestMove));
+  LOG__INFO(LOG, "Repetition move: {}",
+            printMoveVerbose(search.getLastSearchResult().bestMove));
 
   ASSERT_EQ("d8h4", printMove(search.getLastSearchResult().bestMove));
   ASSERT_EQ(VALUE_DRAW, valueOf(search.getLastSearchResult().bestMove));
@@ -192,8 +200,8 @@ TEST_F(SearchTest, repetitionAvoid) {
   position.doMove(createMove("d8h4"));
   position.doMove(createMove("h7g8"));
   position.doMove(createMove("h4d8"));
-  // black should not move Kg8h7 as this would enable white to  3-fold repetition
-  // although black is winning
+  // black should not move Kg8h7 as this would enable white to  3-fold
+  // repetition although black is winning
 
   searchLimits.setDepth(4);
   search.startSearch(position, searchLimits);
@@ -206,13 +214,13 @@ TEST_F(SearchTest, repetitionAvoid) {
   ASSERT_NE(VALUE_DRAW, valueOf(search.getLastSearchResult().bestMove));
 }
 
-
 TEST_F(SearchTest, goodCapture) {
   Search search;
   Position position;
 
   // no capture
-  // goodCapture does not check this any longer - unnecessary if only called for capture moves.
+  // goodCapture does not check this any longer - unnecessary if only called for
+  // capture moves.
   //  position = Position();
   //  ASSERT_FALSE(search.goodCapture(position, createMove("e2e4")));
 
@@ -237,9 +245,11 @@ TEST_F(SearchTest, goodCapture) {
   //   +---+---+---+---+---+---+---+---+
   //     A   B   C   D   E   F   G   H
 
-  position = Position("2q1r1k1/rppb4/3p1Pp1/p4n1p/2P1n1PN/7P/PP3Q1K/2BRRB2 w - -");
+  position =
+      Position("2q1r1k1/rppb4/3p1Pp1/p4n1p/2P1n1PN/7P/PP3Q1K/2BRRB2 w - -");
   ASSERT_TRUE(search.goodCapture(position, createMove("g4f5"))); // pawn capture
-  ASSERT_FALSE(search.goodCapture(position, createMove("g4h5"))); // pawn capture
+  ASSERT_FALSE(
+      search.goodCapture(position, createMove("g4h5")));         // pawn capture
   ASSERT_TRUE(search.goodCapture(position, createMove("f2a7"))); // not defended
   ASSERT_TRUE(search.goodCapture(position, createMove("h4g6"))); // not defended
   ASSERT_FALSE(search.goodCapture(position, createMove("h4f5"))); // Nxn
@@ -247,13 +257,13 @@ TEST_F(SearchTest, goodCapture) {
   ASSERT_FALSE(search.goodCapture(position, createMove("f2f5"))); // Qxn
   ASSERT_FALSE(search.goodCapture(position, createMove("d1d6"))); // Rxp
 
-  position = Position("2q1r1k1/rpp5/3p1Pp1/p4n1p/b1P1n1PN/5Q1P/PP5K/2BRRB2 w - -");
+  position =
+      Position("2q1r1k1/rpp5/3p1Pp1/p4n1p/b1P1n1PN/5Q1P/PP5K/2BRRB2 w - -");
   position.doMove(createMove("e1e4"));
   ASSERT_TRUE(search.goodCapture(position, createMove("e8e4"))); // recapture
   ASSERT_TRUE(search.goodCapture(position, createMove("a4d1"))); // bxR
   ASSERT_TRUE(search.goodCapture(position, createMove("f5h4"))); // nor defended
   ASSERT_FALSE(search.goodCapture(position, createMove("h5g4"))); // pawn
-
 }
 
 TEST_F(SearchTest, quiescenceTest) {
@@ -278,8 +288,10 @@ TEST_F(SearchTest, quiescenceTest) {
   auto nodes2 = search.getSearchStats().nodesVisited;
   auto extra2 = search.getSearchStats().currentExtraSearchDepth;
 
-  LOG__INFO(LOG, "Nodes without Quiescence: {:n} Nodes with Quiescence: {:n}", nodes1, nodes2);
-  LOG__INFO(LOG, "Extra without Quiescence: {:n} Extra with Quiescence: {:n}", extra1, extra2);
+  LOG__INFO(LOG, "Nodes without Quiescence: {:n} Nodes with Quiescence: {:n}",
+            nodes1, nodes2);
+  LOG__INFO(LOG, "Extra without Quiescence: {:n} Extra with Quiescence: {:n}",
+            extra1, extra2);
 
   ASSERT_GT(nodes2, nodes1);
   ASSERT_GT(extra2, extra1);
@@ -306,10 +318,10 @@ TEST_F(SearchTest, alphaBetaTest) {
   auto leafPositionsEvaluated2 = search.getSearchStats().leafPositionsEvaluated;
   auto nodesVisited2 = search.getSearchStats().nodesVisited;
 
-  LOG__INFO(LOG, "Nodes without AlphaBeta: Visited: {:n} Evaluated {:n}", nodesVisited1,
-            leafPositionsEvaluated1);
-  LOG__INFO(LOG, "Nodes with AlphaBeta: Visited: {:n} Evaluated {:n}", nodesVisited2,
-            leafPositionsEvaluated2);
+  LOG__INFO(LOG, "Nodes without AlphaBeta: Visited: {:n} Evaluated {:n}",
+            nodesVisited1, leafPositionsEvaluated1);
+  LOG__INFO(LOG, "Nodes with AlphaBeta: Visited: {:n} Evaluated {:n}",
+            nodesVisited2, leafPositionsEvaluated2);
 
   ASSERT_GT(nodesVisited1, nodesVisited2);
 }
@@ -331,7 +343,8 @@ TEST_F(SearchTest, MDPMPP) {
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 
-  LOG__INFO(LOG, "MDP: {:n} MPP: {:n}", search.getSearchStats().mateDistancePrunings,
+  LOG__INFO(LOG, "MDP: {:n} MPP: {:n}",
+            search.getSearchStats().mateDistancePrunings,
             search.getSearchStats().minorPromotionPrunings);
   ASSERT_GT(search.getSearchStats().mateDistancePrunings, 1'000);
   ASSERT_GT(search.getSearchStats().minorPromotionPrunings, 1'000);
@@ -349,13 +362,16 @@ TEST_F(SearchTest, PV_MOVE) {
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 
-  LOG__INFO(LOG, "PVS ROOT CUTS {:n} PVS ROOT RE-SEARCH {:n} PVS CUTS: {:n} PVS RE-SEARCH: {:n}",
-            search.getSearchStats().pvs_root_cutoffs, search.getSearchStats().pvs_root_researches,
-            search.getSearchStats().pvs_cutoffs, search.getSearchStats().pvs_root_researches);
+  LOG__INFO(LOG,
+            "PVS ROOT CUTS {:n} PVS ROOT RE-SEARCH {:n} PVS CUTS: {:n} PVS "
+            "RE-SEARCH: {:n}",
+            search.getSearchStats().pvs_root_cutoffs,
+            search.getSearchStats().pvs_root_researches,
+            search.getSearchStats().pvs_cutoffs,
+            search.getSearchStats().pvs_root_researches);
   ASSERT_GT(search.getSearchStats().pvs_cutoffs, 10);
   ASSERT_GT(search.getSearchStats().pvs_researches, 10);
 }
-
 
 TEST_F(SearchTest, IID) {
 
@@ -385,27 +401,31 @@ TEST_F(SearchTest, TT) {
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 
-  LOG__INFO(LOG, "Nodes: {:n} Time: {:n} ms NPS: {:n}", search.getSearchStats().nodesVisited,
-            search.getSearchStats().lastSearchTime, (search.getSearchStats().nodesVisited * 1'000) /
-                                                    search.getSearchStats().lastSearchTime);
-  LOG__INFO(LOG, "TT Hits: {:n} TT Misses: {:n} TT Hit rate: {}%",
-            search.getSearchStats().tt_Cuts,
-            search.getSearchStats().tt_NoCuts,
-            (static_cast<double>(search.getSearchStats().tt_Cuts * 100) /
-             (search.getSearchStats().tt_Cuts + search.getSearchStats().tt_NoCuts)));
+  LOG__INFO(LOG, "Nodes: {:n} Time: {:n} ms NPS: {:n}",
+            search.getSearchStats().nodesVisited,
+            search.getSearchStats().lastSearchTime,
+            (search.getSearchStats().nodesVisited * 1'000) /
+                search.getSearchStats().lastSearchTime);
+  LOG__INFO(
+      LOG, "TT Hits: {:n} TT Misses: {:n} TT Hit rate: {}%",
+      search.getSearchStats().tt_Cuts, search.getSearchStats().tt_NoCuts,
+      (static_cast<double>(search.getSearchStats().tt_Cuts * 100) /
+       (search.getSearchStats().tt_Cuts + search.getSearchStats().tt_NoCuts)));
 
   searchLimits.setDepth(6);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 
-  LOG__INFO(LOG, "Nodes: {:n} Time: {:n} ms NPS: {:n}", search.getSearchStats().nodesVisited,
-            search.getSearchStats().lastSearchTime, (search.getSearchStats().nodesVisited * 1'000) /
-                                                    search.getSearchStats().lastSearchTime);
-  LOG__INFO(LOG, "TT Hits: {:n} TT Misses: {:n} TT Hit rate: {}%",
-            search.getSearchStats().tt_Cuts,
-            search.getSearchStats().tt_NoCuts,
-            (static_cast<double>(search.getSearchStats().tt_Cuts * 100) /
-             (search.getSearchStats().tt_Cuts + search.getSearchStats().tt_NoCuts)));
+  LOG__INFO(LOG, "Nodes: {:n} Time: {:n} ms NPS: {:n}",
+            search.getSearchStats().nodesVisited,
+            search.getSearchStats().lastSearchTime,
+            (search.getSearchStats().nodesVisited * 1'000) /
+                search.getSearchStats().lastSearchTime);
+  LOG__INFO(
+      LOG, "TT Hits: {:n} TT Misses: {:n} TT Hit rate: {}%",
+      search.getSearchStats().tt_Cuts, search.getSearchStats().tt_NoCuts,
+      (static_cast<double>(search.getSearchStats().tt_Cuts * 100) /
+       (search.getSearchStats().tt_Cuts + search.getSearchStats().tt_NoCuts)));
 }
 
 TEST_F(SearchTest, NULLMOVE) {
@@ -419,21 +439,23 @@ TEST_F(SearchTest, NULLMOVE) {
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 
-  LOG__INFO(LOG, "Nodes: {:n} Time: {:n} ms NPS: {:n}", search.getSearchStats().nodesVisited,
-            search.getSearchStats().lastSearchTime, (search.getSearchStats().nodesVisited * 1'000) /
-                                                    search.getSearchStats().lastSearchTime);
+  LOG__INFO(LOG, "Nodes: {:n} Time: {:n} ms NPS: {:n}",
+            search.getSearchStats().nodesVisited,
+            search.getSearchStats().lastSearchTime,
+            (search.getSearchStats().nodesVisited * 1'000) /
+                search.getSearchStats().lastSearchTime);
 
   LOG__INFO(LOG, "Number of Null Moves Prunings: {:n} Verifications {:n}",
             search.getSearchStats().nullMovePrunings,
-            search.getSearchStats().nullMoveVerifications
-  );
+            search.getSearchStats().nullMoveVerifications);
 }
 
 TEST_F(SearchTest, perft) {
 
   int DEPTH = 5;
 
-  long perftResults[] = {0, 20, 400, 8'902, 197'281, 4'865'609, 119'060'324, 3'195'901'860};
+  long perftResults[] = {0,       20,        400,         8'902,
+                         197'281, 4'865'609, 119'060'324, 3'195'901'860};
 
   Search search;
   SearchLimits searchLimits;
@@ -442,10 +464,13 @@ TEST_F(SearchTest, perft) {
   searchLimits.setDepth(DEPTH);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
-  LOG__INFO(LOG, "Leaf nodes per sec: {:n}", (search.getSearchStats().leafPositionsEvaluated * 1'000) /
-                                             search.getSearchStats().lastSearchTime);
-  LOG__INFO(LOG, "Leaf nodes:         {:n}", search.getSearchStats().leafPositionsEvaluated);
-  ASSERT_EQ(perftResults[DEPTH], search.getSearchStats().leafPositionsEvaluated);
+  LOG__INFO(LOG, "Leaf nodes per sec: {:n}",
+            (search.getSearchStats().leafPositionsEvaluated * 1'000) /
+                search.getSearchStats().lastSearchTime);
+  LOG__INFO(LOG, "Leaf nodes:         {:n}",
+            search.getSearchStats().leafPositionsEvaluated);
+  ASSERT_EQ(perftResults[DEPTH],
+            search.getSearchStats().leafPositionsEvaluated);
 }
 
 TEST_F(SearchTest, nps) {
@@ -459,9 +484,11 @@ TEST_F(SearchTest, nps) {
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 
-  LOG__INFO(LOG, "Nodes: {:n} Time: {:n} ms NPS: {:n}", search.getSearchStats().nodesVisited,
-            search.getSearchStats().lastSearchTime, (search.getSearchStats().nodesVisited * 1'000) /
-                                                    search.getSearchStats().lastSearchTime);
+  LOG__INFO(LOG, "Nodes: {:n} Time: {:n} ms NPS: {:n}",
+            search.getSearchStats().nodesVisited,
+            search.getSearchStats().lastSearchTime,
+            (search.getSearchStats().nodesVisited * 1'000) /
+                search.getSearchStats().lastSearchTime);
 }
 
 // for debugging
@@ -469,13 +496,15 @@ TEST_F(SearchTest, nmpStats) {
   Search search;
   SearchLimits searchLimits;
 
-  //Position position;
-  //Position position("rn2kbnr/ppp1pppp/8/8/6b1/2NP1N2/PPP2P1P/R1BQKB1q w Qkq - 1 6");
-  //Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
-  //Position position("r1b2rk1/2q1b1pp/p2ppn2/1p6/3QP3/1BN1B3/PPP3PP/R4RK1 w - - ");
-  //Position position("2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - -");
-  //Position position("8/7p/R7/5p1k/5P2/7P/P1P1nP1K/5q2 w - - 3 33");
-  //Position position("r3k2r/1ppn3p/2q1q1n1/4P3/4q3/5Pp1/pb4PP/2q2RK1 w kq - 0 1"); //
+  // Position position;
+  // Position position("rn2kbnr/ppp1pppp/8/8/6b1/2NP1N2/PPP2P1P/R1BQKB1q w Qkq -
+  // 1 6"); Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1
+  // w kq -"); Position
+  // position("r1b2rk1/2q1b1pp/p2ppn2/1p6/3QP3/1BN1B3/PPP3PP/R4RK1 w - - ");
+  // Position position("2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w -
+  // -"); Position position("8/7p/R7/5p1k/5P2/7P/P1P1nP1K/5q2 w - - 3 33");
+  // Position position("r3k2r/1ppn3p/2q1q1n1/4P3/4q3/5Pp1/pb4PP/2q2RK1 w kq - 0
+  // 1"); //
   Position position("6k1/6p1/4p2p/1p6/1qn5/6N1/5PPP/2Q3K1 w - -");
 
   const int depth = 8;
@@ -488,7 +517,8 @@ TEST_F(SearchTest, nmpStats) {
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
   search.clearHash();
-  str << fmt::format("NMP {:5s} DEPTH {:2d} RED {:2d} : value = {:5d} nodes = {:11n} time = {:7}\n",
+  str << fmt::format("NMP {:5s} DEPTH {:2d} RED {:2d} : value = {:5d} nodes = "
+                     "{:11n} time = {:7}\n",
                      boolStr(0), 0, 0,
                      search.getLastSearchResult().bestMoveValue,
                      search.getSearchStats().nodesVisited,
@@ -502,13 +532,12 @@ TEST_F(SearchTest, nmpStats) {
       search.startSearch(position, searchLimits);
       search.waitWhileSearching();
       search.clearHash();
-      str << fmt::format(
-        "NMP {:5s} DEPTH {:2d} RED {:2d} : value = {:5d} nodes = {:11n} time = {:7}\n",
-        boolStr(1), dep, red,
-        search.getLastSearchResult().bestMoveValue,
-        search.getSearchStats().nodesVisited,
-        search.getSearchStats().lastSearchTime);
-
+      str << fmt::format("NMP {:5s} DEPTH {:2d} RED {:2d} : value = {:5d} "
+                         "nodes = {:11n} time = {:7}\n",
+                         boolStr(1), dep, red,
+                         search.getLastSearchResult().bestMoveValue,
+                         search.getSearchStats().nodesVisited,
+                         search.getSearchStats().lastSearchTime);
     }
   }
   std::cout << str.str();
@@ -519,7 +548,8 @@ TEST_F(SearchTest, debuggingIID) {
   SearchLimits searchLimits;
   Position position;
 
-  position = Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
+  position =
+      Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
   // const int depth = 8;
   // searchLimits.setDepth(depth);
   searchLimits.setInfinite(true);
@@ -531,7 +561,6 @@ TEST_F(SearchTest, debuggingIID) {
   SearchConfig::USE_IID = true;
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
-
 }
 
 TEST_F(SearchTest, debuggingTTMove) {
@@ -540,12 +569,10 @@ TEST_F(SearchTest, debuggingTTMove) {
   Position position;
 
   const int depth = 8;
-  position = Position("2b2rk1/3pR1p1/3p2Q1/pp1P3p/7q/P1N5/1P4PK/4R3 w - - 0 32");
+  position =
+      Position("2b2rk1/3pR1p1/3p2Q1/pp1P3p/7q/P1N5/1P4PK/4R3 w - - 0 32");
   searchLimits.setDepth(depth);
 
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
-
 }
-
-

@@ -138,6 +138,8 @@ class Search {
   // Evaluator
   Evaluator evaluator;
 
+  const char *getTest() { return "TEST"; };
+
 public:
   // for code re-using through templating we use search types when calling
   // search()

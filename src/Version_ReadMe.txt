@@ -28,6 +28,7 @@ v 0.4 (in progress)
 ================================================================================
 - TODO:
     - Debug and harden play with UCI GUI - XBoard, Arena, etc.
+    - See logfile for errors
 
 - DONE:
     - Extended Evaluation

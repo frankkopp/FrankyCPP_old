@@ -567,7 +567,8 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
               setValue(pv[PLY_ROOT].at(0), ttValue);
             } else {
               // FIXME
-              LOG__ERROR(LOG, "{}:{} Cache Hit but no pv[PLY_ROOT] MOVE",
+              LOG__ERROR(LOG,
+                         "{}:{} Cache Hit in ROOT ply but no pv[PLY_ROOT] MOVE",
                          __func__, __LINE__);
             }
             // to update UI correctly
