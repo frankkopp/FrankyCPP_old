@@ -931,26 +931,28 @@ Search::search(Position &position, Depth depth, Ply ply, Value alpha, Value beta
   // ###########################################################################
 
   // do some checks
-  if (ST != PERFT && SearchConfig::USE_ALPHABETA) {
-    // In an EXACT node we should have a best move and a PV
-    if (ttType == TYPE_EXACT) {
-      assert (ttStoreMove);
-      assert (!pv[ply].empty());
-      assert (alpha <= bestNodeValue && bestNodeValue <= beta);
-    }
+  ASSERT_START
+    if (ST != PERFT && SearchConfig::USE_ALPHABETA) {
+      // In an EXACT node we should have a best move and a PV
+      if (ttType == TYPE_EXACT) {
+        assert (ttStoreMove);
+        assert (!pv[ply].empty());
+        assert (alpha <= bestNodeValue && bestNodeValue <= beta);
+      }
 
-    // In a BETA node we should have a best move for the TT (might not be the best due to cut off)
-    if (ttType == TYPE_BETA) {
-      assert (ttStoreMove);
-      assert (bestNodeValue >= beta);
-    }
+      // In a BETA node we should have a best move for the TT (might not be the best due to cut off)
+      if (ttType == TYPE_BETA) {
+        assert (ttStoreMove);
+        assert (bestNodeValue >= beta);
+      }
 
-    // We should not have found a best move in an ALPHA node (all moves were worse than alpha)
-    if (ttType == TYPE_ALPHA) {
-      assert (ttStoreMove == MOVE_NONE);
-      assert (bestNodeValue <= alpha);
+      // We should not have found a best move in an ALPHA node (all moves were worse than alpha)
+      if (ttType == TYPE_ALPHA) {
+        assert (ttStoreMove == MOVE_NONE);
+        assert (bestNodeValue <= alpha);
+      }
     }
-  }
+  ASSERT_END
 
   // if we did not have at least one legal move
   // then we might have a mate or in quiescence
@@ -1301,12 +1303,19 @@ void Search::setHashSize(int sizeInMB) {
 }
 
 void Search::sendIterationEndInfoToEngine() const {
+  ASSERT_START
+    if (pv[PLY_ROOT].empty()) {
+      LOG__ERROR(LOG, "{}:{} pv[PLY_ROOT] is empty here and it should not be", __func__, __LINE__);
+    }
+  ASSERT_END
+
   if (!pEngine) {
     LOG__INFO(LOG,
               "UCI >> {}",
               fmt::format("depth {} seldepth {} multipv 1 {} nodes {:n} nps {:n} time {:n} pv {}",
                           searchStats.currentSearchDepth, searchStats.currentExtraSearchDepth,
-                          (searchLimitsPtr->isPerft() ? VALUE_ZERO : valueOf(pv[PLY_ROOT].at(0))),
+                          (searchLimitsPtr->isPerft() ? VALUE_ZERO :
+                           valueOf(pv[PLY_ROOT].empty() ? MOVE_NONE : pv[PLY_ROOT].at(0))),
                           searchStats.nodesVisited, getNps(), elapsedTime(startTime),
                           printMoveListUCI(pv[PLY_ROOT])));
   }
@@ -1315,7 +1324,7 @@ void Search::sendIterationEndInfoToEngine() const {
                                   searchStats.currentExtraSearchDepth,
                                   searchLimitsPtr->isPerft()
                                   ? VALUE_ZERO
-                                  : valueOf(pv[PLY_ROOT].at(0)),
+                                  : valueOf(pv[PLY_ROOT].empty() ? MOVE_NONE : pv[PLY_ROOT].at(0)),
                                   searchStats.nodesVisited, getNps(),
                                   elapsedTime(startTime), pv[PLY_ROOT]);
   }
