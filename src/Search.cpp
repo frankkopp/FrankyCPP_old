@@ -341,14 +341,16 @@ SearchResult Search::iterativeDeepening(Position &position) {
     tt_lock.unlock();
 
     // asserts - here we should have a best root move with a value.
-    if (!_stopSearchFlag && !searchLimitsPtr->isPerft()) {
-      if  (pv[PLY_ROOT].at(0) == MOVE_NONE) {
-        LOG__ERROR(LOG, "{}:{} Best root move missing after iteration", __func__,__LINE__);
+    ASSERT_START
+      if (!_stopSearchFlag && !searchLimitsPtr->isPerft()) {
+        if (pv[PLY_ROOT].empty() || pv[PLY_ROOT].at(0) == MOVE_NONE) {
+          LOG__ERROR(LOG, "{}:{} Best root move missing after iteration: pv[0] size {}", __func__, __LINE__, pv[PLY_ROOT].size());
+        }
+        if (!pv[PLY_ROOT].empty() && valueOf(pv[PLY_ROOT].at(0)) == VALUE_NONE) {
+          LOG__ERROR(LOG, "{}:{}Best root move has no value!( pv size={}", __func__, __LINE__, pv[PLY_ROOT].size());
+        };
       }
-      if (valueOf(pv[PLY_ROOT].at(0)) == VALUE_NONE) {
-        LOG__ERROR(LOG, "{}:{}Best root move has no value!", __func__,__LINE__);
-      };
-    }
+    ASSERT_END
 
     // break on stop signal or time
     if (stopConditions(true)) break;

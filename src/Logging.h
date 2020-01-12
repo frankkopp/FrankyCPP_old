@@ -30,6 +30,14 @@
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/sinks/basic_file_sink.h"
 
+#ifdef NDEBUG
+#define ASSERT_START while(0) {
+#define ASSERT_END }
+#else
+#define ASSERT_START while (1) {
+#define ASSERT_END break; }
+#endif
+
 // uncomment this if tracing macros are needed.
 #define SEARCH_LOG_LEVEL spdlog::level::trace
 

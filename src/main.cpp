@@ -39,6 +39,10 @@ int main() {
 
   std::cout << appName << std::endl;
 
+  ASSERT_START
+    std::cout << "DEBUG ASSERTION TESTS ON" << std::endl;
+  ASSERT_END
+
   // initializes and configures logging - only needed once in main()
   LOGGING::init();
   INIT::init();
