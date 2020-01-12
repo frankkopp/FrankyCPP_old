@@ -45,7 +45,6 @@ class TT;
 
 
 struct SearchResult {
-public:
   Move bestMove = MOVE_NONE;
   Value bestMoveValue = VALUE_NONE;
   Move ponderMove = MOVE_NONE;
@@ -103,7 +102,7 @@ class Search {
   // As time checks are expensive we only do them every x-th node.
   // As we loose precession in time keeping with this this must not be
   // too high.
-  static constexpr uint64_t TIME_CHECK_FREQ = 0b1111'1111'1111'1111;
+  constexpr static uint64_t TIME_CHECK_FREQ = 0b1111'1111'1111'1111;
 
   // search start time
   MilliSec startTime{};
@@ -165,7 +164,7 @@ public:
   Search &operator=(const Search &) = delete;
   Search(Search const &&) = delete;
   Search &operator=(const Search &&) = delete;
-  
+
   ////////////////////////////////////////////////
   ///// PUBLIC
 
@@ -305,7 +304,7 @@ private:
    * @return current time
    */
   static inline MilliSec now();
-  
+
   inline MilliSec getNps() const;
 
   void sendIterationEndInfoToEngine() const;

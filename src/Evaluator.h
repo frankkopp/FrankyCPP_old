@@ -99,20 +99,20 @@ public:
 
   Value evaluate(const Position &position);
 
-  std::string pawnTableStats() {
-    return fmt::format("Cache stats: capacity {:n} entries {:n} hits {:n} misses {:n} replace {:n}",
-                       pawnTable.capacity(),
-                       cacheEntries, cacheHits, cacheMisses, cacheReplace);
+  std::string pawnTableStats() const {
+    return fmt::format("Cache stats: capacity {:n} entries {:n} hits {:n} "
+                       "misses {:n} replace {:n}",
+                       pawnTable.capacity(), cacheEntries, cacheHits,
+                       cacheMisses, cacheReplace);
   }
 
-  inline void prefetch(const Bitboard &pawnBitboard) {
+  inline void prefetch(const Bitboard &pawnBitboard) const {
 #ifdef EVAL_ENABLE_PREFETCH
     _mm_prefetch(&pawnTable[getTableIndex(pawnBitboard)], _MM_HINT_T0);
 #endif
   }
 
 private:
-
 
   int pawnEval(const Position &position);
 

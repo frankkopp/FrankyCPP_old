@@ -24,18 +24,3 @@
  */
 
 #include "UCISearchMode.h"
-
-std::string UCISearchMode::str() const {
-  std::stringstream os;
-  os << "whiteTime: " << whiteTime << " blackTime: " << blackTime << " whiteInc: "
-     << whiteInc << " blackInc: " << blackInc << " movesToGo: " << movesToGo
-     << " depth: " << depth << " nodes: " << nodes << " mate: " << mate
-     << " movetime: " << movetime << " moves: " << moves << " ponder: " << ponder
-     << " infinite: " << infinite << " perft: " << perft;
-  return os.str();
-}
-
-std::ostream &operator<<(std::ostream &os, const UCISearchMode &mode) {
-  os << mode.str();
-  return os;
-}

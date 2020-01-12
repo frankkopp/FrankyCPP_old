@@ -64,7 +64,7 @@ namespace UCI {
 
     const string &getNameID() const { return nameID; }
     const OptionType &getType() const { return type; }
-    const string getTypeString() const { return optionTypeStrings[type]; }
+    string getTypeString() const { return optionTypeStrings[type]; }
     const string &getDefaultValue() const { return defaultValue; }
     const string &getMinValue() const { return minValue; }
     const string &getMaxValue() const { return maxValue; }

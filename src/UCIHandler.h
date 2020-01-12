@@ -54,36 +54,37 @@ namespace UCI {
     explicit Handler(Engine *pEng);
     /** Constructor */
     Handler(Engine *pEng, std::istream *pIstream, std::ostream *pOstream);
-    /** Destructor */
-    virtual ~Handler();
 
-    /** Starts the handler loop with the istream provided when creating the instance */
+    /** Starts the handler loop with the istream provided when creating the
+     * instance */
     void loop();
 
     /** Starts the handler loop  with the given istream (mainly for testing) */
     void loop(std::istream *pIstream);
 
-    void uciCommand();
-    void isReadyCommand();
-    void setOptionCommand(std::istringstream &inStream);
-    void uciNewGameCommand();
-    void positionCommand(std::istringstream &inStream);
+    void uciCommand() const;
+    void isReadyCommand() const;
+    void setOptionCommand(std::istringstream &inStream) const;
+    void uciNewGameCommand() const;
+    void positionCommand(std::istringstream &inStream) const;
     void goCommand(std::istringstream &inStream);
-    void stopCommand();
-    void ponderHitCommand();
-    void registerCommand();
-    void debugCommand();
-    void send(const std::string& toSend) const;
+    void stopCommand() const;
+    void ponderHitCommand() const;
+    void registerCommand() const;
+    void debugCommand() const;
+    void send(const std::string &toSend) const;
 
     ///////////////////
     //// GETTER
     const UCISearchMode &getSearchMode() const { return searchMode; };
 
-    void sendIterationEndInfo(int depth, int seldepth, Value value, long nodes, int nps, MilliSec time, const MoveList& pv);
-    void sendCurrentRootMove(Move currmove, int movenumber);
-    void sendSearchUpdate(int depth, int seldepth, long nodes, int nps, MilliSec time, int hashfull);
-    void sendCurrentLine(const MoveList& moveList);
-    void sendResult(Move bestMove, Move ponderMove);
+    void sendIterationEndInfo(int depth, int seldepth, Value value, long nodes,
+                              int nps, MilliSec time, const MoveList &pv) const;
+    void sendCurrentRootMove(Move currmove, int movenumber) const;
+    void sendSearchUpdate(int depth, int seldepth, long nodes, int nps,
+                          MilliSec time, int hashfull) const;
+    void sendCurrentLine(const MoveList &moveList) const;
+    void sendResult(Move bestMove, Move ponderMove) const;
   };
 }
 

@@ -107,8 +107,8 @@ public:
   void sendCurrentRootMove(Move currmove, MoveList::size_type movenumber) const;
   void
   sendSearchUpdate(int depth, int seldepth, long nodes, int nps, MilliSec time, int hashfull) const;
-  void sendCurrentLine(const MoveList& moveList) const;
-  void sendResult(const Move bestMove, const Value value, const Move ponderMove);
+  void sendCurrentLine(const MoveList &moveList) const;
+  void sendResult(Move bestMove, Value value, Move ponderMove);
 
   // other
   void waitWhileSearching();

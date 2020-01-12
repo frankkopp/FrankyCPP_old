@@ -36,8 +36,7 @@ using testing::Eq;
 
 class SearchTreeSizeTest : public ::testing::Test {
 public:
-
-  static constexpr int DEPTH = 8;
+  static constexpr int DEPTH = 9;
   static constexpr int NUMBER_OF_FENS = 20;
 
   const uint64_t* ptrToSpecial = nullptr;

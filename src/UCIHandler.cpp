@@ -43,8 +43,6 @@ namespace UCI {
     pOutputStream = pOstream;
   }
 
-  Handler::~Handler() = default;
-
   void Handler::loop() {
     loop(pInputStream);
   }
@@ -90,29 +88,29 @@ namespace UCI {
 
   }
 
-  void Handler::uciCommand() {
-    send("id name FrankyCPP v"
-         + to_string(FrankyCPP_VERSION_MAJOR) + "." + to_string(FrankyCPP_VERSION_MINOR));
+  void Handler::uciCommand() const {
+    send("id name FrankyCPP v" + to_string(FrankyCPP_VERSION_MAJOR) + "." +
+         to_string(FrankyCPP_VERSION_MINOR));
     send("id author Frank Kopp, Germany");
     send(pEngine->str());
     send("uciok");
   }
 
-  void Handler::isReadyCommand() {
-    send("readyok");
-  }
+  void Handler::isReadyCommand() const { send("readyok"); }
 
-  void Handler::setOptionCommand(std::istringstream &inStream) {
+  void Handler::setOptionCommand(std::istringstream &inStream) const {
     string token, name, value;
 
     if (inStream >> token && token != "name") {
-      LOG__WARN(LOG, "Command setoption is malformed - expected 'name': {}", token);
+      LOG__WARN(LOG, "Command setoption is malformed - expected 'name': {}",
+                token);
       return;
     }
 
     // read name which could contain spaces
     while (inStream >> token && token != "value") {
-      if (!name.empty()) name += " ";
+      if (!name.empty())
+        name += " ";
       name += token;
     }
 
@@ -124,11 +122,9 @@ namespace UCI {
     pEngine->setOption(name, value);
   }
 
-  void Handler::uciNewGameCommand() {
-    pEngine->newGame();
-  }
+  void Handler::uciNewGameCommand() const { pEngine->newGame(); }
 
-  void Handler::positionCommand(std::istringstream &inStream) {
+  void Handler::positionCommand(std::istringstream &inStream) const {
 
     // retrieve additional command parameter
     std::string token, startFen;
@@ -138,8 +134,7 @@ namespace UCI {
     startFen = START_POSITION_FEN;
     if (token == "startpos") { // just keep default
       inStream >> token;
-    }
-    else if (token == "fen") {
+    } else if (token == "fen") {
       startFen.clear(); // reset to empty
       while (inStream >> token && token != "moves") {
         startFen += token + " ";
@@ -308,19 +303,15 @@ namespace UCI {
     pEngine->startSearch(searchMode);
   }
 
-  void Handler::stopCommand() {
-    pEngine->stopSearch();
-  }
+  void Handler::stopCommand() const { pEngine->stopSearch(); }
 
-  void Handler::ponderHitCommand() {
-    pEngine->ponderHit();
-  }
+  void Handler::ponderHitCommand() const { pEngine->ponderHit(); }
 
-  void Handler::registerCommand() {
+  void Handler::registerCommand() const {
     LOG__WARN(LOG, "UCI Protocol Command: register not implemented!");
   }
 
-  void Handler::debugCommand() {
+  void Handler::debugCommand() const {
     LOG__WARN(LOG, "UCI Protocol Command: debug not implemented!");
   }
 
@@ -329,40 +320,33 @@ namespace UCI {
     *pOutputStream << toSend << endl;
   }
 
-  void Handler::sendResult(Move bestMove, Move ponderMove) {
-    send(
-      fmt::format(
-        "bestmove {}{}",
-        printMove(bestMove),
-        (ponderMove ? " ponder " + printMove(ponderMove) : "")));
+  void Handler::sendResult(Move bestMove, Move ponderMove) const {
+    send(fmt::format("bestmove {}{}", printMove(bestMove),
+                     (ponderMove ? " ponder " + printMove(ponderMove) : "")));
   }
 
-  void Handler::sendCurrentLine(const MoveList &moveList) {
-    send(
-      fmt::format(
-        "currline {}",
-        printMoveListUCI(moveList)));
+  void Handler::sendCurrentLine(const MoveList &moveList) const {
+    send(fmt::format("currline {}", printMoveListUCI(moveList)));
   }
 
-  void Handler::sendIterationEndInfo(int depth, int seldepth, Value value, long nodes, int nps,
-                                     MilliSec time, const MoveList &pv) {
-    send(fmt::format(
-      "info depth {} seldepth {} multipv 1 score {} nodes {} nps {} time {} pv {}",
-      depth, seldepth, printValue(Value(value)), nodes, nps, time, printMoveListUCI(pv)
-    ));
+  void Handler::sendIterationEndInfo(int depth, int seldepth, Value value,
+                                     long nodes, int nps, MilliSec time,
+                                     const MoveList &pv) const {
+    send(fmt::format("info depth {} seldepth {} multipv 1 score {} nodes {} "
+                     "nps {} time {} pv {}",
+                     depth, seldepth, printValue(Value(value)), nodes, nps,
+                     time, printMoveListUCI(pv)));
   }
 
-  void Handler::sendCurrentRootMove(Move currmove, int movenumber) {
-    send(fmt::format(
-      "currmove {} currmovenumber {}",
-      printMove(currmove), movenumber));
+  void Handler::sendCurrentRootMove(Move currmove, int movenumber) const {
+    send(fmt::format("currmove {} currmovenumber {}", printMove(currmove),
+                     movenumber));
   }
 
-  void Handler::sendSearchUpdate(int depth, int seldepth, long nodes, int nps, MilliSec time,
-                                 int hashfull) {
-    send(fmt::format(
-      "depth {} seldepth {} nodes {} nps {} time {} hashfull {}",
-      depth, seldepth, nodes, nps, time, hashfull));
+  void Handler::sendSearchUpdate(int depth, int seldepth, long nodes, int nps,
+                                 MilliSec time, int hashfull) const {
+    send(fmt::format("depth {} seldepth {} nodes {} nps {} time {} hashfull {}",
+                     depth, seldepth, nodes, nps, time, hashfull));
   }
 
-}
+  }

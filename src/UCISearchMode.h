@@ -30,29 +30,38 @@
 
 #include "types.h"
 
-class UCISearchMode {
-
-public:
-  
+struct UCISearchMode {
   // defaults
-  int          whiteTime = 0;
-  int          blackTime = 0;
-  int          whiteInc  = 0;
-  int          blackInc  = 0;
-  int          movesToGo = 0;
-  int          depth     = 0;
-  long         nodes     = 0;
-  int          mate      = 0;
-  int          movetime  = 0;
-  MoveList     moves{};
+  int whiteTime = 0;
+  int blackTime = 0;
+  int whiteInc = 0;
+  int blackInc = 0;
+  int movesToGo = 0;
+  int depth = 0;
+  long nodes = 0;
+  int mate = 0;
+  int movetime = 0;
+  MoveList moves{};
 
-  bool ponder   = false;
+  bool ponder = false;
   bool infinite = false;
-  bool perft    = false;
+  bool perft = false;
 
-  std::string str() const;
-  friend std::ostream &operator<<(std::ostream &os, const UCISearchMode &mode);
+  std::ostream &operator<<(std::ostream &os) const {
+    os << this->str();
+    return os;
+  }
 
+  std::string str() const {
+    std::stringstream os;
+    os << "whiteTime: " << whiteTime << " blackTime: " << blackTime
+       << " whiteInc: " << whiteInc << " blackInc: " << blackInc
+       << " movesToGo: " << movesToGo << " depth: " << depth
+       << " nodes: " << nodes << " mate: " << mate << " movetime: " << movetime
+       << " moves: " << moves << " ponder: " << ponder
+       << " infinite: " << infinite << " perft: " << perft;
+    return os.str();
+  }
 };
 
 
