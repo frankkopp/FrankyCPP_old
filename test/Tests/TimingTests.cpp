@@ -10,8 +10,8 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -23,13 +23,13 @@
  *
  */
 
-#include <gtest/gtest.h>
 #include <chrono>
+#include <gtest/gtest.h>
 #include <random>
 #include <thread>
 
-#include "Logging.h"
 #include "Bitboards.h"
+#include "Logging.h"
 #include "Position.h"
 
 #include <boost/timer/timer.hpp>
@@ -55,8 +55,8 @@ protected:
   void TearDown() override {}
 
   // Necessary because of function pointer use below.
-  void testTiming(ostringstream &os, int rounds, int iterations, int repetitions,
-                  vector<function<void(void)>> tests);
+  void testTiming(ostringstream &os, int rounds, int iterations,
+                  int repetitions, vector<function<void(void)>> tests);
 };
 
 TEST_F(TimingTests, DISABLED_popcount) {
@@ -80,7 +80,8 @@ TEST_F(TimingTests, DISABLED_doMoveUndoMove) {
   ostringstream os;
 
   //// TESTS START
-  position = Position("r3k2r/1ppqbppp/2n2n2/1B2p1B1/3p2b1/2NP1N2/1PPQPPPP/R3K2R w KQkq - 0 1");
+  position = Position(
+      "r3k2r/1ppqbppp/2n2n2/1B2p1B1/3p2b1/2NP1N2/1PPQPPPP/R3K2R w KQkq - 0 1");
   const Move move1 = createMove(SQ_E2, SQ_E4);
   const Move move2 = createMove(SQ_D4, SQ_E3);
   const Move move3 = createMove(SQ_D2, SQ_E3);
@@ -122,11 +123,16 @@ TEST_F(TimingTests, DISABLED_rotation) {
   ostringstream os;
 
   //// TESTS START
-  position = Position("r3k2r/1ppqbppp/2n2n2/1B2p1B1/3p2b1/2NP1N2/1PPQPPPP/R3K2R w KQkq - 0 1");
+  position = Position(
+      "r3k2r/1ppqbppp/2n2n2/1B2p1B1/3p2b1/2NP1N2/1PPQPPPP/R3K2R w KQkq - 0 1");
 
-  std::function<void()> f1 = []() { Bitboards::getMovesDiagUp(SQ_D2, position.getOccupiedBB()); };
-  std::function<void()> f2 = []() { Bitboards::getMovesDiagUpR(SQ_D2, position.getOccupiedBBR45()); };
-  vector<std::function<void()> > tests;
+  std::function<void()> f1 = []() {
+    Bitboards::getMovesDiagUp(SQ_D2, position.getOccupiedBB());
+  };
+  std::function<void()> f2 = []() {
+    Bitboards::getMovesDiagUpR(SQ_D2, position.getOccupiedBBR45());
+  };
+  vector<std::function<void()>> tests;
   tests.push_back(f1);
   tests.push_back(f2);
   //// TESTS END
@@ -139,8 +145,8 @@ TEST_F(TimingTests, DISABLED_rotation) {
 TEST_F(TimingTests, DISABLED_TThash) {
   ostringstream os;
 
-  uint64_t* data1 = new uint64_t[2'500'000];
-  uint64_t* data2 = new uint64_t[2'500'000];
+  uint64_t *data1 = new uint64_t[2'500'000];
+  uint64_t *data2 = new uint64_t[2'500'000];
   std::mt19937_64 eng1(12345);
   std::mt19937_64 eng2(12345);
   std::uniform_int_distribution<unsigned long long> distr1;
@@ -148,10 +154,12 @@ TEST_F(TimingTests, DISABLED_TThash) {
 
   //// TESTS START
   std::function<void()> f1 = [&]() {
-    data1[distr1(eng1) % 2'000'000] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    data1[distr1(eng1) % 2'000'000] =
+        std::chrono::high_resolution_clock::now().time_since_epoch().count();
   };
   std::function<void()> f2 = [&]() {
-    data2[distr2(eng2) & 2'097'151] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    data2[distr2(eng2) & 2'097'151] =
+        std::chrono::high_resolution_clock::now().time_since_epoch().count();
   };
   vector<std::function<void()>> tests;
   tests.push_back(f1);
@@ -189,7 +197,6 @@ TEST_F(TimingTests, DISABLED_busyWait) {
   cout << os.str();
 }
 
-
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
 TEST_F(TimingTests, DISABLED_moveUnion) {
@@ -207,10 +214,10 @@ TEST_F(TimingTests, DISABLED_moveUnion) {
       union {
         uint16_t all;
         struct {
-          uint8_t from:6;
-          uint8_t to:6;
-          uint8_t promType:2;
-          uint8_t moveType:2;
+          uint8_t from : 6;
+          uint8_t to : 6;
+          uint8_t promType : 2;
+          uint8_t moveType : 2;
         } __attribute__((packed)) data;
       } __attribute__((packed)) move;
       int16_t value;
@@ -228,7 +235,8 @@ TEST_F(TimingTests, DISABLED_moveUnion) {
   newMove.moveValue.move.data.promType = promPT - 3;
   newMove.moveValue.move.data.moveType = type >> MoveShifts::TYPE_SHIFT;
   newMove.moveValue.value = value;
-  fprintln("{} {}", static_cast<uint32_t>(newMove.all), printBitString(static_cast<uint32_t>(newMove.all)));
+  fprintln("{} {}", static_cast<uint32_t>(newMove.all),
+           printBitString(static_cast<uint32_t>(newMove.all)));
 
   //// TESTS START
   std::function<void()> f1 = [&]() {
@@ -273,8 +281,7 @@ TEST_F(TimingTests, DISABLED_bitCount) {
   uint8_t PopCnt16[1 << 16];
   // pre-computes 16-bit population counter to use in popcount(64-bit)
   for (unsigned i = 0; i < (1U << 16U); ++i)
-    PopCnt16[i] = (uint8_t) myPopcount16(i);
-
+    PopCnt16[i] = (uint8_t)myPopcount16(i);
 
   //// TESTS START
   std::function<void()> f1 = [&]() {
@@ -282,11 +289,10 @@ TEST_F(TimingTests, DISABLED_bitCount) {
       Bitboard bb;
       uint16_t u[4];
     } v = {randomU64(rg)};
-    i = PopCnt16[v.u[0]] + PopCnt16[v.u[1]] + PopCnt16[v.u[2]] + PopCnt16[v.u[3]];
+    i = PopCnt16[v.u[0]] + PopCnt16[v.u[1]] + PopCnt16[v.u[2]] +
+        PopCnt16[v.u[3]];
   };
-  std::function<void()> f2 = [&]() {
-    i = __builtin_popcountll(randomU64(rg));
-  };
+  std::function<void()> f2 = [&]() { i = __builtin_popcountll(randomU64(rg)); };
   vector<std::function<void()>> tests;
   tests.push_back(f1);
   tests.push_back(f2);
@@ -297,58 +303,82 @@ TEST_F(TimingTests, DISABLED_bitCount) {
   cout << os.str();
 }
 
+TEST_F(TimingTests, DISABLED_popLSB) {
+  ostringstream os;
 
-TEST_F(TimingTests,  DISABLED_popLSB) {
-ostringstream os;
+  std::mt19937_64 rg(12345);
+  std::uniform_int_distribution<unsigned long long> randomU64;
 
-std::mt19937_64 rg(12345);
-std::uniform_int_distribution<unsigned long long> randomU64;
+  Square result;
 
-Square result;
+  //// TESTS START
+  std::function<void()> f1 = [&]() {
+    Bitboard b = randomU64(rg);
+    result = Bitboards::popLSB(b);
+  };
+  std::function<void()> f2 = [&]() {
+    Bitboard b = randomU64(rg);
+    Bitboards::popLSB2(b, result);
+  };
+  vector<std::function<void()>> tests;
+  tests.push_back(f1);
+  tests.push_back(f2);
+  //// TESTS END
 
-//// TESTS START
-std::function<void()> f1 = [&]() {
-  Bitboard b = randomU64(rg);
-  result = Bitboards::popLSB(b);
-};
-std::function<void()> f2 = [&]() {
-  Bitboard b = randomU64(rg);
-  Bitboards::popLSB2(b, result);
-};
-vector<std::function<void()>> tests;
-tests.push_back(f1);
-tests.push_back(f2);
-//// TESTS END
+  testTiming(os, 5, 50, 50'000'000, tests);
 
-testTiming(os, 5, 50, 50'000'000, tests);
-
-cout << os.str();
+  cout << os.str();
 }
 
-TEST_F(TimingTests,  DISABLED_Skeleton) {
-ostringstream os;
+TEST_F(TimingTests, max) {
+  ostringstream os;
 
-std::mt19937_64 rg(12345);
-std::uniform_int_distribution<unsigned long long> randomU64;
+  std::mt19937_64 rg(12345);
+  std::uniform_int_distribution<unsigned long long> randomU64;
 
-//// TESTS START
-std::function<void()> f1 = [&]() {
-};
-std::function<void()> f2 = [&]() {
-};
-vector<std::function<void()>> tests;
-tests.push_back(f1);
-tests.push_back(f2);
-//// TESTS END
+  int alpha = 1000;
+  int ply = 5;
+  int globalVal = -10000;
 
-testTiming(os, 5, 50, 10'000'000, tests);
+  //// TESTS START
+  std::function<void()> f1 = [&]() {
+    alpha = std::min(globalVal + ply, alpha);
+  };
+  std::function<void()> f2 = [&]() {
+    if (alpha > globalVal + ply)
+      alpha = globalVal + ply;
+  };
+  vector<std::function<void()>> tests;
+  tests.push_back(f1);
+  tests.push_back(f2);
+  //// TESTS END
 
-cout << os.str();
+  testTiming(os, 5, 50, 30'000'000, tests);
+
+  cout << os.str();
 }
 
-void
-TimingTests::testTiming(ostringstream &os, int rounds, int iterations, int repetitions,
-                        vector<function<void()>> tests) {
+TEST_F(TimingTests, DISABLED_Skeleton) {
+  ostringstream os;
+
+  std::mt19937_64 rg(12345);
+  std::uniform_int_distribution<unsigned long long> randomU64;
+
+  //// TESTS START
+  std::function<void()> f1 = [&]() {};
+  std::function<void()> f2 = [&]() {};
+  vector<std::function<void()>> tests;
+  tests.push_back(f1);
+  tests.push_back(f2);
+  //// TESTS END
+
+  testTiming(os, 5, 50, 10'000'000, tests);
+
+  cout << os.str();
+}
+
+void TimingTests::testTiming(ostringstream &os, int rounds, int iterations,
+                             int repetitions, vector<function<void()>> tests) {
 
   nanosecond_type last = 0;
 
@@ -357,9 +387,10 @@ TimingTests::testTiming(ostringstream &os, int rounds, int iterations, int repet
   os << setprecision(9);
 
   os << endl;
-  os << "Starting timing test: rounds=" << rounds << " iterations=" << iterations << " repetitions="
-     << repetitions << endl;
-  os << "======================================================================" << endl;
+  os << "Starting timing test: rounds=" << rounds
+     << " iterations=" << iterations << " repetitions=" << repetitions << endl;
+  os << "======================================================================"
+     << endl;
 
   // rounds
   for (int round = 1; round <= rounds; ++round) {
@@ -374,23 +405,28 @@ TimingTests::testTiming(ostringstream &os, int rounds, int iterations, int repet
       while (i++ < iterations) {
         // repetitions
         timer.resume();
-        for (int j = 0; j < repetitions; ++j) f();
+        for (int j = 0; j < repetitions; ++j)
+          f();
         timer.stop();
       }
 
       cpu_times cpuTime = timer.elapsed();
-      cpu_times avgTimes = cpu_times{cpuTime.wall / iterations, cpuTime.user / iterations,
-                                     cpuTime.system / iterations};
+      cpu_times avgTimes =
+          cpu_times{cpuTime.wall / iterations, cpuTime.user / iterations,
+                    cpuTime.system / iterations};
 
       const nanosecond_type avgCpu = avgTimes.user + avgTimes.system;
       int percentFromLast = last ? (avgCpu * 10'000) / last : 10'000;
 
-      os << "Round " << std::setfill(' ') << setw(2) << round << " Test " << setw(2) << testNr++
-         << ": " << std::setfill(' ') << setw(12) << avgCpu << " ns"
-         << " (" << std::setfill(' ') << setw(6) << (percentFromLast / 100) << "%)"
+      os << "Round " << std::setfill(' ') << setw(2) << round << " Test "
+         << setw(2) << testNr++ << ": " << std::setfill(' ') << setw(12)
+         << avgCpu << " ns"
+         << " (" << std::setfill(' ') << setw(6) << (percentFromLast / 100)
+         << "%)"
          << " (" << std::setfill(' ') << setw(12) << (avgCpu / 1e9) << " sec)"
          << " (" << std::setfill(' ') << setw(12)
-         << static_cast<double>(avgCpu) / (repetitions * iterations) << " ns avg per test)"
+         << static_cast<double>(avgCpu) / (repetitions * iterations)
+         << " ns avg per test)"
          << " >> " << boost::timer::format(avgTimes, default_places);
 
       last = avgCpu;
@@ -399,6 +435,3 @@ TimingTests::testTiming(ostringstream &os, int rounds, int iterations, int repet
     last = 0;
   }
 }
-
-
-

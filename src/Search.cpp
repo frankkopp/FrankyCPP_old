@@ -301,10 +301,6 @@ SearchResult Search::iterativeDeepening(Position &position) {
 
   Depth iterationDepth = searchLimitsPtr->getStartDepth();
 
-  // current search iterationDepth
-  searchStats.currentSearchDepth = PLY_ROOT;
-  searchStats.currentExtraSearchDepth = PLY_ROOT;
-
   // generate all legal root moves
   rootMoves = generateRootMoves(position);
 
@@ -333,6 +329,9 @@ SearchResult Search::iterativeDeepening(Position &position) {
     LOG__TRACE(LOG, "Iteration Depth {} START", iterationDepth);
 
     currentIterationDepth = iterationDepth;
+    searchStats.currentSearchDepth = static_cast<Ply>(iterationDepth);
+    if (searchStats.currentExtraSearchDepth < static_cast<Ply>(iterationDepth))
+      searchStats.currentExtraSearchDepth = static_cast<Ply>(iterationDepth);
     searchStats.bestMoveChanges = 0;
     searchStats.nodesVisited++;
 
@@ -430,10 +429,6 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
   switch (ST) {
   case ROOT: // fall through
   case NONROOT:
-    searchStats.currentSearchDepth =
-        std::max(searchStats.currentSearchDepth, ply);
-    searchStats.currentExtraSearchDepth =
-        std::max(searchStats.currentExtraSearchDepth, ply);
     if (depth <= DEPTH_NONE || ply >= PLY_MAX - 1) {
       if (SearchConfig::USE_QUIESCENCE) {
         return search<QUIESCENCE, NT>(position, depth, ply, alpha, beta,
@@ -456,12 +451,11 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
                  printMoveListUCI(currentVariation), eval);
       return eval;
     }
-    searchStats.currentExtraSearchDepth =
-        std::max(searchStats.currentExtraSearchDepth, ply);
+    if (searchStats.currentExtraSearchDepth < ply)
+      searchStats.currentExtraSearchDepth = ply;
+
     break;
   case PERFT:
-    searchStats.currentSearchDepth =
-        std::max(searchStats.currentSearchDepth, ply);
     if (depth <= DEPTH_NONE || ply >= PLY_MAX - 1) {
       Value eval = evaluate(position);
       LOG__TRACE(LOG, "{:>{}} Evaluation: {} {}", " ", ply,
@@ -475,8 +469,10 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
   // Did we already find a shorter mate then ignore
   // this one.
   if (SearchConfig::USE_MDP && ST != ROOT && ST != PERFT) {
-    alpha = std::max(-VALUE_CHECKMATE + ply, alpha);
-    beta = std::min(VALUE_CHECKMATE - ply, beta);
+    if (alpha < -VALUE_CHECKMATE + ply)
+      alpha = -VALUE_CHECKMATE + ply;
+    if (beta > VALUE_CHECKMATE - ply)
+      beta = VALUE_CHECKMATE - ply;
     if (alpha >= beta) {
       assert(isCheckMateValue(alpha));
       searchStats.mateDistancePrunings++;

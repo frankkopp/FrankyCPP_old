@@ -128,7 +128,9 @@ const TT::Entry* TT::probe(const Key &key) {
   Entry* ttEntryPtr = getEntryPtr(key);
   if (ttEntryPtr->key == key) {
     numberOfHits++; // entries with identical keys found
-    ttEntryPtr->age = std::max(0, ttEntryPtr->age - 1);
+    ttEntryPtr->age--;
+    if (ttEntryPtr->age < 0)
+      ttEntryPtr->age = 0;
     return ttEntryPtr;
   }
   numberOfMisses++; // keys not found (not equal to TT misses)

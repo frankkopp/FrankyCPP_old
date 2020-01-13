@@ -973,10 +973,13 @@ Piece Position::removePiece(const Square square) {
   // zobrist
   zobristKey ^= Zobrist::pieces[old][square];
   // game phase
-  gamePhase = std::max(0, gamePhase - gamePhaseValue[pieceType]);
+  gamePhase -= gamePhaseValue[pieceType];
+  if (gamePhase < 0)
+    gamePhase = 0;
   // material
   material[color] -= pieceTypeValue[pieceType];
-  if (pieceType > 2) materialNonPawn[color] -= pieceTypeValue[pieceType];
+  if (pieceType > 2)
+    materialNonPawn[color] -= pieceTypeValue[pieceType];
   // position value
   psqMidValue[color] -= Values::posMidValue[old][square];
   psqEndValue[color] -= Values::posEndValue[old][square];
