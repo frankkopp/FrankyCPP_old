@@ -68,14 +68,14 @@ TEST_F(ValuesTest, basic) {
   ASSERT_EQ(2, Values::posMidValue[BLACK_QUEEN][SQ_D4]);
   ASSERT_EQ(50, Values::posMidValue[BLACK_KING][SQ_G8]);
 
-  ASSERT_EQ(50, Values::posEndValue[WHITE_PAWN][SQ_E7]);
+  ASSERT_EQ(90, Values::posEndValue[WHITE_PAWN][SQ_E7]);
   ASSERT_EQ(-30, Values::posEndValue[WHITE_KNIGHT][SQ_H3]);
   ASSERT_EQ(0, Values::posEndValue[WHITE_BISHOP][SQ_G2]);
   ASSERT_EQ(5, Values::posEndValue[WHITE_ROOK][SQ_H8]);
   ASSERT_EQ(5, Values::posEndValue[WHITE_QUEEN][SQ_E5]);
   ASSERT_EQ(-30, Values::posEndValue[WHITE_KING][SQ_G1]);
 
-  ASSERT_EQ(50, Values::posEndValue[BLACK_PAWN][SQ_E2]);
+  ASSERT_EQ(90, Values::posEndValue[BLACK_PAWN][SQ_E2]);
   ASSERT_EQ(-30, Values::posEndValue[BLACK_KNIGHT][SQ_A6]);
   ASSERT_EQ(0, Values::posEndValue[BLACK_BISHOP][SQ_B7]);
   ASSERT_EQ(5, Values::posEndValue[BLACK_ROOK][SQ_A1]);
