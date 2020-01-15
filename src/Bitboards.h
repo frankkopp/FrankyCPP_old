@@ -356,7 +356,7 @@ namespace Bitboards {
     sq = lsb(b);
     b &= b - 1;
   }
-}
+} // end namespace to define operators first
 
 //// Operators for Squares as Bitboards
 constexpr Bitboard operator&(const Square lhs, const Square rhs) {
@@ -393,6 +393,7 @@ constexpr Bitboard &operator^=(Bitboard &b, const Square s) {
   return b ^= Bitboards::squareBB[s];
 }
 
+// re-start namespace - these things below need the operators above
 namespace Bitboards {
 
   /**

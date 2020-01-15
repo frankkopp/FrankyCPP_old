@@ -43,9 +43,7 @@ Search::Search(Engine* pEng) {
     int hashSize = SearchConfig::TT_SIZE_MB;
     if (pEngine) {
       int tmp = pEngine->getHashSize();
-      if (tmp) {
-        hashSize = tmp;
-      }
+      if (tmp) { hashSize = tmp; }
     }
     tt->resize(hashSize * TT::MB);
   }
