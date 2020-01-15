@@ -26,21 +26,21 @@
 #ifndef FRANKYCPP_POSITION_H
 #define FRANKYCPP_POSITION_H
 
-#include "Bitboards.h"
-#include "MoveGenerator.h"
-#include "types.h"
-#include "gtest/gtest_prod.h"
 #include <array>
+#include "gtest/gtest_prod.h"
+#include "types.h"
+//#include "Bitboards.h"
+//#include "MoveGenerator.h"
 
 // circle reference between Position and MoveGenerator - this make it possible
 class MoveGenerator;
 
 namespace Zobrist {
-// zobrist key for pieces - piece, board
-extern Key pieces[PIECE_LENGTH][SQ_LENGTH];
-extern Key castlingRights[CR_LENGTH];
-extern Key enPassantFile[FILE_LENGTH];
-extern Key nextPlayer;
+  // zobrist key for pieces - piece, board
+  extern Key pieces[PIECE_LENGTH][SQ_LENGTH];
+  extern Key castlingRights[CR_LENGTH];
+  extern Key enPassantFile[FILE_LENGTH];
+  extern Key nextPlayer;
 } // namespace Zobrist
 
 /**
@@ -56,7 +56,9 @@ class Position {
   ///// FIELDS
 
   // Flag for boolean states with undetermined state
-  enum Flag { FLAG_TBD, FLAG_FALSE, FLAG_TRUE };
+  enum Flag {
+    FLAG_TBD, FLAG_FALSE, FLAG_TRUE
+  };
 
   // The zobrist key to use as a hash key in transposition tables
   // The zobrist key will be updated incrementally every time one of the the

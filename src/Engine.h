@@ -27,15 +27,13 @@
 #define FRANKYCPP_ENGINE_H
 
 #include <map>
-#include <ostream>
 
 #include "Logging.h"
-#include "EngineConfig.h"
 #include "UCIOption.h"
-#include "UCIHandler.h"
 #include "Position.h"
 #include "Search.h"
-#include "SearchLimits.h"
+#include "EngineConfig.h"
+#include "UCIHandler.h"
 
 #define MAP(name, option) optionMap.insert(std::make_pair(name, option))
 

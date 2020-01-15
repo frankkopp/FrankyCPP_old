@@ -38,8 +38,6 @@ using namespace boost::timer;
 using namespace std;
 using namespace Bitboards;
 
-Position position;
-
 class TimingTests : public ::testing::Test {
 public:
   static void SetUpTestSuite() {
@@ -80,15 +78,15 @@ TEST_F(TimingTests, DISABLED_doMoveUndoMove) {
   ostringstream os;
 
   //// TESTS START
-  position = Position(
-      "r3k2r/1ppqbppp/2n2n2/1B2p1B1/3p2b1/2NP1N2/1PPQPPPP/R3K2R w KQkq - 0 1");
+  Position position = Position(
+    "r3k2r/1ppqbppp/2n2n2/1B2p1B1/3p2b1/2NP1N2/1PPQPPPP/R3K2R w KQkq - 0 1");
   const Move move1 = createMove(SQ_E2, SQ_E4);
   const Move move2 = createMove(SQ_D4, SQ_E3);
   const Move move3 = createMove(SQ_D2, SQ_E3);
   const Move move4 = createMove(SQ_E8, SQ_C8);
   const Move move5 = createMove(SQ_E1, SQ_G1);
 
-  std::function<void()> f1 = []() {
+  std::function<void()> f1 = [&]() {
     //    string fen = position.printFen();
     //    cout << position.printBoard() << endl;
     position.doMove(move1);
@@ -123,13 +121,13 @@ TEST_F(TimingTests, DISABLED_rotation) {
   ostringstream os;
 
   //// TESTS START
-  position = Position(
-      "r3k2r/1ppqbppp/2n2n2/1B2p1B1/3p2b1/2NP1N2/1PPQPPPP/R3K2R w KQkq - 0 1");
+  Position position(
+    "r3k2r/1ppqbppp/2n2n2/1B2p1B1/3p2b1/2NP1N2/1PPQPPPP/R3K2R w KQkq - 0 1");
 
-  std::function<void()> f1 = []() {
+  std::function<void()> f1 = [&]() {
     Bitboards::getMovesDiagUp(SQ_D2, position.getOccupiedBB());
   };
-  std::function<void()> f2 = []() {
+  std::function<void()> f2 = [&]() {
     Bitboards::getMovesDiagUpR(SQ_D2, position.getOccupiedBBR45());
   };
   vector<std::function<void()>> tests;
@@ -330,7 +328,7 @@ TEST_F(TimingTests, DISABLED_popLSB) {
   cout << os.str();
 }
 
-TEST_F(TimingTests, max) {
+TEST_F(TimingTests, DISABLED_max) {
   ostringstream os;
 
   std::mt19937_64 rg(12345);

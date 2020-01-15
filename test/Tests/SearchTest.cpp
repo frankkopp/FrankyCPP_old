@@ -382,7 +382,7 @@ TEST_F(SearchTest, IID) {
   Search search;
   SearchLimits searchLimits;
   Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
-  searchLimits.setDepth(8);
+  searchLimits.setDepth(9);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 

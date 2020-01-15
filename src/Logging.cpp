@@ -39,6 +39,8 @@ namespace LOGGING {
     std::string defaultPattern = fmt::format("[%H:%M:%S:%f] [t:%t] [%-14n] [%-8l]: %v");
     spdlog::set_pattern(defaultPattern);
 
+    spdlog::set_level(spdlog::level::trace);
+
     // Shared file sink
     auto sharedFileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("FrankyCPP.log");
     sharedFileSink->set_level(spdlog::level::trace);

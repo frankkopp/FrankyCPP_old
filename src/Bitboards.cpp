@@ -23,8 +23,7 @@
  *
  */
 
-#include <string>
-
+#include "Logging.h"
 #include "Bitboards.h"
 
 using namespace std;
@@ -80,6 +79,7 @@ namespace Bitboards {
    * Initializes various pre-computed bitboards
    */
   void init() {
+    LOG__TRACE(spdlog::get("Main_Logger"), "{} {}() line {}", __FILE_NAME__, __func__, __LINE__);
 
     // pre-computes 16-bit population counter to use in popcount(64-bit)
     for (unsigned i = 0; i < (1U << 16U); ++i)
@@ -89,94 +89,54 @@ namespace Bitboards {
     for (Square sq = SQ_A1; sq <= SQ_H8; ++sq) {
 
       // square bitboard
-      fprintln("INIT pre; Square BB: {} \n{}", squareLabel(sq),
-               Bitboards::printFlat(Bitboards::squareBB[sq]));
-      fprintln("INIT pre; Square BB: {} \n{}", squareLabel(sq),
-               Bitboards::print(Bitboards::squareBB[sq]));
-      fprintln("INIT pre; ONE BB: {} \n{}", squareLabel(sq),
-               Bitboards::printFlat(ONE_BB << sq));
-      fprintln("INIT pre; ONE BB: {} \n{}", squareLabel(sq),
-               Bitboards::print(ONE_BB << sq));
       squareBB[sq] = ONE_BB << sq;
-      fprintln("INIT post; Square BB: {} \n{}", squareLabel(sq),
-               Bitboards::print(Bitboards::squareBB[sq]));
-      fprintln("INIT post; Square BB: {} \n{}", squareLabel(sq),
-               Bitboards::printFlat(Bitboards::squareBB[sq]));
 
       // file and rank bitboards
       sqToFileBB[sq] = fileBB(sq);
       sqToRankBB[sq] = rankBB(sq);
 
       // square diagonals
-      if (DiagUpA8 & sq) {
-        squareDiagUpBB[sq] = DiagUpA8;
-      } else if (DiagUpA7 & sq) {
-        squareDiagUpBB[sq] = DiagUpA7;
-      } else if (DiagUpA6 & sq) {
-        squareDiagUpBB[sq] = DiagUpA6;
-      } else if (DiagUpA5 & sq) {
-        squareDiagUpBB[sq] = DiagUpA5;
-      } else if (DiagUpA4 & sq) {
-        squareDiagUpBB[sq] = DiagUpA4;
-      } else if (DiagUpA3 & sq) {
-        squareDiagUpBB[sq] = DiagUpA3;
-      } else if (DiagUpA2 & sq) {
-        squareDiagUpBB[sq] = DiagUpA2;
-      } else if (DiagUpA1 & sq) {
-        squareDiagUpBB[sq] = DiagUpA1;
-      } else if (DiagUpB1 & sq) {
-        squareDiagUpBB[sq] = DiagUpB1;
-      } else if (DiagUpC1 & sq) {
-        squareDiagUpBB[sq] = DiagUpC1;
-      } else if (DiagUpD1 & sq) {
-        squareDiagUpBB[sq] = DiagUpD1;
-      } else if (DiagUpE1 & sq) {
-        squareDiagUpBB[sq] = DiagUpE1;
-      } else if (DiagUpF1 & sq) {
-        squareDiagUpBB[sq] = DiagUpF1;
-      } else if (DiagUpG1 & sq) {
-        squareDiagUpBB[sq] = DiagUpG1;
-      } else if (DiagUpH1 & sq)
-        squareDiagUpBB[sq] = DiagUpH1;
-      if (DiagDownH8 & sq) {
-        squareDiagDownBB[sq] = DiagDownH8;
-      } else if (DiagDownH7 & sq) {
-        squareDiagDownBB[sq] = DiagDownH7;
-      } else if (DiagDownH6 & sq) {
-        squareDiagDownBB[sq] = DiagDownH6;
-      } else if (DiagDownH5 & sq) {
-        squareDiagDownBB[sq] = DiagDownH5;
-      } else if (DiagDownH4 & sq) {
-        squareDiagDownBB[sq] = DiagDownH4;
-      } else if (DiagDownH3 & sq) {
-        squareDiagDownBB[sq] = DiagDownH3;
-      } else if (DiagDownH2 & sq) {
-        squareDiagDownBB[sq] = DiagDownH2;
-      } else if (DiagDownH1 & sq) {
-        squareDiagDownBB[sq] = DiagDownH1;
-      } else if (DiagDownG1 & sq) {
-        squareDiagDownBB[sq] = DiagDownG1;
-      } else if (DiagDownF1 & sq) {
-        squareDiagDownBB[sq] = DiagDownF1;
-      } else if (DiagDownE1 & sq) {
-        squareDiagDownBB[sq] = DiagDownE1;
-      } else if (DiagDownD1 & sq) {
-        squareDiagDownBB[sq] = DiagDownD1;
-      } else if (DiagDownC1 & sq) {
-        squareDiagDownBB[sq] = DiagDownC1;
-      } else if (DiagDownB1 & sq) {
-        squareDiagDownBB[sq] = DiagDownB1;
-      } else if (DiagDownA1 & sq)
-        squareDiagDownBB[sq] = DiagDownA1;
+      // @formatter:off
+      if (DiagUpA8 & sq) squareDiagUpBB[sq] = DiagUpA8;
+      else if (DiagUpA7 & sq) squareDiagUpBB[sq] = DiagUpA7;
+      else if (DiagUpA6 & sq) squareDiagUpBB[sq] = DiagUpA6;
+      else if (DiagUpA5 & sq) squareDiagUpBB[sq] = DiagUpA5;
+      else if (DiagUpA4 & sq) squareDiagUpBB[sq] = DiagUpA4;
+      else if (DiagUpA3 & sq) squareDiagUpBB[sq] = DiagUpA3;
+      else if (DiagUpA2 & sq) squareDiagUpBB[sq] = DiagUpA2;
+      else if (DiagUpA1 & sq) squareDiagUpBB[sq] = DiagUpA1;
+      else if (DiagUpB1 & sq) squareDiagUpBB[sq] = DiagUpB1;
+      else if (DiagUpC1 & sq) squareDiagUpBB[sq] = DiagUpC1;
+      else if (DiagUpD1 & sq) squareDiagUpBB[sq] = DiagUpD1;
+      else if (DiagUpE1 & sq) squareDiagUpBB[sq] = DiagUpE1;
+      else if (DiagUpF1 & sq) squareDiagUpBB[sq] = DiagUpF1;
+      else if (DiagUpG1 & sq) squareDiagUpBB[sq] = DiagUpG1;
+      else if (DiagUpH1 & sq) squareDiagUpBB[sq] = DiagUpH1;
+      
+      if (DiagDownH8 & sq) squareDiagDownBB[sq] = DiagDownH8;
+      else if (DiagDownH7 & sq) squareDiagDownBB[sq] = DiagDownH7;
+      else if (DiagDownH6 & sq) squareDiagDownBB[sq] = DiagDownH6;
+      else if (DiagDownH5 & sq) squareDiagDownBB[sq] = DiagDownH5;
+      else if (DiagDownH4 & sq) squareDiagDownBB[sq] = DiagDownH4;
+      else if (DiagDownH3 & sq) squareDiagDownBB[sq] = DiagDownH3;
+      else if (DiagDownH2 & sq) squareDiagDownBB[sq] = DiagDownH2;
+      else if (DiagDownH1 & sq) squareDiagDownBB[sq] = DiagDownH1;
+      else if (DiagDownG1 & sq) squareDiagDownBB[sq] = DiagDownG1;
+      else if (DiagDownF1 & sq) squareDiagDownBB[sq] = DiagDownF1;
+      else if (DiagDownE1 & sq) squareDiagDownBB[sq] = DiagDownE1;
+      else if (DiagDownD1 & sq) squareDiagDownBB[sq] = DiagDownD1;
+      else if (DiagDownC1 & sq) squareDiagDownBB[sq] = DiagDownC1;
+      else if (DiagDownB1 & sq) squareDiagDownBB[sq] = DiagDownB1;
+      else if (DiagDownA1 & sq) squareDiagDownBB[sq] = DiagDownA1;
+      // @formatter:on
     }
-
     // distance between squares
     for (Square sq1 = SQ_A1; sq1 <= SQ_H8; ++sq1) {
       for (Square sq2 = SQ_A1; sq2 <= SQ_H8; ++sq2) {
         if (sq1 != sq2) {
           squareDistance[sq1][sq2] =
-              (int8_t)max(distance(fileOf(sq1), fileOf(sq2)),
-                          distance(rankOf(sq1), rankOf(sq2)));
+            (int8_t) max(distance(fileOf(sq1), fileOf(sq2)),
+                         distance(rankOf(sq1), rankOf(sq2)));
         }
       }
     }
@@ -199,13 +159,15 @@ namespace Bitboards {
         Bitboard mask = 0L;
         for (int x = file - 1; x >= 0; x--) {
           mask += (1L << x);
-          if ((j & (1 << x)) != 0)
+          if ((j & (1 << x)) != 0) {
             break;
+          }
         }
         for (int x = file + 1; x < 8; x++) {
           mask += (1L << x);
-          if ((j & (1 << x)) != 0)
+          if ((j & (1 << x)) != 0) {
             break;
+          }
         }
         for (Rank rank = RANK_1; rank <= RANK_8; ++rank) {
           movesRank[(rank * 8) + file][j] = mask << (rank * 8);
@@ -220,13 +182,15 @@ namespace Bitboards {
         Bitboard mask = 0;
         for (int x = 6 - rank; x >= 0; x--) {
           mask += (1L << (8 * (7 - x)));
-          if ((j & (1 << x)) != 0)
+          if ((j & (1 << x)) != 0) {
             break;
+          }
         }
         for (int x = 8 - rank; x < 8; x++) {
           mask += (1L << (8 * (7 - x)));
-          if ((j & (1 << x)) != 0)
+          if ((j & (1 << x)) != 0) {
             break;
+          }
         }
         for (File file = FILE_A; file <= FILE_H; ++file) {
           movesFile[(rank * 8) + file][j] = mask << file;
@@ -240,7 +204,7 @@ namespace Bitboards {
       File file = fileOf(square);
       Rank rank = rankOf(square);
       /* Get the far left hand square on this diagonal */
-      Square diagstart = (Square)(square - 9 * (min((int)file, (int)rank)));
+      Square diagstart = (Square) (square - 9 * (min((int) file, (int) rank)));
       File dsfile = fileOf(diagstart);
       int dl = lengthDiagUp[square];
       /* Loop through all possible occupations of this diagonal line */
@@ -249,13 +213,15 @@ namespace Bitboards {
         /* Calculate possible target squares */
         for (int b1 = (file - dsfile) - 1; b1 >= 0; b1--) {
           mask += (ONE_BB << b1);
-          if ((sq & (1 << b1)) != 0)
+          if ((sq & (1 << b1)) != 0) {
             break;
+          }
         }
         for (int b2 = (file - dsfile) + 1; b2 < dl; b2++) {
           mask += (ONE_BB << b2);
-          if ((sq & (1 << b2)) != 0)
+          if ((sq & (1 << b2)) != 0) {
             break;
+          }
         }
         /* Rotate target squares back */
         for (int x = 0; x < dl; x++)
@@ -271,7 +237,7 @@ namespace Bitboards {
       Rank rank = rankOf(square);
       /* Get the far left hand square on this diagonal */
       Square diagstart =
-          (Square)(7 * (min((int)file, (int)(7 - rank))) + square);
+        (Square) (7 * (min((int) file, (int) (7 - rank))) + square);
       File dsfile = fileOf(diagstart);
       int dl = lengthDiagDown[square];
       /* Loop through all possible occupations of this diagonal line */
@@ -280,13 +246,15 @@ namespace Bitboards {
         /* Calculate possible target squares */
         for (int x = (file - dsfile) - 1; x >= 0; x--) {
           mask += (ONE_BB << x);
-          if ((j & (1 << x)) != 0)
+          if ((j & (1 << x)) != 0) {
             break;
+          }
         }
         for (int x = (file - dsfile) + 1; x < dl; x++) {
           mask += (ONE_BB << x);
-          if ((j & (1 << x)) != 0)
+          if ((j & (1 << x)) != 0) {
             break;
+          }
         }
         /* Rotate the target line back onto the required diagonal */
         for (int x = 0; x < dl; x++)
@@ -298,15 +266,19 @@ namespace Bitboards {
     // pawn moves
     for (Square square = SQ_A1; square <= SQ_H8; ++square) {
       // pawn moves
-      if (square > SQ_H1)
+      if (square > SQ_H1) {
         pawnMoves[WHITE][square] |= ONE_BB << (square + NORTH);
-      if (square < SQ_A8)
+      }
+      if (square < SQ_A8) {
         pawnMoves[BLACK][square] |= ONE_BB << (square + SOUTH);
+      }
       // pawn double moves
-      if (rankOf(square) == RANK_2)
+      if (rankOf(square) == RANK_2) {
         pawnMoves[WHITE][square] |= ONE_BB << (square + NORTH + NORTH);
-      if (rankOf(square) == RANK_7)
+      }
+      if (rankOf(square) == RANK_7) {
         pawnMoves[BLACK][square] |= ONE_BB << (square + SOUTH + SOUTH);
+      }
     }
 
     // @formatter:off
@@ -442,5 +414,5 @@ namespace Bitboards {
       }
     }
   }
- 
+
 }

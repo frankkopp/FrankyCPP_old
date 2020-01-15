@@ -27,17 +27,20 @@
 #define FRANKYCPP_SEARCH_H
 
 // included dependencies
-#include "Evaluator.h"
-#include "Logging.h"
-#include "Position.h"
-#include "SearchLimits.h"
-#include "SearchStats.h"
-#include "Semaphore.h"
-#include "types.h"
-#include "gtest/gtest_prod.h"
 #include <iostream>
 #include <ostream>
 #include <thread>
+
+#include "gtest/gtest_prod.h"
+#include "types.h"
+#include "Logging.h"
+#include "MoveGenerator.h"
+#include "Semaphore.h"
+#include "SearchStats.h"
+#include "SearchLimits.h"
+#include "Evaluator.h"
+
+//#include "Position.h"
 
 // forward declared dependencies
 class Engine;
@@ -84,10 +87,10 @@ class Search {
   std::thread myThread;
 
   // pointer to engine of available
-  Engine *pEngine{nullptr};
+  Engine* pEngine{nullptr};
 
   // search mode
-  SearchLimits *searchLimitsPtr{nullptr};
+  SearchLimits* searchLimitsPtr{nullptr};
   SearchStats searchStats;
 
   // search state

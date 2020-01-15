@@ -27,11 +27,8 @@
 #define FRANKYCPP_TYPES_H
 
 #include <string>
-#include <cstdint>
-#include <cassert>
 #include <iostream>
 #include <sstream>
-#include <vector>
 #include <deque>
 #include "fmt/locale.h"
 
@@ -97,7 +94,7 @@ typedef uint64_t Bitboard;
 ///////////////////////////////////
 //// SQUARES
 // @formatter:off
-enum Square : uint8_t {
+enum Square : int {
   SQ_A1, SQ_B1, SQ_C1, SQ_D1, SQ_E1, SQ_F1, SQ_G1, SQ_H1,
   SQ_A2, SQ_B2, SQ_C2, SQ_D2, SQ_E2, SQ_F2, SQ_G2, SQ_H2,
   SQ_A3, SQ_B3, SQ_C3, SQ_D3, SQ_E3, SQ_F3, SQ_G3, SQ_H3,
@@ -160,9 +157,9 @@ enum Direction : int {
 constexpr Direction pawnDir[COLOR_LENGTH] = {NORTH, SOUTH};
 
 /// Additional operators to add a Direction to a Square
-constexpr Square operator+(Square s, Direction d) { return Square(int(s) + int(d)); }
+constexpr Square operator+(Square s, Direction d) { return static_cast<Square>(int(s) + int(d)); }
 
-constexpr Square operator-(Square s, Direction d) { return Square(int(s) - int(d)); }
+constexpr Square operator-(Square s, Direction d) { return static_cast<Square>(int(s) - int(d)); }
 
 constexpr Square &operator+=(Square &s, Direction d) { return s = s + d; }
 

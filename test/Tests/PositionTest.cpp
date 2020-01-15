@@ -27,10 +27,10 @@
 #include <ostream>
 #include <string>
 
-#include "Bitboards.h"
-#include "Logging.h"
-#include "Position.h"
 #include "types.h"
+#include "Logging.h"
+#include "Bitboards.h"
+#include "Position.h"
 
 using namespace std;
 using testing::Eq;
@@ -50,7 +50,9 @@ protected:
 };
 
 TEST_F(PositionTest, HistoryStruct) {
-  enum Flag { FLAG_TBD, FLAG_FALSE, FLAG_TRUE };
+  enum Flag {
+    FLAG_TBD, FLAG_FALSE, FLAG_TRUE
+  };
   struct HistoryState {
     Key zobristKey_History = 0;
     Move moveHistory = MOVE_NONE;
@@ -180,7 +182,7 @@ TEST_F(PositionTest, Setup) {
 
   // Constructor  (with FEN)
   fen =
-      string("r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3 10 113");
+    string("r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3 10 113");
   position = Position(fen.c_str());
   ASSERT_EQ(fen, position.printFen());
   ASSERT_EQ(SQ_E3, position.getEnPassantSquare());
@@ -246,7 +248,7 @@ TEST_F(PositionTest, Output) {
   ASSERT_EQ(fen, position.printFen());
 
   fen = string(
-      "r1b1k2r/pp2ppbp/2n3p1/q7/3pP3/2P1BN2/P2Q1PPP/2R1KB1R w Kkq - 0 11");
+    "r1b1k2r/pp2ppbp/2n3p1/q7/3pP3/2P1BN2/P2Q1PPP/2R1KB1R w Kkq - 0 11");
   position = Position(fen.c_str());
   ASSERT_EQ(fen, position.printFen());
 
@@ -387,7 +389,7 @@ TEST_F(PositionTest, doUndoMovePromotion) {
 TEST_F(PositionTest, doUndoMoveEnPassantCapture) {
   // do move
   Position position(
-      "rnbqkbnr/ppp1pppp/8/8/3pP3/2N2N2/PPPP1PPP/R1BQKB1R b KQkq e3 0 3");
+    "rnbqkbnr/ppp1pppp/8/8/3pP3/2N2N2/PPPP1PPP/R1BQKB1R b KQkq e3 0 3");
   //  cout << position.str() << endl;
   position.doMove(createMove<ENPASSANT>(SQ_D4, SQ_E3));
   //  cout << position.str() << endl;
@@ -405,7 +407,7 @@ TEST_F(PositionTest, doUndoMoveEnPassantCapture) {
 
   // do move
   position = Position(
-      "r1bqkb1r/pppp1ppp/2n2n2/3Pp3/8/8/PPP1PPPP/RNBQKBNR w KQkq e6 0 1");
+    "r1bqkb1r/pppp1ppp/2n2n2/3Pp3/8/8/PPP1PPPP/RNBQKBNR w KQkq e6 0 1");
   //  cout << position.str() << endl;
   position.doMove(createMove<ENPASSANT>(SQ_D5, SQ_E6));
   //  cout << position.str() << endl;
@@ -425,137 +427,137 @@ TEST_F(PositionTest, doUndoMoveEnPassantCapture) {
 TEST_F(PositionTest, doMoveCastling) {
   // do move
   Position position(
-      "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQkq -");
+    "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQkq -");
   // cout << position.str() << endl;
   position.doMove(createMove<CASTLING>(SQ_E1, SQ_G1));
   // cout << position.str() << endl;
   ASSERT_EQ(
-      "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R4RK1 b kq - 1 1",
-      position.printFen());
+    "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R4RK1 b kq - 1 1",
+    position.printFen());
 
   // undo move
   position.undoMove();
   ASSERT_EQ(
-      "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQkq - 0 1",
-      position.printFen());
+    "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQkq - 0 1",
+    position.printFen());
 
   // do move
   position = Position(
-      "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQkq -");
+    "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQkq -");
   // cout << position.str() << endl;
   position.doMove(createMove<CASTLING>(SQ_E1, SQ_C1));
   // cout << position.str() << endl;
   ASSERT_EQ(
-      "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/2KR3R b kq - 1 1",
-      position.printFen());
+    "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/2KR3R b kq - 1 1",
+    position.printFen());
 
   // undo move
   position.undoMove();
   ASSERT_EQ(
-      "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQkq - 0 1",
-      position.printFen());
+    "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQkq - 0 1",
+    position.printFen());
 
   // do move
   position = Position(
-      "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R b KQkq -");
+    "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R b KQkq -");
   // cout << position.str() << endl;
   position.doMove(createMove<CASTLING>(SQ_E8, SQ_G8));
   // cout << position.str() << endl;
   ASSERT_EQ(
-      "r4rk1/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQ - 1 2",
-      position.printFen());
+    "r4rk1/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQ - 1 2",
+    position.printFen());
 
   // undo move
   position.undoMove();
   ASSERT_EQ(
-      "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R b KQkq - 0 1",
-      position.printFen());
+    "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R b KQkq - 0 1",
+    position.printFen());
 
   // do move
   position = Position(
-      "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R b KQkq -");
+    "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R b KQkq -");
   // cout << position.str() << endl;
   position.doMove(createMove<CASTLING>(SQ_E8, SQ_C8));
   // cout << position.str() << endl;
   ASSERT_EQ(
-      "2kr3r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQ - 1 2",
-      position.printFen());
+    "2kr3r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQ - 1 2",
+    position.printFen());
 
   // undo move
   position.undoMove();
   ASSERT_EQ(
-      "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R b KQkq - 0 1",
-      position.printFen());
+    "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R b KQkq - 0 1",
+    position.printFen());
 
   // do move
   position = Position(
-      "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQkq -");
+    "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQkq -");
   // cout << position.str() << endl;
   position.doMove(createMove<NORMAL>(SQ_E1, SQ_F1));
   // cout << position.str() << endl;
   ASSERT_EQ(
-      "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R4K1R b kq - 1 1",
-      position.printFen());
+    "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R4K1R b kq - 1 1",
+    position.printFen());
 
   // undo move
   position.undoMove();
   ASSERT_EQ(
-      "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQkq - 0 1",
-      position.printFen());
+    "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQkq - 0 1",
+    position.printFen());
 
   // do move
   position = Position(
-      "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQkq -");
+    "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQkq -");
   // cout << position.str() << endl;
   position.doMove(createMove<NORMAL>(SQ_H1, SQ_F1));
   // cout << position.str() << endl;
   ASSERT_EQ(
-      "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3KR2 b Qkq - 1 1",
-      position.printFen());
+    "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3KR2 b Qkq - 1 1",
+    position.printFen());
 
   // undo move
   position.undoMove();
   ASSERT_EQ(
-      "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQkq - 0 1",
-      position.printFen());
+    "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQkq - 0 1",
+    position.printFen());
 
   // do move
   position = Position(
-      "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R b KQkq -");
+    "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R b KQkq -");
   // cout << position.str() << endl;
   position.doMove(createMove<NORMAL>(SQ_A8, SQ_C8));
   // cout << position.str() << endl;
   ASSERT_EQ(
-      "2r1k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQk - 1 2",
-      position.printFen());
+    "2r1k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQk - 1 2",
+    position.printFen());
 
   // undo move
   position.undoMove();
   ASSERT_EQ(
-      "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R b KQkq - 0 1",
-      position.printFen());
+    "r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R b KQkq - 0 1",
+    position.printFen());
 
   // do move
   position = Position(
-      "r3k2r/1ppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/1PPQ1PPP/R3K2R b KQkq - 0 1");
+    "r3k2r/1ppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/1PPQ1PPP/R3K2R b KQkq - 0 1");
   // cout << position.str() << endl;
   position.doMove(createMove<NORMAL>(SQ_A8, SQ_A1));
   // cout << position.str() << endl;
   ASSERT_EQ(
-      "4k2r/1ppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/1PPQ1PPP/r3K2R w Kk - 0 2",
-      position.printFen());
+    "4k2r/1ppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/1PPQ1PPP/r3K2R w Kk - 0 2",
+    position.printFen());
 
   // undo move
   position.undoMove();
   ASSERT_EQ(
-      "r3k2r/1ppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/1PPQ1PPP/R3K2R b KQkq - 0 1",
-      position.printFen());
+    "r3k2r/1ppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/1PPQ1PPP/R3K2R b KQkq - 0 1",
+    position.printFen());
 }
 
 TEST_F(PositionTest, doNullMove) {
   // do move
   Position position(
-      "rnbqkbnr/ppp1pppp/8/8/3pP3/2N2N2/PPPP1PPP/R1BQKB1R b KQkq e3");
+    "rnbqkbnr/ppp1pppp/8/8/3pP3/2N2N2/PPPP1PPP/R1BQKB1R b KQkq e3");
   cout << position.str() << endl;
 
   position.doNullMove();
@@ -661,16 +663,6 @@ TEST_F(PositionTest, insufficientMaterial) {
   ASSERT_FALSE(position.checkInsufficientMaterial());
 }
 
-TEST_F(PositionTest, occupiedBB) {
-  string fen;
-  Position position;
-  // fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3";
-  // position = Position(fen);
-  fprintln("Position:\n{}", position.printBoard());
-  fprintln("Occupied Bitboard:\n{}",
-           Bitboards::print(position.getOccupiedBB()));
-}
-
 TEST_F(PositionTest, rotatedBB) {
   string fen;
   Position position;
@@ -679,8 +671,7 @@ TEST_F(PositionTest, rotatedBB) {
   position = Position(fen);
 
   fprintln("{}", Bitboards::print(position.getOccupiedBB()));
-  fprintln("{}",
-           Bitboards::print(Bitboards::rotateR90(position.getOccupiedBB())));
+  fprintln("{}", Bitboards::print(Bitboards::rotateR90(position.getOccupiedBB())));
   fprintln("{}", Bitboards::print(position.getOccupiedBBR90()));
 
   ASSERT_EQ(Bitboards::rotateR90(position.getOccupiedBB()),
@@ -804,7 +795,7 @@ TEST_F(PositionTest, giveCheck) {
 
   // Bishop
   position =
-      Position("6k1/3q2b1/p1rrnpp1/P3p3/2B1P3/1p1R3Q/1P4PP/1B1R3K w - -");
+    Position("6k1/3q2b1/p1rrnpp1/P3p3/2B1P3/1p1R3Q/1P4PP/1B1R3K w - -");
   move = createMove("c4e6");
   ASSERT_TRUE(position.givesCheck(move));
 
@@ -814,7 +805,7 @@ TEST_F(PositionTest, giveCheck) {
   ASSERT_TRUE(position.givesCheck(move));
 
   position =
-      Position("6k1/3q2b1/p1rrnpp1/P3p3/2B1P3/1p1R3Q/1P4PP/1B1R3K w - -");
+    Position("6k1/3q2b1/p1rrnpp1/P3p3/2B1P3/1p1R3Q/1P4PP/1B1R3K w - -");
   move = createMove("h3e6");
   ASSERT_TRUE(position.givesCheck(move));
 
@@ -833,7 +824,7 @@ TEST_F(PositionTest, giveCheck) {
   ASSERT_TRUE(position.givesCheck(move));
 
   position =
-      Position("1r3r2/1p1bP2k/2p2n2/p1Pp4/P2N1PpP/1R2p3/1P2P1BP/3R2K1 w - -");
+    Position("1r3r2/1p1bP2k/2p2n2/p1Pp4/P2N1PpP/1R2p3/1P2P1BP/3R2K1 w - -");
   move = createMove<PROMOTION>("e7f8n");
   ASSERT_TRUE(position.givesCheck(move));
 
@@ -898,7 +889,7 @@ TEST_F(PositionTest, giveCheck) {
   move = createMove("f2f4");
   ASSERT_FALSE(position.givesCheck(move));
   position =
-      Position("2r1r1k1/pb3pp1/1p1qpn2/4n1p1/2PP4/6KP/P2Q1PP1/3RR3 b - -");
+    Position("2r1r1k1/pb3pp1/1p1qpn2/4n1p1/2PP4/6KP/P2Q1PP1/3RR3 b - -");
   move = createMove("e5d3");
   ASSERT_TRUE(position.givesCheck(move));
   position = Position("R6R/3Q4/1Q4Q1/4Q3/2Q4Q/Q1NNQQ2/1p6/qk3KB1 b - -");
@@ -908,11 +899,11 @@ TEST_F(PositionTest, giveCheck) {
   move = createMove("a2h2");
   ASSERT_TRUE(position.givesCheck(move));
   position =
-      Position("r1bqkb1r/ppp1pppp/2n2n2/1B1P4/8/8/PPPP1PPP/RNBQK1NR w KQkq -");
+    Position("r1bqkb1r/ppp1pppp/2n2n2/1B1P4/8/8/PPPP1PPP/RNBQK1NR w KQkq -");
   move = createMove("d5c6");
   ASSERT_FALSE(position.givesCheck(move));
   position =
-      Position("rnbq1bnr/pppkpppp/8/3p4/3P4/3Q4/PPP1PPPP/RNB1KBNR w KQ -");
+    Position("rnbq1bnr/pppkpppp/8/3p4/3P4/3Q4/PPP1PPPP/RNB1KBNR w KQ -");
   move = createMove("d3h7");
   ASSERT_FALSE(position.givesCheck(move));
 }

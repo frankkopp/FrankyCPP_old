@@ -29,6 +29,7 @@
 
 namespace INIT {
   void init() {
+    fprintln("{}:{} INIT", __FILE_NAME__, __func__, __LINE__);
     Values::init();
     Bitboards::init();
     Position::init();
