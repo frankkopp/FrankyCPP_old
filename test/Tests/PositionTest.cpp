@@ -665,13 +665,39 @@ TEST_F(PositionTest, insufficientMaterial) {
 TEST_F(PositionTest, rotatedBB) {
   string fen;
   Position position;
+  ostringstream expected;
+  ostringstream actual;
 
   fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3";
   position = Position(fen);
 
+  /*
   fprintln("{}", Bitboards::print(position.getOccupiedBB()));
   fprintln("{}", Bitboards::print(Bitboards::rotateR90(position.getOccupiedBB())));
   fprintln("{}", Bitboards::print(position.getOccupiedBBR90()));
+   */
+
+  expected << "+---+---+---+---+---+---+---+---+\n"
+              "|   | X |   |   |   |   |   | X |\n"
+              "+---+---+---+---+---+---+---+---+\n"
+              "| X |   |   |   |   |   | X |   |\n"
+              "+---+---+---+---+---+---+---+---+\n"
+              "|   | X |   | X |   | X | X |   |\n"
+              "+---+---+---+---+---+---+---+---+\n"
+              "|   |   |   |   |   |   | X |   |\n"
+              "+---+---+---+---+---+---+---+---+\n"
+              "|   |   |   | X |   | X |   | X |\n"
+              "+---+---+---+---+---+---+---+---+\n"
+              "|   | X |   | X |   |   |   |   |\n"
+              "+---+---+---+---+---+---+---+---+\n"
+              "| X | X | X |   |   | X |   |   |\n"
+              "+---+---+---+---+---+---+---+---+\n"
+              "|   | X |   |   |   |   | X | X |\n"
+              "+---+---+---+---+---+---+---+---+\n";
+
+  actual << Bitboards::print(position.getOccupiedBBR90());
+
+  ASSERT_EQ(expected.str(), actual.str());
 
   ASSERT_EQ(Bitboards::rotateR90(position.getOccupiedBB()), position.getOccupiedBBR90());
   ASSERT_EQ(Bitboards::rotateL90(position.getOccupiedBB()), position.getOccupiedBBL90());
