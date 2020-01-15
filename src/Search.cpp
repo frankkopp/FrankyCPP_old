@@ -601,7 +601,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
   // https://www.chessprogramming.org/Quiescence_Search#Standing_Pat
   // Assumption is that there is at least on move which would improve the
   // current position. So if we are already >beta we don't need to look at it.
-  if (ST == QUIESCENCE && SearchConfig::USE_QUIESCENCE_STANDPAT_CUT &&
+  if (ST == QUIESCENCE && SearchConfig::USE_QS_STANDPAT_CUT &&
       !position.hasCheck()) {
     if (staticEval >= beta) {
       if (SearchConfig::USE_TT_QSEARCH) {

@@ -575,8 +575,7 @@ TEST_F(SearchTest, debuggingTTMove) {
   Position position;
 
   const int depth = 8;
-  position =
-      Position("2b2rk1/3pR1p1/3p2Q1/pp1P3p/7q/P1N5/1P4PK/4R3 w - - 0 32");
+  position = Position("2b2rk1/3pR1p1/3p2Q1/pp1P3p/7q/P1N5/1P4PK/4R3 w - - 0 32");
   searchLimits.setDepth(depth);
 
   search.startSearch(position, searchLimits);

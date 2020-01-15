@@ -52,7 +52,7 @@ namespace SearchConfig {
   // Pruning features
   inline bool USE_MDP = true; // mate distance pruning
   inline bool USE_MPP = true; // minor promotion pruning
-  inline bool USE_QUIESCENCE_STANDPAT_CUT = true; // RFP for quiescence
+  inline bool USE_QS_STANDPAT_CUT = true; // RFP for quiescence
   inline bool USE_NMP = true;
   inline Depth NMP_DEPTH = static_cast<Depth>(3);  // at least 2
   inline Depth NMP_REDUCTION = static_cast<Depth>(2); // at least 1
