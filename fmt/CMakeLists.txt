@@ -40,7 +40,7 @@ option(FMT_WERROR "Halt the compilation with an error on compiler warnings."
 # Options that control generation of various targets.
 option(FMT_DOC "Generate the doc target." ${MASTER_PROJECT})
 option(FMT_INSTALL "Generate the install target." ${MASTER_PROJECT})
-option(FMT_TEST "Generate the test target." ${MASTER_PROJECT})
+option(FMT_TEST "Generate the test target." OFF)
 option(FMT_FUZZ "Generate the fuzz target." OFF)
 option(FMT_CUDA_TEST "Generate the cuda-test target." OFF)
 

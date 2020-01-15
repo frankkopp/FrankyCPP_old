@@ -81,7 +81,7 @@ template <> struct scanner<tm> {
 
   template <class ScanContext>
   typename ScanContext::iterator scan(tm& t, ScanContext& ctx) {
-    auto result = strptime(ctx.begin(), format.c_str(), &t);
+    auto result = strftime(ctx.begin(), format.c_str(), &t);
     if (!result) throw format_error("failed to parse time");
     return result;
   }
