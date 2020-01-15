@@ -40,8 +40,6 @@
 #include "SearchLimits.h"
 #include "Evaluator.h"
 
-//#include "Position.h"
-
 // forward declared dependencies
 class Engine;
 class TT;

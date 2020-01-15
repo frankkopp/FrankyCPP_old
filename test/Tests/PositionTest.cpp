@@ -24,6 +24,8 @@
  */
 
 #include <gtest/gtest.h>
+#include <boost/timer/timer.hpp>
+
 #include <ostream>
 #include <string>
 
@@ -327,7 +329,6 @@ TEST_F(PositionTest, doUndoMoveNormal) {
   //  cout << position.str() << endl;
 
   // do move tests
-
   position.doMove(createMove<NORMAL>(SQ_E2, SQ_E4));
   //  cout << position.str() << endl;
   ASSERT_EQ(SQ_E3, position.getEnPassantSquare());
@@ -388,15 +389,13 @@ TEST_F(PositionTest, doUndoMovePromotion) {
 
 TEST_F(PositionTest, doUndoMoveEnPassantCapture) {
   // do move
-  Position position(
-    "rnbqkbnr/ppp1pppp/8/8/3pP3/2N2N2/PPPP1PPP/R1BQKB1R b KQkq e3 0 3");
+  Position position("rnbqkbnr/ppp1pppp/8/8/3pP3/2N2N2/PPPP1PPP/R1BQKB1R b KQkq e3 0 3");
   //  cout << position.str() << endl;
   position.doMove(createMove<ENPASSANT>(SQ_D4, SQ_E3));
   //  cout << position.str() << endl;
   ASSERT_EQ(WHITE, position.getNextPlayer());
   ASSERT_EQ(5900, position.getMaterial(WHITE));
-  ASSERT_EQ("rnbqkbnr/ppp1pppp/8/8/8/2N1pN2/PPPP1PPP/R1BQKB1R w KQkq - 0 4",
-            position.printFen());
+  ASSERT_EQ("rnbqkbnr/ppp1pppp/8/8/8/2N1pN2/PPPP1PPP/R1BQKB1R w KQkq - 0 4", position.printFen());
 
   // undo move
   position.undoMove();
@@ -674,14 +673,10 @@ TEST_F(PositionTest, rotatedBB) {
   fprintln("{}", Bitboards::print(Bitboards::rotateR90(position.getOccupiedBB())));
   fprintln("{}", Bitboards::print(position.getOccupiedBBR90()));
 
-  ASSERT_EQ(Bitboards::rotateR90(position.getOccupiedBB()),
-            position.getOccupiedBBR90());
-  ASSERT_EQ(Bitboards::rotateL90(position.getOccupiedBB()),
-            position.getOccupiedBBL90());
-  ASSERT_EQ(Bitboards::rotateR45(position.getOccupiedBB()),
-            position.getOccupiedBBR45());
-  ASSERT_EQ(Bitboards::rotateL45(position.getOccupiedBB()),
-            position.getOccupiedBBL45());
+  ASSERT_EQ(Bitboards::rotateR90(position.getOccupiedBB()), position.getOccupiedBBR90());
+  ASSERT_EQ(Bitboards::rotateL90(position.getOccupiedBB()), position.getOccupiedBBL90());
+  ASSERT_EQ(Bitboards::rotateR45(position.getOccupiedBB()), position.getOccupiedBBR45());
+  ASSERT_EQ(Bitboards::rotateL45(position.getOccupiedBB()), position.getOccupiedBBL45());
 }
 
 TEST_F(PositionTest, hasCheck) {
@@ -964,4 +959,39 @@ TEST_F(PositionTest, isLegalPosition) {
   position.doMove(createMove<CASTLING>(SQ_E8, SQ_C8));
   ASSERT_FALSE(position.isLegalPosition());
   position.undoMove();
+}
+
+TEST_F(PositionTest, PERFT_pps) {
+
+  using namespace boost::timer;
+
+  std::string fen;
+  const int nano_sec = 1'000'000'000;
+  const uint64_t iterations = 50'000'000;
+  const uint64_t rounds = 5;
+
+  for (uint64_t round = 0; round < rounds; ++round) {
+    fprintln("ROUND: {}", round + 1);
+    Position position;
+    auto timer = cpu_timer();
+    for (uint64_t i = 0; i < iterations; ++i) {
+      position.doMove(createMove<NORMAL>(SQ_E2, SQ_E4));
+      position.doMove(createMove<NORMAL>(SQ_D7, SQ_D5));
+      position.doMove(createMove<NORMAL>(SQ_E4, SQ_D5));
+      position.doMove(createMove<NORMAL>(SQ_D8, SQ_D5));
+      position.doMove(createMove<NORMAL>(SQ_B1, SQ_C3));
+      position.undoMove();
+      position.undoMove();
+      position.undoMove();
+      position.undoMove();
+      position.undoMove();
+    }
+    timer.stop();
+    const nanosecond_type cpuTime = timer.elapsed().user + timer.elapsed().system;
+    fprintln("WALL Time: {:n} ns ({:3f} sec)", timer.elapsed().wall, static_cast<double>(timer.elapsed().wall) / nano_sec);
+    fprintln("CPU  Time: {:n} ns ({:3f} sec)", cpuTime, static_cast<double>(cpuTime) / nano_sec);
+    fprintln("Move/Undo per sec: {:n} pps", (10 * iterations * nano_sec) / cpuTime);
+    fprintln("Move/undo time:    {:n} ns", cpuTime / (iterations * 10));
+    NEWLINE;
+  }
 }

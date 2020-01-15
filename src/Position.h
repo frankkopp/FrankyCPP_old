@@ -29,8 +29,6 @@
 #include <array>
 #include "gtest/gtest_prod.h"
 #include "types.h"
-//#include "Bitboards.h"
-//#include "MoveGenerator.h"
 
 // circle reference between Position and MoveGenerator - this make it possible
 class MoveGenerator;
