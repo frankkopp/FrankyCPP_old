@@ -5,6 +5,7 @@ project(FrankyTest)
 set(CMAKE_CXX_STANDARD 17)
 
 # include BOOST
+message("Include BOOST")
 set(BOOST_ROOT "/usr/local/boost_1_72_0")
 set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
 set(Boost_USE_MULTITHREADED ON)
@@ -16,13 +17,32 @@ if (Boost_FOUND)
 endif ()
 
 # Download and unpack googletest at configure time
+set(GIT_EXECUTABLE )
+message("Finding GIT...")
+find_package(Git)
+if(GIT_FOUND)
+    message("git found: ${GIT_EXECUTABLE}")
+endif()
+message("Configure GoogleTest download...")
 configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
-execute_process(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
+message("GoogleTest download...")
+execute_process(
+        COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
+        RESULT_VARIABLE result
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/googletest-download"
-        )
-execute_process(COMMAND "${CMAKE_COMMAND}" --build .
+)
+if(result)
+    message(FATAL_ERROR "CMake step for googletest failed: ${result}")
+endif()
+message("GoogleTest build...")
+execute_process(
+        COMMAND "${CMAKE_COMMAND}" --build .
+        RESULT_VARIABLE result
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/googletest-download"
-        )
+)
+if(result)
+    message(FATAL_ERROR "Build step for googletest failed: ${result}")
+endif()
 
 # Prevent GoogleTest from overriding our compiler/linker options
 # when building with Visual Studio
@@ -30,9 +50,10 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
 # Add googletest directly to our build. This adds the following targets:
 # gtest, gtest_main, gmock and gmock_main
-add_subdirectory("${CMAKE_CURRENT_BINARY_DIR}/googletest-src"
+add_subdirectory(
+        "${CMAKE_CURRENT_BINARY_DIR}/googletest-src"
         "${CMAKE_CURRENT_BINARY_DIR}/googletest-build"
-        )
+)
 
 # Now simply link your own targets against gtest, gmock,
 # etc. as appropriate

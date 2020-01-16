@@ -27,6 +27,7 @@
 using testing::Eq;
 
 #include <iostream>
+#include <chrono>
 #include "types.h"
 #include <boost/timer/timer.hpp>
 

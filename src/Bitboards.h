@@ -169,10 +169,10 @@ namespace Bitboards {
     63
   };
 
-  constexpr Square rotateSquareR90(Square sq) { return indexMapR90[sq]; }
-  constexpr Square rotateSquareL90(Square sq) { return indexMapL90[sq]; }
-  constexpr Square rotateSquareR45 (Square sq) { return indexMapR45[sq]; }
-  constexpr Square rotateSquareL45(Square sq) { return indexMapL45[sq]; }
+ inline Square rotateSquareR90(Square sq) { return indexMapR90[sq]; }
+ inline Square rotateSquareL90(Square sq) { return indexMapL90[sq]; }
+ inline Square rotateSquareR45 (Square sq) { return indexMapR45[sq]; }
+ inline Square rotateSquareL45(Square sq) { return indexMapL45[sq]; }
 
   constexpr int lengthDiagUp[SQ_LENGTH] = {
     8, 7, 6, 5, 4, 3, 2, 1,
@@ -359,11 +359,11 @@ namespace Bitboards {
 } // end namespace to define operators first
 
 //// Operators for Squares as Bitboards
-constexpr Bitboard operator&(const Square lhs, const Square rhs) {
+inline Bitboard operator&(const Square lhs, const Square rhs) {
   return Bitboards::squareBB[lhs] & Bitboards::squareBB[rhs];
 }
 
-constexpr Bitboard operator|(const Square lhs, const Square rhs) {
+inline Bitboard operator|(const Square lhs, const Square rhs) {
   return Bitboards::squareBB[lhs] | Bitboards::squareBB[rhs];
 }
 
@@ -373,22 +373,22 @@ inline Bitboard operator&(const Bitboard b, const Square s) {
   return b & Bitboards::squareBB[s];
 }
 
-constexpr Bitboard operator|(const Bitboard b, const Square s) {
+inline Bitboard operator|(const Bitboard b, const Square s) {
   assert(s >= SQ_A1 && s <= SQ_H8);
   return b | Bitboards::squareBB[s];
 }
 
-constexpr Bitboard operator^(const Bitboard b, const Square s) {
+inline Bitboard operator^(const Bitboard b, const Square s) {
   assert(s >= SQ_A1 && s <= SQ_H8);
   return b ^ Bitboards::squareBB[s];
 }
 
-constexpr Bitboard &operator|=(Bitboard &b, const Square s) {
+inline Bitboard &operator|=(Bitboard &b, const Square s) {
   assert(s >= SQ_A1 && s <= SQ_H8);
   return b |= Bitboards::squareBB[s];
 }
 
-constexpr Bitboard &operator^=(Bitboard &b, const Square s) {
+inline Bitboard &operator^=(Bitboard &b, const Square s) {
   assert(s >= SQ_A1 && s <= SQ_H8);
   return b ^= Bitboards::squareBB[s];
 }
@@ -402,7 +402,7 @@ namespace Bitboards {
    * @param b Bitboard
    * @return shifted bitboard
    */
-  constexpr Bitboard shift(Direction d, Bitboard b) {
+  inline Bitboard shift(Direction d, Bitboard b) {
     // move the bits and clear the left our right file
     // after the shift to erase bit jumping over
     switch (d) {
@@ -423,6 +423,7 @@ namespace Bitboards {
       case NORTH_WEST:
         return (b << 7) & ~FileHBB;
     }
+    return b;
   }
 
   /**
@@ -539,7 +540,7 @@ namespace Bitboards {
    * the content (blocking pieces) determined from the given L45 rotated
    * bitboard.
    */
-  constexpr Bitboard getMovesDiagDownR(Square sq, Bitboard rotated) {
+  inline Bitboard getMovesDiagDownR(Square sq, Bitboard rotated) {
     // shift the correct row to the first byte (to the right in Java)
     const Bitboard shifted = rotated >> shiftsDiagDown[sq];
     // mask the content with the length of the diagonal to erase any other

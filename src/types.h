@@ -26,10 +26,12 @@
 #ifndef FRANKYCPP_TYPES_H
 #define FRANKYCPP_TYPES_H
 
+#include <cassert>
 #include <string>
 #include <iostream>
 #include <sstream>
 #include <deque>
+#include <bitset>
 #include "fmt/locale.h"
 
 // convenience macros
@@ -85,7 +87,7 @@ enum Color {
   COLOR_LENGTH = 2
 };
 
-constexpr Color operator~(Color c) { return Color(c ^ BLACK); };
+constexpr Color operator~(Color c) { return Color(c ^ BLACK); }
 
 ///////////////////////////////////
 //// BITBOARD
@@ -664,9 +666,9 @@ ENABLE_INCR_OPERATORS_ON(CastlingRights)
 #undef ENABLE_INCR_OPERATORS_ON
 #undef ENABLE_BASE_OPERATORS_ON
 
-constexpr const char* boolStr(bool b) { return b ? "true" : "false"; };
+constexpr const char* boolStr(bool b) { return b ? "true" : "false"; }
 
-constexpr const char* boolStr(int b) { return b ? "true" : "false"; };
+constexpr const char* boolStr(int b) { return b ? "true" : "false"; }
 
 inline bool to_bool(std::string str) {
   std::transform(str.begin(), str.end(), str.begin(), ::tolower);

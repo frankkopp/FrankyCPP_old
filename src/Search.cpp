@@ -24,6 +24,7 @@
  */
 
 #include <iostream>
+#include <chrono>
 #include "Search.h"
 #include "Engine.h"
 #include "SearchConfig.h"
@@ -1026,7 +1027,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
              bestNodeValue, movesSearched, printMoveListUCI(currentVariation));
 
   // best value should in any case not be VALUE_NONE any more
-  assert(PERFT || (bestNodeValue >= VALUE_MIN && bestNodeValue <= VALUE_MAX && "bestNodeValue should not be MIN/MAX here"));
+  assert(ST==PERFT || (bestNodeValue >= VALUE_MIN && bestNodeValue <= VALUE_MAX && "bestNodeValue should not be MIN/MAX here"));
 
   // store TT data
   switch (ST) {
@@ -1159,7 +1160,7 @@ inline void Search::storeTT(Position &position, Value value, Value_Type ttType,
     return;
   }
 
-  assert(depth >= 0 && depth <= DEPTH_MAX);
+  assert(depth <= DEPTH_MAX);
   assert((value >= VALUE_MIN && value <= VALUE_MAX));
 
   // store the position in the TT
@@ -1270,8 +1271,14 @@ inline MilliSec Search::elapsedTime(const MilliSec t1, const MilliSec t2) {
 }
 
 inline MilliSec Search::now() {
+#ifdef __APPLE__
   // this C function is much faster than c++ chrono
   return clock_gettime_nsec_np(CLOCK_UPTIME_RAW_APPROX) / 1'000'000;
+#elif __CYGWIN__
+  const std::chrono::time_point timePoint = std::chrono::high_resolution_clock::now();
+  const std::chrono::duration timeSinceEpoch =  std::chrono::duration_cast<std::chrono::nanoseconds>(timePoint.time_since_epoch());
+  return timeSinceEpoch.count();
+#endif
 }
 
 inline MilliSec Search::getNps() const {

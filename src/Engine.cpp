@@ -125,7 +125,7 @@ void Engine::startSearch(const UCISearchMode &uciSearchMode) {
   }
 
   // clear last result
-  lastResult = lastResult = {false, MOVE_NONE, MOVE_NONE};
+  lastResult = {false, MOVE_NONE, MOVE_NONE};
 
   assert(uciSearchMode.whiteTime >= 0 && uciSearchMode.blackTime >= 0 &&
          uciSearchMode.whiteInc >= 0 && uciSearchMode.blackInc >= 0 &&

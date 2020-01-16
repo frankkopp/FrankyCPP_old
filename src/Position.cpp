@@ -66,7 +66,7 @@ Position::Position() : Position(START_POSITION_FEN) {
 }
 
 /** Creates a board with setup from the given fen */
-Position::Position(const std::string &fen) : Position(fen.c_str()) {};
+Position::Position(const std::string &fen) : Position(fen.c_str()) {}
 
 /** Creates a board with setup from the given fen */
 Position::Position(const char* fen) { setupBoard(fen); }

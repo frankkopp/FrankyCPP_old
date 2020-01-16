@@ -317,17 +317,11 @@ public:
   FRIEND_TEST(TT_Test, probe);
 
   // using prefetch improves probe lookup speed significantly
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-parameter"
-
   inline void prefetch(const Key key) {
 #ifdef TT_ENABLE_PREFETCH
     _mm_prefetch(&_data[(key & hashKeyMask)], _MM_HINT_T0);
 #endif
   }
-
-#pragma clang diagnostic pop
-
 };
 
 

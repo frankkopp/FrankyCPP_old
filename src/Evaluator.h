@@ -74,7 +74,7 @@ class Evaluator {
   Entry defaultEntry{0, 0, 0};
 
   inline std::size_t getTableIndex(const Bitboard pawnsBitboard) const {
-    return pawnsBitboard & config.PAWN_TABLE_SIZE - 1;
+    return pawnsBitboard & (config.PAWN_TABLE_SIZE - 1);
   }
 
   /** stats for cache */

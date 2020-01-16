@@ -31,6 +31,6 @@ namespace EngineConfig {
   inline int hash = 64; // in MB
   inline bool ponder = true;
 
-};
+}
 
 #endif //FRANKYCPP_ENGINECONFIG_H

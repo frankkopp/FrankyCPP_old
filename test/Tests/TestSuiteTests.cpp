@@ -55,7 +55,7 @@ public:
     std::string target;
   };
 
-  std::string getMoveString(const Position &position, const std::string &target) {
+  static std::string getMoveString(const Position &position, const std::string &target) {
     std::istringstream inStream(target);
     MoveGenerator mg;
     const MoveList* legalMoves = mg.generateLegalMoves<MoveGenerator::GENALL>(position);

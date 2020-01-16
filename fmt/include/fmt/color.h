@@ -491,8 +491,10 @@ void vformat_to(basic_memory_buffer<Char>& buf, const text_style& ts,
         internal::make_background_color<Char>(ts.get_background());
     buf.append(background.begin(), background.end());
   }
-  internal::vformat_to(buf, format_str, args);
-  if (has_style) internal::reset_color<Char>(buf);
+  vformat_to(buf, format_str, args);
+  if (has_style) {
+    internal::reset_color<Char>(buf);
+  }
 }
 }  // namespace internal
 
