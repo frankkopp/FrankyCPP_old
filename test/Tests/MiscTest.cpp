@@ -1,0 +1,153 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Frank Kopp
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
+#include <gtest/gtest.h>
+#include "types.h"
+#include "misc.h"
+#include "Logging.h"
+
+using testing::Eq;
+
+
+class MiscTest : public ::testing::Test {
+public:
+  static void SetUpTestSuite() {
+    NEWLINE;
+    LOGGING::init();
+    INIT::init();
+    NEWLINE;
+  }
+
+  std::shared_ptr<spdlog::logger> LOG = spdlog::get("Test_Logger");
+
+
+protected:
+  void SetUp() override {}
+  void TearDown() override {}
+};
+
+TEST_F(MiscTest, moveFromSAN) {
+  Position position;
+  Move expected;
+  Move actual;
+
+  spdlog::get("Main_Logger")->set_level(spdlog::level::info);
+
+  expected = createMove("e2e4");
+  actual = Misc::getMoveFromSAN(position, "e4");
+  ASSERT_EQ(expected, actual);
+
+  position = Position("r1bqk2r/ppp2ppp/2np1n2/2b1p3/2B1P3/1P1P1N2/P1P2PPP/RNBQK2R w KQkq - 0 6");
+
+  // not a move on this position
+  expected = MOVE_NONE;
+  actual = Misc::getMoveFromSAN(position, "e4");
+  ASSERT_EQ(expected, actual);
+
+  // ambiguous
+  expected = MOVE_NONE;
+  actual = Misc::getMoveFromSAN(position, "d2");
+  ASSERT_EQ(expected, actual);
+
+  expected = createMove("d1d2");
+  actual = Misc::getMoveFromSAN(position, "Qd2");
+  ASSERT_EQ(expected, actual);
+
+  expected = createMove("e1d2");
+  actual = Misc::getMoveFromSAN(position, "Kd2");
+  ASSERT_EQ(expected, actual);
+
+  expected = createMove("c1d2");
+  actual = Misc::getMoveFromSAN(position, "Bd2");
+  ASSERT_EQ(expected, actual);
+
+  position = Position("r1bqk2r/p1p2pp1/1pnp1n1p/2b1p3/2B1P2N/1P1P4/P1PN1PPP/R1BQK2R w KQkq - 0 8");
+
+  // ambiguous
+  expected = MOVE_NONE;
+  actual = Misc::getMoveFromSAN(position, "f3");
+  ASSERT_EQ(expected, actual);
+
+  // ambiguous
+  expected = MOVE_NONE;
+  actual = Misc::getMoveFromSAN(position, "Nf3");
+  ASSERT_EQ(expected, actual);
+
+  // file disambiguation
+  expected = createMove("d2f3");
+  actual = Misc::getMoveFromSAN(position, "Ndf3");
+  ASSERT_EQ(expected, actual);
+
+  // file disambiguation
+  expected = createMove("h4f3");
+  actual = Misc::getMoveFromSAN(position, "Nhf3");
+  ASSERT_EQ(expected, actual);
+
+  position = Position("r3k2r/pbpq1pp1/1pnp1n1p/2b1pN2/2B1P3/1P1P1N2/P1P2PPP/R1BQK2R w KQkq - 4 10");
+
+  // ambiguous
+  expected = MOVE_NONE;
+  actual = Misc::getMoveFromSAN(position, "h4");
+  ASSERT_EQ(expected, actual);
+
+  // ambiguous
+  expected = MOVE_NONE;
+  actual = Misc::getMoveFromSAN(position, "Nh4");
+  ASSERT_EQ(expected, actual);
+
+  // rank disambiguation
+  expected = createMove("f3h4");
+  actual = Misc::getMoveFromSAN(position, "N3h4");
+  ASSERT_EQ(expected, actual);
+
+  // rank disambiguation
+  expected = createMove("f5h4");
+  actual = Misc::getMoveFromSAN(position, "N5h4");
+  ASSERT_EQ(expected, actual);
+
+  // castling white king side
+  expected = createMove<CASTLING>("e1g1");
+  actual = Misc::getMoveFromSAN(position, "O-O");
+  ASSERT_EQ(expected, actual);
+
+  position = Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
+
+  // promotion ambigous
+  expected = MOVE_NONE;
+  actual = Misc::getMoveFromSAN(position, "Qb1");
+  ASSERT_EQ(expected, actual);
+
+  // promotion
+  expected = createMove<PROMOTION>("a2b1q");
+  actual = Misc::getMoveFromSAN(position, "ab1=Q");
+  ASSERT_EQ(expected, actual);
+
+  // en passant
+  expected = createMove<ENPASSANT>("f4e3");
+  actual = Misc::getMoveFromSAN(position, "e3");
+  ASSERT_EQ(expected, actual);
+
+}
+
