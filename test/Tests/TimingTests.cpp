@@ -195,6 +195,7 @@ TEST_F(TimingTests, DISABLED_busyWait) {
   cout << os.str();
 }
 
+#ifdef __GNUC__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
 TEST_F(TimingTests, DISABLED_moveUnion) {
@@ -265,6 +266,7 @@ TEST_F(TimingTests, DISABLED_moveUnion) {
   testTiming(os, 5, 100, 1'000'000, tests);
   cout << os.str();
 }
+#endif
 
 #pragma clang diagnostic pop
 
@@ -340,7 +342,8 @@ TEST_F(TimingTests, DISABLED_max) {
 
   //// TESTS START
   std::function<void()> f1 = [&]() {
-    alpha = std::min(globalVal + ply, alpha);
+    using namespace std;
+    alpha = min(globalVal + ply, alpha);
   };
   std::function<void()> f2 = [&]() {
     if (alpha > globalVal + ply)

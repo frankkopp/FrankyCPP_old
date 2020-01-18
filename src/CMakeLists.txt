@@ -2,12 +2,16 @@
 configure_file(version.h.in version.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
+    
  # include BOOST
-set(BOOST_ROOT "/usr/local/boost_1_72_0")
-set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
-set(Boost_USE_MULTITHREADED ON)
-#set(Boost_USE_STATIC_LIBS ON) # only find static libs
-#set(Boost_USE_STATIC_RUNTIME OFF)
+ if (NOT UNIX AND WIN32)
+  set(BOOST_ROOT "C:/Boost/boost_1_72_0")
+  set(Boost_INCLUDE_DIR "C:/Boost/boost_1_72_0")
+  #set(BOOST_LIBRARYDIR C:\\Boost\\lib  )
+endif()
+set(Boost_USE_STATIC_LIBS OFF) 
+set(Boost_USE_MULTITHREADED ON)  
+set(Boost_USE_STATIC_RUNTIME OFF) 
 find_package(Boost 1.72.0 COMPONENTS timer log log_setup REQUIRED)
 if (Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
@@ -23,8 +27,8 @@ add_library(core ${core_SRCS})
 # define executable
 add_executable(${execname} main.cpp)
 
-find_package(fmt REQUIRED)
-find_package(spdlog REQUIRED)
+#find_package(fmt REQUIRED)
+#find_package(spdlog REQUIRED)
 
 #spdlog_enable_warnings(${execname})
 

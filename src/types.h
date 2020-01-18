@@ -34,6 +34,17 @@
 #include <bitset>
 #include "fmt/locale.h"
 
+#if defined(__GNUC__) // GCC, Clang, ICC
+
+#elif defined(_MSC_VER) // Windows MSC
+#include <Windows.h>
+#define sleep Sleep 
+
+#else // Compiler is not GCC
+#error "Compiler not yet supported."
+#endif
+
+
 // convenience macros
 #define NEWLINE std::cout << std::endl
 #define printBB(bb) std::cout << Bitboards::print((bb)) << std::endl
@@ -293,7 +304,7 @@ inline std::string printValue(const Value value) {
 
 ///////////////////////////////////
 //// VALUE TYPE
-enum Value_Type : u_int8_t {
+enum Value_Type : uint8_t {
   TYPE_NONE = 0,
   // the node for the value was fully calculated and is exact
     TYPE_EXACT = 1,

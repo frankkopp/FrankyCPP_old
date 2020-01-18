@@ -45,38 +45,38 @@ protected:
   void TearDown() override {}
 };
 
-//TEST_F(BitboardsTest, print) {
-//
-//  // TODO do some asserts to really test
-//
-//  Bitboards::init();
-//
-//  std::cout << "\n";
-//
-//  std::cout << Bitboards::print(EMPTY_BB) << std::endl;
-//  std::cout << Bitboards::printFlat(EMPTY_BB) << std::endl;
-//  std::cout << Bitboards::print(ALL_BB) << std::endl;
-//  std::cout << Bitboards::printFlat(ALL_BB) << std::endl;
-//
-//  for (Square i = SQ_A1; i <= SQ_H8; ++i) {
-//    std::cout << squareLabel(i) << std::endl;
-//    std::cout << Bitboards::print(squareBB[i]) << std::endl;
-//  }
-//
-//  std::cout << Bitboards::print(squareBB[SQ_A1]) << std::endl;
-//  std::cout << Bitboards::printFlat(squareBB[SQ_A1]) << std::endl;
-//  std::cout << Bitboards::print(squareBB[SQ_H1]) << std::endl;
-//  std::cout << Bitboards::printFlat(squareBB[SQ_H1]) << std::endl;
-//  std::cout << Bitboards::print(squareBB[SQ_A8]) << std::endl;
-//  std::cout << Bitboards::printFlat(squareBB[SQ_A8]) << std::endl;
-//  std::cout << Bitboards::print(squareBB[SQ_H8]) << std::endl;
-//  std::cout << Bitboards::printFlat(squareBB[SQ_H8]) << std::endl;
-//
-//  std::cout << Bitboards::print(squareBB[SQ_H8]) << std::endl;
-//  std::cout << Bitboards::printFlat(squareBB[SQ_H8]) << std::endl;
-//
-//  std::cout << Bitboards::print(ALL_BB) << std::endl;
-//}
+TEST_F(BitboardsTest, print) {
+
+  // TODO do some asserts to really test
+
+  Bitboards::init();
+
+  std::cout << "\n";
+
+  std::cout << Bitboards::print(EMPTY_BB) << std::endl;
+  std::cout << Bitboards::printFlat(EMPTY_BB) << std::endl;
+  std::cout << Bitboards::print(ALL_BB) << std::endl;
+  std::cout << Bitboards::printFlat(ALL_BB) << std::endl;
+
+  for (Square i = SQ_A1; i <= SQ_H8; ++i) {
+    std::cout << squareLabel(i) << std::endl;
+    std::cout << Bitboards::print(squareBB[i]) << std::endl;
+  }
+
+  std::cout << Bitboards::print(squareBB[SQ_A1]) << std::endl;
+  std::cout << Bitboards::printFlat(squareBB[SQ_A1]) << std::endl;
+  std::cout << Bitboards::print(squareBB[SQ_H1]) << std::endl;
+  std::cout << Bitboards::printFlat(squareBB[SQ_H1]) << std::endl;
+  std::cout << Bitboards::print(squareBB[SQ_A8]) << std::endl;
+  std::cout << Bitboards::printFlat(squareBB[SQ_A8]) << std::endl;
+  std::cout << Bitboards::print(squareBB[SQ_H8]) << std::endl;
+  std::cout << Bitboards::printFlat(squareBB[SQ_H8]) << std::endl;
+
+  std::cout << Bitboards::print(squareBB[SQ_H8]) << std::endl;
+  std::cout << Bitboards::printFlat(squareBB[SQ_H8]) << std::endl;
+
+  std::cout << Bitboards::print(ALL_BB) << std::endl;
+}
 
 TEST_F(BitboardsTest, popcount) {
   const uint64_t &b = 0b0010000000010000000000000010000000000000000000000000000000000000ULL;
@@ -159,6 +159,8 @@ TEST_F(BitboardsTest, bitScans) {
   ASSERT_EQ(2, popcount(squareBB[SQ_D3] | squareBB[SQ_H2]));
   ASSERT_EQ(8, popcount(DiagUpA1));
 
+  std::cout << "SQAURE D3: " << std::endl << Bitboards::print(squareBB[SQ_D3]) << std::endl;
+  std::cout << "SQAURE D3: " << std::endl << Bitboards::printFlat(squareBB[SQ_D3]) << std::endl;
   ASSERT_EQ(19, lsb(squareBB[SQ_D3]));
   ASSERT_EQ(19, msb(squareBB[SQ_D3]));
 
@@ -376,10 +378,6 @@ TEST_F(BitboardsTest, movesFileTest) {
 
   Position position("r1b1k2r/pp2ppbp/2n3p1/q7/3pP3/2P1BN2/P2Q1PPP/2R1KB1R w Kkq -");
 
-  //  cout << position.printBoard();
-  //  cout << Bitboards::print(position.getOccupiedBB());
-  //  cout << Bitboards::print(Bitboards::getMovesFile(SQ_A5, position.getOccupiedBB()));
-
   expected = "+---+---+---+---+---+---+---+---+\n"
              "|   |   |   |   |   |   |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n"
@@ -397,6 +395,12 @@ TEST_F(BitboardsTest, movesFileTest) {
              "+---+---+---+---+---+---+---+---+\n"
              "|   |   |   |   |   |   |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n";
+
+  cout << position.printBoard();
+  cout << Bitboards::print(position.getOccupiedBB());
+  cout << Bitboards::print(Bitboards::getMovesFile(SQ_A5, position.getOccupiedBB()));
+  cout << expected;
+
   actual = Bitboards::print(Bitboards::getMovesFile(SQ_A5, position.getOccupiedBB()));
   ASSERT_EQ(expected, actual);
 

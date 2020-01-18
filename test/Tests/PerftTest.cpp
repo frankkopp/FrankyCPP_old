@@ -57,7 +57,7 @@ TEST_F(PerftTest, stdPerftOD) {
   cout << "==============================" << endl;
 
   // @formatter:off
-  const u_int64_t results[10][6] = {
+  const uint64_t results[10][6] = {
     //N                 Nodes            Captures              EP             Checks              Mates
     { 0,                 1ULL,               0ULL,           0ULL,              0ULL,              0ULL },
     { 1,                20ULL,               0ULL,           0ULL,              0ULL,              0ULL },
@@ -97,7 +97,7 @@ TEST_F(PerftTest, stdPerft) {
   cout << "==============================" << endl;
 
   // @formatter:off
-  const u_int64_t results[10][6] = {
+  const uint64_t results[10][6] = {
     //N                 Nodes            Captures              EP             Checks              Mates
     { 0,                 1ULL,               0ULL,           0ULL,              0ULL,              0ULL },
     { 1,                20ULL,               0ULL,           0ULL,              0ULL,              0ULL },
@@ -137,7 +137,7 @@ TEST_F(PerftTest, kiwiPetePerft) {
   Perft p("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
 
   // @formatter:off
-  const u_int64_t results[6][6] = {
+  const uint64_t results[6][6] = {
     //N  Nodes      Captures EP     Checks  Mates
     { 0, 0,         0,       0,     0,      0},
     { 1, 48,        8,       0,     0,      0},
@@ -173,7 +173,7 @@ TEST_F(PerftTest, pos3Perft) {
   Perft p("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -");
 
   // @formatter:off
-  const u_int64_t results[8][6] = {
+  const uint64_t results[8][6] = {
           //N  Nodes      Captures EP     Checks   Mates
           { 0, 0,         0,       0,     0,       0},
           { 1, 14,        1,       0,     2,       0},
@@ -211,7 +211,7 @@ TEST_F(PerftTest, pos4Perft) {
   Perft p("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1");
 
   // @formatter:off
-  const u_int64_t results[7][6] = {
+  const uint64_t results[7][6] = {
           //N  Nodes      Captures EP     Checks   Mates
           { 0, 0,         0,         0,     0,        0},
           { 1, 6,         0,         0,     0,        0},
@@ -242,7 +242,7 @@ TEST_F(PerftTest, pos4Perft) {
   Perft p2("r2q1rk1/pP1p2pp/Q4n2/bbp1p3/Np6/1B3NBn/pPPP1PPP/R3K2R b KQ - 0 1");
 
   // @formatter:off
-  const u_int64_t results2[7][6] = {
+  const uint64_t results2[7][6] = {
           //N  Nodes      Captures EP     Checks   Mates
           { 0, 0,         0,         0,     0,        0},
           { 1, 6,         0,         0,     0,        0},
@@ -277,7 +277,7 @@ TEST_F(PerftTest, pos5Perft) {
   Perft p("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ -");
 
   // @formatter:off
-  const u_int64_t results[6][6] = {
+  const uint64_t results[6][6] = {
           //N  Nodes      Captures EP     Checks   Mates
           { 0, 0       },
           { 1, 44       },

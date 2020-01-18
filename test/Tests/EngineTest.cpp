@@ -24,8 +24,10 @@
  */
 
 #include <gtest/gtest.h>
+#include "types.h"
 #include "Logging.h"
 #include "Engine.h"
+
 
 using testing::Eq;
 using namespace std;

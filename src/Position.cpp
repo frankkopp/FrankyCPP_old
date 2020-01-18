@@ -39,7 +39,7 @@ Key Zobrist::nextPlayer;
 ///// STATIC
 
 void Position::init() {
-  LOG__TRACE(spdlog::get("Main_Logger"), "{}:{} INIT", __FILE_NAME__, __func__, __LINE__);
+  LOG__TRACE(spdlog::get("Main_Logger"), "{}:{} INIT", __FILE__, __func__, __LINE__);
 
   // Zobrist Key initialization
   Random random(1070372);
@@ -61,9 +61,7 @@ void Position::init() {
 ///// CONSTRUCTORS
 
 /** Default constructor creates a board with standard start setup */
-Position::Position() : Position(START_POSITION_FEN) {
-  LOG__TRACE(LOG, "{}:{} CTOR", __FILE_NAME__, __func__, __LINE__);
-}
+Position::Position() : Position(START_POSITION_FEN) {}
 
 /** Creates a board with setup from the given fen */
 Position::Position(const std::string &fen) : Position(fen.c_str()) {}
@@ -1033,14 +1031,10 @@ void Position::putPiece(const Piece piece, const Square square) {
   assert((occupiedBB[color] & square) == 0);
   occupiedBB[color] |= square;
   // pre-rotated bb / expensive - ~30% hit
-  occupiedBBR90[color] |=
-    Bitboards::indexMapR90[square]; // Bitboards::rotateSquareR90(square);
-  occupiedBBL90[color] |=
-    Bitboards::indexMapL90[square]; // Bitboards::rotateSquareL90(square);
-  occupiedBBR45[color] |=
-    Bitboards::indexMapR45[square]; // Bitboards::rotateSquareR45(square);
-  occupiedBBL45[color] |=
-    Bitboards::indexMapL45[square]; // Bitboards::rotateSquareL45(square);
+  occupiedBBR90[color] |= Bitboards::indexMapR90[square]; // Bitboards::rotateSquareR90(square);
+  occupiedBBL90[color] |= Bitboards::indexMapL90[square]; // Bitboards::rotateSquareL90(square);
+  occupiedBBR45[color] |= Bitboards::indexMapR45[square]; // Bitboards::rotateSquareR45(square);
+  occupiedBBL45[color] |= Bitboards::indexMapL45[square]; // Bitboards::rotateSquareL45(square);
 
   // piece board
   assert(getPiece(square) == PIECE_NONE);
@@ -1074,14 +1068,10 @@ Piece Position::removePiece(const Square square) {
   assert(occupiedBB[color] & square);
   occupiedBB[color] ^= square;
   // pre-rotated bb / expensive - ~30% hit
-  occupiedBBR90[color] ^=
-    Bitboards::indexMapR90[square]; // Bitboards::rotateSquareR90(square);
-  occupiedBBL90[color] ^=
-    Bitboards::indexMapL90[square]; // Bitboards::rotateSquareL90(square);
-  occupiedBBR45[color] ^=
-    Bitboards::indexMapR45[square]; // Bitboards::rotateSquareR45(square);
-  occupiedBBL45[color] ^=
-    Bitboards::indexMapL45[square]; // Bitboards::rotateSquareL45(square);
+  occupiedBBR90[color] ^= Bitboards::indexMapR90[square]; // Bitboards::rotateSquareR90(square);
+  occupiedBBL90[color] ^= Bitboards::indexMapL90[square]; // Bitboards::rotateSquareL90(square);
+  occupiedBBR45[color] ^= Bitboards::indexMapR45[square]; // Bitboards::rotateSquareR45(square);
+  occupiedBBL45[color] ^= Bitboards::indexMapL45[square]; // Bitboards::rotateSquareL45(square);
 
   // piece board
   assert(getPiece(square) != PIECE_NONE);

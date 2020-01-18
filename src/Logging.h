@@ -48,7 +48,7 @@
 #define DEBUG__LVL 5
 #define TRACE__LVL 6
 
-#define LOG__LEVEL DEBUG__LVL
+#define LOG__LEVEL TRACE__LVL
 
 #if LOG__LEVEL > 0
 #define LOG__CRITICAL(logger, ...) logger->critical(__VA_ARGS__)

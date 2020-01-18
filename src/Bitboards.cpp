@@ -79,7 +79,7 @@ namespace Bitboards {
    * Initializes various pre-computed bitboards
    */
   void init() {
-    LOG__TRACE(spdlog::get("Main_Logger"), "{} {}() line {}", __FILE_NAME__, __func__, __LINE__);
+    LOG__TRACE(spdlog::get("Main_Logger"), "{} {}() line {}", __FILE__, __func__, __LINE__);
 
     // pre-computes 16-bit population counter to use in popcount(64-bit)
     for (unsigned i = 0; i < (1U << 16U); ++i)
@@ -158,13 +158,13 @@ namespace Bitboards {
       for (int j = 0; j < 256; j++) {
         Bitboard mask = 0L;
         for (int x = file - 1; x >= 0; x--) {
-          mask += (1L << x);
+          mask += (ONE_BB << x);
           if ((j & (1 << x)) != 0) {
             break;
           }
         }
         for (int x = file + 1; x < 8; x++) {
-          mask += (1L << x);
+          mask += (ONE_BB << x);
           if ((j & (1 << x)) != 0) {
             break;
           }
@@ -181,13 +181,13 @@ namespace Bitboards {
       for (int j = 0; j < 256; j++) {
         Bitboard mask = 0;
         for (int x = 6 - rank; x >= 0; x--) {
-          mask += (1L << (8 * (7 - x)));
+          mask += (ONE_BB << (8 * (7 - x)));
           if ((j & (1 << x)) != 0) {
             break;
           }
         }
         for (int x = 8 - rank; x < 8; x++) {
-          mask += (1L << (8 * (7 - x)));
+          mask += (ONE_BB << (8 * (7 - x)));
           if ((j & (1 << x)) != 0) {
             break;
           }
@@ -388,8 +388,8 @@ namespace Bitboards {
     for (Square square = SQ_A1; square <= SQ_H8; ++square) {
       int f = fileOf(square);
       int r = rankOf(square);
-      if ((f + r) % 2 == 0) { tmpB |= 1L << square; }
-      else { tmpW |= 1L << square; }
+      if ((f + r) % 2 == 0) { tmpB |= ONE_BB << square; }
+      else { tmpW |= ONE_BB << square; }
     }
     whiteSquaresBB = tmpW;
     blackSquaresBB = tmpB;

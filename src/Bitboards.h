@@ -27,6 +27,7 @@
 #define FRANKYCPP_BITBOARDS_H
 
 #include "types.h"
+#include <intrin.h>
 
 /** Functions and pre-defined or pre-calculated Bitboards */
 namespace Bitboards {
@@ -225,15 +226,7 @@ namespace Bitboards {
     28, 36, 43, 49, 54, 58, 61, 63
   };
 
-  constexpr Bitboard DiagUpA1 = 0b\
-10000000\
-01000000\
-00100000\
-00010000\
-00001000\
-00000100\
-00000010\
-00000001;
+  constexpr Bitboard DiagUpA1 = 0b1000000001000000001000000001000000001000000001000000001000000001;
   constexpr Bitboard DiagUpB1 = (DiagUpA1 << 1) & ~FileABB; // shift EAST
   constexpr Bitboard DiagUpC1 = (DiagUpB1 << 1) & ~FileABB;
   constexpr Bitboard DiagUpD1 = (DiagUpC1 << 1) & ~FileABB;
@@ -249,15 +242,7 @@ namespace Bitboards {
   constexpr Bitboard DiagUpA7 = DiagUpA6 << 8;
   constexpr Bitboard DiagUpA8 = DiagUpA7 << 8;
 
-  constexpr Bitboard DiagDownH1 = 0b\
-00000001\
-00000010\
-00000100\
-00001000\
-00010000\
-00100000\
-01000000\
-10000000;
+  constexpr Bitboard DiagDownH1 = 0b0000000100000010000001000000100000010000001000000100000010000000;
   constexpr Bitboard DiagDownH2 = DiagDownH1 << 8; // shift NORTH
   constexpr Bitboard DiagDownH3 = DiagDownH2 << 8;
   constexpr Bitboard DiagDownH4 = DiagDownH3 << 8;
@@ -290,9 +275,13 @@ namespace Bitboards {
   constexpr Bitboard fileBB(Square s) { return fileBB(fileOf(s)); }
 
   /** popcount() counts the number of non-zero bits in a bitboard */
-  constexpr int popcount(Bitboard b) {
-#if defined(__GNUC__) // GCC, Clang, ICC
+  inline int popcount(Bitboard b) {
+#ifdef __GNUC__ // GCC, Clang, ICC
     return __builtin_popcountll(b);
+
+#elif defined(_MSC_VER)
+    return  __popcnt64(b);
+    
 #else // Compiler is not GCC
     // pre-computed table of population counter for 16-bit
     extern uint8_t PopCnt16[1 << 16];
@@ -309,7 +298,7 @@ namespace Bitboards {
    * Used when no build in popcount is available for compiler.
    * @return popcount16() counts the non-zero bits using SWAR-Popcount algorithm
    */
-  constexpr unsigned popcount16(unsigned u) {
+  inline unsigned popcount16(unsigned u) {
     u -= (u >> 1U) & 0x5555U;
     u = ((u >> 2U) & 0x3333U) + (u & 0x3333U);
     u = ((u >> 4U) + u) & 0x0F0FU;
@@ -318,10 +307,23 @@ namespace Bitboards {
 
   /** lsb() and msb() return the least/most significant bit in a non-zero
    * bitboard */
-  constexpr Square lsb(Bitboard b) {
-    assert(b);        // __builtin_ctzll is undefined on 0
-#if defined(__GNUC__) // GCC, Clang, ICC
-    return Square(__builtin_ctzll(b));
+  inline Square lsb(Bitboard b) {
+    if (!b) return SQ_NONE;
+    
+#ifdef __GNUC__ // GCC, Clang, ICC
+    return static_cast<Square>(__builtin_ctzll(b));
+
+#elif defined(_MSC_VER)
+    std::cout << "LSB: " << std::endl << Bitboards::print(b) << std::endl;
+    std::cout << "LSB: " << std::endl << Bitboards::printFlat(b) << std::endl;
+    unsigned long index;
+    if (_BitScanReverse64(&index, b)) {
+      return static_cast<Square>(index);
+    }
+    else {
+      return SQ_NONE;
+    }
+        
 #else // Compiler is not GCC
 #error "Compiler not yet supported."
     // GTEST - nice examples
@@ -333,10 +335,23 @@ namespace Bitboards {
 
   /** lsb() and msb() return the least/most significant bit in a non-zero
    * bitboard */
-  constexpr Square msb(Bitboard b) {
-    assert(b);        // __builtin_clzll is undefined on 0
+  inline Square msb(Bitboard b) {
+    if (!b) return SQ_NONE;
+
 #if defined(__GNUC__) // GCC, Clang, ICC
-    return Square(63 ^ __builtin_clzll(b));
+    return static_cast<Square>(63 ^ __builtin_clzll(b));
+
+#elif defined(_MSC_VER)
+    std::cout << "MSB: " << std::endl << Bitboards::print(b) << std::endl;
+    std::cout << "MSB: " << std::endl << Bitboards::printFlat(b) << std::endl;
+    unsigned long index;
+    if (_BitScanForward64(&index, b)) {
+      return static_cast<Square>(index);
+    }
+    else {
+      return SQ_NONE;
+    }
+
 #else // Compiler is not GCC
 #error "Compiler not yet supported."
 #endif
@@ -344,15 +359,17 @@ namespace Bitboards {
 
   /** pop_lsb() finds and clears the least significant bit in a non-zero
    * bitboard */
-  constexpr Square popLSB(Bitboard &b) {
-    assert(b); // lsb is undefined on 0
+  inline Square popLSB(Bitboard &b) {
+    if (!b) return SQ_NONE;
     const Square s = lsb(b);
     b &= b - 1;
     return s;
   }
 
-  constexpr void popLSB2(Bitboard &b, Square &sq) {
-    assert(b); // lsb is undefined on 0
+  inline void popLSB2(Bitboard &b, Square &sq) {
+    if (!b) {
+      return;
+    };
     sq = lsb(b);
     b &= b - 1;
   }
@@ -582,11 +599,11 @@ namespace Bitboards {
    */
   inline std::string printFlat(Bitboard b) {
     std::ostringstream os;
-    for (int i = 0; i < 64; i++) {
+    for (uint16_t i = 0; i < 64; i++) {
       if (i > 0 && i % 8 == 0) {
         os << ".";
       }
-      os << (b & (1L << i) ? "1" : "0");
+      os << (b & (Bitboards::ONE_BB << i) ? "1" : "0");
     }
     os << " (" + std::to_string(b) + ")";
     return os.str();
