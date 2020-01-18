@@ -6,22 +6,34 @@ cmake_minimum_required(VERSION 3.13)
 
 project(FrankyTest)
 
-# include BOOST
+# Platform specific
 if (APPLE)
     set(BOOST_ROOT "/usr/local/boost_1_72_0")
     set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
     set(Boost_USE_MULTITHREADED ON)
     #set(Boost_USE_STATIC_LIBS ON) # only find static libs
     #set(Boost_USE_STATIC_RUNTIME OFF)
+
+    find_package(fmt REQUIRED)
+    if (NOT fmt_FOUND)
+        message("Package fmt NOT found")
+    endif ()
+
+    find_package(spdlog REQUIRED)
+    if (NOT spdlog_FOUND)
+        message("Package spdlog NOT found")
+    endif ()
+
 endif ()
-if (UNIX AND CYGWIN)
+
+if (CYGWIN)
     set(BOOST_ROOT "/usr/local/boost_1_72_0")
     set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
     set(Boost_USE_MULTITHREADED ON)
     #set(Boost_USE_STATIC_LIBS ON) # only find static libs
     #set(Boost_USE_STATIC_RUNTIME OFF)
 endif ()
-if (NOT UNIX AND WIN32)
+if (WIN32)
     set(BOOST_ROOT "/usr/local/boost_1_72_0")
     set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
     set(Boost_USE_MULTITHREADED ON)
@@ -39,9 +51,9 @@ endif ()
 message("Finding GIT...")
 set(GIT_EXECUTABLE)
 find_package(Git)
-if(GIT_FOUND)
+if (GIT_FOUND)
     message("git found: ${GIT_EXECUTABLE}")
-endif()
+endif ()
 
 message("Configure GoogleTest download...")
 configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
@@ -51,22 +63,24 @@ execute_process(
         RESULT_VARIABLE result
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/googletest-download"
 )
-if(result)
+if (result)
     message(FATAL_ERROR "CMake step for googletest failed: ${result}")
-endif()
+endif ()
 message("GoogleTest build...")
 execute_process(
         COMMAND "${CMAKE_COMMAND}" --build .
         RESULT_VARIABLE result
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/googletest-download"
 )
-if(result)
+if (result)
     message(FATAL_ERROR "Build step for googletest failed: ${result}")
-endif()
+endif ()
 
 # Prevent GoogleTest from overriding our compiler/linker options
 # when building with Visual Studio
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+message("Include DIRS: " ${INCLUDE_DIRECTORIES})
 
 # Add googletest directly to our build. This adds the following targets:
 # gtest, gtest_main, gmock and gmock_main
@@ -75,17 +89,31 @@ add_subdirectory(
         "${CMAKE_CURRENT_BINARY_DIR}/googletest-build"
 )
 
-find_package(fmt REQUIRED)
-if (NOT fmt_FOUND)
-    message("Package fmt NOT found" )
-endif()
+add_executable(FrankyTest
+        main.cpp
+        Tests/BitboardTest.cpp
+        Tests/TimingTests.cpp
+        Tests/SemaphoreTest.cpp
+        Tests/EngineTest.cpp
+        Tests/GlobalsTest.cpp
+        Tests/PositionTest.cpp
+        Tests/MoveGeneratorTest.cpp
+        Tests/PerftTest.cpp
+        Tests/UCITests.cpp
+        Tests/SearchTest.cpp
+        Tests/LoggingTest.cpp
+        Tests/EvaluatorTest.cpp
+        Tests/SearchTreeSizeTest.cpp
+        Tests/ValuesTest.cpp
+        Tests/TT_Test.cpp
+        Tests/BOOST_Test.cpp
+        Tests/SelfPlayUCITest.cpp
+        Tests/Test_Fens.h
+        Tests/TestSuiteTests.cpp
+        Tests/MiscTest.cpp
+)
 
-find_package(spdlog REQUIRED)
-if (NOT spdlog_FOUND)
-    message("Package spdlog NOT found" )
-endif()
-
-add_executable(FrankyTest main.cpp Tests/BitboardTest.cpp Tests/TimingTests.cpp Tests/SemaphoreTest.cpp Tests/EngineTest.cpp Tests/GlobalsTest.cpp Tests/PositionTest.cpp Tests/MoveGeneratorTest.cpp Tests/PerftTest.cpp Tests/UCITests.cpp Tests/SearchTest.cpp Tests/LoggingTest.cpp Tests/EvaluatorTest.cpp Tests/SearchTreeSizeTest.cpp Tests/ValuesTest.cpp Tests/TT_Test.cpp Tests/BOOST_Test.cpp Tests/SelfPlayUCITest.cpp Tests/Test_Fens.h Tests/TestSuiteTests.cpp Tests/MiscTest.cpp)
+if (APPLE)
 target_link_libraries(
         FrankyTest
         core
@@ -95,3 +123,16 @@ target_link_libraries(
         gtest_main
         ${Boost_LIBRARIES}
 )
+endif()
+
+if (CYGWIN)
+    target_link_libraries(
+            FrankyTest
+            core
+            fmt
+            spdlog
+            gtest
+            gtest_main
+            ${Boost_LIBRARIES}
+    )
+endif()

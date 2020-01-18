@@ -8,13 +8,26 @@ cmake_minimum_required(VERSION 3.13)
 configure_file(version.h.in version.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-# include BOOST
+# Platform specific
 if (APPLE)
     set(BOOST_ROOT "/usr/local/boost_1_72_0")
     set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
     set(Boost_USE_MULTITHREADED ON)
     #set(Boost_USE_STATIC_LIBS ON) # only find static libs
     #set(Boost_USE_STATIC_RUNTIME OFF)
+
+    find_package(fmt REQUIRED)
+    if (NOT fmt_FOUND)
+        message("Package fmt NOT found" )
+    endif()
+
+    find_package(spdlog REQUIRED)
+    if (NOT spdlog_FOUND)
+        message("Package spdlog NOT found" )
+    endif()
+
+
+
 endif ()
 
 if (CYGWIN)
@@ -23,6 +36,11 @@ if (CYGWIN)
     set(Boost_USE_MULTITHREADED ON)
     #set(Boost_USE_STATIC_LIBS ON) # only find static libs
     #set(Boost_USE_STATIC_RUNTIME OFF)
+
+    include_directories(
+            ${PROJECT_SOURCE_DIR}/fmt/include
+            ${PROJECT_SOURCE_DIR}/spdlog/include
+    )
 
 endif ()
 if (WIN32)
@@ -39,6 +57,8 @@ if (Boost_FOUND)
     message("BOOST found: " ${BOOST_ROOT} " " ${Boost_INCLUDE_DIR})
     include_directories(${Boost_INCLUDE_DIRS})
 endif ()
+
+message("Include DIRS: " ${INCLUDE_DIRECTORIES})
 
 # set the name of the executable
 set(execname FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR})
@@ -72,17 +92,8 @@ add_library(core ${core_SRCS})
 # define executable
 add_executable(${execname} main.cpp)
 
-find_package(fmt REQUIRED)
-if (NOT fmt_FOUND)
-message("Package fmt NOT found" )
-endif()
-
-find_package(spdlog REQUIRED)
-if (NOT spdlog_FOUND)
-    message("Package spdlog NOT found" )
-endif()
-
 # link executable with library
+if (APPLE)
 target_link_libraries(
         ${execname}
         core
@@ -90,4 +101,14 @@ target_link_libraries(
         spdlog::spdlog
         ${Boost_LIBRARIES}
 )
+endif()
+if (CYGWIN)
+    target_link_libraries(
+            ${execname}
+            core
+            fmt
+            spdlog
+            ${Boost_LIBRARIES}
+    )
+endif()
 
