@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,7 @@ void TT::clear() {
   // This clears the TT by overwriting each entry with 0.
   // It uses multiple threads if noOfThreads is > 1.
   LOG__TRACE(LOG, "Clearing TT ({} threads)...", noOfThreads);
-  auto start = std::chrono::high_resolution_clock::now();
+  auto startTime = std::chrono::high_resolution_clock::now();
   std::vector<std::thread> threads;
   threads.reserve(noOfThreads);
   for (int t = 0; t < noOfThreads; ++t) {
@@ -70,7 +70,7 @@ void TT::clear() {
   }
   for (std::thread &th: threads) th.join();
   auto finish = std::chrono::high_resolution_clock::now();
-  auto time = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start).count();
+  auto time = std::chrono::duration_cast<std::chrono::milliseconds>(finish - startTime).count();
   LOG__INFO(LOG, "TT cleared {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
 }
 
@@ -84,10 +84,11 @@ void TT::put(const Key key, const Depth depth, const Move move, const Value valu
 
   // read the entries for this hash
   Entry* entryDataPtr = getEntryPtr(key);
-  numberOfPuts++;
 
   // cleanup move
   const Move pureMove = moveOf(move);
+
+  numberOfPuts++;
 
   // New entry
   if (entryDataPtr->key == 0) {
@@ -101,7 +102,7 @@ void TT::put(const Key key, const Depth depth, const Move move, const Value valu
     numberOfCollisions++;
     // overwrite if
     // - the new entry's depth is higher
-    // - the new entry's depth is higher and the previous entry has not been used (is aged)
+    // - the new entry's depth is same and the previous entry has not been used (is aged)
     if (depth > entryDataPtr->depth ||
         (depth == entryDataPtr->depth && (forced || entryDataPtr->age > 0))) {
       numberOfOverwrites++;
@@ -116,10 +117,11 @@ void TT::put(const Key key, const Depth depth, const Move move, const Value valu
     // we always update as the stored moved can't be any good otherwise
     // we would have found this during the search in a previous probe
     // and we would not have come to store it again
-    writeEntry(entryDataPtr, key, depth, pureMove ? pureMove : entryDataPtr->move, value, type, mateThreat, 1);
+    writeEntry(entryDataPtr, key, depth, pureMove ? pureMove : entryDataPtr->move,
+               value, type, mateThreat, 1);
     return;
   }
-  
+
   assert (numberOfPuts == (numberOfEntries + numberOfCollisions + numberOfUpdates));
 }
 
@@ -128,9 +130,8 @@ const TT::Entry* TT::probe(const Key &key) {
   Entry* ttEntryPtr = getEntryPtr(key);
   if (ttEntryPtr->key == key) {
     numberOfHits++; // entries with identical keys found
-    ttEntryPtr->age--;
-    if (ttEntryPtr->age < 0)
-      ttEntryPtr->age = 0;
+    ttEntryPtr->age--; // mark the entry as used
+    if (ttEntryPtr->age < 0) { ttEntryPtr->age = 0; }
     return ttEntryPtr;
   }
   numberOfMisses++; // keys not found (not equal to TT misses)
@@ -151,7 +152,7 @@ TT::writeEntry(Entry* const entryPtr, const Key key, const Depth depth, const Mo
 
 void TT::ageEntries() {
   LOG__TRACE(LOG, "Aging TT ({} threads)...", noOfThreads);
-  auto start = std::chrono::high_resolution_clock::now();
+  auto timePoint = std::chrono::high_resolution_clock::now();
   std::vector<std::thread> threads;
   threads.reserve(noOfThreads);
   for (int idx = 0; idx < noOfThreads; ++idx) {
@@ -162,13 +163,14 @@ void TT::ageEntries() {
       if (idx == noOfThreads - 1) end = maxNumberOfEntries;
       for (std::size_t i = start; i < end; ++i) {
         if (_data[i].key == 0) continue;
-        _data[i].age = std::min(7, _data[i].age + 1);
+        _data[i].age++;
+        if (_data[i].age > 7) _data[i].age = 7;
       }
     });
   }
   for (std::thread &th: threads) th.join();
   auto finish = std::chrono::high_resolution_clock::now();
-  auto time = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start).count();
+  auto time = std::chrono::duration_cast<std::chrono::milliseconds>(finish - timePoint).count();
   LOG__INFO(LOG, "TT aged {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
 }
 

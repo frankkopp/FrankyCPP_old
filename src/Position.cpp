@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,7 +61,9 @@ void Position::init() {
 ///// CONSTRUCTORS
 
 /** Default constructor creates a board with standard start setup */
-Position::Position() : Position(START_POSITION_FEN) {}
+Position::Position() : Position(START_POSITION_FEN) {
+  LOG__TRACE(spdlog::get("Main_Logger"), "{}:{} CTOR", __FILE_NAME__, __func__, __LINE__);
+}
 
 /** Creates a board with setup from the given fen */
 Position::Position(const std::string &fen) : Position(fen.c_str()) {}
@@ -1004,7 +1006,7 @@ std::string Position::printFen() const {
   fen << halfMoveClock << " ";
 
   // full move number
-  fen << (int) ((nextHalfMoveNumber + 1) / 2);
+  fen << ((nextHalfMoveNumber + 1) / 2);
 
   return fen.str();
 }

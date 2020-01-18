@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,9 @@
 #include <gtest/gtest.h>
 #include "Logging.h"
 #include "TT.h"
-#include "Search.h"
+
+#include <boost/timer/timer.hpp>
+using namespace boost::timer;
 
 using testing::Eq;
 
@@ -259,7 +261,7 @@ TEST_F(TT_Test, get) {
   ASSERT_EQ(103, e3->value);
 
   const TT::Entry* e4 = tt.getMatch(key4); // not in TT
-  ASSERT_EQ(0, e4->key);
+  ASSERT_EQ(nullptr, e4);
 
 }
 
@@ -333,35 +335,34 @@ TEST_F(TT_Test, tt_perft) {
   fprintln("Start perft test for TT...");
   fprintln("TT Stats: {:s}", tt.str());
 
-  auto start = std::chrono::high_resolution_clock::now();
+  const Move move = createMove("e2e4");
 
+  cpu_timer timer;
   const int rounds = 10;
   const int iterations = 1'000'000;
   for (int j = 0; j < rounds; ++j) {
     // puts
     for (int i = 0; i < iterations; ++i) {
-      tt.put(
-        randomKey(rg1),
-        static_cast<Depth>(randomDepth(rg1)),
-        createMove("e2e4"),
-        static_cast<Value>(randomValue(rg1)),
-        static_cast<Value_Type>(randomType(rg1)),
-        false, true);
+      const unsigned long long int key = randomKey(rg1);
+      Depth depth = static_cast<Depth>(randomDepth(rg1));
+      Value value = static_cast<Value>(randomValue(rg1));
+      Value_Type type = static_cast<Value_Type>(randomType(rg1));
+      tt.put(key, depth, move, value, type, false, true);
     }
     // probes
     for (int i = 0; i < iterations; ++i) {
-      tt.probe(randomKey(rg1));
+      const unsigned long long int key = randomKey(rg1);
+      tt.probe(key);
     }
     tt.ageEntries();
   }
+  timer.stop();
 
-  auto finish = std::chrono::high_resolution_clock::now();
-  auto time = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start).count();
+  auto time = timer.elapsed().wall;
 
-  fprintln("TT Statistics        : {:s}", tt.str());
   fprintln("");
-  fprintln("Run time:              {:n} ms ({:n} put/probes per sec)",
-           time, (rounds * 2 * iterations * 1000ULL) / time);
+  fprintln("TT Statistics : {:s}", tt.str());
+  fprintln("Run time      : {:n} ns ({:n} put/probes per sec)", time, (rounds * 2 * iterations * nanoPerSec) / time);
   fprintln("");
 
 }

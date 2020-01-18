@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1252,7 +1252,7 @@ void Search::configureTimeLimits() {
 
 void Search::addExtraTime(const double d) {
   if (!searchLimitsPtr->getMoveTime()) {
-    extraTime += timeLimit * (d - 1);
+    extraTime += static_cast<MilliSec>(timeLimit * (d - 1));
     LOG__DEBUG(LOG, "Time added {:n} ms to {:n} ms", extraTime, timeLimit + extraTime);
   }
 }
@@ -1281,7 +1281,7 @@ inline MilliSec Search::now() {
 #endif
 }
 
-inline MilliSec Search::getNps() const {
+inline uint64_t Search::getNps() const {
   return 1000 * searchStats.nodesVisited / (elapsedTime(startTime) + 1); // +1 to avoid division by zero};
 }
 

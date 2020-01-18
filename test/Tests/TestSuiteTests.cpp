@@ -24,11 +24,15 @@
  */
 
 #include <iostream>
+#include <regex>
+#include "types.h"
+#include "misc.h"
 #include "Search.h"
 #include "Engine.h"
 #include "Logging.h"
 #include "SearchConfig.h"
 #include <gtest/gtest.h>
+#include <TestSuite.h>
 
 using testing::Eq;
 
@@ -43,26 +47,6 @@ public:
 
   std::shared_ptr<spdlog::logger> LOG = spdlog::get("Test_Logger");
 
-  enum TestType {
-    DM,
-    BM
-  };
-
-  struct TestSet {
-    std::string id;
-    std::string fen;
-    TestType type;
-    std::string target;
-  };
-
-  static std::string getMoveString(const Position &position, const std::string &target) {
-    std::istringstream inStream(target);
-    MoveGenerator mg;
-    const MoveList* legalMoves = mg.generateLegalMoves<MoveGenerator::GENALL>(position);
-
-
-    return std::string();
-  }
 
 protected:
   void SetUp() override {
@@ -100,46 +84,90 @@ protected:
   void TearDown() override {}
 };
 
-TEST_F(TestSuiteTests, basic) {
-  Search search;
-  SearchLimits searchLimits;
-  Position position;
 
-  searchLimits.setMoveTime(5'000);
-  search.startSearch(position, searchLimits);
-  search.waitWhileSearching();
+TEST_F(TestSuiteTests, readLine) {
+
+  std::string filePath = "";
+  MilliSec moveTime = 5'000;
+  Depth depth = static_cast<Depth>(10);
+  TestSuite testSuite(filePath, moveTime, depth);
+  TestSuite::Test test;
+
+  std::string line = "8/8/8/8/8/3K4/R7/5k2 w - - dm 4; id \"FRANKY-1 #1\";";
+  ASSERT_TRUE(testSuite.readOneEPD(line, test));
+
+  line = "3r3k/1r3p1p/p1pB1p2/8/p1qNP1Q1/P6P/1P4P1/3R3K w - - bm Bf8 Nf5 Qf4; id \"WAC.294\";";
+  ASSERT_TRUE(testSuite.readOneEPD(line, test));
+
+  line = "r1bqk2r/pp1n1ppp/2pbpn2/3p4/2PP4/3BPN2/PP1N1PPP/R1BQK2R w KQkq - bm e4; id \"Crafty Test Pos.21\"; c0 \"GK/DB Philadelphia 1996, Game 4, move 7W (e4)\";";
+  ASSERT_TRUE(testSuite.readOneEPD(line, test));
+
+  line = "7k/8/3p4/4N3/8/5p2/P7/1K2N3 w - - bm N5xf3; id \"FRANKY-1 #6\";";
+  ASSERT_TRUE(testSuite.readOneEPD(line, test));
 }
 
-TEST_F(TestSuiteTests, easy_mates) {
-  Search search;
-  SearchLimits searchLimits;
+TEST_F(TestSuiteTests, readFile) {
 
+  std::string filePath = "../../testsets/franky_tests.epd";
   MilliSec moveTime = 5'000;
+  Depth depth = static_cast<Depth>(10);
 
-  std::vector<TestSet> ts = {
-    {"Mate in 4",     "8/8/8/8/8/3K4/R7/5k2 w - -", DM, "4"},
-    {"Best move Ke3", "8/8/8/8/8/3K4/R7/5k2 w - -", BM, "Ke3"},
+  TestSuite testSuite(filePath, moveTime, depth);
+  std::vector<TestSuite::Test> ts;
+
+  testSuite.readTestCases(filePath, ts);
+}
+
+
+TEST_F(TestSuiteTests, runTestSet) {
+
+  std::string filePath = "abc";
+  MilliSec moveTime = 5'000;
+  Depth depth = static_cast<Depth>(10);
+
+  TestSuite testSuite(filePath, moveTime, depth);
+
+  std::vector<TestSuite::Test> ts = {
+    {"Mate in 4",          "8/8/8/8/8/3K4/R7/5k2 w - -",                          TestSuite::DM, "4"},
+    {"Best move Ke3",      "8/8/8/8/8/3K4/R7/5k2 w - -",                          TestSuite::BM, "Ke3"},
+    {"Several best moves", "3r3k/1r3p1p/p1pB1p2/8/p1qNP1Q1/P6P/1P4P1/3R3K w - -", TestSuite::BM, "Bf8 Nf5 Qf4"}
   };
 
-  for (TestSet t : ts) {
-    LOG__INFO(LOG, "TestSet: ID \"{}\" {} {} {}", t.id, t.fen, t.type == DM ? "Mate in " : t.type == BM ? "Best Move " : "unknown opcode", t.target);
-    const Position position(t.fen);
-    switch (t.type) {
-      case DM: {
-        const int mateIn = std::stoi(t.target);
-        searchLimits.setMate(mateIn);
-        searchLimits.setMoveTime(moveTime);
-        search.startSearch(position, searchLimits);
-        search.waitWhileSearching();
-        ASSERT_EQ("mate " + t.target, printValue(search.getLastSearchResult().bestMoveValue));
-      }
-        break;
-      case BM:
-        searchLimits.setMoveTime(moveTime);
-        search.startSearch(position, searchLimits);
-        search.waitWhileSearching();
-        ASSERT_EQ(TestSuiteTests::getMoveString(position, t.target), printMove(search.getLastSearchResult().bestMove));
-        break;
-    }
+  testSuite.runTestSet(ts);
+  for (TestSuite::Test t : ts) {
+    LOG__INFO(LOG, "Test '{}' {}", t.id, TestSuite::print(t.result));
   }
+}
+
+TEST_F(TestSuiteTests, singleTest) {
+  std::string filePath = "";
+  MilliSec moveTime = 2'000;
+  Depth depth = static_cast<Depth>(0);
+
+  Search search;
+  SearchLimits searchLimits;
+  searchLimits.setMoveTime(moveTime);
+  searchLimits.setDepth(depth);
+  TestSuite testSuite(filePath, moveTime, depth);
+
+  TestSuite::Test test = {"N5xf3", "7k/8/3p4/4N3/8/5p2/P7/1K2N3 w - -", TestSuite::BM, "N5xf3"};
+
+  testSuite.runSingleTest(search, searchLimits, test);
+}
+
+// 100 %
+TEST_F(TestSuiteTests, FrankyTestSuite) {
+  std::string filePath = "../../testsets/franky_tests.epd";
+  MilliSec moveTime = 1'000;
+  Depth depth = static_cast<Depth>(0);
+  TestSuite testSuite(filePath, moveTime, depth);
+  testSuite.runTestSuite();
+}
+
+TEST_F(TestSuiteTests, ecm98) {
+  std::string filePath = "../../testsets/ecm98.epd";
+  MilliSec moveTime = 1'000;
+  Depth depth = static_cast<Depth>(0);
+  TestSuite testSuite(filePath, moveTime, depth);
+  testSuite.runTestSuite();
 }

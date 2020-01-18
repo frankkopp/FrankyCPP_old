@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,6 @@
 #define ASSERT_END break; }
 #endif
 
-// uncomment this if tracing macros are needed.
 #define SEARCH_LOG_LEVEL spdlog::level::trace
 
 #define CRITICAL__LVL 1

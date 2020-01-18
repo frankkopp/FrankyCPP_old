@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -453,7 +453,7 @@ void MoveGenerator::generatePawnMoves(const Position &position, MoveList* const 
       const Square toSquare = Bitboards::popLSB(tmpMovesDouble);
       // value is the positional value of the piece at this gamephase
       const Value value1 = Values::posValue[piece][toSquare][gamePhase];
-      const auto value = static_cast<const Value>(10000 - value1);
+      const auto value = static_cast<Value>(10000) - value1;
       pMoves->push_back(createMove(toSquare + 2 * pawnDir[~nextPlayer], toSquare, value));
     }
     // normal single pawn steps

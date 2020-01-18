@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -185,6 +185,7 @@ namespace Bitboards {
     2, 3, 4, 5, 6, 7, 8, 7,
     1, 2, 3, 4, 5, 6, 7, 8
   };
+
   constexpr Bitboard lengthDiagUpMask(Square sq) {
     return (ONE_BB << lengthDiagUp[sq]) - 1;
   }
@@ -276,7 +277,8 @@ namespace Bitboards {
 
   /** popcount() counts the number of non-zero bits in a bitboard */
   inline int popcount(Bitboard b) {
-#ifdef __GNUC__ // GCC, Clang, ICC
+
+#if defined(__GNUC__) // GCC, Clang, ICC
     return __builtin_popcountll(b);
 
 #elif defined(_MSC_VER)
@@ -335,9 +337,9 @@ namespace Bitboards {
 
   /** lsb() and msb() return the least/most significant bit in a non-zero
    * bitboard */
+
   inline Square msb(Bitboard b) {
     if (!b) return SQ_NONE;
-
 #if defined(__GNUC__) // GCC, Clang, ICC
     return static_cast<Square>(63 ^ __builtin_clzll(b));
 
@@ -368,8 +370,9 @@ namespace Bitboards {
 
   inline void popLSB2(Bitboard &b, Square &sq) {
     if (!b) {
+      sq = SQ_NONE; // lsb is undefined on 0
       return;
-    };
+    }
     sq = lsb(b);
     b &= b - 1;
   }

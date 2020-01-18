@@ -3,12 +3,17 @@
     <words>
       <w>bitboard</w>
       <w>bitboards</w>
+      <w>currmove</w>
       <w>enpassant</w>
       <w>frankycpp</w>
       <w>gamephase</w>
       <w>implmentation</w>
+      <w>kopp</w>
+      <w>movenumber</w>
+      <w>noninfringement</w>
       <w>passant</w>
       <w>perft</w>
+      <w>seldepth</w>
       <w>zobrist</w>
     </words>
   </dictionary>

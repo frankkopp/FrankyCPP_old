@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,13 +67,13 @@ TEST_F(MoveGenTest, pawnMoves) {
   mg.generatePawnMoves<MoveGenerator::GENCAP>(position, &moves);
 
   ASSERT_EQ(10, moves.size());
-  string expected = "c2b1qc2b1rc2b1bc2b1na2b1qa2b1ra2b1ba2b1nf4g3f4e3";
+  string expected = "c2b1Qc2b1Rc2b1Bc2b1Na2b1Qa2b1Ra2b1Ba2b1Nf4g3f4e3";
   string actual = "";
   for (Move m : moves) actual.append(printMove(m));
   ASSERT_EQ(expected, actual);
 
   sort(moves.begin(), moves.end());
-  expected = "a2b1qc2b1qa2b1nc2b1nf4g3f4e3a2b1rc2b1ra2b1bc2b1b";
+  expected = "a2b1Qc2b1Qa2b1Nc2b1Nf4g3f4e3a2b1Rc2b1Ra2b1Bc2b1B";
   actual = "";
   for (Move m : moves) actual.append(printMove(m));
   ASSERT_EQ(expected, actual);
@@ -89,13 +89,13 @@ TEST_F(MoveGenTest, pawnMoves) {
   mg.generatePawnMoves<MoveGenerator::GENNONCAP>(position, &moves);
 
   ASSERT_EQ(13, moves.size());
-  expected = "a2a1qa2a1ra2a1ba2a1nc2c1qc2c1rc2c1bc2c1nb7b5h7h5f4f3b7b6h7h6";
+  expected = "a2a1Qa2a1Ra2a1Ba2a1Nc2c1Qc2c1Rc2c1Bc2c1Nb7b5h7h5f4f3b7b6h7h6";
   actual = "";
   for (Move m : moves) actual.append(printMove(m));
   ASSERT_EQ(expected, actual);
 
   sort(moves.begin(), moves.end());
-  expected = "a2a1qc2c1qa2a1nc2c1nf4f3h7h6b7b5h7h5b7b6a2a1bc2c1ba2a1rc2c1r";
+  expected = "a2a1Qc2c1Qa2a1Nc2c1Nf4f3h7h6b7b5h7h5b7b6a2a1Bc2c1Ba2a1Rc2c1R";
   actual = "";
   for (Move m : moves) actual.append(printMove(m));
   ASSERT_EQ(expected, actual);

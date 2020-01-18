@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,24 +29,24 @@
 
 SearchLimits::SearchLimits() = default;
 
-SearchLimits::SearchLimits(MilliSec whiteTime,
-                           MilliSec blackTime,
-                           MilliSec whiteInc,
-                           MilliSec blackInc,
-                           MilliSec moveTime,
-                           int movesToGo,
-                           int depth,
-                           long nodes,
-                           MoveList moves,
-                           int mate,
-                           bool ponder,
-                           bool infinite,
-                           bool perft)
-  : whiteTime(whiteTime), blackTime(blackTime),
-    whiteInc(whiteInc), blackInc(blackInc), moveTime(moveTime),
-    movesToGo(movesToGo), depth(static_cast<Depth>(depth)), nodes(nodes),
-    moves(std::move(moves)), mate(mate), ponder(ponder),
-    infinite(infinite), perft(perft) {
+SearchLimits::SearchLimits(MilliSec _whiteTime,
+                           MilliSec _blackTime,
+                           MilliSec _whiteInc,
+                           MilliSec _blackInc,
+                           MilliSec _moveTime,
+                           int      _movesToGo,
+                           int      _depth,
+                           long     _nodes,
+                           MoveList _moves,
+                           int      _mate,
+                           bool     _ponder,
+                           bool     _infinite,
+                           bool     _perft)
+  : whiteTime(_whiteTime), blackTime(_blackTime),
+    whiteInc(_whiteInc), blackInc(_blackInc), moveTime(_moveTime),
+    movesToGo(_movesToGo), depth(static_cast<Depth>(_depth)), nodes(_nodes),
+    moves(std::move(_moves)), mate(_mate), ponder(_ponder),
+    infinite(_infinite), perft(_perft) {
 
   setupLimits();
 }

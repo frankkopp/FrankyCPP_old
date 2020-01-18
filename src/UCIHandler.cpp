@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,9 +32,9 @@
 
 namespace UCI {
 
-  Handler::Handler(Engine *pEngine) {
-    this->pEngine = pEngine;
-    pEngine->registerUCIHandler(this);
+  Handler::Handler(Engine *ptr) {
+    this->pEngine = ptr;
+    ptr->registerUCIHandler(this);
   }
 
   Handler::Handler(Engine *pEng, std::istream *pIstream, std::ostream *pOstream)
@@ -330,7 +330,7 @@ namespace UCI {
   }
 
   void Handler::sendIterationEndInfo(int depth, int seldepth, Value value,
-                                     long nodes, int nps, MilliSec time,
+                                     uint64_t nodes, uint64_t nps, MilliSec time,
                                      const MoveList &pv) const {
     send(fmt::format("info depth {} seldepth {} multipv 1 score {} nodes {} "
                      "nps {} time {} pv {}",
@@ -338,12 +338,12 @@ namespace UCI {
                      time, printMoveListUCI(pv)));
   }
 
-  void Handler::sendCurrentRootMove(Move currmove, int movenumber) const {
+  void Handler::sendCurrentRootMove(Move currmove, unsigned long movenumber) const {
     send(fmt::format("currmove {} currmovenumber {}", printMove(currmove),
                      movenumber));
   }
 
-  void Handler::sendSearchUpdate(int depth, int seldepth, long nodes, int nps,
+  void Handler::sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t nps,
                                  MilliSec time, int hashfull) const {
     send(fmt::format("depth {} seldepth {} nodes {} nps {} time {} hashfull {}",
                      depth, seldepth, nodes, nps, time, hashfull));

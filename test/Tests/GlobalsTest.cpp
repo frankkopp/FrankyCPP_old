@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,12 +48,12 @@ TEST(GlobalsTest, labels) {
 }
 
 TEST(GlobalsTest, pieceTypeLabels) {
-  ASSERT_EQ('k', pieceTypeToChar[KING]);
-  ASSERT_EQ('q', pieceTypeToChar[QUEEN]);
-  ASSERT_EQ('r', pieceTypeToChar[ROOK]);
-  ASSERT_EQ('b', pieceTypeToChar[BISHOP]);
-  ASSERT_EQ('n', pieceTypeToChar[KNIGHT]);
-  ASSERT_EQ('p', pieceTypeToChar[PAWN]);
+  ASSERT_EQ('K', pieceTypeToChar[KING]);
+  ASSERT_EQ('Q', pieceTypeToChar[QUEEN]);
+  ASSERT_EQ('R', pieceTypeToChar[ROOK]);
+  ASSERT_EQ('B', pieceTypeToChar[BISHOP]);
+  ASSERT_EQ('N', pieceTypeToChar[KNIGHT]);
+  ASSERT_EQ('P', pieceTypeToChar[PAWN]);
 }
 
 TEST(GlobalsTest, pieceLabels) {
@@ -139,12 +139,12 @@ TEST(MoveTest, moves) {
   ASSERT_EQ(QUEEN, promotionType(move)); // not useful is not type PROMOTION
 
   std::stringstream buffer1, buffer2;
-  buffer1 << "a7a8q";
+  buffer1 << "a7a8Q";
   buffer2 << move;
   ASSERT_EQ(buffer1.str(), buffer2.str());
-  ASSERT_EQ("a7a8q (PROMOTION -15001 31800)", printMoveVerbose(move));
+  ASSERT_EQ("a7a8Q (PROMOTION -15001 31800)", printMoveVerbose(move));
 
-  move = createMove<PROMOTION>("a7a8n");
+  move = createMove<PROMOTION>("a7a8N");
   ASSERT_TRUE(isMove(move));
   ASSERT_EQ(SQ_A7, getFromSquare(move));
   ASSERT_EQ(SQ_A8, getToSquare(move));
@@ -262,7 +262,7 @@ TEST(MoveListTest, moveListPrint) {
 
   std::ostringstream ml;
   ml << moveList;
-  std::string expected = "MoveList: size=3 [a1h1, a7a8q, e1g1]";
+  std::string expected = "MoveList: size=3 [a1h1, a7a8Q, e1g1]";
   ASSERT_EQ(expected, ml.str());
 
 }

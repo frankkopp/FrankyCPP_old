@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -555,10 +555,10 @@ TEST_F(SearchTest, debuggingIID) {
   Position position;
 
   position =
-      Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
-  // const int depth = 8;
-  // searchLimits.setDepth(depth);
-  searchLimits.setInfinite(true);
+    Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
+  const int depth = 8;
+  searchLimits.setDepth(depth);
+  //searchLimits.setInfinite(true);
 
   SearchConfig::USE_TT = true;
   SearchConfig::USE_TT_QSEARCH = true;
@@ -574,8 +574,14 @@ TEST_F(SearchTest, debuggingTTMove) {
   SearchLimits searchLimits;
   Position position;
 
-  const int depth = 8;
-  position = Position("2b2rk1/3pR1p1/3p2Q1/pp1P3p/7q/P1N5/1P4PK/4R3 w - - 0 32");
+  SearchConfig::USE_TT = true;
+  SearchConfig::USE_TT_QSEARCH = true;
+  SearchConfig::USE_RFP = true;
+  SearchConfig::USE_NMP = true;
+  SearchConfig::USE_IID = true;
+
+  const int depth = 3;
+  position = Position("rnb1kbnr/ppp2ppp/8/3PN1q1/3Pp3/8/PPP2PPP/RNBQKB1R b KQkq d3 0 5");
   searchLimits.setDepth(depth);
 
   search.startSearch(position, searchLimits);

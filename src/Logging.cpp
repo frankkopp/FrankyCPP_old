@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@
 #include "Logging.h"
 
 namespace LOGGING {
+
   void init() {
     try {
       std::locale::global(deLocale);
@@ -63,6 +64,12 @@ namespace LOGGING {
     SEARCH_LOG->set_pattern(defaultPattern);
     SEARCH_LOG->set_level(SEARCH_LOG_LEVEL);
     SEARCH_LOG->flush_on(spdlog::level::trace);
+
+    auto TESTSUITE_LOG = spdlog::stdout_color_mt("TSuite_Logger");
+    TESTSUITE_LOG->sinks().push_back(sharedFileSink);
+    TESTSUITE_LOG->set_pattern(defaultPattern);
+    TESTSUITE_LOG->set_level(spdlog::level::trace);
+    TESTSUITE_LOG->flush_on(spdlog::level::trace);
 
     auto MOVEGEN_LOG = spdlog::stdout_color_mt("MoveGen_Logger");
     MOVEGEN_LOG->sinks().push_back(sharedFileSink);
