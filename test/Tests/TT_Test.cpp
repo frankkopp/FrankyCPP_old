@@ -261,7 +261,7 @@ TEST_F(TT_Test, get) {
   ASSERT_EQ(103, e3->value);
 
   const TT::Entry* e4 = tt.getMatch(key4); // not in TT
-  ASSERT_EQ(0, e4->key);
+  ASSERT_EQ(nullptr, e4);
 
 }
 

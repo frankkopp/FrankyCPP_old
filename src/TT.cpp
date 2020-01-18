@@ -84,10 +84,11 @@ void TT::put(const Key key, const Depth depth, const Move move, const Value valu
 
   // read the entries for this hash
   Entry* entryDataPtr = getEntryPtr(key);
-  numberOfPuts++;
 
   // cleanup move
   const Move pureMove = moveOf(move);
+
+  numberOfPuts++;
 
   // New entry
   if (entryDataPtr->key == 0) {
@@ -101,7 +102,7 @@ void TT::put(const Key key, const Depth depth, const Move move, const Value valu
     numberOfCollisions++;
     // overwrite if
     // - the new entry's depth is higher
-    // - the new entry's depth is higher and the previous entry has not been used (is aged)
+    // - the new entry's depth is same and the previous entry has not been used (is aged)
     if (depth > entryDataPtr->depth ||
         (depth == entryDataPtr->depth && (forced || entryDataPtr->age > 0))) {
       numberOfOverwrites++;
@@ -116,10 +117,11 @@ void TT::put(const Key key, const Depth depth, const Move move, const Value valu
     // we always update as the stored moved can't be any good otherwise
     // we would have found this during the search in a previous probe
     // and we would not have come to store it again
-    writeEntry(entryDataPtr, key, depth, pureMove ? pureMove : entryDataPtr->move, value, type, mateThreat, 1);
+    writeEntry(entryDataPtr, key, depth, pureMove ? pureMove : entryDataPtr->move,
+               value, type, mateThreat, 1);
     return;
   }
-  
+
   assert (numberOfPuts == (numberOfEntries + numberOfCollisions + numberOfUpdates));
 }
 
@@ -128,9 +130,8 @@ const TT::Entry* TT::probe(const Key &key) {
   Entry* ttEntryPtr = getEntryPtr(key);
   if (ttEntryPtr->key == key) {
     numberOfHits++; // entries with identical keys found
-    ttEntryPtr->age--;
-    if (ttEntryPtr->age < 0)
-      ttEntryPtr->age = 0;
+    ttEntryPtr->age--; // mark the entry as used
+    if (ttEntryPtr->age < 0) { ttEntryPtr->age = 0; }
     return ttEntryPtr;
   }
   numberOfMisses++; // keys not found (not equal to TT misses)
@@ -162,7 +163,8 @@ void TT::ageEntries() {
       if (idx == noOfThreads - 1) end = maxNumberOfEntries;
       for (std::size_t i = start; i < end; ++i) {
         if (_data[i].key == 0) continue;
-        _data[i].age = std::min(7, _data[i].age + 1);
+        _data[i].age++;
+        if (_data[i].age > 7) _data[i].age = 7;
       }
     });
   }

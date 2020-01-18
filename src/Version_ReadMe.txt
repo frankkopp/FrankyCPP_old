@@ -27,6 +27,7 @@ v 0.5 (plan)
 v 0.4 (in progress)
 ================================================================================
 - TODO:
+    - Debug Search - blunders
     - Debug and harden play with UCI GUI - XBoard, Arena, etc.
     - See logfile for errors
     - Put Position history variables in a struct for better locality

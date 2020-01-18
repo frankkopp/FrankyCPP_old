@@ -139,12 +139,12 @@ TEST(MoveTest, moves) {
   ASSERT_EQ(QUEEN, promotionType(move)); // not useful is not type PROMOTION
 
   std::stringstream buffer1, buffer2;
-  buffer1 << "a7a8q";
+  buffer1 << "a7a8Q";
   buffer2 << move;
   ASSERT_EQ(buffer1.str(), buffer2.str());
-  ASSERT_EQ("a7a8q (PROMOTION -15001 31800)", printMoveVerbose(move));
+  ASSERT_EQ("a7a8Q (PROMOTION -15001 31800)", printMoveVerbose(move));
 
-  move = createMove<PROMOTION>("a7a8n");
+  move = createMove<PROMOTION>("a7a8N");
   ASSERT_TRUE(isMove(move));
   ASSERT_EQ(SQ_A7, getFromSquare(move));
   ASSERT_EQ(SQ_A8, getToSquare(move));
@@ -262,7 +262,7 @@ TEST(MoveListTest, moveListPrint) {
 
   std::ostringstream ml;
   ml << moveList;
-  std::string expected = "MoveList: size=3 [a1h1, a7a8q, e1g1]";
+  std::string expected = "MoveList: size=3 [a1h1, a7a8Q, e1g1]";
   ASSERT_EQ(expected, ml.str());
 
 }

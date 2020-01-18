@@ -40,6 +40,7 @@
 
 // Global constants
 constexpr const char* START_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+constexpr const uint64_t nanoPerSec = 1'000'000'000;
 
 /** Max number of moves in a game to be used in arrays etc. */
 constexpr int MAX_MOVES = 256;
@@ -160,11 +161,8 @@ constexpr Direction pawnDir[COLOR_LENGTH] = {NORTH, SOUTH};
 
 /// Additional operators to add a Direction to a Square
 constexpr Square operator+(Square s, Direction d) { return static_cast<Square>(int(s) + int(d)); }
-
 constexpr Square operator-(Square s, Direction d) { return static_cast<Square>(int(s) - int(d)); }
-
 constexpr Square &operator+=(Square &s, Direction d) { return s = s + d; }
-
 constexpr Square &operator-=(Square &s, Direction d) { return s = s - d; }
 
 ///////////////////////////////////
@@ -181,18 +179,12 @@ enum PieceType : int {
   //             |non sliding ------ |sliding -----------
 };
 
-/** returns a char representing the piece type - "kpnbrq" */
+/** returns a char representing the piece type - " KPNBRQ" */
 constexpr const char* pieceTypeToChar = " KPNBRQ";
 
 /** returns a string representing the piece type */
 constexpr const char* pieceTypeToString[] = {
-  "NOPIECE",
-  "KING",
-  "PAWN",
-  "KNIGHT",
-  "BISHOP",
-  "ROOK",
-  "QUEEN"
+  "NOPIECE", "KING", "PAWN", "KNIGHT", "BISHOP", "ROOK", "QUEEN"
 };
 
 /** Game phase values */
@@ -433,6 +425,14 @@ Move createMove(const char* move) {
         case 'r':
           return createMove<T>(from, to, ROOK);
         case 'q':
+          return createMove<T>(from, to, QUEEN);
+        case 'N':
+          return createMove<T>(from, to, KNIGHT);
+        case 'B':
+          return createMove<T>(from, to, BISHOP);
+        case 'R':
+          return createMove<T>(from, to, ROOK);
+        case 'Q':
           return createMove<T>(from, to, QUEEN);
         default:
           break;
