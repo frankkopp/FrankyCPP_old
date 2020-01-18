@@ -1274,9 +1274,9 @@ inline MilliSec Search::now() {
 #ifdef __APPLE__
   // this C function is much faster than c++ chrono
   return clock_gettime_nsec_np(CLOCK_UPTIME_RAW_APPROX) / 1'000'000;
-#else
+#elif __CYGWIN__
   const std::chrono::time_point timePoint = std::chrono::high_resolution_clock::now();
-  const std::chrono::duration timeSinceEpoch =  std::chrono::duration_cast<std::chrono::milliseconds>(timePoint.time_since_epoch());
+  const std::chrono::duration timeSinceEpoch =  std::chrono::duration_cast<std::chrono::nanoseconds>(timePoint.time_since_epoch());
   return timeSinceEpoch.count();
 #endif
 }
