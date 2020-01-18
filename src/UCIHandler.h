@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,7 +51,7 @@ namespace UCI {
   public:
 
     /** Constructor */
-    explicit Handler(Engine *pEng);
+    explicit Handler(Engine *ptr);
     /** Constructor */
     Handler(Engine *pEng, std::istream *pIstream, std::ostream *pOstream);
 
@@ -78,10 +78,10 @@ namespace UCI {
     //// GETTER
     const UCISearchMode &getSearchMode() const { return searchMode; };
 
-    void sendIterationEndInfo(int depth, int seldepth, Value value, long nodes,
-                              int nps, MilliSec time, const MoveList &pv) const;
-    void sendCurrentRootMove(Move currmove, int movenumber) const;
-    void sendSearchUpdate(int depth, int seldepth, long nodes, int nps,
+    void sendIterationEndInfo(int depth, int seldepth, Value value, uint64_t nodes,
+                              uint64_t nps, MilliSec time, const MoveList &pv) const;
+    void sendCurrentRootMove(Move currmove, unsigned long movenumber) const;
+    void sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t nps,
                           MilliSec time, int hashfull) const;
     void sendCurrentLine(const MoveList &moveList) const;
     void sendResult(Move bestMove, Move ponderMove) const;

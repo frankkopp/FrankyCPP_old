@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,7 @@ void TT::clear() {
   // This clears the TT by overwriting each entry with 0.
   // It uses multiple threads if noOfThreads is > 1.
   LOG__TRACE(LOG, "Clearing TT ({} threads)...", noOfThreads);
-  auto start = std::chrono::high_resolution_clock::now();
+  auto startTime = std::chrono::high_resolution_clock::now();
   std::vector<std::thread> threads;
   threads.reserve(noOfThreads);
   for (int t = 0; t < noOfThreads; ++t) {
@@ -70,7 +70,7 @@ void TT::clear() {
   }
   for (std::thread &th: threads) th.join();
   auto finish = std::chrono::high_resolution_clock::now();
-  auto time = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start).count();
+  auto time = std::chrono::duration_cast<std::chrono::milliseconds>(finish - startTime).count();
   LOG__INFO(LOG, "TT cleared {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
 }
 
@@ -152,7 +152,7 @@ TT::writeEntry(Entry* const entryPtr, const Key key, const Depth depth, const Mo
 
 void TT::ageEntries() {
   LOG__TRACE(LOG, "Aging TT ({} threads)...", noOfThreads);
-  auto start = std::chrono::high_resolution_clock::now();
+  auto timePoint = std::chrono::high_resolution_clock::now();
   std::vector<std::thread> threads;
   threads.reserve(noOfThreads);
   for (int idx = 0; idx < noOfThreads; ++idx) {
@@ -170,7 +170,7 @@ void TT::ageEntries() {
   }
   for (std::thread &th: threads) th.join();
   auto finish = std::chrono::high_resolution_clock::now();
-  auto time = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start).count();
+  auto time = std::chrono::duration_cast<std::chrono::milliseconds>(finish - timePoint).count();
   LOG__INFO(LOG, "TT aged {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
 }
 

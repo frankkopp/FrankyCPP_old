@@ -77,7 +77,7 @@ namespace Misc {
             castlingString = "O-O-O";
             break;
           default:
-            LOG__ERROR(LOG, "{}:{}:{} Move type CASTLING but wrong to square", __FILE_NAME__, __func__, __LINE__);
+            LOG__ERROR(LOG, "{}:{}:{} Move type CASTLING but wrong to square", __FILENAME__, __func__, __LINE__);
             continue;
         }
         if (castlingString == sanMove) {

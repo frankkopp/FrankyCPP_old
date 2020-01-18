@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -100,11 +100,11 @@ public:
 
   // send to UCI
   void
-  sendIterationEndInfo(int depth, int seldepth, Value value, long nodes, int nps, MilliSec time,
+  sendIterationEndInfo(int depth, int seldepth, Value value, uint64_t nodes, uint64_t nps, MilliSec time,
                        const MoveList& pv) const;
   void sendCurrentRootMove(Move currmove, MoveList::size_type movenumber) const;
   void
-  sendSearchUpdate(int depth, int seldepth, long nodes, int nps, MilliSec time, int hashfull) const;
+  sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t nps, MilliSec time, int hashfull) const;
   void sendCurrentLine(const MoveList &moveList) const;
   void sendResult(Move bestMove, Value value, Move ponderMove);
 

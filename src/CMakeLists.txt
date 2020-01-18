@@ -1,11 +1,15 @@
+message("====================================================================")
+message("FrankyCPP src/")
+message("====================================================================")
+
+cmake_minimum_required(VERSION 3.13)
+
 # updates template file and replaces placeholder variables
 configure_file(version.h.in version.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # include BOOST
-if (UNIX AND APPLE)
-    message("Platform is APPLE")
-
+if (APPLE)
     set(BOOST_ROOT "/usr/local/boost_1_72_0")
     set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
     set(Boost_USE_MULTITHREADED ON)
@@ -13,8 +17,7 @@ if (UNIX AND APPLE)
     #set(Boost_USE_STATIC_RUNTIME OFF)
 endif ()
 
-if (UNIX AND CYHGWIN)
-    message("Platform is CYGWIN")
+if (CYGWIN)
     set(BOOST_ROOT "/usr/local/boost_1_72_0")
     set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
     set(Boost_USE_MULTITHREADED ON)
@@ -22,9 +25,7 @@ if (UNIX AND CYHGWIN)
     #set(Boost_USE_STATIC_RUNTIME OFF)
 
 endif ()
-if (NOT UNIX AND WIN32)
-    message("Platform is WIN32")
-
+if (WIN32)
     set(BOOST_ROOT "/usr/local/boost_1_72_0")
     set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
     set(Boost_USE_MULTITHREADED ON)
@@ -35,6 +36,7 @@ endif ()
 
 find_package(Boost 1.72.0 COMPONENTS timer log log_setup REQUIRED)
 if (Boost_FOUND)
+    message("BOOST found: " ${BOOST_ROOT} " " ${Boost_INCLUDE_DIR})
     include_directories(${Boost_INCLUDE_DIRS})
 endif ()
 
@@ -42,16 +44,43 @@ endif ()
 set(execname FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR})
 
 # define library files
-set(core_SRCS types.h Bitboards.h Bitboards.cpp UCIHandler.cpp UCIHandler.h Semaphore.h Search.cpp Search.h UCIOption.cpp UCIOption.h Engine.cpp Engine.h Position.cpp Position.h Random.h Values.cpp Values.h MoveGenerator.cpp MoveGenerator.h Perft.cpp Perft.h INIT.cpp UCISearchMode.cpp UCISearchMode.h SearchLimits.cpp SearchLimits.h EngineConfig.h SearchStats.cpp SearchStats.h Logging.h Logging.cpp version.h.in Evaluator.cpp Evaluator.h SearchConfig.h EvaluatorConfig.h TT.cpp TT.h misc.cpp misc.h TestSuite.cpp TestSuite.h)
+set(core_SRCS
+        INIT.cpp
+        Logging.h Logging.cpp
+        types.h types.cpp
+        Semaphore.h
+        Random.h
+        Values.h Values.cpp
+        Bitboards.h Bitboards.cpp
+        UCIOption.cpp UCIOption.h
+        UCIHandler.cpp UCIHandler.h
+        UCISearchMode.h UCISearchMode.cpp
+        EngineConfig.h Engine.h Engine.cpp
+        Position.h Position.cpp
+        SearchLimits.h SearchLimits.cpp
+        SearchStats.cpp SearchStats.h
+        SearchConfig.h Search.h Search.cpp
+        MoveGenerator.h MoveGenerator.cpp
+        EvaluatorConfig.h Evaluator.h Evaluator.cpp
+        TT.h TT.cpp
+        misc.h misc.cpp
+        Perft.h Perft.cpp
+        TestSuite.h TestSuite.cpp
+)
 add_library(core ${core_SRCS})
 
 # define executable
 add_executable(${execname} main.cpp)
 
 find_package(fmt REQUIRED)
-find_package(spdlog REQUIRED)
+if (NOT fmt_FOUND)
+message("Package fmt NOT found" )
+endif()
 
-#spdlog_enable_warnings(${execname})
+find_package(spdlog REQUIRED)
+if (NOT spdlog_FOUND)
+    message("Package spdlog NOT found" )
+endif()
 
 # link executable with library
 target_link_libraries(

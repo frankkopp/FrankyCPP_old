@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -195,78 +195,78 @@ TEST_F(TimingTests, DISABLED_busyWait) {
   cout << os.str();
 }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-variable"
-TEST_F(TimingTests, DISABLED_moveUnion) {
-  ostringstream os;
-
-  const Square from = SQ_A2;
-  const Square to = SQ_A1;
-  const PieceType promPT = BISHOP;
-  const MoveType type = PROMOTION;
-  const Value value = static_cast<const Value>(999);
-
-  union ValuedMove {
-    uint32_t all;
-    struct {
-      union {
-        uint16_t all;
-        struct {
-          uint8_t from : 6;
-          uint8_t to : 6;
-          uint8_t promType : 2;
-          uint8_t moveType : 2;
-        } __attribute__((packed)) data;
-      } __attribute__((packed)) move;
-      int16_t value;
-    } __attribute__((packed)) moveValue;
-  } __attribute__((packed));
-
-  fprintln("Size Move {} \nSize NewMove {}", sizeof(Move), sizeof(ValuedMove));
-  fprintln("{}", sizeof(ValuedMove::moveValue));
-  fprintln("{}", sizeof(ValuedMove::moveValue.move));
-  fprintln("{}", sizeof(ValuedMove::moveValue.value));
-
-  ValuedMove newMove = {};
-  newMove.moveValue.move.data.from = from;
-  newMove.moveValue.move.data.to = to;
-  newMove.moveValue.move.data.promType = promPT - 3;
-  newMove.moveValue.move.data.moveType = type >> MoveShifts::TYPE_SHIFT;
-  newMove.moveValue.value = value;
-  fprintln("{} {}", static_cast<uint32_t>(newMove.all),
-           printBitString(static_cast<uint32_t>(newMove.all)));
-
-  //// TESTS START
-  std::function<void()> f1 = [&]() {
-    Move m = createMove<PROMOTION>(from, to, value, promPT);
-    ASSERT_EQ(from, getFromSquare(m));
-    ASSERT_EQ(to, getToSquare(m));
-    ASSERT_EQ(promPT, promotionType(m));
-    ASSERT_EQ(type, typeOf(m));
-    ASSERT_EQ(value, valueOf(m));
-  };
-  std::function<void()> f2 = [&]() {
-    ValuedMove n = {};
-    n.moveValue.move.data.from = from;
-    n.moveValue.move.data.to = to;
-    n.moveValue.move.data.promType = promPT - 3;
-    n.moveValue.move.data.moveType = type >> MoveShifts::TYPE_SHIFT;
-    n.moveValue.value = value;
-    ASSERT_EQ(from, n.moveValue.move.data.from);
-    ASSERT_EQ(to, n.moveValue.move.data.to);
-    ASSERT_EQ(promPT, n.moveValue.move.data.promType + 3);
-    ASSERT_EQ(type, n.moveValue.move.data.moveType << MoveShifts::TYPE_SHIFT);
-    ASSERT_EQ(value, n.moveValue.value);
-  };
-  vector<std::function<void()>> tests;
-  tests.push_back(f1);
-  tests.push_back(f2);
-  //// TESTS END
-  testTiming(os, 5, 100, 1'000'000, tests);
-  cout << os.str();
-}
-
-#pragma clang diagnostic pop
+//#pragma clang diagnostic push
+//#pragma clang diagnostic ignored "-Wunused-variable"
+//TEST_F(TimingTests, DISABLED_moveUnion) {
+//  ostringstream os;
+//
+//  const Square from = SQ_A2;
+//  const Square to = SQ_A1;
+//  const PieceType promPT = BISHOP;
+//  const MoveType type = PROMOTION;
+//  const Value value = static_cast<Value>(999);
+//
+//  union ValuedMove {
+//    uint32_t all;
+//    struct {
+//      union {
+//        uint16_t all;
+//        struct {
+//          uint8_t from : 6;
+//          uint8_t to : 6;
+//          uint8_t promType : 2;
+//          uint8_t moveType : 2;
+//        } __attribute__((packed)) data;
+//      } __attribute__((packed)) move;
+//      int16_t value;
+//    } __attribute__((packed)) moveValue;
+//  } __attribute__((packed));
+//
+//  fprintln("Size Move {} \nSize NewMove {}", sizeof(Move), sizeof(ValuedMove));
+//  fprintln("{}", sizeof(ValuedMove::moveValue));
+//  fprintln("{}", sizeof(ValuedMove::moveValue.move));
+//  fprintln("{}", sizeof(ValuedMove::moveValue.value));
+//
+//  ValuedMove newMove = {};
+//  newMove.moveValue.move.data.from = from;
+//  newMove.moveValue.move.data.to = to;
+//  newMove.moveValue.move.data.promType = promPT - 3;
+//  newMove.moveValue.move.data.moveType = type >> MoveShifts::TYPE_SHIFT;
+//  newMove.moveValue.value = value;
+//  fprintln("{} {}", static_cast<uint32_t>(newMove.all),
+//           printBitString(static_cast<uint32_t>(newMove.all)));
+//
+//  //// TESTS START
+//  std::function<void()> f1 = [&]() {
+//    Move m = createMove<PROMOTION>(from, to, value, promPT);
+//    ASSERT_EQ(from, getFromSquare(m));
+//    ASSERT_EQ(to, getToSquare(m));
+//    ASSERT_EQ(promPT, promotionType(m));
+//    ASSERT_EQ(type, typeOf(m));
+//    ASSERT_EQ(value, valueOf(m));
+//  };
+//  std::function<void()> f2 = [&]() {
+//    ValuedMove n = {};
+//    n.moveValue.move.data.from = from;
+//    n.moveValue.move.data.to = to;
+//    n.moveValue.move.data.promType = promPT - 3;
+//    n.moveValue.move.data.moveType = type >> MoveShifts::TYPE_SHIFT;
+//    n.moveValue.value = value;
+//    ASSERT_EQ(from, n.moveValue.move.data.from);
+//    ASSERT_EQ(to, n.moveValue.move.data.to);
+//    ASSERT_EQ(promPT, n.moveValue.move.data.promType + 3);
+//    ASSERT_EQ(type, n.moveValue.move.data.moveType << MoveShifts::TYPE_SHIFT);
+//    ASSERT_EQ(value, n.moveValue.value);
+//  };
+//  vector<std::function<void()>> tests;
+//  tests.push_back(f1);
+//  tests.push_back(f2);
+//  //// TESTS END
+//  testTiming(os, 5, 100, 1'000'000, tests);
+//  cout << os.str();
+//}
+//
+//#pragma clang diagnostic pop
 
 TEST_F(TimingTests, DISABLED_bitCount) {
   ostringstream os;

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -110,10 +110,10 @@ public:
   // TT default size is 2 MB
   TT() : TT(DEFAULT_TT_SIZE) {}
 
-  /** @param sizeInByte Size of TT in bytes which will be reduced to the next
+  /** @param newSizeInBytes Size of TT in bytes which will be reduced to the next
    * lowest power of 2 size */
-  explicit TT(uint64_t sizeInByte) {
-    resize(sizeInByte);
+  explicit TT(uint64_t newSizeInBytes) {
+    resize(newSizeInBytes);
   }
 
   ~TT() {
@@ -217,7 +217,9 @@ public:
   /** Returns how full the transposition table is in permill as per UCI */
   inline int hashFull() const {
     if (!maxNumberOfEntries) return 0;
-    return static_cast<int>(1000 * (static_cast<double>(numberOfEntries) / (maxNumberOfEntries)));
+    return static_cast<int>(1000 *
+                            (static_cast<double>(numberOfEntries) /
+                             static_cast<double>(maxNumberOfEntries)));
   };
 
   std::string str() {
@@ -323,6 +325,5 @@ public:
 #endif
   }
 };
-
 
 #endif //FRANKYCPP_TT_H

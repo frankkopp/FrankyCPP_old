@@ -131,7 +131,7 @@ TestSuite::runSingleTest(Search &search, SearchLimits &searchLimits, TestSuite::
     // direct mate test
     case DM: {
       // get target mate depth
-      const auto mateIn = static_cast<const Depth>(std::stoi(t.expectedString));
+      const auto mateIn = static_cast<Depth>(std::stoi(t.expectedString));
       t.mateDepth = mateIn;
       searchLimits.setMate(t.mateDepth);
 
@@ -287,6 +287,7 @@ std::string TestSuite::print(TestSuite::ResultType resultType) {
     case TestSuite::SUCCESS:
       return "SUCCESS";
   }
+  return "";
 }
 
 

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@ using namespace std;
 namespace UCI {
 
   Option::Option(const char *name)
-    : nameID(name), type(BUTTON) {}
+    : nameID(name), type(BUTTON), defaultValue(boolStr(false)) {}
 
   Option::Option(const char *name, bool value)
     : nameID(name), type(CHECK), defaultValue(boolStr(value)), currentValue(boolStr(value)) {}

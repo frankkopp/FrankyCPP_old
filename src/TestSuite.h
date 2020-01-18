@@ -53,13 +53,18 @@ public:
   };
 
   struct Test {
-    Test(std::string id = "", std::string fen = "", TestType type = NONE,
-         std::string targetString = "",
-         Depth mateDepth = DEPTH_NONE, Move target = MOVE_NONE,
-         Move actual = MOVE_NONE, Value value = VALUE_NONE, ResultType result = NOT_TESTED)
-      : id(std::move(id)), fen(std::move(fen)), type(type),
-        expectedString(std::move(targetString)), mateDepth(mateDepth),
-        expected(target), actualMove(actual), actualValue(value), result(result) {}
+    Test(std::string _id = "",
+         std::string _fen = "",
+         TestType _type = NONE,
+         std::string _targetString = "",
+         Depth _mateDepth = DEPTH_NONE,
+         Move _target = MOVE_NONE,
+         Move _actual = MOVE_NONE,
+         Value _value = VALUE_NONE,
+         ResultType _result = NOT_TESTED)
+      : id(std::move(_id)), fen(std::move(_fen)), type(_type),
+        expectedString(std::move(_targetString)), mateDepth(_mateDepth),
+        expected(_target), actualMove(_actual), actualValue(_value), result(_result) {}
 
     std::string id;
     std::string fen;
@@ -86,13 +91,13 @@ public:
 
   /** Creates a TestSuite instance with a given path, search time per test and
    * max search depth per test.
-   * @param filePath
-   * @param searchTime
-   * @param depth
+   * @param _filePath
+   * @param _searchTime
+   * @param _depth
    * // TODO: parameter checking in the functions
    */
-  TestSuite(const std::string_view &filePath, MilliSec searchTime, Depth depth)
-    : filePath(filePath), searchTime(searchTime), searchDepth(depth) {}
+  TestSuite(const std::string_view &_filePath, MilliSec _searchTime, Depth _depth)
+    : filePath(_filePath), searchTime(_searchTime), searchDepth(_depth) {}
 
   /** runs the tests specified in the given EPD file */
   void runTestSuite();

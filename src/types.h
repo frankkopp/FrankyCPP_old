@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,8 @@
 // convenience macros
 #define NEWLINE std::cout << std::endl
 #define printBB(bb) std::cout << Bitboards::print((bb)) << std::endl
+
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 
 // Global constants
 constexpr const char* START_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -260,31 +262,16 @@ inline bool isCheckMateValue(const Value value) {
   return abs(value) >= VALUE_CHECKMATE_THRESHOLD && abs(value) <= VALUE_CHECKMATE;
 }
 
-constexpr Value operator+(Value d1, Ply d2) {
+inline Value operator+(Value d1, Ply d2) {
   return static_cast<Value>(static_cast<int>(d1) + static_cast<int>(d2));
 }
 
-constexpr Value operator-(Value d1, Ply d2) {
+inline Value operator-(Value d1, Ply d2) {
   return static_cast<Value>(static_cast<int>(d1) - static_cast<int>(d2));
 }
 
 /** Returns a UCI compatible std::string for the score in cp or in mate in ply */
-inline std::string printValue(const Value value) {
-  // TODO add full protocol (lowerbound, upperbound, etc.)
-  std::string scoreString;
-  if (isCheckMateValue(value)) {
-    scoreString = "mate ";
-    scoreString += value < 0 ? "-" : "";
-    scoreString += std::to_string((VALUE_CHECKMATE - std::abs(value) + 1) / 2);
-  }
-  else if (value == VALUE_NONE) {
-    scoreString = "N/A";
-  }
-  else {
-    scoreString = "cp " + std::to_string(value);
-  }
-  return scoreString;
-}
+std::string printValue(Value value);
 
 ///////////////////////////////////
 //// VALUE TYPE
@@ -367,7 +354,7 @@ constexpr Move createMove(Square from, Square to, PieceType pt = KNIGHT) {
 
 /** Creates a move of type T with optional promotion type and the given value */
 template<MoveType T>
-constexpr Move createMove(Square from, Square to, Value v, PieceType pt = KNIGHT) {
+inline Move createMove(Square from, Square to, Value v, PieceType pt = KNIGHT) {
   assert(T == PROMOTION || pt == KNIGHT);
   assert(pt == KNIGHT || pt == QUEEN || pt == ROOK || pt == BISHOP);
   assert(v <= VALUE_INF && v >= VALUE_NONE);
@@ -378,82 +365,18 @@ constexpr Move createMove(Square from, Square to, Value v, PieceType pt = KNIGHT
 
 /** Creates a move of type T from an UCI string */
 template<MoveType T = NORMAL>
-Move createMove(const char* move) {
-  std::istringstream iss(move);
-  iss >> std::noskipws;
-  unsigned char token = 0;
-  Square from, to;
-
-  // from
-  if (iss >> token) {
-    if (token >= 'a' && token <= 'h') {
-      File f = File(token - 'a');
-      if (!(iss >> token)) return MOVE_NONE; // malformed - ignore the rest
-      if ((token >= '1' && token <= '8')) {
-        Rank r = Rank(token - '1');
-        from = getSquare(f, r);
-      }
-      else { return MOVE_NONE; } // malformed - ignore the rest
-    }
-    else { return MOVE_NONE; } // malformed - ignore the rest
-  }
-  else { return MOVE_NONE; } // malformed - ignore the rest
-
-  // to
-  if (iss >> token) {
-    if (token >= 'a' && token <= 'h') {
-      File f = File(token - 'a');
-      if (!(iss >> token)) return MOVE_NONE; // malformed - ignore the rest
-      if ((token >= '1' && token <= '8')) {
-        Rank r = Rank(token - '1');
-        to = getSquare(f, r);
-      }
-      else { return MOVE_NONE; } // malformed - ignore the rest
-    }
-    else { return MOVE_NONE; } // malformed - ignore the rest
-  }
-  else { return MOVE_NONE; } // malformed - ignore the rest
-
-  // promotion
-  if (T == PROMOTION) {
-    if (iss >> token) {
-      switch (token) {
-        case 'n':
-          return createMove<T>(from, to, KNIGHT);
-        case 'b':
-          return createMove<T>(from, to, BISHOP);
-        case 'r':
-          return createMove<T>(from, to, ROOK);
-        case 'q':
-          return createMove<T>(from, to, QUEEN);
-        case 'N':
-          return createMove<T>(from, to, KNIGHT);
-        case 'B':
-          return createMove<T>(from, to, BISHOP);
-        case 'R':
-          return createMove<T>(from, to, ROOK);
-        case 'Q':
-          return createMove<T>(from, to, QUEEN);
-        default:
-          break;
-      }
-    }
-    else { return MOVE_NONE; } // malformed - ignore the rest
-  }
-
-  return createMove<T>(from, to);
-}
+Move createMove(const char* move);
 
 /** returns the square the move originates from */
-constexpr Square getFromSquare(Move m) {
+inline Square getFromSquare(Move m) {
   return Square(m >> MoveShifts::FROM_SHIFT & MoveShifts::SQUARE_MASK);
 }
 
 /** returns the square the move goes to */
-constexpr Square getToSquare(Move m) { return Square(m & MoveShifts::SQUARE_MASK); }
+inline Square getToSquare(Move m) { return Square(m & MoveShifts::SQUARE_MASK); }
 
 /** checks if this a valid move */
-constexpr bool isMove(Move m) {
+inline bool isMove(Move m) {
   const Square fromSquare = getFromSquare(m);
   const Square toSquare = getToSquare(m);
   return fromSquare >= SQ_A1
@@ -464,25 +387,25 @@ constexpr bool isMove(Move m) {
 }
 
 /** returns the type of the move */
-constexpr MoveType typeOf(Move m) { return MoveType(m & MoveShifts::MOVE_TYPE_MASK); }
+inline MoveType typeOf(Move m) { return MoveType(m & MoveShifts::MOVE_TYPE_MASK); }
 
 /** returns the promotion type of the move. This only makes sense if the move
  * actually is of type promotion. Otherwise it must be ignored */
-constexpr PieceType promotionType(Move m) {
+inline PieceType promotionType(Move m) {
   return PieceType(((m & MoveShifts::PROM_TYPE_MASK) >> MoveShifts::PROM_TYPE_SHIFT) + KNIGHT);
 }
 
 /** returns the value of the move */
-constexpr Value valueOf(Move m) {
+inline Value valueOf(Move m) {
   return Value(((m & MoveShifts::VALUE_MASK) >> MoveShifts::VALUE_SHIFT) + VALUE_NONE);
 }
 
 /** returns the move without value */
-constexpr Move moveOf(Move m) { return Move(m & MoveShifts::MOVE_MASK); }
+inline Move moveOf(Move m) { return Move(m & MoveShifts::MOVE_MASK); }
 
 
 /** sets the value for the move. E.g. used by the move generator for move sorting */
-constexpr void setValue(Move &m, Value v) {
+inline void setValue(Move &m, Value v) {
   assert(v >= VALUE_NONE && v <= -VALUE_NONE);
   if (moveOf(m) == MOVE_NONE) return; // can't store a value on a MOVE_NONE
   // when saving a value to a move we shift value to a positive integer (0-VALUE_NONE) and
@@ -491,37 +414,11 @@ constexpr void setValue(Move &m, Value v) {
   m = Move((m & MoveShifts::MOVE_MASK) | (Value(v - VALUE_NONE) << MoveShifts::VALUE_SHIFT));
 }
 
-/** returns a short representation of the move as string (UCI protocal) */
-inline std::string printMove(const Move move) {
-  std::string promotion = "";
-  if (moveOf(move) == MOVE_NONE) return "NOMOVE";
-  if ((typeOf(move) == PROMOTION)) promotion = pieceTypeToChar[promotionType(move)];
-  return squareLabel(getFromSquare(move)) + squareLabel(getToSquare(move)) + promotion;
-}
+/** returns a short representation of the move as string (UCI protocol) */
+std::string printMove(Move move);
 
 /** returns a verbose representation of the move as string */
-inline std::string printMoveVerbose(const Move move) {
-  if (!move) return "NOMOVE " + std::to_string(move);
-  std::string tp;
-  std::string promPt;
-  switch (typeOf(move)) {
-    case NORMAL:
-      tp = "NORMAL";
-      break;
-    case PROMOTION:
-      promPt = pieceTypeToChar[promotionType(move)];
-      tp = "PROMOTION";
-      break;
-    case ENPASSANT:
-      tp = "ENPASSANT";
-      break;
-    case CASTLING:
-      tp = "CASTLING";
-      break;
-  }
-  return squareLabel(getFromSquare(move)) + squareLabel(getToSquare(move)) + promPt
-         + " (" + tp + " " + std::to_string(valueOf(move)) + " " + std::to_string(move) + ")";
-}
+std::string printMoveVerbose(Move move);
 
 inline std::ostream &operator<<(std::ostream &os, const Move move) {
   os << printMove(move);
@@ -534,26 +431,8 @@ inline std::ostream &operator<<(std::ostream &os, const Move move) {
 /** A collection of moves using a std::deque */
 typedef std::deque<Move> MoveList;
 
-inline std::string printMoveList(const MoveList &moveList) {
-  std::ostringstream os;
-  os << "MoveList: size=" << moveList.size() << " [";
-  for (auto itr = moveList.begin(); itr != moveList.end(); ++itr) {
-    os << *itr;
-    if (itr != moveList.end() - 1) os << ", ";
-  }
-  os << "]";
-  return os.str();
-}
-
-inline std::string printMoveListUCI(const MoveList &moveList) {
-  std::ostringstream os;
-  for (Move m : moveList) {
-    os << m;
-    if (m != moveList.back()) os << " ";
-  }
-  return os.str();
-}
-
+std::string printMoveList(const MoveList &moveList);
+std::string printMoveListUCI(const MoveList &moveList);
 inline std::ostream &operator<<(std::ostream &os, const MoveList &moveList) {
   os << printMoveList(moveList);
   return os;
@@ -570,7 +449,7 @@ enum CastlingSide : int {
 /** CastlingRight */
 enum CastlingRights : unsigned int {
   // @formatter:off
-  NO_CASTLING = 0,                                // 0000
+    NO_CASTLING = 0,                                // 0000
 
   WHITE_OO,                                       // 0001
   WHITE_OOO = WHITE_OO << 1,                      // 0010
@@ -644,25 +523,15 @@ inline T& operator*=(T& d, int i) { return d = static_cast<T>(static_cast<int>(d
 inline T& operator/=(T& d, int i) { return d = static_cast<T>(static_cast<int>(d) / i); }
 
 ENABLE_FULL_OPERATORS_ON(Depth)
-
 ENABLE_FULL_OPERATORS_ON(Ply)
-
 ENABLE_FULL_OPERATORS_ON(Value)
-
 ENABLE_FULL_OPERATORS_ON(Direction)
-
 ENABLE_INCR_OPERATORS_ON(PieceType)
-
 ENABLE_INCR_OPERATORS_ON(Piece)
-
 ENABLE_INCR_OPERATORS_ON(Color)
-
 ENABLE_INCR_OPERATORS_ON(Square)
-
 ENABLE_INCR_OPERATORS_ON(File)
-
 ENABLE_INCR_OPERATORS_ON(Rank)
-
 ENABLE_INCR_OPERATORS_ON(CastlingRights)
 
 #undef ENABLE_FULL_OPERATORS_ON
@@ -670,37 +539,25 @@ ENABLE_INCR_OPERATORS_ON(CastlingRights)
 #undef ENABLE_BASE_OPERATORS_ON
 
 constexpr const char* boolStr(bool b) { return b ? "true" : "false"; }
-
 constexpr const char* boolStr(int b) { return b ? "true" : "false"; }
 
-inline bool to_bool(std::string str) {
-  std::transform(str.begin(), str.end(), str.begin(), ::tolower);
-  std::istringstream is(str);
-  bool b;
-  is >> std::boolalpha >> b;
-  return b;
-}
+/** Reads a bool from a string */
+bool to_bool(std::string str);
 
 /**
   * Prints a 64-bit uint as a series of 0 and 1 grouped in 8 bits
   * beginning with the MSB (0) on the left and the LSB (63) on the right
   * @param b
   */
-inline std::string printBitString(uint64_t b) {
-  std::ostringstream os;
-  os << std::bitset<64>(b);
-  return os.str();
-}
+std::string printBitString(uint64_t b);
 
 struct deLocaleDecimals : std::numpunct<char> {
   char do_decimal_point() const override { return ','; }
-
   char do_thousands_sep() const override { return '.'; }
-
   std::string do_grouping() const override { return "\03"; }
 };
 
-const std::locale deLocale(std::locale("de_DE.UTF-8"), new deLocaleDecimals);
+std::locale deLocale(std::locale("de_DE.UTF-8"), new deLocaleDecimals);
 
 #define println(s) std::cout << (s) << std::endl
 #define fprint(...) std::cout << fmt::format(deLocale, __VA_ARGS__)

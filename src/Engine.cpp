@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -165,7 +165,7 @@ void Engine::clearHash() {
   search.clearHash();
 }
 
-void Engine::sendIterationEndInfo(int depth, int seldepth, Value value, long nodes, int nps,
+void Engine::sendIterationEndInfo(int depth, int seldepth, Value value, uint64_t nodes, uint64_t nps,
                                   MilliSec time, const MoveList &pv) const {
   if (pUciHandler)
     pUciHandler->sendIterationEndInfo(depth, seldepth, value, nodes, nps, time, pv);
@@ -189,7 +189,7 @@ void Engine::sendCurrentRootMove(Move currmove, MoveList::size_type movenumber) 
               movenumber);
 }
 
-void Engine::sendSearchUpdate(int depth, int seldepth, long nodes, int nps, MilliSec time,
+void Engine::sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t nps, MilliSec time,
                               int hashfull) const {
   if (pUciHandler) pUciHandler->sendSearchUpdate(depth, seldepth, nodes, nps, time, hashfull);
   else
