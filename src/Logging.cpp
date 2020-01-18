@@ -28,6 +28,7 @@
 #include "Logging.h"
 
 namespace LOGGING {
+
   void init() {
     try {
       std::locale::global(deLocale);

@@ -557,7 +557,7 @@ struct deLocaleDecimals : std::numpunct<char> {
   std::string do_grouping() const override { return "\03"; }
 };
 
-static const std::locale deLocale(std::locale("de_DE.UTF-8"), new deLocaleDecimals);
+const std::locale deLocale(std::cout.getloc(), new deLocaleDecimals);
 
 #define println(s) std::cout << (s) << std::endl
 #define fprint(...) std::cout << fmt::format(deLocale, __VA_ARGS__)
