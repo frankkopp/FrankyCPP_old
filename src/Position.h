@@ -27,6 +27,7 @@
 #define FRANKYCPP_POSITION_H
 
 #include <array>
+#include <algorithm>
 #include "gtest/gtest_prod.h"
 #include "types.h"
 
@@ -422,7 +423,8 @@ public:
 
   /** 24 for beginning, 0 at the end */
   inline int getGamePhase() const {
-    return std::min(GAME_PHASE_MAX, gamePhase);
+    using namespace std;
+    return min(GAME_PHASE_MAX, gamePhase);
   }
 
   /** 1.0 for beginning to 0.0 t the end) */

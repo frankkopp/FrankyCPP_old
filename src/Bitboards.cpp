@@ -77,7 +77,7 @@ namespace Bitboards {
    * Initializes various pre-computed bitboards
    */
   void init() {
-    LOG__TRACE(spdlog::get("Main_Logger"), "{} {}() line {}", __FILE_NAME__, __func__, __LINE__);
+    LOG__TRACE(spdlog::get("Main_Logger"), "{} {}() line {}", __FILE__, __func__, __LINE__);
 
     // pre-computes 16-bit population counter to use in popcount(64-bit)
     for (unsigned i = 0; i < (1U << 16U); ++i)
@@ -386,8 +386,8 @@ namespace Bitboards {
     for (Square square = SQ_A1; square <= SQ_H8; ++square) {
       int f = fileOf(square);
       int r = rankOf(square);
-      if ((f + r) % 2 == 0) { tmpB |= 1L << square; }
-      else { tmpW |= 1L << square; }
+      if ((f + r) % 2 == 0) { tmpB |= ONE_BB << square; }
+      else { tmpW |= ONE_BB << square; }
     }
     whiteSquaresBB = tmpW;
     blackSquaresBB = tmpB;

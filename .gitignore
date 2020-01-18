@@ -6,3 +6,5 @@ cmake-build-default/
 .idea/
 fmt/build/
 spdlog/build/
+out/
+.vs/

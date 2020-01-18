@@ -3,8 +3,9 @@ message("FrankyCPP test/")
 message("====================================================================")
 
 cmake_minimum_required(VERSION 3.13)
+set(CMAKE_CXX_STANDARD 17)
 
-project(FrankyTest)
+set(CMAKE_TOOLCHAIN_FILE="C:/Users/Frank/Dropbox/Private/Projekte/_GITHUB/VCPKG/scripts/buildsystems/vcpkg.cmake")
 
 # Platform specific
 if (APPLE)
@@ -66,6 +67,7 @@ execute_process(
 if (result)
     message(FATAL_ERROR "CMake step for googletest failed: ${result}")
 endif ()
+
 message("GoogleTest build...")
 execute_process(
         COMMAND "${CMAKE_COMMAND}" --build .
@@ -79,6 +81,8 @@ endif ()
 # Prevent GoogleTest from overriding our compiler/linker options
 # when building with Visual Studio
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+enable_testing()
 
 # Add googletest directly to our build. This adds the following targets:
 # gtest, gtest_main, gmock and gmock_main
@@ -112,7 +116,7 @@ add_executable(FrankyTest
 )
 
 if (APPLE)
-target_link_libraries(
+    target_link_libraries(
         FrankyTest
         core
         fmt::fmt
@@ -134,3 +138,4 @@ if (CYGWIN)
             ${Boost_LIBRARIES}
     )
 endif()
+

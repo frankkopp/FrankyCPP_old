@@ -27,6 +27,7 @@
 #define FRANKYCPP_BITBOARDS_H
 
 #include "types.h"
+#include <intrin.h>
 
 /** Functions and pre-defined or pre-calculated Bitboards */
 namespace Bitboards {
@@ -276,8 +277,13 @@ namespace Bitboards {
 
   /** popcount() counts the number of non-zero bits in a bitboard */
   inline int popcount(Bitboard b) {
+
 #if defined(__GNUC__) // GCC, Clang, ICC
     return __builtin_popcountll(b);
+
+#elif defined(_MSC_VER)
+    return  __popcnt64(b);
+    
 #else // Compiler is not GCC
     // pre-computed table of population counter for 16-bit
     extern uint8_t PopCnt16[1 << 16];
@@ -304,9 +310,22 @@ namespace Bitboards {
   /** lsb() and msb() return the least/most significant bit in a non-zero
    * bitboard */
   inline Square lsb(Bitboard b) {
-    if (!b) return SQ_NONE; // __builtin_ctzll is undefined on 0
-#if defined(__GNUC__) // GCC, Clang, ICC
-    return Square(__builtin_ctzll(b));
+    if (!b) return SQ_NONE;
+    
+#ifdef __GNUC__ // GCC, Clang, ICC
+    return static_cast<Square>(__builtin_ctzll(b));
+
+#elif defined(_MSC_VER)
+    std::cout << "LSB: " << std::endl << Bitboards::print(b) << std::endl;
+    std::cout << "LSB: " << std::endl << Bitboards::printFlat(b) << std::endl;
+    unsigned long index;
+    if (_BitScanReverse64(&index, b)) {
+      return static_cast<Square>(index);
+    }
+    else {
+      return SQ_NONE;
+    }
+        
 #else // Compiler is not GCC
 #error "Compiler not yet supported."
     // GTEST - nice examples
@@ -318,10 +337,23 @@ namespace Bitboards {
 
   /** lsb() and msb() return the least/most significant bit in a non-zero
    * bitboard */
-  constexpr Square msb(Bitboard b) {
-    if (!b) return SQ_NONE; // __builtin_clzll is undefined on 0
+
+  inline Square msb(Bitboard b) {
+    if (!b) return SQ_NONE;
 #if defined(__GNUC__) // GCC, Clang, ICC
-    return Square(63 ^ __builtin_clzll(b));
+    return static_cast<Square>(63 ^ __builtin_clzll(b));
+
+#elif defined(_MSC_VER)
+    std::cout << "MSB: " << std::endl << Bitboards::print(b) << std::endl;
+    std::cout << "MSB: " << std::endl << Bitboards::printFlat(b) << std::endl;
+    unsigned long index;
+    if (_BitScanForward64(&index, b)) {
+      return static_cast<Square>(index);
+    }
+    else {
+      return SQ_NONE;
+    }
+
 #else // Compiler is not GCC
 #error "Compiler not yet supported."
 #endif
@@ -330,7 +362,7 @@ namespace Bitboards {
   /** pop_lsb() finds and clears the least significant bit in a non-zero
    * bitboard */
   inline Square popLSB(Bitboard &b) {
-    if (!b) return SQ_NONE; // lsb is undefined on 0
+    if (!b) return SQ_NONE;
     const Square s = lsb(b);
     b &= b - 1;
     return s;
@@ -570,11 +602,11 @@ namespace Bitboards {
    */
   inline std::string printFlat(Bitboard b) {
     std::ostringstream os;
-    for (int i = 0; i < 64; i++) {
+    for (uint16_t i = 0; i < 64; i++) {
       if (i > 0 && i % 8 == 0) {
         os << ".";
       }
-      os << (b & (1L << i) ? "1" : "0");
+      os << (b & (Bitboards::ONE_BB << i) ? "1" : "0");
     }
     os << " (" + std::to_string(b) + ")";
     return os.str();
