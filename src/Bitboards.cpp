@@ -26,8 +26,6 @@
 #include "Logging.h"
 #include "Bitboards.h"
 
-using namespace std;
-
 namespace Bitboards {
 
   Bitboard squareBB[SQ_LENGTH];
@@ -83,7 +81,7 @@ namespace Bitboards {
 
     // pre-computes 16-bit population counter to use in popcount(64-bit)
     for (unsigned i = 0; i < (1U << 16U); ++i)
-      PopCnt16[i] = (uint8_t) popcount16(i);
+      PopCnt16[i] = static_cast<uint8_t>( popcount16(i));
 
     // all squares
     for (Square sq = SQ_A1; sq <= SQ_H8; ++sq) {
@@ -135,8 +133,8 @@ namespace Bitboards {
       for (Square sq2 = SQ_A1; sq2 <= SQ_H8; ++sq2) {
         if (sq1 != sq2) {
           squareDistance[sq1][sq2] =
-            (int8_t) max(distance(fileOf(sq1), fileOf(sq2)),
-                         distance(rankOf(sq1), rankOf(sq2)));
+            static_cast<int8_t>(std::max(distance(fileOf(sq1), fileOf(sq2)),
+                                         distance(rankOf(sq1), rankOf(sq2))));
         }
       }
     }
@@ -158,13 +156,13 @@ namespace Bitboards {
       for (int j = 0; j < 256; j++) {
         Bitboard mask = 0L;
         for (int x = file - 1; x >= 0; x--) {
-          mask += (1L << x);
+          mask += (ONE_BB << x);
           if ((j & (1 << x)) != 0) {
             break;
           }
         }
         for (int x = file + 1; x < 8; x++) {
-          mask += (1L << x);
+          mask += (ONE_BB << x);
           if ((j & (1 << x)) != 0) {
             break;
           }
@@ -181,13 +179,13 @@ namespace Bitboards {
       for (int j = 0; j < 256; j++) {
         Bitboard mask = 0;
         for (int x = 6 - rank; x >= 0; x--) {
-          mask += (1L << (8 * (7 - x)));
+          mask += (ONE_BB << (8 * (7 - x)));
           if ((j & (1 << x)) != 0) {
             break;
           }
         }
         for (int x = 8 - rank; x < 8; x++) {
-          mask += (1L << (8 * (7 - x)));
+          mask += (ONE_BB << (8 * (7 - x)));
           if ((j & (1 << x)) != 0) {
             break;
           }
@@ -204,7 +202,7 @@ namespace Bitboards {
       File file = fileOf(square);
       Rank rank = rankOf(square);
       /* Get the far left hand square on this diagonal */
-      Square diagstart = (Square) (square - 9 * (min((int) file, (int) rank)));
+      Square diagstart = static_cast<Square>(square - 9 * std::min(static_cast<int>(file), static_cast<int>(rank)));
       File dsfile = fileOf(diagstart);
       int dl = lengthDiagUp[square];
       /* Loop through all possible occupations of this diagonal line */
@@ -237,7 +235,7 @@ namespace Bitboards {
       Rank rank = rankOf(square);
       /* Get the far left hand square on this diagonal */
       Square diagstart =
-        (Square) (7 * (min((int) file, (int) (7 - rank))) + square);
+        static_cast<Square>((7 * (std::min(static_cast<int>(file), static_cast<int>((7 - rank)))) + square));
       File dsfile = fileOf(diagstart);
       int dl = lengthDiagDown[square];
       /* Loop through all possible occupations of this diagonal line */

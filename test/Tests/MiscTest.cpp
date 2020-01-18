@@ -53,7 +53,7 @@ TEST_F(MiscTest, moveFromSAN) {
   Move expected;
   Move actual;
 
-  spdlog::get("Main_Logger")->set_level(spdlog::level::info);
+  spdlog::get("Main_Logger")->set_level(spdlog::level::trace);
 
   expected = createMove("e2e4");
   actual = Misc::getMoveFromSAN(position, "e4");
@@ -86,7 +86,7 @@ TEST_F(MiscTest, moveFromSAN) {
   position = Position("r1bqk2r/p1p2pp1/1pnp1n1p/2b1p3/2B1P2N/1P1P4/P1PN1PPP/R1BQK2R w KQkq - 0 8");
 
   // ambiguous
-  expected = MOVE_NONE;
+  expected = createMove("f2f3");
   actual = Misc::getMoveFromSAN(position, "f3");
   ASSERT_EQ(expected, actual);
 
@@ -107,8 +107,8 @@ TEST_F(MiscTest, moveFromSAN) {
 
   position = Position("r3k2r/pbpq1pp1/1pnp1n1p/2b1pN2/2B1P3/1P1P1N2/P1P2PPP/R1BQK2R w KQkq - 4 10");
 
-  // ambiguous
-  expected = MOVE_NONE;
+  // pawn
+  expected = createMove("h2h4");
   actual = Misc::getMoveFromSAN(position, "h4");
   ASSERT_EQ(expected, actual);
 
@@ -147,6 +147,23 @@ TEST_F(MiscTest, moveFromSAN) {
   // en passant
   expected = createMove<ENPASSANT>("f4e3");
   actual = Misc::getMoveFromSAN(position, "e3");
+  ASSERT_EQ(expected, actual);
+
+  // capture sign
+  position = Position("7k/8/3p4/4N3/8/5p2/P7/1K2N3 w - -");
+  expected = createMove("e5f3");
+  actual = Misc::getMoveFromSAN(position, "N5xf3");
+  ASSERT_EQ(expected, actual);
+
+  // r7/2r1kpp1/1p6/pB1Pp1P1/Pbp1P3/2N2b1P/1PPK1P2/R6R b - - bm Bxh1; id "FRANKY-1 #11";
+  position = Position("r7/2r1kpp1/1p6/pB1Pp1P1/Pbp1P3/2N2b1P/1PPK1P2/R6R b - -");
+  expected = createMove("f3h1");
+  actual = Misc::getMoveFromSAN(position, "Bxh1");
+  ASSERT_EQ(expected, actual);
+
+  position = Position("r2qr1k1/pb2bp1p/1pn1p1pB/8/2BP4/P1P2N2/4QPPP/3R1RK1 w - - 0 1");
+  expected = createMove("d4d5");
+  actual = Misc::getMoveFromSAN(position, "d5");
   ASSERT_EQ(expected, actual);
 
 }

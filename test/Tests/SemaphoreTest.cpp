@@ -27,7 +27,7 @@ TEST(SemaphoreTest, basic) {
   ASSERT_EQ(NONE, myState);
 
   std::cout << "Start Thread!\n";
-  std::thread myThread = std::thread([] { run(); });
+  std::thread myTestThread = std::thread([] { run(); });
   std::this_thread::sleep_for(std::chrono::milliseconds(200));
   ASSERT_EQ(NEW, myState);
 
@@ -38,10 +38,10 @@ TEST(SemaphoreTest, basic) {
 
   std::cout << "Thread Started\n";
 
-  if (myThread.get_id() == std::this_thread::get_id()) std::cout << "start: NEW THREAD\n";
-  else std::cout << "start: OLD THREAD\n";
+  if (myTestThread.get_id() == std::this_thread::get_id()) { std::cout << "start: NEW THREAD\n"; }
+  else { std::cout << "start: OLD THREAD\n"; }
 
-  myThread.join();
+  myTestThread.join();
   ASSERT_EQ(DONE, myState);
 
   std::cout << "Thread Ended\n";

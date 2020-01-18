@@ -5,19 +5,43 @@ project(FrankyTest)
 set(CMAKE_CXX_STANDARD 17)
 
 # include BOOST
-message("Include BOOST")
-set(BOOST_ROOT "/usr/local/boost_1_72_0")
-set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
-set(Boost_USE_MULTITHREADED ON)
-#set(Boost_USE_STATIC_LIBS ON) # only find static libs
-#set(Boost_USE_STATIC_RUNTIME OFF)
+if (UNIX AND APPLE)
+    message("Platform is APPLE")
+
+    set(BOOST_ROOT "/usr/local/boost_1_72_0")
+    set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
+    set(Boost_USE_MULTITHREADED ON)
+    #set(Boost_USE_STATIC_LIBS ON) # only find static libs
+    #set(Boost_USE_STATIC_RUNTIME OFF)
+endif ()
+
+if (UNIX AND CYHGWIN)
+    message("Platform is CYGWIN")
+    set(BOOST_ROOT "/usr/local/boost_1_72_0")
+    set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
+    set(Boost_USE_MULTITHREADED ON)
+    #set(Boost_USE_STATIC_LIBS ON) # only find static libs
+    #set(Boost_USE_STATIC_RUNTIME OFF)
+
+endif ()
+if (NOT UNIX AND WIN32)
+    message("Platform is WIN32")
+
+    set(BOOST_ROOT "/usr/local/boost_1_72_0")
+    set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
+    set(Boost_USE_MULTITHREADED ON)
+    #set(Boost_USE_STATIC_LIBS ON) # only find static libs
+    #set(Boost_USE_STATIC_RUNTIME OFF)
+
+endif ()
+
 find_package(Boost 1.72.0 COMPONENTS timer log log_setup REQUIRED)
 if (Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
 endif ()
 
 # Download and unpack googletest at configure time
-set(GIT_EXECUTABLE )
+set(GIT_EXECUTABLE)
 message("Finding GIT...")
 find_package(Git)
 if(GIT_FOUND)
@@ -61,7 +85,7 @@ add_subdirectory(
 find_package(fmt REQUIRED)
 find_package(spdlog REQUIRED)
 
-add_executable(FrankyTest main.cpp Tests/BitboardTest.cpp Tests/TimingTests.cpp Tests/SemaphoreTest.cpp Tests/EngineTest.cpp Tests/GlobalsTest.cpp Tests/PositionTest.cpp Tests/MoveGeneratorTest.cpp Tests/PerftTest.cpp Tests/UCITests.cpp Tests/SearchTest.cpp Tests/LoggingTest.cpp Tests/EvaluatorTest.cpp Tests/SearchTreeSizeTest.cpp Tests/ValuesTest.cpp Tests/TT_Test.cpp Tests/BOOST_Test.cpp Tests/SelfPlayUCITest.cpp Tests/Test_Fens.h Tests/TestSuiteTests.cpp)
+add_executable(FrankyTest main.cpp Tests/BitboardTest.cpp Tests/TimingTests.cpp Tests/SemaphoreTest.cpp Tests/EngineTest.cpp Tests/GlobalsTest.cpp Tests/PositionTest.cpp Tests/MoveGeneratorTest.cpp Tests/PerftTest.cpp Tests/UCITests.cpp Tests/SearchTest.cpp Tests/LoggingTest.cpp Tests/EvaluatorTest.cpp Tests/SearchTreeSizeTest.cpp Tests/ValuesTest.cpp Tests/TT_Test.cpp Tests/BOOST_Test.cpp Tests/SelfPlayUCITest.cpp Tests/Test_Fens.h Tests/TestSuiteTests.cpp Tests/MiscTest.cpp)
 target_link_libraries(
         FrankyTest
         core

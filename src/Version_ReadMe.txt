@@ -31,7 +31,8 @@ v 0.4 (in progress)
     - See logfile for errors
     - Put Position history variables in a struct for better locality
     - optimize removePiece and putPiece
-    - 
+    - Compile under Cygwin on PC
+    - Use CLANG compiler warnings
 
 - DONE:
     - Extended Evaluation

@@ -35,24 +35,24 @@ namespace Misc {
     static std::shared_ptr<spdlog::logger> LOG = spdlog::get("Main_Logger");
 
     // Regex for short move notation (SAN)
-    std::regex regexPattern("([NBRQK])?([a-h])?([1-8])?([a-h][1-8]|O-O-O|O-O)(=([NBRQ]))?([+#])?");
+    std::regex regexPattern("([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O-O-O|O-O)(=([NBRQ]))?([+#])?");
     std::smatch matcher;
 
     // Match the target string
     if (!std::regex_match(sanMove, matcher, regexPattern)) {
-      LOG__DEBUG(LOG, "No match found");
+      LOG__TRACE(LOG, "No match found");
       return MOVE_NONE;
     }
 
     // get the parts
-    LOG__DEBUG(LOG, "Match found");
-    std::string piece = matcher.str(1);
+    LOG__TRACE(LOG, "Match found");
+    std::string pieceType = matcher.str(1);
     std::string disambFile = matcher.str(2);
     std::string disambRank = matcher.str(3);
     std::string toSquare = matcher.str(4);
     std::string promotion = matcher.str(6);
     std::string checkSign = matcher.str(7);
-    LOG__DEBUG(LOG, "Piece: {} File: {} Row: {} Target: {} Promotion: {} CheckSign: {}", piece, disambFile, disambRank, toSquare, promotion, checkSign);
+    LOG__TRACE(LOG, "Piece Type: {} File: {} Row: {} Target: {} Promotion: {} CheckSign: {}", pieceType, disambFile, disambRank, toSquare, promotion, checkSign);
 
     // Generate all legal moves and loop through them to search for a matching move
     Move moveFromSAN{MOVE_NONE};
@@ -93,25 +93,26 @@ namespace Misc {
 
         // Find out piece
         Piece movePiece = position.getPiece(getFromSquare(m));
-        const std::string pieceChar(1, pieceToChar[movePiece]);
-        if (!piece.empty() && pieceChar == piece) {
-          LOG__DEBUG(LOG, "Piece is {}", pieceChar);
+        const std::string pieceTypeChar(1, pieceTypeToChar[typeOf(movePiece)]);
+        LOG__TRACE(LOG, "Move PieceType is {}", pieceTypeChar);
+        if (!pieceType.empty() && pieceTypeChar == pieceType) {
+          LOG__TRACE(LOG, "PieceType is {}", pieceTypeChar);
         }
-        else if (piece == "") {
-          LOG__DEBUG(LOG, "Piece PAWN");
+        else if (pieceType.empty() && typeOf(movePiece) == PAWN) {
+          LOG__TRACE(LOG, "PieceType PAWN");
         }
         else {
-          LOG__DEBUG(LOG, "Piece NO MATCH");
+          LOG__TRACE(LOG, "PieceType NO MATCH {} {}", pieceType, pieceTypeChar);
           continue;
         }
 
         // Disambiguation File
         if (!disambFile.empty()) {
           if (std::string(1, char('a' + fileOf(getFromSquare(m)))) == disambFile) {
-            LOG__DEBUG(LOG, "Disambiguation file found {}", disambFile);
+            LOG__TRACE(LOG, "Disambiguation file found {}", disambFile);
           }
           else {
-            LOG__DEBUG(LOG, "No disambiguation file found");
+            LOG__TRACE(LOG, "No disambiguation file found");
             continue;
           }
         }
@@ -119,10 +120,10 @@ namespace Misc {
         // Disambiguation Rank
         if (!disambRank.empty()) {
           if (std::string(1, char('1' + rankOf(getFromSquare(m)))) == disambRank) {
-            LOG__DEBUG(LOG, "Disambiguation rank found {}", disambRank);
+            LOG__TRACE(LOG, "Disambiguation rank found {}", disambRank);
           }
           else {
-            LOG__DEBUG(LOG, "No disambiguation rank found");
+            LOG__TRACE(LOG, "No disambiguation rank found");
             continue;
           }
         }
@@ -130,10 +131,10 @@ namespace Misc {
         // promotion
         if (!promotion.empty()) {
           if (std::string(1, pieceToChar[promotionType(m)]) == promotion) {
-            LOG__DEBUG(LOG, "Promotion to {} found", promotion);
+            LOG__TRACE(LOG, "Promotion to {} found", promotion);
           }
           else {
-            LOG__DEBUG(LOG, "No promotion found");
+            LOG__TRACE(LOG, "No promotion found");
             continue;
           }
         }
@@ -145,13 +146,14 @@ namespace Misc {
     }
     // we should only have one move here
     if (movesFound > 1) {
-      LOG__ERROR(LOG, "SAN move {} is ambiguous!", sanMove);
+      LOG__ERROR(LOG, "SAN move {} is ambiguous on {}!", sanMove, position.printFen());
     }
     else if (movesFound == 0 || !isMove(moveFromSAN)) {
-      LOG__ERROR(LOG, "SAN move not valid! No such move at the current position: " + sanMove);
+      LOG__ERROR(LOG, "SAN move not valid! No such move at the current position: {} {}",
+                 sanMove, position.printFen());
     }
     else {
-      LOG__DEBUG(LOG, "Found move {}", printMove(moveFromSAN));
+      LOG__TRACE(LOG, "Found move {}", printMove(moveFromSAN));
       return moveFromSAN;
     }
     return MOVE_NONE;

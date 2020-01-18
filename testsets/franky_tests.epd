@@ -25,13 +25,13 @@
 r1bqk2r/pp3ppp/2pb4/3pp3/4n1n1/P4N2/1PPPBPPP/RNBQK2R w KQkq - bm O-O; id "Franky-1 #10";
 
 # certain move with issue before fix (time based stop of search)
-r7/2r1kpp1/1p6/pB1Pp1P1/Pbp1P3/2N2b1P/1PPK1P2/R6R b - - bm Bxh1; id "FRANKY-1 #11";
+8/2r1kpp1/1p6/pB1Pp1P1/Pbp1P3/2N2b1P/1PPK1P2/7R b - - bm Bxh1; id "FRANKY-1 #11";
 
 # unknown or noop op test - should be skipped by engine
 8/8/8/8/8/3K4/R7/5k2 w - - noop 4; id "FRANKY-1 #99";
 
 # Various
-# 3r3k/1r3p1p/p1pB1p2/8/p1qNP1Q1/P6P/1P4P1/3R3K w - - bm Bf8 Nf5 Qf4; id "WAC.294";
+3r3k/1r3p1p/p1pB1p2/8/p1qNP1Q1/P6P/1P4P1/3R3K w - - bm Bf8 Nf5 Qf4; id "WAC.294";
 # 2rqk2r/pb1nbp1p/4p1p1/1B1n4/Np1N4/7Q/PP3PPP/R1B1R1K1 w - - bm Rxe6; id "CCC-I No.1";
 # r1bq1rk1/3nbppp/p2pp3/6PQ/1p1BP2P/2NB4/PPP2P2/2KR3R w - - bm Bxg7; id "CCC-I No.2";
 # 2kr4/ppq2pp1/2b1pn2/2P4r/2P5/3BQN1P/P4PP1/R4RK1 b - - bm Ng4!; id "CCC-I No.3";

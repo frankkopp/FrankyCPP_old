@@ -48,12 +48,12 @@ TEST(GlobalsTest, labels) {
 }
 
 TEST(GlobalsTest, pieceTypeLabels) {
-  ASSERT_EQ('k', pieceTypeToChar[KING]);
-  ASSERT_EQ('q', pieceTypeToChar[QUEEN]);
-  ASSERT_EQ('r', pieceTypeToChar[ROOK]);
-  ASSERT_EQ('b', pieceTypeToChar[BISHOP]);
-  ASSERT_EQ('n', pieceTypeToChar[KNIGHT]);
-  ASSERT_EQ('p', pieceTypeToChar[PAWN]);
+  ASSERT_EQ('K', pieceTypeToChar[KING]);
+  ASSERT_EQ('Q', pieceTypeToChar[QUEEN]);
+  ASSERT_EQ('R', pieceTypeToChar[ROOK]);
+  ASSERT_EQ('B', pieceTypeToChar[BISHOP]);
+  ASSERT_EQ('N', pieceTypeToChar[KNIGHT]);
+  ASSERT_EQ('P', pieceTypeToChar[PAWN]);
 }
 
 TEST(GlobalsTest, pieceLabels) {

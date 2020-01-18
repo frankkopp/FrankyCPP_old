@@ -64,6 +64,12 @@ namespace LOGGING {
     SEARCH_LOG->set_level(SEARCH_LOG_LEVEL);
     SEARCH_LOG->flush_on(spdlog::level::trace);
 
+    auto TESTSUITE_LOG = spdlog::stdout_color_mt("TSuite_Logger");
+    TESTSUITE_LOG->sinks().push_back(sharedFileSink);
+    TESTSUITE_LOG->set_pattern(defaultPattern);
+    TESTSUITE_LOG->set_level(spdlog::level::trace);
+    TESTSUITE_LOG->flush_on(spdlog::level::trace);
+
     auto MOVEGEN_LOG = spdlog::stdout_color_mt("MoveGen_Logger");
     MOVEGEN_LOG->sinks().push_back(sharedFileSink);
     MOVEGEN_LOG->set_pattern(defaultPattern);

@@ -2,12 +2,37 @@
 configure_file(version.h.in version.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
- # include BOOST
-set(BOOST_ROOT "/usr/local/boost_1_72_0")
-set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
-set(Boost_USE_MULTITHREADED ON)
-#set(Boost_USE_STATIC_LIBS ON) # only find static libs
-#set(Boost_USE_STATIC_RUNTIME OFF)
+# include BOOST
+if (UNIX AND APPLE)
+    message("Platform is APPLE")
+
+    set(BOOST_ROOT "/usr/local/boost_1_72_0")
+    set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
+    set(Boost_USE_MULTITHREADED ON)
+    #set(Boost_USE_STATIC_LIBS ON) # only find static libs
+    #set(Boost_USE_STATIC_RUNTIME OFF)
+endif ()
+
+if (UNIX AND CYHGWIN)
+    message("Platform is CYGWIN")
+    set(BOOST_ROOT "/usr/local/boost_1_72_0")
+    set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
+    set(Boost_USE_MULTITHREADED ON)
+    #set(Boost_USE_STATIC_LIBS ON) # only find static libs
+    #set(Boost_USE_STATIC_RUNTIME OFF)
+
+endif ()
+if (NOT UNIX AND WIN32)
+    message("Platform is WIN32")
+
+    set(BOOST_ROOT "/usr/local/boost_1_72_0")
+    set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
+    set(Boost_USE_MULTITHREADED ON)
+    #set(Boost_USE_STATIC_LIBS ON) # only find static libs
+    #set(Boost_USE_STATIC_RUNTIME OFF)
+
+endif ()
+
 find_package(Boost 1.72.0 COMPONENTS timer log log_setup REQUIRED)
 if (Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
@@ -17,7 +42,7 @@ endif ()
 set(execname FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR})
 
 # define library files
-set(core_SRCS types.h Bitboards.h Bitboards.cpp UCIHandler.cpp UCIHandler.h Semaphore.h Search.cpp Search.h UCIOption.cpp UCIOption.h Engine.cpp Engine.h Position.cpp Position.h Random.h Values.cpp Values.h MoveGenerator.cpp MoveGenerator.h Perft.cpp Perft.h INIT.cpp UCISearchMode.cpp UCISearchMode.h SearchLimits.cpp SearchLimits.h EngineConfig.h SearchStats.cpp SearchStats.h Logging.h Logging.cpp version.h.in Evaluator.cpp Evaluator.h SearchConfig.h EvaluatorConfig.h TT.cpp TT.h)
+set(core_SRCS types.h Bitboards.h Bitboards.cpp UCIHandler.cpp UCIHandler.h Semaphore.h Search.cpp Search.h UCIOption.cpp UCIOption.h Engine.cpp Engine.h Position.cpp Position.h Random.h Values.cpp Values.h MoveGenerator.cpp MoveGenerator.h Perft.cpp Perft.h INIT.cpp UCISearchMode.cpp UCISearchMode.h SearchLimits.cpp SearchLimits.h EngineConfig.h SearchStats.cpp SearchStats.h Logging.h Logging.cpp version.h.in Evaluator.cpp Evaluator.h SearchConfig.h EvaluatorConfig.h TT.cpp TT.h misc.cpp misc.h TestSuite.cpp TestSuite.h)
 add_library(core ${core_SRCS})
 
 # define executable

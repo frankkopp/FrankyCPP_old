@@ -184,6 +184,7 @@ namespace Bitboards {
     2, 3, 4, 5, 6, 7, 8, 7,
     1, 2, 3, 4, 5, 6, 7, 8
   };
+
   constexpr Bitboard lengthDiagUpMask(Square sq) {
     return (ONE_BB << lengthDiagUp[sq]) - 1;
   }
@@ -225,15 +226,7 @@ namespace Bitboards {
     28, 36, 43, 49, 54, 58, 61, 63
   };
 
-  constexpr Bitboard DiagUpA1 = 0b\
-10000000\
-01000000\
-00100000\
-00010000\
-00001000\
-00000100\
-00000010\
-00000001;
+  constexpr Bitboard DiagUpA1 = 0b1000000001000000001000000001000000001000000001000000001000000001;
   constexpr Bitboard DiagUpB1 = (DiagUpA1 << 1) & ~FileABB; // shift EAST
   constexpr Bitboard DiagUpC1 = (DiagUpB1 << 1) & ~FileABB;
   constexpr Bitboard DiagUpD1 = (DiagUpC1 << 1) & ~FileABB;
@@ -249,15 +242,7 @@ namespace Bitboards {
   constexpr Bitboard DiagUpA7 = DiagUpA6 << 8;
   constexpr Bitboard DiagUpA8 = DiagUpA7 << 8;
 
-  constexpr Bitboard DiagDownH1 = 0b\
-00000001\
-00000010\
-00000100\
-00001000\
-00010000\
-00100000\
-01000000\
-10000000;
+  constexpr Bitboard DiagDownH1 = 0b0000000100000010000001000000100000010000001000000100000010000000;
   constexpr Bitboard DiagDownH2 = DiagDownH1 << 8; // shift NORTH
   constexpr Bitboard DiagDownH3 = DiagDownH2 << 8;
   constexpr Bitboard DiagDownH4 = DiagDownH3 << 8;
@@ -290,7 +275,7 @@ namespace Bitboards {
   constexpr Bitboard fileBB(Square s) { return fileBB(fileOf(s)); }
 
   /** popcount() counts the number of non-zero bits in a bitboard */
-  constexpr int popcount(Bitboard b) {
+  inline int popcount(Bitboard b) {
 #if defined(__GNUC__) // GCC, Clang, ICC
     return __builtin_popcountll(b);
 #else // Compiler is not GCC
@@ -309,7 +294,7 @@ namespace Bitboards {
    * Used when no build in popcount is available for compiler.
    * @return popcount16() counts the non-zero bits using SWAR-Popcount algorithm
    */
-  constexpr unsigned popcount16(unsigned u) {
+  inline unsigned popcount16(unsigned u) {
     u -= (u >> 1U) & 0x5555U;
     u = ((u >> 2U) & 0x3333U) + (u & 0x3333U);
     u = ((u >> 4U) + u) & 0x0F0FU;
@@ -318,8 +303,8 @@ namespace Bitboards {
 
   /** lsb() and msb() return the least/most significant bit in a non-zero
    * bitboard */
-  constexpr Square lsb(Bitboard b) {
-    assert(b);        // __builtin_ctzll is undefined on 0
+  inline Square lsb(Bitboard b) {
+    if (!b) return SQ_NONE; // __builtin_ctzll is undefined on 0
 #if defined(__GNUC__) // GCC, Clang, ICC
     return Square(__builtin_ctzll(b));
 #else // Compiler is not GCC
@@ -334,7 +319,7 @@ namespace Bitboards {
   /** lsb() and msb() return the least/most significant bit in a non-zero
    * bitboard */
   constexpr Square msb(Bitboard b) {
-    assert(b);        // __builtin_clzll is undefined on 0
+    if (!b) return SQ_NONE; // __builtin_clzll is undefined on 0
 #if defined(__GNUC__) // GCC, Clang, ICC
     return Square(63 ^ __builtin_clzll(b));
 #else // Compiler is not GCC
@@ -344,15 +329,18 @@ namespace Bitboards {
 
   /** pop_lsb() finds and clears the least significant bit in a non-zero
    * bitboard */
-  constexpr Square popLSB(Bitboard &b) {
-    assert(b); // lsb is undefined on 0
+  inline Square popLSB(Bitboard &b) {
+    if (!b) return SQ_NONE; // lsb is undefined on 0
     const Square s = lsb(b);
     b &= b - 1;
     return s;
   }
 
-  constexpr void popLSB2(Bitboard &b, Square &sq) {
-    assert(b); // lsb is undefined on 0
+  inline void popLSB2(Bitboard &b, Square &sq) {
+    if (!b) {
+      sq = SQ_NONE; // lsb is undefined on 0
+      return;
+    }
     sq = lsb(b);
     b &= b - 1;
   }

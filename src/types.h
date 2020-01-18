@@ -182,7 +182,7 @@ enum PieceType : int {
 };
 
 /** returns a char representing the piece type - "kpnbrq" */
-constexpr const char* pieceTypeToChar = " kpnbrq";
+constexpr const char* pieceTypeToChar = " KPNBRQ";
 
 /** returns a string representing the piece type */
 constexpr const char* pieceTypeToString[] = {
@@ -285,6 +285,9 @@ inline std::string printValue(const Value value) {
     scoreString += value < 0 ? "-" : "";
     scoreString += std::to_string((VALUE_CHECKMATE - std::abs(value) + 1) / 2);
   }
+  else if (value == VALUE_NONE) {
+    scoreString = "N/A";
+  }
   else {
     scoreString = "cp " + std::to_string(value);
   }
@@ -327,18 +330,18 @@ BITMAP 32-bit
 */ // @formatter:on
 
 namespace MoveShifts {
-  constexpr int FROM_SHIFT = 6;
-  constexpr int PROM_TYPE_SHIFT = 12;
-  constexpr int TYPE_SHIFT = 14;
-  constexpr int VALUE_SHIFT = 16;
+  constexpr unsigned int FROM_SHIFT = 6;
+  constexpr unsigned int PROM_TYPE_SHIFT = 12;
+  constexpr unsigned int TYPE_SHIFT = 14;
+  constexpr unsigned int VALUE_SHIFT = 16;
 
-  constexpr int SQUARE_MASK = 0x3F;
-  constexpr int FROMTO_MASK = 0xFFF;
-  constexpr int PROM_TYPE_MASK = 3 << PROM_TYPE_SHIFT;
-  constexpr int MOVE_TYPE_MASK = 3 << TYPE_SHIFT;
+  constexpr unsigned int SQUARE_MASK = 0x3F;
+  constexpr unsigned int FROMTO_MASK = 0xFFF;
+  constexpr unsigned int PROM_TYPE_MASK = 3 << PROM_TYPE_SHIFT;
+  constexpr unsigned int MOVE_TYPE_MASK = 3 << TYPE_SHIFT;
 
-  constexpr int MOVE_MASK = 0xFFFF;  // first 16-bit
-  constexpr int VALUE_MASK = 0xFFFF << VALUE_SHIFT; // second 16-bit
+  constexpr unsigned int MOVE_MASK = 0xFFFF;  // first 16-bit
+  constexpr unsigned int VALUE_MASK = 0xFFFF << VALUE_SHIFT; // second 16-bit
 }
 
 ///////////////////////////////////
