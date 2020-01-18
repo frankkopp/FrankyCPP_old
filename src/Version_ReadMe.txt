@@ -30,12 +30,12 @@ v 0.4 (in progress)
     - Debug Search - blunders
     - Debug and harden play with UCI GUI - XBoard, Arena, etc.
     - See logfile for errors
-    - Put Position history variables in a struct for better locality
     - optimize removePiece and putPiece
     - Compile under Cygwin on PC
-    - Use CLANG compiler warnings
 
 - DONE:
+    - Put Position history variables in a struct for better locality
+    - Use CLANG compiler warnings
     - Extended Evaluation
     - Eval pawn cache
 
