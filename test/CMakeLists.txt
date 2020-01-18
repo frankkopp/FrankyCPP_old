@@ -80,8 +80,6 @@ endif ()
 # when building with Visual Studio
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
-message("Include DIRS: " ${INCLUDE_DIRECTORIES})
-
 # Add googletest directly to our build. This adds the following targets:
 # gtest, gtest_main, gmock and gmock_main
 add_subdirectory(

@@ -26,8 +26,6 @@ if (APPLE)
         message("Package spdlog NOT found" )
     endif()
 
-
-
 endif ()
 
 if (CYGWIN)
@@ -57,8 +55,6 @@ if (Boost_FOUND)
     message("BOOST found: " ${BOOST_ROOT} " " ${Boost_INCLUDE_DIR})
     include_directories(${Boost_INCLUDE_DIRS})
 endif ()
-
-message("Include DIRS: " ${INCLUDE_DIRECTORIES})
 
 # set the name of the executable
 set(execname FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR})
