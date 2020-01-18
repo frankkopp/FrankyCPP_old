@@ -164,7 +164,6 @@ TEST_F(TestSuiteTests, FrankyTestSuite) {
   testSuite.runTestSuite();
 }
 
-
 TEST_F(TestSuiteTests, ecm98) {
   std::string filePath = "../../testsets/ecm98.epd";
   MilliSec moveTime = 1'000;

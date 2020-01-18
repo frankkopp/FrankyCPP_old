@@ -32,6 +32,7 @@ v 0.4 (in progress)
     - See logfile for errors
     - optimize removePiece and putPiece
     - Compile under Cygwin on PC
+    - move test src one up
 
 - DONE:
     - Put Position history variables in a struct for better locality

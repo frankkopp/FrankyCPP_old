@@ -5,6 +5,7 @@ project(FrankyCPP VERSION 0.4)
 
 # platform
 message("Recognized platform is " ${CMAKE_SYSTEM_NAME} " " ${CMAKE_SYSTEM_VERSION})
+
 # platform settings
 set(CMAKE_CXX_STANDARD 17)
 
@@ -23,7 +24,7 @@ if (CYGWIN)
     set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra")
     set(CMAKE_CXX_FLAGS_DEBUG "")
     # additional: -std=c++17 -m64 -Og -Wall -Wextra -Wno-unknown-pragmas -Wpedantic -Wshadow -Weffc++ -Wimplicit-fallthrough -Wswitch -Wpointer-arith -Wcast-qual -Wconversion -Wno-sign-conversion -Wno-error=padded -Wno-error=inline")
-    set(CMAKE_CXX_FLAGS_RELEASE "-Ofast")
+    set(CMAKE_CXX_FLAGS_RELEASE "")
 
     include_directories(
         ${PROJECT_SOURCE_DIR}/spdlog/include
