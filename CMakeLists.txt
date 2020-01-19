@@ -13,7 +13,7 @@ if (APPLE)
     message("Platform APPLE")
     set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra ")
     set(CMAKE_CXX_FLAGS_DEBUG "-Og -Wpedantic -Wshadow -Wno-conversion -Wunreachable-code -Wuninitialized  -Wold-style-cast -Wunused-variable -Wfloat-equal -Wno-gnu-zero-variadic-macro-arguments")
-    set(CMAKE_CXX_FLAGS_RELEASE "-Ofast")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3")
     include_directories(
             /usr/local/include
     )
