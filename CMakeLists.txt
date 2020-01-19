@@ -27,7 +27,7 @@ endif ()
 
 if (WIN32)
     message("Platform WIN32")
-    set(CMAKE_CXX_FLAGS "/Wall")
+    set(CMAKE_CXX_FLAGS "/W4")
     set(CMAKE_CXX_FLAGS_DEBUG "/Od")
     set(CMAKE_CXX_FLAGS_RELEASE "/O2")
     
