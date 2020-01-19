@@ -1276,7 +1276,8 @@ inline MilliSec Search::now() {
   return clock_gettime_nsec_np(CLOCK_UPTIME_RAW_APPROX) / 1'000'000;
 #else
   const std::chrono::time_point timePoint = std::chrono::high_resolution_clock::now();
-  const std::chrono::duration timeSinceEpoch =  std::chrono::duration_cast<std::chrono::nanoseconds>(timePoint.time_since_epoch());
+  const std::chrono::duration timeSinceEpoch 
+    =  std::chrono::duration_cast<std::chrono::milliseconds>(timePoint.time_since_epoch());
   return timeSinceEpoch.count();
 #endif
 }

@@ -106,7 +106,7 @@ public:
   void runTestSet(std::vector<Test> &ts) const;
 
   /** reads aöö tests from the given file into the given list */
-  void readTestCases(std::string &filePath, std::vector<Test> &tests) const;
+  void readTestCases(const std::string &filePath, std::vector<Test> &tests) const;
 
   /** reads on EPD file and creates a Test */
   bool readOneEPD(const std::string &line, TestSuite::Test &test) const;

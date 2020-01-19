@@ -58,14 +58,14 @@ void Perft::perft(int maxDepth, bool onDemand) {
   os.str("");
   os.clear();
   
-  long result;
+  uint64_t result;
   auto start = std::chrono::high_resolution_clock::now();
   
   if (onDemand) { result = miniMaxOD(maxDepth, position, mg); }
   else { result = miniMax(maxDepth, position, mg); }
   
   auto finish = std::chrono::high_resolution_clock::now();
-  long duration = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start).count();
+  uint64_t duration = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start).count();
   
   nodes = result;
   
@@ -98,7 +98,7 @@ void Perft::perft_divide(int maxDepth, bool onDemand) {
   os.str("");
   os.clear();
   
-  long result = 0L;
+  uint64_t result = 0;
   auto start = std::chrono::high_resolution_clock::now();
   
   // moves to search recursively
@@ -144,7 +144,7 @@ void Perft::perft_divide(int maxDepth, bool onDemand) {
   }
   
   auto finish = std::chrono::high_resolution_clock::now();
-  long duration = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start).count();
+  uint64_t duration = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start).count();
   
   nodes = result;
   
@@ -173,7 +173,7 @@ void Perft::resetCounter() {
 long Perft::miniMax(int depth, Position &position, MoveGenerator* pMg) {
   
   // Iterate over moves
-  long totalNodes = 0L;
+  uint64_t totalNodes = 0;
   
   //println(pPosition->str())
   
@@ -217,7 +217,7 @@ long Perft::miniMaxOD(int depth, Position &position, MoveGenerator* pMg) {
   pMg[depth].reset();
   
   // Iterate over moves
-  long totalNodes = 0L;
+  uint64_t totalNodes = 0;
   
   //println(pPosition->str())
   

@@ -211,7 +211,7 @@ TestSuite::runSingleTest(Search &search, SearchLimits &searchLimits, TestSuite::
   }
 }
 
-void TestSuite::readTestCases(std::string &filePathStr, std::vector<Test> &tests) const {
+void TestSuite::readTestCases(const std::string &filePathStr, std::vector<Test> &tests) const {
   std::ifstream file(filePathStr);
   if (file.is_open()) {
     std::string line;

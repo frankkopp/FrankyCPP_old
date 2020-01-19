@@ -80,13 +80,13 @@ TEST_F(TT_Test, basic) {
   LOG__INFO(LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
   LOG__INFO(LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
 
-  LOG__INFO(LOG, "Trying to resize the TT with {:n} MB in size", 32'000);
-  tt.resize(32'000 * TT::MB);
-  LOG__INFO(LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
-  LOG__INFO(LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
-  LOG__INFO(LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
-  ASSERT_EQ(1073741824, tt.getMaxNumberOfEntries());
-  ASSERT_EQ(0, tt.getNumberOfEntries());
+  //LOG__INFO(LOG, "Trying to resize the TT with {:n} MB in size", 32'000);
+  //tt.resize(32'000 * TT::MB);
+  //LOG__INFO(LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
+  //LOG__INFO(LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
+  //LOG__INFO(LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
+  //ASSERT_EQ(1073741824, tt.getMaxNumberOfEntries());
+  //ASSERT_EQ(0, tt.getNumberOfEntries());
 
   LOG__INFO(LOG, "Trying to resize the TT with {:n} MB in size", 64);
   tt.resize(64 * TT::MB);
@@ -124,7 +124,7 @@ TEST_F(TT_Test, parallelClear) {
 TEST_F(TT_Test, put) {
   std::random_device rd;
   std::mt19937_64 rg(rd());
-  std::uniform_int_distribution<uint64_t> randomKey;
+  std::uniform_int_distribution<unsigned long long> randomKey;
 
   TT tt(10 * TT::MB);
 
@@ -234,7 +234,7 @@ TEST_F(TT_Test, put) {
 TEST_F(TT_Test, get) {
   std::random_device rd;
   std::mt19937_64 rg(rd());
-  std::uniform_int_distribution<uint64_t> randomKey;
+  std::uniform_int_distribution<unsigned long long> randomKey;
 
   TT tt(10 * TT::MB);
 
@@ -322,12 +322,12 @@ TEST_F(TT_Test, get) {
 TEST_F(TT_Test, tt_perft) {
   std::random_device rd;
   std::default_random_engine rg1(rd());
-  std::uniform_int_distribution<uint64_t> randomKey(1, 10'000'000);
-  std::uniform_int_distribution<uint8_t> randomDepth(0, DEPTH_MAX);
-  std::uniform_int_distribution<int16_t> randomValue(VALUE_MIN, VALUE_MAX);
-  std::uniform_int_distribution<int16_t> randomAlpha(VALUE_MIN, 0);
-  std::uniform_int_distribution<int16_t> randomBeta(0, VALUE_MAX);
-  std::uniform_int_distribution<uint8_t> randomType(1, 3);
+  std::uniform_int_distribution<unsigned long long> randomKey(1, 10'000'000);
+  std::uniform_int_distribution<unsigned short> randomDepth(0, DEPTH_MAX);
+  std::uniform_int_distribution<unsigned int> randomValue(VALUE_MIN, VALUE_MAX);
+  std::uniform_int_distribution<unsigned int> randomAlpha(VALUE_MIN, 0);
+  std::uniform_int_distribution<unsigned int> randomBeta(0, VALUE_MAX);
+  std::uniform_int_distribution<unsigned short> randomType(1, 3);
 
   TT tt(64 * TT::MB);
   tt.setThreads(4);
