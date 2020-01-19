@@ -36,7 +36,7 @@ using testing::Eq;
 
 class SearchTreeSizeTest : public ::testing::Test {
 public:
-  static constexpr int DEPTH = 9;
+  static constexpr int DEPTH = 10;
   static constexpr int NUMBER_OF_FENS = 20;
 
   const uint64_t* ptrToSpecial = nullptr;
@@ -200,13 +200,13 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
 
   SearchConfig::USE_TT = true;
   SearchConfig::USE_TT_QSEARCH = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "10 +TT"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "10 +TT"));
 
   SearchConfig::USE_NMP = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "20 NMP"));
+  //result.tests.push_back(measureTreeSize(search, position, searchLimits, "20 NMP"));
 
   SearchConfig::USE_RFP = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "30 RFP"));
+  //result.tests.push_back(measureTreeSize(search, position, searchLimits, "30 RFP"));
 
   SearchConfig::USE_IID = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "40 IID"));

@@ -166,9 +166,9 @@ TEST_F(TestSuiteTests, FrankyTestSuite) {
   testSuite.runTestSuite();
 }
 
-TEST_F(TestSuiteTests, DISABLED_ecm98) {
+TEST_F(TestSuiteTests, ecm98) {
   std::string filePath = "../../../../testsets/ecm98.epd";
-  MilliSec moveTime = 1'000;
+  MilliSec moveTime = 3'000;
   Depth depth = static_cast<Depth>(0);
   TestSuite testSuite(filePath, moveTime, depth);
   testSuite.runTestSuite();
