@@ -86,6 +86,7 @@
 #endif
 
 namespace LOGGING {
+  static bool LOGGING_INITIALIZED = false;
   extern void init();
 }
 

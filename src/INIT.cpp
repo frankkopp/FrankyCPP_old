@@ -28,9 +28,12 @@
 #include "Position.h"
 
 namespace INIT {
+  static bool INITIALIZED = false;
   void init() {
+    if (INITIALIZED) return;
     Values::init();
     Bitboards::init();
     Position::init();
+    INITIALIZED = true;
   }
 }

@@ -275,7 +275,7 @@ TEST_F(EvaluatorTest, fens) {
   fprint("{}", timerTotal.format());
 }
 
-TEST_F(EvaluatorTest, PERFT_eps) {
+TEST_F(EvaluatorTest, DISABLED_PERFT_eps) {
   using namespace boost::timer;
   std::string fen;
   Position position;

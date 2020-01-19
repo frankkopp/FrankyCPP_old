@@ -587,3 +587,21 @@ TEST_F(SearchTest, debuggingTTMove) {
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 }
+TEST_F(SearchTest, debugging) {
+  Search search;
+  SearchLimits searchLimits;
+  Position position;
+
+  SearchConfig::USE_TT = true;
+  SearchConfig::USE_TT_QSEARCH = true;
+  SearchConfig::USE_RFP = true;
+  SearchConfig::USE_NMP = true;
+  SearchConfig::USE_IID = true;
+
+  const int depth = 3;
+  position = Position("3r3k/1r3p1p/p1pB1p2/8/p1qNP1Q1/P6P/1P4P1/3R3K w - -");
+  searchLimits.setDepth(depth);
+
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+}

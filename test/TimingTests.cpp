@@ -340,7 +340,8 @@ TEST_F(TimingTests, DISABLED_max) {
 
   //// TESTS START
   std::function<void()> f1 = [&]() {
-    alpha = std::min(globalVal + ply, alpha);
+    using namespace std;
+    alpha = min(globalVal + ply, alpha);
   };
   std::function<void()> f2 = [&]() {
     if (alpha > globalVal + ply)

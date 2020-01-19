@@ -138,7 +138,7 @@ TEST_F(UCITest, positionTest) {
 
   // promotion
   {
-    string command = "position fen 8/3P4/6K1/8/8/1k6/8/8 w - - 0 0 moves d7d8q";
+    string command = "position fen 8/3P4/6K1/8/8/1k6/8/8 w - - 0 0 moves d7d8Q";
     LOG__INFO(LOG, "COMMAND: " + command);
     istringstream is(command);
     UCI::Handler uciHandler(&engine, &is, &os);

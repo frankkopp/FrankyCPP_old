@@ -38,6 +38,14 @@ endif ()
 
 if (WIN32)
     message("Platform WIN32")
+    
+    include_directories(
+        ${PROJECT_SOURCE_DIR}/spdlog/include
+        ${PROJECT_SOURCE_DIR}/fmt/include
+    )
+
+    add_subdirectory(fmt)
+    add_subdirectory(spdlog)
 endif ()
 
 message("Compiler is " ${CMAKE_CXX_COMPILER} " " ${CMAKE_CXX_COMPILER_VERSION})

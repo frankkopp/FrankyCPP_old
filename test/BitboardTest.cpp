@@ -40,54 +40,57 @@ public:
     INIT::init();
     NEWLINE;
   }
+  static void TearDownTestSuite() {
+
+  }
+
 protected:
   void SetUp() override {}
   void TearDown() override {}
 };
 
-//TEST_F(BitboardsTest, print) {
-//
-//  // TODO do some asserts to really test
-//
-//  Bitboards::init();
-//
-//  std::cout << "\n";
-//
-//  std::cout << Bitboards::print(EMPTY_BB) << std::endl;
-//  std::cout << Bitboards::printFlat(EMPTY_BB) << std::endl;
-//  std::cout << Bitboards::print(ALL_BB) << std::endl;
-//  std::cout << Bitboards::printFlat(ALL_BB) << std::endl;
-//
-//  for (Square i = SQ_A1; i <= SQ_H8; ++i) {
-//    std::cout << squareLabel(i) << std::endl;
-//    std::cout << Bitboards::print(squareBB[i]) << std::endl;
-//  }
-//
-//  std::cout << Bitboards::print(squareBB[SQ_A1]) << std::endl;
-//  std::cout << Bitboards::printFlat(squareBB[SQ_A1]) << std::endl;
-//  std::cout << Bitboards::print(squareBB[SQ_H1]) << std::endl;
-//  std::cout << Bitboards::printFlat(squareBB[SQ_H1]) << std::endl;
-//  std::cout << Bitboards::print(squareBB[SQ_A8]) << std::endl;
-//  std::cout << Bitboards::printFlat(squareBB[SQ_A8]) << std::endl;
-//  std::cout << Bitboards::print(squareBB[SQ_H8]) << std::endl;
-//  std::cout << Bitboards::printFlat(squareBB[SQ_H8]) << std::endl;
-//
-//  std::cout << Bitboards::print(squareBB[SQ_H8]) << std::endl;
-//  std::cout << Bitboards::printFlat(squareBB[SQ_H8]) << std::endl;
-//
-//  std::cout << Bitboards::print(ALL_BB) << std::endl;
-//}
+TEST_F(BitboardsTest, print) {
+
+  // TODO do some asserts to really test
+
+
+  //std::cout << "\n";
+
+  //std::cout << Bitboards::print(EMPTY_BB) << std::endl;
+  //std::cout << Bitboards::printFlat(EMPTY_BB) << std::endl;
+  //std::cout << Bitboards::print(ALL_BB) << std::endl;
+  //std::cout << Bitboards::printFlat(ALL_BB) << std::endl;
+
+  //for (Square i = SQ_A1; i <= SQ_H8; ++i) {
+  //  std::cout << squareLabel(i) << std::endl;
+  //  std::cout << Bitboards::print(squareBB[i]) << std::endl;
+  //}
+
+  //std::cout << Bitboards::print(squareBB[SQ_A1]) << std::endl;
+  //std::cout << Bitboards::printFlat(squareBB[SQ_A1]) << std::endl;
+  //std::cout << Bitboards::print(squareBB[SQ_H1]) << std::endl;
+  //std::cout << Bitboards::printFlat(squareBB[SQ_H1]) << std::endl;
+  //std::cout << Bitboards::print(squareBB[SQ_A8]) << std::endl;
+  //std::cout << Bitboards::printFlat(squareBB[SQ_A8]) << std::endl;
+  //std::cout << Bitboards::print(squareBB[SQ_H8]) << std::endl;
+  //std::cout << Bitboards::printFlat(squareBB[SQ_H8]) << std::endl;
+
+  //std::cout << Bitboards::print(squareBB[SQ_H8]) << std::endl;
+  //std::cout << Bitboards::printFlat(squareBB[SQ_H8]) << std::endl;
+
+  //std::cout << Bitboards::print(ALL_BB) << std::endl;
+}
 
 TEST_F(BitboardsTest, popcount) {
   const uint64_t &b = 0b0010000000010000000000000010000000000000000000000000000000000000ULL;
 
-  fprintln("Bitstring: {}", printBitString(b));
-  fprintln("Bitstring: {}", printBitString(1));
-  fprintln("Bitstring: {}", printBitString(std::numeric_limits<uint64_t>().max()));
+  //fprintln("Bitstring: {}", printBitString(b));
+  //fprintln("Bitstring: {}", printBitString(1));
+  //fprintln("Bitstring: {}", printBitString(std::numeric_limits<uint64_t>().max()));
 
-  fprintln("Bitboard : {}", Bitboards::printFlat(b));
-  fprintln("Bitboard : {}", Bitboards::printFlat(1));
-  fprintln("Bitboard : {}", Bitboards::printFlat(std::numeric_limits<uint64_t>().max()));
+  //fprintln("Bitboard : {}", Bitboards::printFlat(b));
+  //fprintln("Bitboard : {}", Bitboards::printFlat(1));
+  //fprintln("Bitboard : {}", Bitboards::printFlat(std::numeric_limits<uint64_t>().max()));
 
   ASSERT_EQ(3, Bitboards::popcount(b));
 }
@@ -154,6 +157,36 @@ TEST_F(BitboardsTest, Diagonals) {
   ASSERT_EQ(DiagDownH1, squareDiagDownBB[SQ_H1]);
 }
 
+TEST_F(BitboardsTest, lsb_msb) {
+  // set least significant bit
+  Bitboard b = 1;
+  //fprintln("{}", Bitboards::print(b));
+  //fprintln("{}", Bitboards::printFlat(b));
+  //fprintln("{}", printBitString(b));
+  Square sql = lsb(b);
+  //fprintln("lsb {}", squareLabel(sql));
+  Square sqm = msb(b);
+  //fprintln("msb {}", squareLabel(sqm));
+  ASSERT_EQ(SQ_A1, sql);
+  ASSERT_EQ(SQ_A1, sqm);
+  
+  b += (ONE_BB << 63);
+  //fprintln("{}", Bitboards::print(b));
+  //fprintln("{}", Bitboards::printFlat(b));
+  //fprintln("{}", printBitString(b));
+  sql = lsb(b);
+  //fprintln("lsb {}", squareLabel(sql));
+  sqm = msb(b);
+  //fprintln("msb {}", squareLabel(sqm));
+  ASSERT_EQ(SQ_A1, sql);
+  ASSERT_EQ(SQ_H8, sqm);
+
+  Square sq = popLSB(b);
+  ASSERT_EQ(SQ_A1, sq);
+  sq = popLSB(b);
+  ASSERT_EQ(SQ_H8, sq);
+}
+
 TEST_F(BitboardsTest, bitScans) {
   ASSERT_EQ(1, popcount(squareBB[SQ_D3]));
   ASSERT_EQ(2, popcount(squareBB[SQ_D3] | squareBB[SQ_H2]));
@@ -169,6 +202,7 @@ TEST_F(BitboardsTest, bitScans) {
     popLSB(tmp);
   }
   ASSERT_EQ(8, i);
+
 }
 
 TEST_F(BitboardsTest, R90) {
@@ -376,10 +410,6 @@ TEST_F(BitboardsTest, movesFileTest) {
 
   Position position("r1b1k2r/pp2ppbp/2n3p1/q7/3pP3/2P1BN2/P2Q1PPP/2R1KB1R w Kkq -");
 
-  //  cout << position.printBoard();
-  //  cout << Bitboards::print(position.getOccupiedBB());
-  //  cout << Bitboards::print(Bitboards::getMovesFile(SQ_A5, position.getOccupiedBB()));
-
   expected = "+---+---+---+---+---+---+---+---+\n"
              "|   |   |   |   |   |   |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n"
@@ -397,11 +427,10 @@ TEST_F(BitboardsTest, movesFileTest) {
              "+---+---+---+---+---+---+---+---+\n"
              "|   |   |   |   |   |   |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n";
+
   actual = Bitboards::print(Bitboards::getMovesFile(SQ_A5, position.getOccupiedBB()));
   ASSERT_EQ(expected, actual);
-
-  //  cout << Bitboards::print(position.getOccupiedBB());
-  //  cout << Bitboards::print(Bitboards::getMovesFile(SQ_D2, position.getOccupiedBB()));
+  
   expected = "+---+---+---+---+---+---+---+---+\n"
              "|   |   |   |   |   |   |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n"
@@ -422,8 +451,6 @@ TEST_F(BitboardsTest, movesFileTest) {
   actual = Bitboards::print(Bitboards::getMovesFile(SQ_D2, position.getOccupiedBB()));
   ASSERT_EQ(expected, actual);
 
-  //  cout << Bitboards::print(position.getOccupiedBB());
-  //  cout << Bitboards::print(Bitboards::getMovesFile(SQ_C1, position.getOccupiedBB()));
   expected = "+---+---+---+---+---+---+---+---+\n"
              "|   |   |   |   |   |   |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n"
@@ -1315,7 +1342,7 @@ TEST_F(BitboardsTest, centerDistance) {
   ASSERT_EQ(3, centerDistance[SQ_H7]);
 }
 
-TEST_F(BitboardsTest, debug) {
+TEST_F(BitboardsTest, DISABLED_debug) {
   string expected, actual;
 
   Bitboard allSquares = ALL_BB;
