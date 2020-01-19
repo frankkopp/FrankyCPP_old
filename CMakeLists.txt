@@ -48,6 +48,7 @@ message("EXEC: " ${CMAKE_CXX_LINK_EXECUTABLE})
 include_directories(
         ${PROJECT_SOURCE_DIR}/src
         ${CMAKE_CURRENT_BINARY_DIR}/test/googletest-src/googletest/include
+        #/usr/local/include
 )
 
 # project sub directories - need to have their own CMakeList.txt
