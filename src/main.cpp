@@ -23,8 +23,8 @@
  *
  */
 
-#include "types.h"
 #include "version.h"
+#include "types.h"
 #include "Logging.h"
 #include "UCIHandler.h"
 #include "Engine.h"
@@ -44,9 +44,9 @@ int main() {
     std::cout << "DEBUG ASSERTION TESTS ON" << std::endl;
   ASSERT_END
 
-  // initializes and configures logging - only needed once in main()
   LOGGING::init();
   INIT::init();
+
   Engine engine;
   UCI::Handler uci(&engine);
   uci.loop();
