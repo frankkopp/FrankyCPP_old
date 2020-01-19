@@ -26,9 +26,7 @@
 #ifndef FRANKYCPP_LOGGING_H
 #define FRANKYCPP_LOGGING_H
 
-#include "spdlog/spdlog.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
-#include "spdlog/sinks/basic_file_sink.h"
+#include <spdlog/spdlog.h>
 
 #ifdef NDEBUG
 #define ASSERT_START while(0) {
@@ -88,6 +86,5 @@
 namespace LOGGING {
   extern void init();
 }
-
 
 #endif //FRANKYCPP_LOGGING_H

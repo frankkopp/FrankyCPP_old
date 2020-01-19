@@ -16,14 +16,24 @@ if (APPLE)
     #set(Boost_USE_STATIC_RUNTIME OFF)
 
     find_package(fmt REQUIRED)
+    if (fmt_FOUND)
+        message("Package fmt found")
+    endif ()
     if (NOT fmt_FOUND)
         message("Package fmt NOT found")
     endif ()
 
     find_package(spdlog REQUIRED)
+    if (spdlog_FOUND)
+        message("Package spdlog found")
+    endif ()
     if (NOT spdlog_FOUND)
         message("Package spdlog NOT found")
     endif ()
+
+    include_directories(
+            /usr/local/include
+    )
 
 endif ()
 
@@ -33,10 +43,27 @@ if (CYGWIN)
     set(Boost_USE_MULTITHREADED ON)
     #set(Boost_USE_STATIC_LIBS ON) # only find static libs
     #set(Boost_USE_STATIC_RUNTIME OFF)
+
+    find_package(fmt REQUIRED)
+    if (fmt_FOUND)
+        message("Package fmt found")
+    endif ()
+    if (NOT fmt_FOUND)
+        message("Package fmt NOT found")
+    endif ()
+
+    find_package(spdlog REQUIRED)
+    if (spdlog_FOUND)
+        message("Package spdlog found")
+    endif ()
+    if (NOT spdlog_FOUND)
+        message("Package spdlog NOT found")
+    endif ()
+
     include_directories(
-      ${PROJECT_SOURCE_DIR}/fmt/include
-      ${PROJECT_SOURCE_DIR}/spdlog/include
+            /usr/local/include
     )
+
 endif ()
 
 if (WIN32)
@@ -54,7 +81,7 @@ endif ()
 
 find_package(Boost 1.72.0 COMPONENTS timer log log_setup REQUIRED)
 if (Boost_FOUND)
-    message("BOOST found: " ${BOOST_ROOT} " " ${Boost_INCLUDE_DIR})
+    message("Package BOOST found: " ${BOOST_ROOT} " " ${Boost_INCLUDE_DIR})
     include_directories(${Boost_INCLUDE_DIRS})
 endif ()
 
@@ -103,17 +130,21 @@ add_subdirectory(
         "${CMAKE_CURRENT_BINARY_DIR}/googletest-build"
 )
 
-add_executable(FrankyTest
+# set the name of the executable
+set(testExeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR}_Test)
+
+add_executable(
+        ${testExeName}
         main.cpp
         BOOST_Test.cpp
         SemaphoreTest.cpp
         GlobalsTest.cpp
+        LoggingTest.cpp
         MiscTest.cpp
         ValuesTest.cpp
         BitboardTest.cpp
         MoveGeneratorTest.cpp
         EngineTest.cpp
-        LoggingTest.cpp
         TT_Test.cpp
         PositionTest.cpp
         EvaluatorTest.cpp
@@ -128,22 +159,22 @@ add_executable(FrankyTest
 
 if (APPLE)
     target_link_libraries(
-        FrankyTest
-        core
-        fmt::fmt
-        spdlog::spdlog
-        gtest
-        gtest_main
-        ${Boost_LIBRARIES}
+            ${testExeName}
+            core
+            fmt::fmt
+            spdlog::spdlog
+            gtest
+            gtest_main
+            ${Boost_LIBRARIES}
 )
 endif()
 
 if (CYGWIN)
     target_link_libraries(
-            FrankyTest
+            ${testExeName}
             core
-            fmt
-            spdlog
+            fmt::fmt
+            #spdlog::spdlog # otherwise linker throws error of duplicate
             gtest
             gtest_main
             ${Boost_LIBRARIES}
@@ -152,7 +183,7 @@ endif()
 
 if (WIN32)
     target_link_libraries(
-            FrankyTest
+            ${testExeName}
             core
             fmt
             spdlog

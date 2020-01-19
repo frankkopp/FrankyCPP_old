@@ -24,8 +24,8 @@
  */
 
 #include <gtest/gtest.h>
-#include "fmt/locale.h"
 #include "types.h"
+#include "fmt/locale.h"
 
 using testing::Eq;
 

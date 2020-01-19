@@ -8,3 +8,4 @@ fmt/build/
 spdlog/build/
 out/
 .vs/
+spdlog/_builds/

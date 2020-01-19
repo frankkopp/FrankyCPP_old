@@ -50,7 +50,7 @@ TEST(BOOST, cpu_timer) {
 
   while (i++ < iterations) {
     for (int j = 0; j < repetitions; ++j) {
-      uint64_t n = 100, first = 0, second = 1, next = 0, c = 0;
+      uint64_t n = 1000, first = 0, second = 1, next = 0, c = 0;
       timer.resume();
       auto start = std::chrono::high_resolution_clock::now();
       // Fibunacci numbers

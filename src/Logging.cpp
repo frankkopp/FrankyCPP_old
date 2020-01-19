@@ -26,6 +26,8 @@
 #include <iostream>
 #include "types.h"
 #include "Logging.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
+#include "spdlog/sinks/basic_file_sink.h"
 
 namespace LOGGING {
 
@@ -42,7 +44,7 @@ namespace LOGGING {
       std::cerr << "failed to set locale" << std::endl;
     }
 
-    std::string defaultPattern = fmt::format("[%H:%M:%S:%f] [t:%-10t] [%-17n] [%-8l]: %v");
+    std::string defaultPattern = "[%H:%M:%S:%f] [t:%-10t] [%-17n] [%-8l]: %v";
     spdlog::set_pattern(defaultPattern);
 
     spdlog::set_level(spdlog::level::trace);
