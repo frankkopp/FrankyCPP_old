@@ -31,10 +31,10 @@ v 0.4 (in progress)
     - Debug and harden play with UCI GUI - XBoard, Arena, etc.
     - See logfile for errors
     - optimize removePiece and putPiece
-    - Compile under Cygwin on PC
-    - move test src one up
 
 - DONE:
+    - Compile under Cygwin on PC
+    - move test src one up
     - Put Position history variables in a struct for better locality
     - Use CLANG compiler warnings
     - Extended Evaluation
