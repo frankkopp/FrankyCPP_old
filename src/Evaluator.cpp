@@ -319,23 +319,23 @@ inline int Evaluator::mobility(const Position &position, const Square sq) {
   const Bitboard occupiedBB = position.getOccupiedBB();
   const Bitboard myPiecesBB = position.getOccupiedBB(C);
   const Bitboard pseudoMoves = Bitboards::pseudoAttacks[PT][sq];
-  int mobility = 0;
+  int tmpMobility = 0;
   if (PT == KNIGHT) {
     // knights can't be blocked
     Bitboard moves = pseudoMoves & ~myPiecesBB;
-    mobility += Bitboards::popcount(moves);
+    tmpMobility += Bitboards::popcount(moves);
   } else { // sliding pieces
     Bitboard pseudoTo = pseudoMoves & ~myPiecesBB;
     while (pseudoTo) {
       const Square toSquare = Bitboards::popLSB(pseudoTo);
       if (config.USE_MOBILITY) {
         if (!(Bitboards::intermediateBB[sq][toSquare] & occupiedBB)) {
-          mobility += 1;
+          tmpMobility += 1;
         }
       }
     }
   }
-  return mobility * config.MOBILITY_WEIGHT;
+  return tmpMobility * config.MOBILITY_WEIGHT;
 }
 
 template <Color C> int Evaluator::evaluateKing(const Position &position) {

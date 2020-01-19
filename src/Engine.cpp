@@ -105,8 +105,8 @@ void Engine::setPosition(const std::string &fen) {
 void Engine::doMove(const std::string &moveStr) {
   LOG__INFO(LOG, "Engine: Do move {}", moveStr);
   MoveGenerator moveGenerator;
-  MoveList moves = *moveGenerator.generateLegalMoves<MoveGenerator::GENALL>(position);
-  for (Move m : moves) {
+  const MoveList* movesPtr = moveGenerator.generateLegalMoves<MoveGenerator::GENALL>(position);
+  for (Move m : *movesPtr) {
     if (printMove(m) == moveStr) {
       position.doMove(m);
       return;
