@@ -38,6 +38,14 @@ endif ()
 
 if (WIN32)
     message("Platform WIN32")
+    
+    include_directories(
+        ${PROJECT_SOURCE_DIR}/spdlog/include
+        ${PROJECT_SOURCE_DIR}/fmt/include
+    )
+
+    add_subdirectory(fmt)
+    add_subdirectory(spdlog)
 endif ()
 
 message("Compiler is " ${CMAKE_CXX_COMPILER} " " ${CMAKE_CXX_COMPILER_VERSION})
@@ -48,7 +56,6 @@ message("EXEC: " ${CMAKE_CXX_LINK_EXECUTABLE})
 include_directories(
         ${PROJECT_SOURCE_DIR}/src
         ${CMAKE_CURRENT_BINARY_DIR}/test/googletest-src/googletest/include
-        #/usr/local/include
 )
 
 # project sub directories - need to have their own CMakeList.txt

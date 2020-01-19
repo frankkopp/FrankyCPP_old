@@ -987,7 +987,7 @@ TEST_F(PositionTest, isLegalPosition) {
   position.undoMove();
 }
 
-TEST_F(PositionTest, PERFT_pps) {
+TEST_F(PositionTest, DISABLED_PERFT_pps) {
 
   using namespace boost::timer;
 

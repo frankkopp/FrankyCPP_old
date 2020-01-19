@@ -33,13 +33,23 @@ if (CYGWIN)
     set(Boost_USE_MULTITHREADED ON)
     #set(Boost_USE_STATIC_LIBS ON) # only find static libs
     #set(Boost_USE_STATIC_RUNTIME OFF)
+    include_directories(
+      ${PROJECT_SOURCE_DIR}/fmt/include
+      ${PROJECT_SOURCE_DIR}/spdlog/include
+    )
 endif ()
+
 if (WIN32)
-    set(BOOST_ROOT "/usr/local/boost_1_72_0")
-    set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
+    set(BOOST_ROOT "C:/Boost/boost_1_72_0")
+    set(BOOST_INCLUDEDIR "C:/Boost/boost_1_72_0")
+    set(BOOST_LIBRARYDIR "C:/Boost/boost_1_72_0/lib64-msvc-14.2")
     set(Boost_USE_MULTITHREADED ON)
-    #set(Boost_USE_STATIC_LIBS ON) # only find static libs
-    #set(Boost_USE_STATIC_RUNTIME OFF)
+    set(Boost_USE_STATIC_LIBS ON) 
+    set(Boost_USE_STATIC_RUNTIME OFF)
+      include_directories(
+        ${PROJECT_SOURCE_DIR}/fmt/include
+        ${PROJECT_SOURCE_DIR}/spdlog/include
+    )
 endif ()
 
 find_package(Boost 1.72.0 COMPONENTS timer log log_setup REQUIRED)
@@ -47,6 +57,8 @@ if (Boost_FOUND)
     message("BOOST found: " ${BOOST_ROOT} " " ${Boost_INCLUDE_DIR})
     include_directories(${Boost_INCLUDE_DIRS})
 endif ()
+
+set (BOOST_ALL_NO_LIB 1)
 
 # Download and unpack googletest at configure time
 message("Finding GIT...")
@@ -93,26 +105,25 @@ add_subdirectory(
 
 add_executable(FrankyTest
         main.cpp
-        Tests/BitboardTest.cpp
-        Tests/TimingTests.cpp
-        Tests/SemaphoreTest.cpp
-        Tests/EngineTest.cpp
-        Tests/GlobalsTest.cpp
-        Tests/PositionTest.cpp
-        Tests/MoveGeneratorTest.cpp
-        Tests/PerftTest.cpp
-        Tests/UCITests.cpp
-        Tests/SearchTest.cpp
-        Tests/LoggingTest.cpp
-        Tests/EvaluatorTest.cpp
-        Tests/SearchTreeSizeTest.cpp
-        Tests/ValuesTest.cpp
-        Tests/TT_Test.cpp
-        Tests/BOOST_Test.cpp
-        Tests/SelfPlayUCITest.cpp
-        Tests/Test_Fens.h
-        Tests/TestSuiteTests.cpp
-        Tests/MiscTest.cpp
+        #BOOST_Test.cpp
+        #SemaphoreTest.cpp
+        #GlobalsTest.cpp
+        #MiscTest.cpp
+        #ValuesTest.cpp
+        #BitboardTest.cpp
+        #MoveGeneratorTest.cpp
+        #EngineTest.cpp
+        #LoggingTest.cpp
+        #TT_Test.cpp
+        #PositionTest.cpp
+        #EvaluatorTest.cpp
+        #UCITests.cpp
+        #PerftTest.cpp
+        #TimingTests.cpp
+        SearchTest.cpp
+        #earchTreeSizeTest.cpp
+        TestSuiteTests.cpp
+        #SelfPlayUCITest.cpp
 )
 
 if (APPLE)
@@ -128,6 +139,18 @@ if (APPLE)
 endif()
 
 if (CYGWIN)
+    target_link_libraries(
+            FrankyTest
+            core
+            fmt
+            spdlog
+            gtest
+            gtest_main
+            ${Boost_LIBRARIES}
+    )
+endif()
+
+if (WIN32)
     target_link_libraries(
             FrankyTest
             core
