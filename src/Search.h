@@ -228,7 +228,7 @@ private:
    */
   MoveList generateRootMoves(Position &refPosition);
   static bool rootMovesSort(Move m1, Move m2);
-  static bool goodCapture(Position &refPosition, Move move);
+  bool goodCapture(Position &refPosition, Move move);
   static void savePV(Move move, MoveList &src, MoveList &dest);
 
   /**

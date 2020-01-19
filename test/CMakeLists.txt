@@ -122,7 +122,7 @@ add_executable(FrankyTest
         #TimingTests.cpp
         SearchTest.cpp
         #earchTreeSizeTest.cpp
-        TestSuiteTests.cpp
+        #TestSuiteTests.cpp
         #SelfPlayUCITest.cpp
 )
 
