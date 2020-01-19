@@ -16,11 +16,17 @@ if (APPLE)
     #set(Boost_USE_STATIC_RUNTIME OFF)
 
     find_package(fmt REQUIRED)
+    if (fmt_FOUND)
+        message("Package fmt found")
+    endif ()
     if (NOT fmt_FOUND)
         message("Package fmt NOT found")
     endif ()
 
     find_package(spdlog REQUIRED)
+    if (spdlog_FOUND)
+        message("Package spdlog found")
+    endif ()
     if (NOT spdlog_FOUND)
         message("Package spdlog NOT found")
     endif ()
@@ -33,10 +39,23 @@ if (CYGWIN)
     set(Boost_USE_MULTITHREADED ON)
     #set(Boost_USE_STATIC_LIBS ON) # only find static libs
     #set(Boost_USE_STATIC_RUNTIME OFF)
-    include_directories(
-      ${PROJECT_SOURCE_DIR}/fmt/include
-      ${PROJECT_SOURCE_DIR}/spdlog/include
-    )
+
+    find_package(fmt REQUIRED)
+    if (fmt_FOUND)
+        message("Package fmt found")
+    endif ()
+    if (NOT fmt_FOUND)
+        message("Package fmt NOT found")
+    endif ()
+
+    find_package(spdlog REQUIRED)
+    if (spdlog_FOUND)
+        message("Package spdlog found")
+    endif ()
+    if (NOT spdlog_FOUND)
+        message("Package spdlog NOT found")
+    endif ()
+
 endif ()
 
 if (WIN32)
@@ -146,7 +165,7 @@ if (CYGWIN)
             ${testExeName}
             core
             fmt
-            spdlog
+            #spdlog::spdlog # otherwise linker throws error of duplicate
             gtest
             gtest_main
             ${Boost_LIBRARIES}

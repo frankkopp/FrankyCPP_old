@@ -17,14 +17,21 @@ if (APPLE)
     #set(Boost_USE_STATIC_RUNTIME OFF)
 
     find_package(fmt REQUIRED)
+    if (fmt_FOUND)
+        message("Package fmt found")
+    endif ()
     if (NOT fmt_FOUND)
-        message("Package fmt NOT found" )
-    endif()
+        message("Package fmt NOT found")
+    endif ()
 
     find_package(spdlog REQUIRED)
+    if (spdlog_FOUND)
+        message("Package spdlog found")
+    endif ()
     if (NOT spdlog_FOUND)
-        message("Package spdlog NOT found" )
-    endif()
+        message("Package spdlog NOT found")
+    endif ()
+
 endif ()
 
 if (CYGWIN)
@@ -33,10 +40,23 @@ if (CYGWIN)
     set(Boost_USE_MULTITHREADED ON)
     #set(Boost_USE_STATIC_LIBS ON)
     #set(Boost_USE_STATIC_RUNTIME OFF)
-    include_directories(
-            ${PROJECT_SOURCE_DIR}/fmt/include
-            ${PROJECT_SOURCE_DIR}/spdlog/include
-    )
+
+    find_package(fmt REQUIRED)
+    if (fmt_FOUND)
+        message("Package fmt found")
+    endif ()
+    if (NOT fmt_FOUND)
+        message("Package fmt NOT found")
+    endif ()
+
+    find_package(spdlog REQUIRED)
+    if (spdlog_FOUND)
+        message("Package spdlog found")
+    endif ()
+    if (NOT spdlog_FOUND)
+        message("Package spdlog NOT found")
+    endif ()
+
 endif ()
 
 if (WIN32)
