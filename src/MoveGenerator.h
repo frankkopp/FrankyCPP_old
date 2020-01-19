@@ -38,9 +38,9 @@ class MoveGenerator {
   
   std::shared_ptr<spdlog::logger> LOG = spdlog::get("MoveGen_Logger");
 
-  MoveList pseudoLegalMoves = MoveList(256);
-  MoveList legalMoves = MoveList(256);
-  MoveList onDemandMoves = MoveList(256);
+  MoveList pseudoLegalMoves = MoveList();
+  MoveList legalMoves = MoveList();
+  MoveList onDemandMoves = MoveList();
 
   enum onDemandStage : int {
     OD_NEW, PV, OD1, OD2, OD3, OD4, OD5, OD6, OD7, OD8, OD_END
@@ -49,7 +49,7 @@ class MoveGenerator {
   Key currentIteratorKey{};
   
   MoveList::size_type maxNumberOfKiller = 2; // default
-  MoveList killerMoves = MoveList(0);
+  MoveList killerMoves = MoveList();
   Move pvMove = MOVE_NONE;
 
 public:

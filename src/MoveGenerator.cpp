@@ -190,7 +190,7 @@ void MoveGenerator::storeKiller(const Move move, const int maxKillers) {
   // only store if not already in list
   if (std::find(killerMoves.begin(), killerMoves.end(), move) == killerMoves.end()) {
     killerMoves.push_front(move);
-    if (killerMoves.size() > maxNumberOfKiller) killerMoves.pop_back();
+    if (killerMoves.size() > maxNumberOfKiller) killerMoves.resize(maxNumberOfKiller);
   }
 }
 

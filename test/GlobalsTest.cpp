@@ -24,6 +24,7 @@
  */
 
 #include <gtest/gtest.h>
+#include <random>
 #include "types.h"
 #include "fmt/locale.h"
 
@@ -252,7 +253,7 @@ TEST(CastlingTest, castling) {
 
 TEST(MoveListTest, moveListPrint) {
 
-  Move move1 = createMove<NORMAL>(SQ_A1, SQ_H1);
+    Move move1 = createMove<NORMAL>(SQ_A1, SQ_H1);
   Move move2 = createMove<PROMOTION>(SQ_A7, SQ_A8, QUEEN);
   Move move3 = createMove<CASTLING>(SQ_E1, SQ_G1);
   MoveList moveList;
@@ -266,3 +267,4 @@ TEST(MoveListTest, moveListPrint) {
   ASSERT_EQ(expected, ml.str());
 
 }
+
