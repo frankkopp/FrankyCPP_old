@@ -60,9 +60,6 @@ endif ()
 
 set (BOOST_ALL_NO_LIB 1)
 
-# set the name of the executable
-set(execname FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR})
-
 # define library files
 set(core_SRCS
         INIT.cpp
@@ -89,13 +86,16 @@ set(core_SRCS
 )
 add_library(core ${core_SRCS})
 
+# set the name of the executable
+set(exeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR})
+
 # define executable
-add_executable(${execname} main.cpp)
+add_executable(${exeName} main.cpp)
 
 # link executable with library
 if (APPLE)
 target_link_libraries(
-        ${execname}
+        ${exeName}
         core
         fmt::fmt
         spdlog::spdlog
@@ -104,7 +104,7 @@ target_link_libraries(
 endif()
 if (CYGWIN)
     target_link_libraries(
-            ${execname}
+            ${exeName}
             core
             fmt
             spdlog
@@ -114,7 +114,7 @@ endif()
 
 if (WIN32)
     target_link_libraries(
-            ${execname}
+            ${exeName}
             core
             fmt
             spdlog

@@ -103,7 +103,10 @@ add_subdirectory(
         "${CMAKE_CURRENT_BINARY_DIR}/googletest-build"
 )
 
-add_executable(FrankyTest
+# set the name of the executable
+set(testExeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR}Test)
+
+add_executable(${testExeName}
         main.cpp
         BOOST_Test.cpp
         SemaphoreTest.cpp
@@ -128,7 +131,7 @@ add_executable(FrankyTest
 
 if (APPLE)
     target_link_libraries(
-        FrankyTest
+        ${testExeName}
         core
         fmt::fmt
         spdlog::spdlog
@@ -140,7 +143,7 @@ endif()
 
 if (CYGWIN)
     target_link_libraries(
-            FrankyTest
+            ${testExeName}
             core
             fmt
             spdlog
@@ -152,7 +155,7 @@ endif()
 
 if (WIN32)
     target_link_libraries(
-            FrankyTest
+            ${testExeName}
             core
             fmt
             spdlog

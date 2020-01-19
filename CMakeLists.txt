@@ -38,6 +38,9 @@ endif ()
 
 if (WIN32)
     message("Platform WIN32")
+    set(CMAKE_CXX_FLAGS "/Wall")
+    set(CMAKE_CXX_FLAGS_DEBUG "/Od")
+    set(CMAKE_CXX_FLAGS_RELEASE "/O2")
     
     include_directories(
         ${PROJECT_SOURCE_DIR}/spdlog/include
