@@ -30,6 +30,7 @@
 #include <algorithm>
 #include "gtest/gtest_prod.h"
 #include "types.h"
+#include "Bitboards.h"
 
 // circle reference between Position and MoveGenerator - this make it possible
 class MoveGenerator;
@@ -355,6 +356,7 @@ public:
    * @return int representing a move
    */
   inline Move getLastMove() const {
+    if (historyCounter <= 0) return MOVE_NONE;
     return historyState[historyCounter - 1].moveHistory;
   };
 

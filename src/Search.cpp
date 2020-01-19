@@ -266,7 +266,7 @@ void Search::run(Position position) {
 /**
  * Generates root moves and calls search in a loop increasing depth
  * with each iteration.
- * <p>
+ * 
  * Detects mate if started on a mate position.
  * @param position
  * @return a SearchResult
@@ -1131,7 +1131,11 @@ Move Search::getMove(Position &position, int ply) {
  * TODO: Improve, add SEE
  */
 bool Search::goodCapture(Position &position, Move move) {
-  assert(position.isCapturingMove(move));
+  ASSERT_START
+    if (!position.isCapturingMove(move)) {
+      LOG__ERROR(LOG, "move send to goodCapture should be capturing {}", printMoveVerbose(move));
+    }
+  ASSERT_END
   return
     // all pawn captures - they never loose material
     // typeOf(position.getPiece(getFromSquare(move))) == PAWN
