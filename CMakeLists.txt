@@ -22,9 +22,9 @@ endif ()
 if (CYGWIN)
     message("Platform CYGWIN")
     set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra")
-    set(CMAKE_CXX_FLAGS_DEBUG "")
+    #set(CMAKE_CXX_FLAGS_DEBUG "")
     # additional: -std=c++17 -m64 -Og -Wall -Wextra -Wno-unknown-pragmas -Wpedantic -Wshadow -Weffc++ -Wimplicit-fallthrough -Wswitch -Wpointer-arith -Wcast-qual -Wconversion -Wno-sign-conversion -Wno-error=padded -Wno-error=inline")
-    set(CMAKE_CXX_FLAGS_RELEASE "")
+    #set(CMAKE_CXX_FLAGS_RELEASE "")
 
     include_directories(
         ${PROJECT_SOURCE_DIR}/spdlog/include
