@@ -77,8 +77,7 @@ namespace Bitboards {
    * Initializes various pre-computed bitboards
    */
   void init() {
-    LOG__TRACE(spdlog::get("Main_Logger"), "{} {}() line {}", __FILE__, __func__, __LINE__);
-
+    
     // pre-computes 16-bit population counter to use in popcount(64-bit)
     for (unsigned i = 0; i < (1U << 16U); ++i)
       PopCnt16[i] = static_cast<uint8_t>( popcount16(i));

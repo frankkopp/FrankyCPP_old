@@ -37,8 +37,9 @@
 #if defined(__GNUC__) // GCC, Clang, ICC
 
 #elif defined(_MSC_VER) // Windows MSC
-#include <Windows.h>
-#define sleep Sleep 
+#include <thread>
+#include <chrono>
+#define sleep(x) std::this_thread::sleep_for(std::chrono::seconds(x)); 
 
 #else // Compiler is not GCC
 #error "Compiler not yet supported."

@@ -26,7 +26,7 @@
 #include <iostream>
 #include <regex>
 #include "types.h"
-#include "misc.h" 
+#include "misc.h"
 #include "Search.h"
 #include "Engine.h"
 #include "Logging.h"
@@ -108,7 +108,7 @@ TEST_F(TestSuiteTests, readLine) {
 
 TEST_F(TestSuiteTests, readFile) {
 
-  std::string filePath = "../../testsets/franky_tests.epd";
+  std::string filePath = "../../../../testsets/franky_tests.epd";
   MilliSec moveTime = 5'000;
   Depth depth = static_cast<Depth>(10);
 
@@ -116,6 +116,8 @@ TEST_F(TestSuiteTests, readFile) {
   std::vector<TestSuite::Test> ts;
 
   testSuite.readTestCases(filePath, ts);
+
+  ASSERT_EQ(12, ts.size());
 }
 
 
@@ -157,15 +159,15 @@ TEST_F(TestSuiteTests, singleTest) {
 
 // 100 %
 TEST_F(TestSuiteTests, FrankyTestSuite) {
-  std::string filePath = "../../testsets/franky_tests.epd";
+  std::string filePath = "../../../../testsets/franky_tests.epd";
   MilliSec moveTime = 1'000;
   Depth depth = static_cast<Depth>(0);
   TestSuite testSuite(filePath, moveTime, depth);
   testSuite.runTestSuite();
 }
 
-TEST_F(TestSuiteTests, ecm98) {
-  std::string filePath = "../../testsets/ecm98.epd";
+TEST_F(TestSuiteTests, DISABLED_ecm98) {
+  std::string filePath = "../../../../testsets/ecm98.epd";
   MilliSec moveTime = 1'000;
   Depth depth = static_cast<Depth>(0);
   TestSuite testSuite(filePath, moveTime, depth);

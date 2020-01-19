@@ -30,6 +30,9 @@
 namespace LOGGING {
 
   void init() {
+
+    if (LOGGING_INITIALIZED) return;
+
     try {
       std::locale::global(deLocale);
     }
@@ -37,7 +40,7 @@ namespace LOGGING {
       std::cerr << "failed to set locale" << std::endl;
     }
 
-    std::string defaultPattern = fmt::format("[%H:%M:%S:%f] [t:%t] [%-14n] [%-8l]: %v");
+    std::string defaultPattern = fmt::format("[%H:%M:%S:%f] [t:%-10t] [%-17n] [%-8l]: %v");
     spdlog::set_pattern(defaultPattern);
 
     spdlog::set_level(spdlog::level::trace);
@@ -111,5 +114,6 @@ namespace LOGGING {
     LOG__INFO(MAIN_LOG, "Logging initialized.");
     LOG__INFO(MAIN_LOG, "Locale is set to: {}", std::locale().name());
 
+    LOGGING_INITIALIZED = true;
   }
 }

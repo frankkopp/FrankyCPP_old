@@ -62,7 +62,7 @@ TEST_F(MoveGenTest, pawnMoves) {
   Position position(fen);
   MoveList moves;
 
-  cout << position.printBoard() << endl;
+  //cout << position.printBoard() << endl;
 
   mg.generatePawnMoves<MoveGenerator::GENCAP>(position, &moves);
 
@@ -78,10 +78,10 @@ TEST_F(MoveGenTest, pawnMoves) {
   for (Move m : moves) actual.append(printMove(m));
   ASSERT_EQ(expected, actual);
 
-  cout << "Moves CAP: " << moves.size() << endl;
-  for (Move m : moves) {
-    cout << printMoveVerbose(m) << " (" << int(m) << ")" << endl;
-  }
+  //cout << "Moves CAP: " << moves.size() << endl;
+  //for (Move m : moves) {
+  //  cout << printMoveVerbose(m) << " (" << int(m) << ")" << endl;
+  //}
 
   NEWLINE;
 
@@ -94,7 +94,7 @@ TEST_F(MoveGenTest, pawnMoves) {
   for (Move m : moves) actual.append(printMove(m));
   ASSERT_EQ(expected, actual);
 
-  sort(moves.begin(), moves.end());
+  stable_sort(moves.begin(), moves.end());
   expected = "a2a1Qc2c1Qa2a1Nc2c1Nf4f3h7h6b7b5h7h5b7b6a2a1Bc2c1Ba2a1Rc2c1R";
   actual = "";
   for (Move m : moves) actual.append(printMove(m));
@@ -509,7 +509,7 @@ TEST_F(MoveGenTest, swap) {
 
 }
 
-TEST_F(MoveGenTest, PERFT_mps) {
+TEST_F(MoveGenTest, DISABLED_PERFT_mps) {
   string fen;
   MoveGenerator mg;
   Position position;

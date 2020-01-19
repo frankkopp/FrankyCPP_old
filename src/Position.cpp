@@ -62,7 +62,7 @@ void Position::init() {
 
 /** Default constructor creates a board with standard start setup */
 Position::Position() : Position(START_POSITION_FEN) {
-  LOG__TRACE(spdlog::get("Main_Logger"), "{}:{} CTOR", __FILE_NAME__, __func__, __LINE__);
+  LOG__TRACE(spdlog::get("Main_Logger"), "{}:{} CTOR", __FILENAME__, __func__, __LINE__);
 }
 
 /** Creates a board with setup from the given fen */

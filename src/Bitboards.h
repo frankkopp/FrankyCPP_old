@@ -316,10 +316,8 @@ namespace Bitboards {
     return static_cast<Square>(__builtin_ctzll(b));
 
 #elif defined(_MSC_VER)
-    std::cout << "LSB: " << std::endl << Bitboards::print(b) << std::endl;
-    std::cout << "LSB: " << std::endl << Bitboards::printFlat(b) << std::endl;
     unsigned long index;
-    if (_BitScanReverse64(&index, b)) {
+    if (_BitScanForward64(&index, b)) {
       return static_cast<Square>(index);
     }
     else {
@@ -328,10 +326,6 @@ namespace Bitboards {
         
 #else // Compiler is not GCC
 #error "Compiler not yet supported."
-    // GTEST - nice examples
-    // Windows:  _MSC_VER
-    // _BitScanForward64/_BitScanReverse64
-    // https://docs.microsoft.com/en-us/cpp/intrinsics/bitscanreverse-bitscanreverse64?view=vs-2019
 #endif
   }
 
@@ -344,12 +338,10 @@ namespace Bitboards {
     return static_cast<Square>(63 ^ __builtin_clzll(b));
 
 #elif defined(_MSC_VER)
-    std::cout << "MSB: " << std::endl << Bitboards::print(b) << std::endl;
-    std::cout << "MSB: " << std::endl << Bitboards::printFlat(b) << std::endl;
     unsigned long index;
-    if (_BitScanForward64(&index, b)) {
+    if (_BitScanReverse64(&index, b)) {
       return static_cast<Square>(index);
-    }
+  }
     else {
       return SQ_NONE;
     }

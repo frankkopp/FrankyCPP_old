@@ -47,7 +47,7 @@
 #define DEBUG__LVL 5
 #define TRACE__LVL 6
 
-#define LOG__LEVEL TRACE__LVL
+#define LOG__LEVEL DEBUG__LVL
 
 #if LOG__LEVEL > 0
 #define LOG__CRITICAL(logger, ...) logger->critical(__VA_ARGS__)
@@ -86,6 +86,7 @@
 #endif
 
 namespace LOGGING {
+  static bool LOGGING_INITIALIZED = false;
   extern void init();
 }
 
