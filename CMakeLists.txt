@@ -3,13 +3,14 @@ cmake_minimum_required(VERSION 3.13)
 # Project name and version
 project(FrankyCPP VERSION 0.4)
 
-# platform
+# Platform
 message("Recognized CMAKE Version is " ${CMAKE_VERSION} " " ${CMAKE_COMMAND})
 message("Recognized platform is " ${CMAKE_SYSTEM_NAME} " " ${CMAKE_SYSTEM_VERSION})
 
-# platform settings
+# C++ settings
 set(CMAKE_CXX_STANDARD 17)
 
+# Compiler Settings
 message("Compiler is " ${CMAKE_CXX_COMPILER_ID} " " ${CMAKE_CXX_COMPILER_VERSION} " " ${CMAKE_CXX_COMPILER})
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang") # Apple
     message("Compiler Settings: CLANG")
@@ -36,7 +37,6 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC") # Visual Studio MSVC
     add_subdirectory(fmt)
     add_subdirectory(spdlog)
 endif ()
-
 message("Compiler DEBUG flags: " ${CMAKE_CXX_FLAGS} " " ${CMAKE_CXX_FLAGS_DEBUG})
 message("Compiler RELEASE flags: " ${CMAKE_CXX_FLAGS} " " ${CMAKE_CXX_FLAGS_RELEASE})
 message("EXEC: " ${CMAKE_CXX_LINK_EXECUTABLE})
