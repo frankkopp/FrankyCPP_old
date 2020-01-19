@@ -126,8 +126,8 @@ if (CYGWIN)
     target_link_libraries(
             ${exeName}
             core
-            fmt
-            spdlog
+            fmt::fmt
+            spdlog::spdlog
             ${Boost_LIBRARIES}
     )
 endif()

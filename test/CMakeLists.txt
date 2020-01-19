@@ -164,7 +164,7 @@ if (CYGWIN)
     target_link_libraries(
             ${testExeName}
             core
-            fmt
+            fmt::fmt
             #spdlog::spdlog # otherwise linker throws error of duplicate
             gtest
             gtest_main
