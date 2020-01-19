@@ -29,6 +29,8 @@
 
 namespace LOGGING {
 
+  static bool LOGGING_INITIALIZED = false;
+
   void init() {
     try {
       std::locale::global(deLocale);
