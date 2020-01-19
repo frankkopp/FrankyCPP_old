@@ -105,25 +105,25 @@ add_subdirectory(
 
 add_executable(FrankyTest
         main.cpp
-        #BOOST_Test.cpp
-        #SemaphoreTest.cpp
-        #GlobalsTest.cpp
-        #MiscTest.cpp
-        #ValuesTest.cpp
-        #BitboardTest.cpp
-        #MoveGeneratorTest.cpp
-        #EngineTest.cpp
-        #LoggingTest.cpp
-        #TT_Test.cpp
-        #PositionTest.cpp
-        #EvaluatorTest.cpp
-        #UCITests.cpp
-        #PerftTest.cpp
-        #TimingTests.cpp
+        BOOST_Test.cpp
+        SemaphoreTest.cpp
+        GlobalsTest.cpp
+        MiscTest.cpp
+        ValuesTest.cpp
+        BitboardTest.cpp
+        MoveGeneratorTest.cpp
+        EngineTest.cpp
+        LoggingTest.cpp
+        TT_Test.cpp
+        PositionTest.cpp
+        EvaluatorTest.cpp
+        UCITests.cpp
+        PerftTest.cpp
+        TimingTests.cpp
         SearchTest.cpp
-        #earchTreeSizeTest.cpp
-        #TestSuiteTests.cpp
-        #SelfPlayUCITest.cpp
+        SearchTreeSizeTest.cpp
+        TestSuiteTests.cpp
+        SelfPlayUCITest.cpp
 )
 
 if (APPLE)
