@@ -1271,7 +1271,7 @@ inline MilliSec Search::elapsedTime(const MilliSec t1, const MilliSec t2) {
 }
 
 inline MilliSec Search::now() {
-#if definded __APPLE__
+#if defined (__APPLE__)
   // this C function is much faster than c++ chrono
   return clock_gettime_nsec_np(CLOCK_UPTIME_RAW_APPROX) / 1'000'000;
 #else

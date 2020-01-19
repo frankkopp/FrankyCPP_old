@@ -27,7 +27,10 @@
 #define FRANKYCPP_BITBOARDS_H
 
 #include "types.h"
+
+#if defined(_MSC_VER)
 #include <intrin.h>
+#endif
 
 /** Functions and pre-defined or pre-calculated Bitboards */
 namespace Bitboards {
