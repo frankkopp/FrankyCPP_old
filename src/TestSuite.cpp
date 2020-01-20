@@ -216,10 +216,20 @@ void TestSuite::readTestCases(const std::string &filePathStr, std::vector<Test> 
   if (file.is_open()) {
     std::string line;
     while (getline(file, line)) {
-      // remove comments and empty line
-      if (line.empty() || line.substr(0, 1) == "#") {
+
+      // skip empty lines and comments
+      fprintln("{}", line);
+      std::regex whiteSpaceTrim(R"(^\s*(.*)\s*$)");
+      line = std::regex_replace(line, whiteSpaceTrim, "$1" );
+      fprintln("{}", line);
+      std::regex commentTrim(R"(^(.*)#([^;]*)$)");
+      line = std::regex_replace(line, commentTrim, "$1;" );
+      fprintln("{}", line);
+
+      if (line.empty()) {
         continue;
       }
+
       Test test;
       if (readOneEPD(line, test)) {
         tests.push_back(test);
@@ -241,10 +251,9 @@ bool TestSuite::readOneEPD(const std::string &line, TestSuite::Test &test) const
 
   LOG__DEBUG(LOG, "EPD: {}", line);
 
-  std::regex regexPattern("^ *(.*) (bm|dm) (.*?);.* id \"(.*?)\";.*$");
+  // Find a EPD line
+  std::regex regexPattern(R"(^\s*(.*) (bm|dm) (.*?);.* id \"(.*?)\";.*$)");
   std::smatch matcher;
-
-  // Match the target string
   if (!std::regex_match(line, matcher, regexPattern)) {
     LOG__WARN(LOG, "No EPD match found in {}", line);
     return false;

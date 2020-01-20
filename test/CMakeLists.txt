@@ -5,7 +5,7 @@ message("====================================================================")
 cmake_minimum_required(VERSION 3.13)
 set(CMAKE_CXX_STANDARD 17)
 
-set(CMAKE_TOOLCHAIN_FILE="C:/Users/Frank/Dropbox/Private/Projekte/_GITHUB/VCPKG/scripts/buildsystems/vcpkg.cmake")
+#set(CMAKE_TOOLCHAIN_FILE="C:/Users/Frank/Dropbox/Private/Projekte/_GITHUB/VCPKG/scripts/buildsystems/vcpkg.cmake")
 
 # Platform specific
 if (APPLE)
@@ -107,13 +107,13 @@ add_executable(${testExeName}
 
 if (APPLE)
     target_link_libraries(
-        ${testExeName}
-        core
-        fmt::fmt
-        spdlog::spdlog
-        gtest
-        gtest_main
-        ${Boost_LIBRARIES}
+            ${testExeName}
+            core
+            fmt::fmt
+            spdlog::spdlog
+            gtest
+            gtest_main
+            ${Boost_LIBRARIES}
 )
 endif()
 

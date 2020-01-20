@@ -27,10 +27,12 @@ v 0.5 (plan)
 v 0.4 (in progress)
 ================================================================================
 - TODO:
+    - FASTER LINK TIMES
     - See logfile for errors
     - Debug Search - blunders
     - Debug and harden play with UCI GUI - XBoard, Arena, etc.
     - optimize removePiece and putPiece
+    - issue reading EPD file on Cygwin - debugging nexessary
 
 - DONE:
     - Compile under Cygwin on PC
