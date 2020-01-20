@@ -23,7 +23,13 @@
  *
  */
 
+#ifndef FRANKYCPP_VERSION_H
+#define FRANKYCPP_VERSION_H
+
 #define FrankyCPP_VERSION_MAJOR @FrankyCPP_VERSION_MAJOR@
 #define FrankyCPP_VERSION_MINOR @FrankyCPP_VERSION_MINOR@
 
+#define FrankyCPP_PROJECT_ROOT "@PROJECT_SOURCE_DIR@"
+
+#endif
 

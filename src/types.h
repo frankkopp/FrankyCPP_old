@@ -33,6 +33,7 @@
 #include <deque>
 #include <bitset>
 #include "fmt/locale.h"
+#include "version.h"
 
 // define platform specific things
 #if defined(__GNUC__) // GCC, Clang, ICC

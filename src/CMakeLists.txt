@@ -4,10 +4,6 @@ message("====================================================================")
 
 cmake_minimum_required(VERSION 3.13)
 
-# updates template file and replaces placeholder variables
-configure_file(version.h.in version.h)
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
 # Platform specific
 if (APPLE)
     set(BOOST_ROOT "/usr/local/boost_1_72_0")

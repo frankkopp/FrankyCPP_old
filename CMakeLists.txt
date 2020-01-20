@@ -3,6 +3,10 @@ cmake_minimum_required(VERSION 3.13)
 # Project name and version
 project(FrankyCPP VERSION 0.4)
 
+# updates template file and replaces placeholder variables
+configure_file(src/version.h.in version.h)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
 # Platform
 message("Recognized CMAKE Version is " ${CMAKE_VERSION} " " ${CMAKE_COMMAND})
 message("Recognized platform is " ${CMAKE_SYSTEM_NAME} " " ${CMAKE_SYSTEM_VERSION})
@@ -44,11 +48,13 @@ message("EXEC: " ${CMAKE_CXX_LINK_EXECUTABLE})
 include_directories(
         ${PROJECT_SOURCE_DIR}/src
         ${PROJECT_SOURCE_DIR}/test
-        ${CMAKE_CURRENT_BINARY_DIR}/test/googletest-src/googletest/include
+        ${PROJECT_SOURCE_DIR}/googletest/googletest/include
 )
 
 # project sub directories - need to have their own CMakeList.txt
 add_subdirectory(src)
 add_subdirectory(test)
+add_subdirectory(googletest)
+
 
 

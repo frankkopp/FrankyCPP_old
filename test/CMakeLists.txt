@@ -79,51 +79,8 @@ endif ()
 
 set (BOOST_ALL_NO_LIB 1)
 
-# Download and unpack googletest at configure time
-message("Finding GIT...")
-set(GIT_EXECUTABLE)
-find_package(Git)
-if (GIT_FOUND)
-    message("git found: ${GIT_EXECUTABLE}")
-endif ()
-
-message("Configure GoogleTest download...")
-configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
-message("GoogleTest download...")
-execute_process(
-        COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
-        RESULT_VARIABLE result
-        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/googletest-download"
-)
-if (result)
-    message(FATAL_ERROR "CMake step for googletest failed: ${result}")
-endif ()
-
-message("GoogleTest build...")
-execute_process(
-        COMMAND "${CMAKE_COMMAND}" --build .
-        RESULT_VARIABLE result
-        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/googletest-download"
-)
-if (result)
-    message(FATAL_ERROR "Build step for googletest failed: ${result}")
-endif ()
-
-# Prevent GoogleTest from overriding our compiler/linker options
-# when building with Visual Studio
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-
-enable_testing()
-
-# Add googletest directly to our build. This adds the following targets:
-# gtest, gtest_main, gmock and gmock_main
-add_subdirectory(
-        "${CMAKE_CURRENT_BINARY_DIR}/googletest-src"
-        "${CMAKE_CURRENT_BINARY_DIR}/googletest-build"
-)
-
 # set the name of the executable
-set(testExeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR}Test)
+set(testExeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR}_Test)
 
 add_executable(${testExeName}
         main.cpp
