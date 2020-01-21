@@ -32,9 +32,10 @@ namespace INIT {
   static bool INITIALIZED = false;
   void init() {
     if (INITIALIZED) return;
+    Logger::get();
     Values::init();
     Bitboards::init();
-//    Position::init();
+    Position::init();
     INITIALIZED = true;
     Logger::get().MAIN_LOG->info("Data initialization done");
   }

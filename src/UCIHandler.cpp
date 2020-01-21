@@ -27,9 +27,10 @@
 #include <vector>
 #include "version.h"
 #include "types.h"
-#include "Engine.h"
+#include "Logging.h"
 #include "UCIHandler.h"
 #include "UCISearchMode.h"
+#include "Engine.h"
 
 UCI_Handler::UCI_Handler(Engine* ptr) {
   this->pEngine = ptr;
@@ -49,7 +50,6 @@ void UCI_Handler::loop() {
 void UCI_Handler::loop(std::istream* pIstream) {
   std::string cmd, token;
   do {
-    Logger::get()->MAIN_LOG->info("Initialization done.");
     LOG__INFO(LOG, "UCI Handler waiting for command:");
 
     // Block here waiting for input or EOF

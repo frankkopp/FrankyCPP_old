@@ -29,7 +29,9 @@
 
 using namespace Bitboards;
 
-Evaluator::Evaluator() { resizePawnTable(config.PAWN_TABLE_SIZE); }
+Evaluator::Evaluator() {
+  resizePawnTable(config.PAWN_TABLE_SIZE);
+}
 
 Evaluator::Evaluator(std::size_t pawnEvalCacheSize) {
   resizePawnTable(pawnEvalCacheSize);

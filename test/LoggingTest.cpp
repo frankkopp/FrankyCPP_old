@@ -33,7 +33,6 @@ class LoggingTest : public ::testing::Test {
 public:
   static void SetUpTestSuite() {
     NEWLINE;
-    LOGGING::init();
     INIT::init();
     NEWLINE;
   }

@@ -37,7 +37,6 @@ public:
 
   static void SetUpTestSuite() {
     NEWLINE;
-    LOGGING::init();
     INIT::init();
     NEWLINE;
 

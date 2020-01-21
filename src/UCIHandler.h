@@ -28,15 +28,11 @@
 
 #include <thread>
 #include <iostream>
-#include "Logging.h"
-#include "UCISearchMode.h"
+#include "types.h"
 
 class Engine;
 
   class UCI_Handler {
-
-//    std::shared_ptr<spdlog::logger> LOG = spdlog::get("UCIHandler_Logger");
-//    std::shared_ptr<spdlog::logger> UCI_LOG = spdlog::get("UCI_Logger");
 
     Engine *pEngine;
 

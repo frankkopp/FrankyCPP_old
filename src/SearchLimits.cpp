@@ -23,6 +23,7 @@
  *
  */
 
+#include "Logging.h"
 #include "SearchLimits.h"
 
 SearchLimits::SearchLimits() = default;

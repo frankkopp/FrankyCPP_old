@@ -26,7 +26,6 @@
 #ifndef FRANKYCPP_ENGINE_H
 #define FRANKYCPP_ENGINE_H
 
-
 #include <map>
 #include "Logging.h"
 #include "UCIOption.h"

@@ -28,7 +28,6 @@
 
 #include <sstream>
 
-
 static const char* optionTypeStrings[] = {"check", "spin", "combo", "button", "std::string"};
 
 /**

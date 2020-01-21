@@ -89,20 +89,20 @@ set(core_SRCS
         INIT.cpp
         Values.h Values.cpp
         Bitboards.h Bitboards.cpp
-        #Position.h Position.cpp
-        #MoveGenerator.h MoveGenerator.cpp
-        #SearchLimits.h SearchLimits.cpp
-        #SearchStats.h SearchStats.cpp
-        #UCIOption.h UCIOption.cpp
-        #TT.h TT.cpp
-        #EvaluatorConfig.h Evaluator.h Evaluator.cpp
-        #misc.h misc.cpp
-        #Perft.h Perft.cpp
-        #UCISearchMode.h UCISearchMode.cpp
-        #UCIHandler.h UCIHandler.cpp
-        #EngineConfig.h Engine.h Engine.cpp
-        #SearchConfig.h Search.h Search.cpp
-        #TestSuite.h TestSuite.cpp
+        Position.h Position.cpp
+        MoveGenerator.h MoveGenerator.cpp
+        SearchLimits.h SearchLimits.cpp
+        SearchStats.h SearchStats.cpp
+        UCIOption.h UCIOption.cpp
+        TT.h TT.cpp
+        EvaluatorConfig.h Evaluator.h Evaluator.cpp
+        misc.h misc.cpp
+        Perft.h Perft.cpp
+        UCISearchMode.h UCISearchMode.cpp
+        UCIHandler.h UCIHandler.cpp
+        EngineConfig.h Engine.h Engine.cpp
+        SearchConfig.h Search.h Search.cpp
+        TestSuite.h TestSuite.cpp
         )
 add_library(core ${core_SRCS})
 

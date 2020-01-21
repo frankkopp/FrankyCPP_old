@@ -5,8 +5,6 @@ message("====================================================================")
 cmake_minimum_required(VERSION 3.13)
 set(CMAKE_CXX_STANDARD 17)
 
-#set(CMAKE_TOOLCHAIN_FILE="C:/Users/Frank/Dropbox/Private/Projekte/_GITHUB/VCPKG/scripts/buildsystems/vcpkg.cmake")
-
 # Platform specific
 if (APPLE)
     set(BOOST_ROOT "/usr/local/boost_1_72_0")
@@ -87,17 +85,16 @@ set(testExeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR}
 
 add_executable(${testExeName}
         main.cpp
-        BOOST_Test.cpp
-        SemaphoreTest.cpp
+        LoggingTest.cpp
         GlobalsTest.cpp
+        SemaphoreTest.cpp
+        ValuesTest.cpp
+        BitboardTest.cpp
+        #PositionTest.cpp
         #MiscTest.cpp
-        #ValuesTest.cpp
-        #BitboardTest.cpp
         #MoveGeneratorTest.cpp
         #EngineTest.cpp
-        #LoggingTest.cpp
         #TT_Test.cpp
-        #PositionTest.cpp
         #EvaluatorTest.cpp
         #UCITests.cpp
         #PerftTest.cpp
@@ -106,6 +103,7 @@ add_executable(${testExeName}
         #SearchTreeSizeTest.cpp
         #TestSuiteTests.cpp
         #SelfPlayUCITest.cpp
+        BOOST_Test.cpp
 )
 
 if (APPLE)
@@ -125,7 +123,7 @@ if (CYGWIN)
             ${testExeName}
             core
             fmt::fmt
-            spdlog::spdlog # otherwise linker throws error of duplicate
+            #spdlog::spdlog # otherwise linker throws error of duplicate
             gtest
             gtest_main
             ${Boost_LIBRARIES}

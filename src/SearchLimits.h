@@ -28,7 +28,6 @@
 
 #include <chrono>
 #include <ostream>
-#include "Logging.h"
 #include "types.h"
 
 class SearchLimits {

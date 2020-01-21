@@ -28,8 +28,8 @@
 
 #include <array>
 #include <algorithm>
-//#include "gtest/gtest_prod.h"
 #include "types.h"
+//#include "gtest/gtest_prod.h"
 
 // circle reference between Position and MoveGenerator - this make it possible
 class MoveGenerator;
@@ -272,7 +272,7 @@ public:
    *
    * @return true if current position is mate for next player
    */
-  bool hasCheckMate() const;
+//  bool hasCheckMate() const;
 
   /**
    * Checks if move is giving check to the opponent.

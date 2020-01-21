@@ -31,19 +31,19 @@
 #include <ostream>
 #include <thread>
 #include <atomic>
-
-//#include "gtest/gtest_prod.h"
 #include "types.h"
 #include "Logging.h"
 #include "Semaphore.h"
 #include "SearchStats.h"
 #include "SearchLimits.h"
 #include "MoveGenerator.h"
+//#include "gtest/gtest_prod.h"
 
 // forward declared dependencies
 class Engine;
 class TT;
 class Evaluator;
+class MoveGenerator;
 
 struct SearchResult {
   Move bestMove = MOVE_NONE;

@@ -113,6 +113,9 @@ void Engine::setPosition(const std::string &fen) {
 
 void Engine::doMove(const std::string &moveStr) {
   LOG__INFO(LOG, "Engine: Do move {}", moveStr);
+  // this is used to check if the given move is valid
+  // on this position and then uses the generated move to
+  // commit the move the internal Engine position
   MoveGenerator moveGenerator;
   const MoveList* movesPtr = moveGenerator.generateLegalMoves<MoveGenerator::GENALL>(*pPosition);
   for (Move m : *movesPtr) {

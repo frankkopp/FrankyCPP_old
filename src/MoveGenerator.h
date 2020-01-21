@@ -31,7 +31,7 @@
 #include "Logging.h"
 #include "types.h"
 
-// circle reference between Position and MoveGenerator - this make it possible
+// forward declaration
 class Position;
 
 class MoveGenerator {

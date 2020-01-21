@@ -30,12 +30,10 @@
 #include <vector>
 #include "Logging.h"
 #include "types.h"
-#include "Position.h"
-#include "misc.h"
-#include "SearchLimits.h"
 
 // forward declaration
 class Search;
+class SearchLimits;
 
 class TestSuite {
 

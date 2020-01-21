@@ -26,7 +26,9 @@
 #include <fstream>
 #include <regex>
 #include "TestSuite.h"
+#include "Position.h"
 #include "Search.h"
+#include "misc.h"
 
 #include <boost/timer/timer.hpp>
 using namespace boost::timer;
