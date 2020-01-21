@@ -32,9 +32,9 @@ elseif (CMAKE_COMPILER_IS_GNUCXX) # CYGWIN
 
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC") # Visual Studio MSVC
     message("Compiler Settings: MSVC")
-    set(CMAKE_CXX_FLAGS "/W4")
-    set(CMAKE_CXX_FLAGS_DEBUG "/Od")
-    set(CMAKE_CXX_FLAGS_RELEASE "/O2")
+    #set(CMAKE_CXX_FLAGS "/W4")
+    #set(CMAKE_CXX_FLAGS_DEBUG "/Od")
+    #set(CMAKE_CXX_FLAGS_RELEASE "/O2")
     # fmt and spdlog compiled within project - not using installed libs
     include_directories(
             ${PROJECT_SOURCE_DIR}/spdlog/include

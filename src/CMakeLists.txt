@@ -122,6 +122,7 @@ if (APPLE)
             ${Boost_LIBRARIES}
     )
 endif ()
+
 if (CYGWIN)
     target_link_libraries(
             ${exeName}
