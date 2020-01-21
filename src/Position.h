@@ -28,9 +28,8 @@
 
 #include <array>
 #include <algorithm>
-#include "gtest/gtest_prod.h"
+//#include "gtest/gtest_prod.h"
 #include "types.h"
-#include "Bitboards.h"
 
 // circle reference between Position and MoveGenerator - this make it possible
 class MoveGenerator;
@@ -445,7 +444,7 @@ private:
   ////////////////////////////////////////////////
   ///// FUNC
 
-  FRIEND_TEST(PositionTest, PosValue);
+  //FRIEND_TEST(PositionTest, PosValue);
 
   void initializeBoard();
   void setupBoard(const char *fen);

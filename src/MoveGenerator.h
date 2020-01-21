@@ -27,7 +27,7 @@
 #define FRANKYCPP_MOVEGENERATOR_H
 
 #include <vector>
-#include "gtest/gtest_prod.h"
+//#include "gtest/gtest_prod.h"
 #include "Logging.h"
 #include "types.h"
 
@@ -36,7 +36,7 @@ class Position;
 
 class MoveGenerator {
   
-  std::shared_ptr<spdlog::logger> LOG = spdlog::get("MoveGen_Logger");
+//  std::shared_ptr<spdlog::logger> LOG = spdlog::get("MoveGen_Logger");
 
   MoveList pseudoLegalMoves = MoveList();
   MoveList legalMoves = MoveList();
@@ -154,11 +154,11 @@ public:
 
 private:
 
-  FRIEND_TEST(MoveGenTest, pawnMoves);
-  FRIEND_TEST(MoveGenTest, kingMoves);
-  FRIEND_TEST(MoveGenTest, normalMoves);
-  FRIEND_TEST(MoveGenTest, castlingMoves);
-  FRIEND_TEST(MoveGenTest, storeKiller);
+//  FRIEND_TEST(MoveGenTest, pawnMoves);
+//  FRIEND_TEST(MoveGenTest, kingMoves);
+//  FRIEND_TEST(MoveGenTest, normalMoves);
+//  FRIEND_TEST(MoveGenTest, castlingMoves);
+//  FRIEND_TEST(MoveGenTest, storeKiller);
   
 
   /**

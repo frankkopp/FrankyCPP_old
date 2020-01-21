@@ -33,27 +33,22 @@
 
 class Engine;
 
-namespace UCI {
+  class UCI_Handler {
 
-  class Handler {
-
-    std::shared_ptr<spdlog::logger> LOG = spdlog::get("UCIHandler_Logger");
-    std::shared_ptr<spdlog::logger> UCI_LOG = spdlog::get("UCI_Logger");
+//    std::shared_ptr<spdlog::logger> LOG = spdlog::get("UCIHandler_Logger");
+//    std::shared_ptr<spdlog::logger> UCI_LOG = spdlog::get("UCI_Logger");
 
     Engine *pEngine;
 
     std::istream *pInputStream = &std::cin;
     std::ostream *pOutputStream = &std::cout;
 
-    // stores the last search mode we read in from UCI protocol
-    UCISearchMode searchMode;
-
   public:
 
     /** Constructor */
-    explicit Handler(Engine *ptr);
+    explicit UCI_Handler(Engine *ptr);
     /** Constructor */
-    Handler(Engine *pEng, std::istream *pIstream, std::ostream *pOstream);
+    UCI_Handler(Engine *pEng, std::istream *pIstream, std::ostream *pOstream);
 
     /** Starts the handler loop with the istream provided when creating the
      * instance */
@@ -76,8 +71,6 @@ namespace UCI {
 
     ///////////////////
     //// GETTER
-    const UCISearchMode &getSearchMode() const { return searchMode; };
-
     void sendIterationEndInfo(int depth, int seldepth, Value value, uint64_t nodes,
                               uint64_t nps, MilliSec time, const MoveList &pv) const;
     void sendCurrentRootMove(Move currmove, unsigned long movenumber) const;
@@ -86,6 +79,5 @@ namespace UCI {
     void sendCurrentLine(const MoveList &moveList) const;
     void sendResult(Move bestMove, Move ponderMove) const;
   };
-}
 
 #endif //FRANKYCPP_UCIPROTOCOLHANDLER_H

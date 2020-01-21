@@ -26,39 +26,37 @@
 #ifndef FRANKYCPP_ENGINE_H
 #define FRANKYCPP_ENGINE_H
 
-#include <map>
 
+#include <map>
 #include "Logging.h"
 #include "UCIOption.h"
-#include "Position.h"
-#include "Search.h"
 #include "EngineConfig.h"
-#include "UCIHandler.h"
+#include "UCISearchMode.h"
 
-#define MAP(name, option) optionMap.insert(std::make_pair(name, option))
-
-namespace UCI { class Handler; }
+// forward declarations
+class UCI_Handler;
+class Position;
+class Search;
+class SearchLimits;
 
 class Engine {
 
-  std::shared_ptr<spdlog::logger> LOG = spdlog::get("Engine_Logger");
+  //  std::shared_ptr<spdlog::logger> LOG = spdlog::get("Engine_Logger");
 
   // a map for the engine's available options
-  std::map<const std::string, UCI::Option> optionMap;
+  std::map<const std::string, UCI_Option> optionMap;
 
   // callback reference for sending responses to the uci ui
-  UCI::Handler *pUciHandler{nullptr};
+  std::shared_ptr<UCI_Handler> pUciHandler{nullptr};
 
   // engine's search instance
-  Search search = Search(this);
-
-private:
-
-  // engine's current position
-  Position position;
+  std::shared_ptr<Search> pSearch{nullptr};
 
   // engine's search limits
-  SearchLimits searchLimits;
+  std::shared_ptr<SearchLimits> pSearchLimits{nullptr};
+
+  // engine's current position
+  std::shared_ptr<Position> pPosition{nullptr};
 
   // last result
   struct Result {
@@ -79,7 +77,9 @@ public:
   ///// PUBLIC
 
   // callback reference for sending responses to the uci ui
-  void registerUCIHandler(UCI::Handler* const handler) { pUciHandler = handler; };
+  void registerUCIHandler(std::shared_ptr<UCI_Handler> handler) {
+    pUciHandler = handler;
+  };
 
   // output
   std::string str() const;
@@ -91,20 +91,21 @@ public:
   std::string getOption(const std::string &name);
   void newGame();
   void setPosition(const std::string &fen);
-  Position *getPosition() { return &position; };
   void doMove(const std::string &moveStr);
   void startSearch(const UCISearchMode &uciSearchMode);
   void stopSearch();
-  bool isSearching() const { return search.isRunning(); }
+  bool isSearching();
   void ponderHit();
 
   // send to UCI
   void
-  sendIterationEndInfo(int depth, int seldepth, Value value, uint64_t nodes, uint64_t nps, MilliSec time,
-                       const MoveList& pv) const;
+  sendIterationEndInfo(int depth, int seldepth, Value value, uint64_t nodes, uint64_t nps,
+                       MilliSec time,
+                       const MoveList &pv) const;
   void sendCurrentRootMove(Move currmove, MoveList::size_type movenumber) const;
   void
-  sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t nps, MilliSec time, int hashfull) const;
+  sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t nps, MilliSec time,
+                   int hashfull) const;
   void sendCurrentLine(const MoveList &moveList) const;
   void sendResult(Move bestMove, Value value, Move ponderMove);
 
@@ -112,10 +113,10 @@ public:
   void waitWhileSearching();
 
   // getter
-  const SearchLimits &getSearchLimits() const { return searchLimits; };
+  const SearchLimits* getSearchLimits();
   int getHashSize() { return EngineConfig::hash; };
   const Result &getLastResult() const { return lastResult; }
-  const Search* getSearch() const { return &search; }
+  std::shared_ptr<Search> getSearch() const { return pSearch; }
 
 private:
 

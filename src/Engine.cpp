@@ -24,15 +24,24 @@
  */
 
 #include <map>
-
 #include "Engine.h"
+#include "Position.h"
 #include "SearchLimits.h"
+#include "Search.h"
+#include "UCIHandler.h"
+#include "UCIOption.h"
+#include "MoveGenerator.h"
+
+#define MAP(name, option) optionMap.insert(std::make_pair(name, option))
 
 ////////////////////////////////////////////////
 ///// CONSTRUCTORS
 
 Engine::Engine() {
   initOptions();
+  pPosition = std::make_shared<Position>();
+  pSearch = std::make_shared<Search>(this);
+  pSearchLimits = std::make_shared<SearchLimits>();
 }
 
 ////////////////////////////////////////////////
@@ -46,13 +55,13 @@ std::ostream &operator<<(std::ostream &os, const Engine &engine) {
 std::string Engine::str() const {
   std::stringstream os;
   for (const auto &it : optionMap) {
-    UCI::Option o = it.second;
+    UCI_Option o = it.second;
     os << "\noption name " << it.first << " type " << o.getTypeString();
-    if (o.getType() == UCI::STRING || o.getType() == UCI::CHECK ||
-        o.getType() == UCI::COMBO)
+    if (o.getType() == UCI_Option::STRING || o.getType() == UCI_Option::CHECK ||
+        o.getType() == UCI_Option::COMBO)
       os << " default " << o.getDefaultValue();
 
-    if (o.getType() == UCI::SPIN)
+    if (o.getType() == UCI_Option::SPIN)
       os << " default " << stof(o.getDefaultValue()) << " min "
          << o.getMinValue() << " max " << o.getMaxValue();
   }
@@ -99,16 +108,16 @@ void Engine::newGame() {
 
 void Engine::setPosition(const std::string &fen) {
   LOG__INFO(LOG, "Engine: Set position to {}", fen);
-  position = Position(fen);
+  pPosition = std::make_unique<Position>(fen);
 }
 
 void Engine::doMove(const std::string &moveStr) {
   LOG__INFO(LOG, "Engine: Do move {}", moveStr);
   MoveGenerator moveGenerator;
-  const MoveList* movesPtr = moveGenerator.generateLegalMoves<MoveGenerator::GENALL>(position);
+  const MoveList* movesPtr = moveGenerator.generateLegalMoves<MoveGenerator::GENALL>(*pPosition);
   for (Move m : *movesPtr) {
     if (printMove(m) == moveStr) {
-      position.doMove(m);
+      pPosition->doMove(m);
       return;
     }
   }
@@ -118,10 +127,10 @@ void Engine::doMove(const std::string &moveStr) {
 void Engine::startSearch(const UCISearchMode &uciSearchMode) {
   LOG__INFO(LOG, "Engine: Start Search");
 
-  if (search.isRunning()) {
+  if (pSearch->isRunning()) {
     // Previous search was still running. Stopping to start new search!
     LOG__WARN(LOG, "Engine was already searching. Stopping search to start new search.");
-    search.stopSearch();
+    pSearch->stopSearch();
   }
 
   // clear last result
@@ -131,38 +140,38 @@ void Engine::startSearch(const UCISearchMode &uciSearchMode) {
          uciSearchMode.whiteInc >= 0 && uciSearchMode.blackInc >= 0 &&
          uciSearchMode.movetime >= 0);
 
-  searchLimits = SearchLimits(static_cast<MilliSec>(uciSearchMode.whiteTime),
-                              static_cast<MilliSec>(uciSearchMode.blackTime),
-                              static_cast<MilliSec>(uciSearchMode.whiteInc),
-                              static_cast<MilliSec>(uciSearchMode.blackInc),
-                              static_cast<MilliSec>(uciSearchMode.movetime),
-                              uciSearchMode.movesToGo, uciSearchMode.depth,
-                              uciSearchMode.nodes, uciSearchMode.moves,
-                              uciSearchMode.mate, uciSearchMode.ponder,
-                              uciSearchMode.infinite, uciSearchMode.perft);
+  pSearchLimits = std::make_shared<SearchLimits>(static_cast<MilliSec>(uciSearchMode.whiteTime),
+                                                 static_cast<MilliSec>(uciSearchMode.blackTime),
+                                                 static_cast<MilliSec>(uciSearchMode.whiteInc),
+                                                 static_cast<MilliSec>(uciSearchMode.blackInc),
+                                                 static_cast<MilliSec>(uciSearchMode.movetime),
+                                                 uciSearchMode.movesToGo, uciSearchMode.depth,
+                                                 uciSearchMode.nodes, uciSearchMode.moves,
+                                                 uciSearchMode.mate, uciSearchMode.ponder,
+                                                 uciSearchMode.infinite, uciSearchMode.perft);
 
   // do not start pondering if not ponder option is set
-  if (searchLimits.isPonder() && !EngineConfig::ponder) {
+  if (pSearchLimits->isPonder() && !EngineConfig::ponder) {
     LOG__WARN(LOG, "Engine: go ponder command but ponder option is set to false.");
     return;
   }
 
-  search.startSearch(position, searchLimits);
+  pSearch->startSearch(*pPosition, *pSearchLimits);
 }
 
 void Engine::stopSearch() {
   LOG__INFO(LOG, "Engine: Stop Search");
-  search.stopSearch();
+  pSearch->stopSearch();
 }
 
 void Engine::ponderHit() {
   LOG__INFO(LOG, "Engine: Ponder Hit");
-  search.ponderhit();
+  pSearch->ponderhit();
 }
 
 void Engine::clearHash() {
   LOG__INFO(LOG, "Engine: Clear Hash");
-  search.clearHash();
+  pSearch->clearHash();
 }
 
 void Engine::sendIterationEndInfo(int depth, int seldepth, Value value, uint64_t nodes, uint64_t nps,
@@ -219,7 +228,11 @@ void Engine::sendResult(const Move bestMove, const Value value, const Move ponde
 }
 
 void Engine::waitWhileSearching() {
-  search.waitWhileSearching();
+  pSearch->waitWhileSearching();
+}
+
+bool Engine::isSearching() {
+  return pSearch->isRunning();
 }
 
 ////////////////////////////////////////////////
@@ -227,9 +240,9 @@ void Engine::waitWhileSearching() {
 
 void Engine::initOptions() {
   // @formatter:off
-  MAP("Hash", UCI::Option("Hash", EngineConfig::hash, 1, 1024)); // spin
-  MAP("Clear Hash", UCI::Option("Clear Hash"));           // button
-  MAP("Ponder", UCI::Option("Ponder", EngineConfig::ponder));    // check
+  MAP("Hash", UCI_Option("Hash", EngineConfig::hash, 1, 1024)); // spin
+  MAP("Clear Hash", UCI_Option("Clear Hash"));           // button
+  MAP("Ponder", UCI_Option("Ponder", EngineConfig::ponder));    // check
   // @formatter:on
   updateConfig();
 }
@@ -237,13 +250,13 @@ void Engine::initOptions() {
 void Engine::updateConfig() {
   // iterate through all UCI options and update config accordingly
   for (const auto &it : optionMap) {
-    const UCI::Option &option = it.second;
+    const UCI_Option &option = it.second;
     const std::string &name = option.getNameID();
 
     if (name == "Hash") {
       EngineConfig::hash = getInt(option.getCurrentValue());
       LOG__INFO(LOG, "Setting hash table size to {} MB", EngineConfig::hash);
-      search.setHashSize(EngineConfig::hash);
+      pSearch->setHashSize(EngineConfig::hash);
     }
     else
       if (name == "Ponder") {

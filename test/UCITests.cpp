@@ -65,7 +65,7 @@ TEST_F(UCITest, uciTest) {
   istringstream is(command);
   ostringstream os;
   Engine engine;
-  UCI::Handler uciHandler(&engine, &is, &os);
+  UCI::UCI_Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
   string result = os.str();
   LOG__DEBUG(LOG, "RESPONSE: \n" + result);
@@ -82,7 +82,7 @@ TEST_F(UCITest, isreadyTest) {
   istringstream is(command);
   ostringstream os;
   Engine engine;
-  UCI::Handler uciHandler(&engine, &is, &os);
+  UCI::UCI_Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
   LOG__DEBUG(LOG, "RESPONSE: " + os.str());
   ASSERT_EQ(expected, os.str());
@@ -95,7 +95,7 @@ TEST_F(UCITest, setoptionTest) {
   string command = "setoption name Hash value 2048";
   LOG__INFO(LOG, "COMMAND: " + command);
   istringstream is(command);
-  UCI::Handler uciHandler(&engine, &is, &os);
+  UCI::UCI_Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
   //  ASSERT_EQ("2048", engine.getOption("Hash"));
   //  ASSERT_EQ(2048, engine.config.hash);
@@ -103,7 +103,7 @@ TEST_F(UCITest, setoptionTest) {
   command = "setoption name Ponder value false";
   LOG__INFO(LOG, "COMMAND: " + command);
   is = istringstream(command);
-  uciHandler = UCI::Handler(&engine, &is, &os);
+  uciHandler = UCI::UCI_Handler(&engine, &is, &os);
   uciHandler.loop();
   ASSERT_EQ("false", engine.getOption("Ponder"));
   ASSERT_FALSE(EngineConfig::ponder);
@@ -119,7 +119,7 @@ TEST_F(UCITest, positionTest) {
     string command = "position startpos moves e2e4 e7e5";
     LOG__INFO(LOG, "COMMAND: " + command);
     istringstream is(command);
-    UCI::Handler uciHandler(&engine, &is, &os);
+    UCI::UCI_Handler uciHandler(&engine, &is, &os);
     uciHandler.loop();
     ASSERT_EQ("rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2",
               engine.getPosition()->printFen());
@@ -130,7 +130,7 @@ TEST_F(UCITest, positionTest) {
     string command = "position fen r1bqkb1r/pppp1ppp/2n2n2/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 0 moves e1g1";
     LOG__INFO(LOG, "COMMAND: " + command);
     istringstream is(command);
-    UCI::Handler uciHandler(&engine, &is, &os);
+    UCI::UCI_Handler uciHandler(&engine, &is, &os);
     uciHandler.loop();
     ASSERT_EQ("r1bqkb1r/pppp1ppp/2n2n2/1B2p3/4P3/5N2/PPPP1PPP/RNBQ1RK1 b kq - 1 1",
               engine.getPosition()->printFen());
@@ -141,7 +141,7 @@ TEST_F(UCITest, positionTest) {
     string command = "position fen 8/3P4/6K1/8/8/1k6/8/8 w - - 0 0 moves d7d8Q";
     LOG__INFO(LOG, "COMMAND: " + command);
     istringstream is(command);
-    UCI::Handler uciHandler(&engine, &is, &os);
+    UCI::UCI_Handler uciHandler(&engine, &is, &os);
     uciHandler.loop();
     ASSERT_EQ("3Q4/8/6K1/8/8/1k6/8/8 b - - 0 1",
               engine.getPosition()->printFen());
@@ -152,7 +152,7 @@ TEST_F(UCITest, positionTest) {
     string command = "position moves e2e4 e7e5";
     LOG__INFO(LOG, "COMMAND: " + command);
     istringstream is(command);
-    UCI::Handler uciHandler(&engine, &is, &os);
+    UCI::UCI_Handler uciHandler(&engine, &is, &os);
     uciHandler.loop();
     ASSERT_EQ("rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2",
               engine.getPosition()->printFen());
@@ -163,7 +163,7 @@ TEST_F(UCITest, positionTest) {
     string command = "position fen rnbqkbnr/8/8/8/8/8/8/RNBQKBNR w KQkq - 0 1 moves e1e2 e8e7";
     LOG__INFO(LOG, "COMMAND: " + command);
     istringstream is(command);
-    UCI::Handler uciHandler(&engine, &is, &os);
+    UCI::UCI_Handler uciHandler(&engine, &is, &os);
     uciHandler.loop();
     ASSERT_EQ("rnbq1bnr/4k3/8/8/8/8/4K3/RNBQ1BNR w - - 2 2",
               engine.getPosition()->printFen());
@@ -174,7 +174,7 @@ TEST_F(UCITest, positionTest) {
     string command = "position fen 7K/8/5pPk/6pP/1p1p2P1/1p1p4/1P1P4/8 w - - 0 12 moves g6g7";
     LOG__INFO(LOG, "COMMAND: " + command);
     istringstream is(command);
-    UCI::Handler uciHandler(&engine, &is, &os);
+    UCI::UCI_Handler uciHandler(&engine, &is, &os);
     uciHandler.loop();
     ASSERT_EQ("7K/6P1/5p1k/6pP/1p1p2P1/1p1p4/1P1P4/8 b - - 0 12",
               engine.getPosition()->printFen());
@@ -185,7 +185,7 @@ TEST_F(UCITest, positionTest) {
     string command = "position fen 7K/6P1/5p1k/6pP/1p1p2P1/1p1p4/1P1P4/8 b - - 0 12 moves f6f5";
     LOG__INFO(LOG, "COMMAND: " + command);
     istringstream is(command);
-    UCI::Handler uciHandler(&engine, &is, &os);
+    UCI::UCI_Handler uciHandler(&engine, &is, &os);
     uciHandler.loop();
     ASSERT_EQ("7K/6P1/7k/5ppP/1p1p2P1/1p1p4/1P1P4/8 w - - 0 13",
               engine.getPosition()->printFen());
@@ -200,7 +200,7 @@ TEST_F(UCITest, goPerft) {
   string command = "go perft 6";
   LOG__INFO(LOG, "COMMAND: " + command);
   istringstream is(command);
-  UCI::Handler uciHandler(&engine, &is, &os);
+  UCI::UCI_Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
   engine.stopSearch();
@@ -221,7 +221,7 @@ TEST_F(UCITest, goInfinite) {
   string command = "go infinite";
   LOG__INFO(LOG, "COMMAND: " + command);
   istringstream is(command);
-  UCI::Handler uciHandler(&engine, &is, &os);
+  UCI::UCI_Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
   engine.stopSearch();
@@ -241,7 +241,7 @@ TEST_F(UCITest, goPonder) {
   string command = "go ponder movetime 10000";
   LOG__INFO(LOG, "COMMAND: " + command);
   istringstream is(command);
-  UCI::Handler uciHandler(&engine, &is, &os);
+  UCI::UCI_Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
   engine.stopSearch();
@@ -261,7 +261,7 @@ TEST_F(UCITest, goMate) {
   string command = "go mate 4";
   LOG__INFO(LOG, "COMMAND: " + command);
   istringstream is(command);
-  UCI::Handler uciHandler(&engine, &is, &os);
+  UCI::UCI_Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
   engine.stopSearch();
@@ -282,7 +282,7 @@ TEST_F(UCITest, goMateDepth) {
   string command = "go mate 4 depth 4";
   LOG__INFO(LOG, "COMMAND: " + command);
   istringstream is(command);
-  UCI::Handler uciHandler(&engine, &is, &os);
+  UCI::UCI_Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
   engine.stopSearch();
@@ -303,7 +303,7 @@ TEST_F(UCITest, goMateTime) {
   string command = "go mate 4 movetime 15";
   LOG__INFO(LOG, "COMMAND: " + command);
   istringstream is(command);
-  UCI::Handler uciHandler(&engine, &is, &os);
+  UCI::UCI_Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
   engine.stopSearch();
@@ -325,7 +325,7 @@ TEST_F(UCITest, goMateDepthTime) {
   string command = "go mate 4 depth 4 movetime 15";
   LOG__INFO(LOG, "COMMAND: " + command);
   istringstream is(command);
-  UCI::Handler uciHandler(&engine, &is, &os);
+  UCI::UCI_Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
   engine.stopSearch();
@@ -348,7 +348,7 @@ TEST_F(UCITest, goTimed) {
   string command = "go wtime 500001 btime 500002";
   LOG__INFO(LOG, "COMMAND: " + command);
   istringstream is(command);
-  UCI::Handler uciHandler(&engine, &is, &os);
+  UCI::UCI_Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
   engine.stopSearch();
@@ -371,7 +371,7 @@ TEST_F(UCITest, goMovestogo) {
   string command = "go wtime 300001 btime 300002 movestogo 20";
   LOG__INFO(LOG, "COMMAND: " + command);
   istringstream is(command);
-  UCI::Handler uciHandler(&engine, &is, &os);
+  UCI::UCI_Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
   engine.stopSearch();
@@ -395,7 +395,7 @@ TEST_F(UCITest, goInc) {
   string command = "go wtime 300001 btime 300002 winc 2001 binc 2002";
   LOG__INFO(LOG, "COMMAND: " + command);
   istringstream is(command);
-  UCI::Handler uciHandler(&engine, &is, &os);
+  UCI::UCI_Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
   engine.stopSearch();
@@ -420,7 +420,7 @@ TEST_F(UCITest, goMovetime) {
   string command = "go movetime 5000";
   LOG__INFO(LOG, "COMMAND: " + command);
   istringstream is(command);
-  UCI::Handler uciHandler(&engine, &is, &os);
+  UCI::UCI_Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
   engine.stopSearch();
@@ -442,7 +442,7 @@ TEST_F(UCITest, goDepth) {
   string command = "go depth 5";
   LOG__INFO(LOG, "COMMAND: " + command);
   istringstream is(command);
-  UCI::Handler uciHandler(&engine, &is, &os);
+  UCI::UCI_Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
   engine.stopSearch();
@@ -466,7 +466,7 @@ TEST_F(UCITest, goNodes) {
   string command = "go nodes 1000000";
   LOG__INFO(LOG, "COMMAND: " + command);
   istringstream is(command);
-  UCI::Handler uciHandler(&engine, &is, &os);
+  UCI::UCI_Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
   engine.stopSearch();
@@ -488,7 +488,7 @@ TEST_F(UCITest, goNodesDepth) {
   string command = "go nodes 1000000 depth 5";
   LOG__INFO(LOG, "COMMAND: " + command);
   istringstream is(command);
-  UCI::Handler uciHandler(&engine, &is, &os);
+  UCI::UCI_Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
   engine.stopSearch();
@@ -510,7 +510,7 @@ TEST_F(UCITest, goMoves) {
   string command = "go movetime 15 searchmoves d2d4 e2e4";
   LOG__INFO(LOG, "COMMAND: " + command);
   istringstream is(command);
-  UCI::Handler uciHandler(&engine, &is, &os);
+  UCI::UCI_Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
   engine.stopSearch();
@@ -534,7 +534,7 @@ TEST_F(UCITest, moveTest) {
   string command = "position startpos moves e2e4";
   LOG__INFO(LOG, "COMMAND: " + command);
   istringstream is(command);
-  UCI::Handler uciHandler(&engine, &is, &os);
+  UCI::UCI_Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
   command = "go wtime 60000 btime 60000 winc 2000 binc 2000 movestogo 40";
@@ -557,7 +557,7 @@ TEST_F(UCITest, moveTestDepth) {
   string command = "position startpos moves e2e4";
   LOG__INFO(LOG, "COMMAND: " + command);
   istringstream is(command);
-  UCI::Handler uciHandler(&engine, &is, &os);
+  UCI::UCI_Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
   command = "go depth 5";
@@ -579,7 +579,7 @@ TEST_F(UCITest, ponderRunningStop) {
   string command = "position startpos moves e2e4 e7e5";
   LOG__INFO(LOG, "COMMAND: " + command);
   istringstream is(command);
-  UCI::Handler uciHandler(&engine, &is, &os);
+  UCI::UCI_Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
   command = "go ponder wtime 600000 btime 600000";
@@ -613,7 +613,7 @@ TEST_F(UCITest, ponderFinishedStop) {
   string command = "position fen 8/8/8/8/8/6K1/R7/6k1 w - - 0 8";
   LOG__INFO(LOG, "COMMAND: " + command);
   istringstream is(command);
-  UCI::Handler uciHandler(&engine, &is, &os);
+  UCI::UCI_Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
   command = "go ponder wtime 600000 btime 600000";
@@ -647,7 +647,7 @@ TEST_F(UCITest, ponderMiss) {
   string command = "position startpos moves e2e4 e7e6 d2d4";
   LOG__INFO(LOG, "COMMAND: " + command);
   istringstream is(command);
-  UCI::Handler uciHandler(&engine, &is, &os);
+  UCI::UCI_Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
   // black to ponder on d2d4
@@ -714,7 +714,7 @@ TEST_F(UCITest, ponderFinishedMiss) {
   string command = "position fen 8/8/8/8/8/6K1/R7/6k1 w - - 0 8";
   LOG__INFO(LOG, "COMMAND: " + command);
   istringstream is(command);
-  UCI::Handler uciHandler(&engine, &is, &os);
+  UCI::UCI_Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
   // black to ponder on d2d4
@@ -779,7 +779,7 @@ TEST_F(UCITest, ponderFinishedHit) {
   string command = "setoption name Ponder value true";
   LOG__INFO(LOG, "COMMAND: " + command);
   istringstream is = istringstream(command);
-  UCI::Handler uciHandler(&engine, &is, &os);
+  UCI::UCI_Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
   command = "position fen 8/8/8/8/8/6K1/R7/6k1 w - - 0 8";
@@ -831,7 +831,7 @@ TEST_F(UCITest, ponderHit) {
   string command = "setoption name Ponder value true";
   LOG__INFO(LOG, "COMMAND: " + command);
   istringstream is = istringstream(command);
-  UCI::Handler uciHandler(&engine, &is, &os);
+  UCI::UCI_Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
   command = "position startpos moves e2e4 e7e6 d2d4";
@@ -881,7 +881,7 @@ TEST_F(UCITest, testingBugs) {
   string command = "position startpos moves d2d4 d7d6 d4d5 c7c6 d5c6 b7c6 d1d6 d8d6 e2e4 b8a6 f1a6 c8a6 e4e5 d6e5";
   LOG__INFO(LOG, "COMMAND: " + command);
   istringstream is(command);
-  UCI::Handler uciHandler(&engine, &is, &os);
+  UCI::UCI_Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
   command = "go wtime 48330 btime 49040 movestogo 33";

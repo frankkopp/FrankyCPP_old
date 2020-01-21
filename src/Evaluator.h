@@ -26,7 +26,8 @@
 #ifndef FRANKYCPP_EVALUATOR_H
 #define FRANKYCPP_EVALUATOR_H
 
-#include "gtest/gtest_prod.h"
+#include <vector>
+//#include "gtest/gtest_prod.h"
 #include "Logging.h"
 #include "types.h"
 #include "EvaluatorConfig.h"
@@ -49,7 +50,7 @@ class Position;
 
 class Evaluator {
 
-  std::shared_ptr<spdlog::logger> LOG = spdlog::get("Eval_Logger");
+//  std::shared_ptr<spdlog::logger> LOG = spdlog::get("Eval_Logger");
 
   /** Entry class for the eval cache */
   struct Entry {
@@ -122,7 +123,7 @@ private:
   int evaluatePiece(const Position &position);
 
   template<Color C, PieceType PT>
-  int mobility(const Position &position, const Square sq);
+  int mobility(const Position &position, Square sq);
 
   template<Color C>
   int evaluateKing(const Position &position);
@@ -130,8 +131,8 @@ private:
   template<Color C>
   int kingCastleSafety(const Position &position);
 
-  FRIEND_TEST(EvaluatorTest, evaluatePieceMobility);
-  FRIEND_TEST(EvaluatorTest, evaluatePawns);
+//  FRIEND_TEST(EvaluatorTest, evaluatePieceMobility);
+//  FRIEND_TEST(EvaluatorTest, evaluatePawns);
 
 };
 

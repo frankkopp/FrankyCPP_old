@@ -24,11 +24,10 @@
  */
 
 #include <algorithm>
-
+#include "MoveGenerator.h"
 #include "Bitboards.h"
 #include "Values.h"
 #include "Position.h"
-#include "MoveGenerator.h"
 
 ////////////////////////////////////////////////
 ///// CONSTRUCTORS

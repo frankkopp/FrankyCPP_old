@@ -56,7 +56,7 @@ protected:
     LOG__INFO(LOG, "COMMAND: " + command);
     std::istringstream is(command);
     std::ostringstream os = std::ostringstream();
-    UCI::Handler uciHandler(&engine, &is, &os);
+    UCI::UCI_Handler uciHandler(&engine, &is, &os);
     uciHandler.loop();
     std::string response = os.str();
     return response;

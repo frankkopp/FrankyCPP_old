@@ -27,13 +27,15 @@
 #define FRANKYCPP_TESTSUITE_H
 
 #include <string>
-#include <utility>
+#include <vector>
 #include "Logging.h"
 #include "types.h"
 #include "Position.h"
-#include "Search.h"
-#include "SearchLimits.h"
 #include "misc.h"
+#include "SearchLimits.h"
+
+// forward declaration
+class Search;
 
 class TestSuite {
 
@@ -79,7 +81,7 @@ public:
 
 private:
 
-  std::shared_ptr<spdlog::logger> LOG = spdlog::get("TSuite_Logger");
+  //std::shared_ptr<spdlog::logger> LOG = spdlog::get("TSuite_Logger");
 
   std::string filePath;
   MilliSec searchTime;

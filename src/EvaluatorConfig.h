@@ -26,6 +26,8 @@
 #ifndef FRANKYCPP_EVALUATORCONFIG_H
 #define FRANKYCPP_EVALUATORCONFIG_H
 
+#include <cstddef>
+
 struct EvaluatorConfig {
 
   bool USE_PAWN_TABLE = true;

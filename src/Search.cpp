@@ -25,9 +25,12 @@
 
 #include <iostream>
 #include <chrono>
+#include <thread>
 #include "Search.h"
+#include "Evaluator.h"
 #include "Engine.h"
 #include "SearchConfig.h"
+#include "Position.h"
 #include "TT.h"
 
 ////////////////////////////////////////////////
@@ -37,6 +40,8 @@ Search::Search() : Search(nullptr) {}
 
 Search::Search(Engine* pEng) {
   pEngine = pEng;
+
+  pEvaluator = std::make_unique<Evaluator>();
 
   tt = new TT;
   if (SearchConfig::USE_TT) {
@@ -65,7 +70,7 @@ Search::~Search() {
 ////////////////////////////////////////////////
 ///// PUBLIC
 
-void Search::startSearch(const Position &pos, SearchLimits &limits) {
+void Search::startSearch(const Position &position, SearchLimits &limits) {
   if (_isRunning) {
     LOG__ERROR(LOG, "Start Search: Search already running");
     return;
@@ -84,7 +89,7 @@ void Search::startSearch(const Position &pos, SearchLimits &limits) {
 
   // start search in a separate thread
   LOG__DEBUG(LOG, "Starting search in separate thread.");
-  myThread = std::thread(&Search::run, this, pos);
+  myThread = std::thread(&Search::run, this, position);
 
   // wait until thread is initialized before returning to caller
   initSemaphore.getOrWait();
@@ -249,7 +254,7 @@ void Search::run(Position position) {
   // print result of the search
   LOG__INFO(LOG, "Search statistics: {}", searchStats.str());
   if (SearchConfig::USE_TT) {
-    LOG->info(tt->str());
+    LOG__INFO(LOG, tt->str());
   }
   LOG__INFO(LOG, "Search Depth was {} ({})", searchStats.currentSearchDepth, searchStats.currentExtraSearchDepth);
   LOG__INFO(LOG, "Search took {},{:03} sec ({:n} nps)",
@@ -822,7 +827,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
     // Execute move
     position.doMove(move);
     TT_PREFETCH
-    EVAL_PREFETCH
+    //EVAL_PREFETCH
     searchStats.nodesVisited++;
     if (position.isLegalPosition()) {
       currentVariation.push_back(move);
@@ -1072,7 +1077,7 @@ Value Search::evaluate(Position &position) {
     return VALUE_ONE;
   }
 
-  return evaluator.evaluate(position);
+  return pEvaluator->evaluate(position);
 }
 
 /**
@@ -1416,7 +1421,7 @@ void Search::sendSearchUpdateToEngine() {
     lastUciUpdateTime = now();
 
     LOG__INFO(LOG, "Search statistics: {}", searchStats.str());
-    LOG__INFO(LOG, "Eval   statistics: {}", evaluator.pawnTableStats());
+    LOG__INFO(LOG, "Eval   statistics: {}", pEvaluator.pawnTableStats());
     LOG__INFO(LOG, "TT     statistics: {}", tt->str());
 
     if (!pEngine) {

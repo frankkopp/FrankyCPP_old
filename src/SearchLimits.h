@@ -33,7 +33,7 @@
 
 class SearchLimits {
 
-  std::shared_ptr<spdlog::logger> LOG = spdlog::get("Search_Logger");
+//  std::shared_ptr<spdlog::logger> LOG = spdlog::get("Search_Logger");
 
   // defaults time control
   MilliSec whiteTime = 0;

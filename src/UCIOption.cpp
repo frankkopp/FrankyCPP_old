@@ -26,35 +26,31 @@
 #include "types.h"
 #include "UCIOption.h"
 
-using namespace std;
 
-namespace UCI {
+UCI_Option::UCI_Option(const char* name)
+  : nameID(name), type(BUTTON), defaultValue(boolStr(false)) {}
 
-  Option::Option(const char *name)
-    : nameID(name), type(BUTTON), defaultValue(boolStr(false)) {}
+UCI_Option::UCI_Option(const char* name, bool value)
+  : nameID(name), type(CHECK), defaultValue(boolStr(value)), currentValue(boolStr(value)) {}
 
-  Option::Option(const char *name, bool value)
-    : nameID(name), type(CHECK), defaultValue(boolStr(value)), currentValue(boolStr(value)) {}
+UCI_Option::UCI_Option(const char* name, int def, int min, int max)
+  : nameID(name), type(SPIN), defaultValue(std::to_string(def)), minValue(std::to_string(min)),
+    maxValue(std::to_string(max)), currentValue(std::to_string(def)) {}
 
-  Option::Option(const char *name, int def, int min, int max)
-    : nameID(name), type(SPIN), defaultValue(to_string(def)), minValue(to_string(min)),
-      maxValue(to_string(max)), currentValue(to_string(def)) {}
+UCI_Option::UCI_Option(const char* name, const char* str)
+  : nameID(name), type(STRING), defaultValue(str), currentValue(str) {}
 
-  Option::Option(const char *name, const char *str)
-    : nameID(name), type(STRING), defaultValue(str), currentValue(str) {}
+UCI_Option::UCI_Option(const char* name, const char* val, const char* def)
+  : nameID(name), type(STRING), defaultValue(val), currentValue(def) {}
 
-  Option::Option(const char *name, const char *val, const char *def)
-    : nameID(name), type(STRING), defaultValue(val), currentValue(def) {}
+UCI_Option::UCI_Option(const UCI_Option &o) = default;
 
-  Option::Option(const Option &o) = default;
-
-  ostream &operator<<(ostream &os, const Option &option) {
-    os << "Option = nameID: " << option.nameID << " type: " << option.getTypeString()
-       << " currentValue: " << option.currentValue
-       << " defaultValue: " << option.defaultValue << " minValue: " << option.minValue
-       << " maxValue: "
-       << option.maxValue << " varValue: " << option.varValue;
-    return os;
-  }
-
+std::ostream &operator<<(std::ostream &os, const UCI_Option &option) {
+  os << "Option = nameID: " << option.nameID << " type: " << option.getTypeString()
+     << " currentValue: " << option.currentValue
+     << " defaultValue: " << option.defaultValue << " minValue: " << option.minValue
+     << " maxValue: "
+     << option.maxValue << " varValue: " << option.varValue;
+  return os;
 }
+

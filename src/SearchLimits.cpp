@@ -25,8 +25,6 @@
 
 #include "SearchLimits.h"
 
-#include <utility>
-
 SearchLimits::SearchLimits() = default;
 
 SearchLimits::SearchLimits(MilliSec _whiteTime,

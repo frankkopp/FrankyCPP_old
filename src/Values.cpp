@@ -23,7 +23,6 @@
  *
  */
 
-#include "Logging.h"
 #include "Values.h"
 
 namespace Values {
@@ -43,7 +42,6 @@ namespace Values {
   }
 
   void init() {
-    LOG__TRACE(spdlog::get("Main_Logger"), "{} {}() line {}", __FILE__, __func__, __LINE__);
     // pre-compute piece on square values for mid and endgame and also for
     // all game phases
     for (Piece pc = WHITE_KING; pc <= BLACK_QUEEN; ++pc) {

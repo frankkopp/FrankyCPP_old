@@ -26,98 +26,76 @@
 #include <iostream>
 #include "types.h"
 #include "Logging.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
-#include "spdlog/sinks/basic_file_sink.h"
 
-namespace LOGGING {
+void Logger::init() {
 
-  static bool LOGGING_INITIALIZED = false;
-
-  void init() {
-
-    if (LOGGING_INITIALIZED) return;
-
-    try {
-      std::locale::global(deLocale);
-    }
-    catch (...) {
-      std::cerr << "failed to set locale" << std::endl;
-    }
-
-    std::string defaultPattern = "[%H:%M:%S:%f] [t:%-10t] [%-17n] [%-8l]: %v";
-    spdlog::set_pattern(defaultPattern);
-
-    spdlog::set_level(spdlog::level::trace);
-
-    // Shared file sink
-    auto sharedFileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("FrankyCPP.log");
-    sharedFileSink->set_level(spdlog::level::trace);
-
-    // Main Logger
-    auto MAIN_LOG = spdlog::stdout_color_mt("Main_Logger");
-    MAIN_LOG->sinks().push_back(sharedFileSink);
-    MAIN_LOG->set_pattern(defaultPattern);
-    MAIN_LOG->set_level(spdlog::level::trace);
-    MAIN_LOG->flush_on(spdlog::level::trace);
-
-    auto ENGINE_LOG = spdlog::stdout_color_mt("Engine_Logger");
-    ENGINE_LOG->sinks().push_back(sharedFileSink);
-    ENGINE_LOG->set_pattern(defaultPattern);
-    ENGINE_LOG->set_level(spdlog::level::trace);
-    ENGINE_LOG->flush_on(spdlog::level::trace);
-
-    auto SEARCH_LOG = spdlog::stdout_color_mt("Search_Logger");
-    SEARCH_LOG->sinks().push_back(sharedFileSink);
-    SEARCH_LOG->set_pattern(defaultPattern);
-    SEARCH_LOG->set_level(SEARCH_LOG_LEVEL);
-    SEARCH_LOG->flush_on(spdlog::level::trace);
-
-    auto TESTSUITE_LOG = spdlog::stdout_color_mt("TSuite_Logger");
-    TESTSUITE_LOG->sinks().push_back(sharedFileSink);
-    TESTSUITE_LOG->set_pattern(defaultPattern);
-    TESTSUITE_LOG->set_level(spdlog::level::trace);
-    TESTSUITE_LOG->flush_on(spdlog::level::trace);
-
-    auto MOVEGEN_LOG = spdlog::stdout_color_mt("MoveGen_Logger");
-    MOVEGEN_LOG->sinks().push_back(sharedFileSink);
-    MOVEGEN_LOG->set_pattern(defaultPattern);
-    MOVEGEN_LOG->set_level(spdlog::level::trace);
-    MOVEGEN_LOG->flush_on(spdlog::level::trace);
-
-    auto EVAL_LOG = spdlog::stdout_color_mt("Eval_Logger");
-    EVAL_LOG->sinks().push_back(sharedFileSink);
-    EVAL_LOG->set_pattern(defaultPattern);
-    EVAL_LOG->set_level(spdlog::level::trace);
-    EVAL_LOG->flush_on(spdlog::level::trace);
-
-    auto TT_LOG = spdlog::stdout_color_mt("TT_Logger");
-    TT_LOG->sinks().push_back(sharedFileSink);
-    TT_LOG->set_pattern(defaultPattern);
-    TT_LOG->set_level(spdlog::level::trace);
-    TT_LOG->flush_on(spdlog::level::trace);
-
-    auto UCIHANDLER_LOG = spdlog::stdout_color_mt("UCIHandler_Logger");
-    UCIHANDLER_LOG->sinks().push_back(sharedFileSink);
-    UCIHANDLER_LOG->set_pattern(defaultPattern);
-    UCIHANDLER_LOG->set_level(spdlog::level::trace);
-    UCIHANDLER_LOG->flush_on(spdlog::level::trace);
-
-    auto uciOutSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-    auto UCI_LOG = spdlog::basic_logger_mt("UCI_Logger", "FrankyCPP_uci.log");
-    UCI_LOG->sinks().push_back(uciOutSink);
-    UCI_LOG->set_pattern("[%H:%M:%S:%f] %L %v");
-    UCI_LOG->set_level(spdlog::level::trace);
-    UCI_LOG->flush_on(spdlog::level::trace);
-
-    // Logger for Unit Tests
-    auto TEST_LOG = spdlog::stdout_color_mt("Test_Logger");
-    TEST_LOG->set_pattern(defaultPattern);
-    TEST_LOG->set_level(spdlog::level::trace);
-    TEST_LOG->flush_on(spdlog::level::trace);
-
-    LOG__INFO(MAIN_LOG, "Logging initialized.");
-    LOG__INFO(MAIN_LOG, "Locale is set to: {}", std::locale().name());
-
-    LOGGING_INITIALIZED = true;
+  try {
+    std::locale::global(deLocale);
   }
+  catch (...) {
+    std::cerr << "failed to set locale" << std::endl;
+  }
+
+  spdlog::set_pattern(defaultPattern);
+
+  spdlog::set_level(spdlog::level::trace);
+
+  // Shared file sink
+  sharedFileSink->set_level(spdlog::level::trace);
+
+  // Main Logger
+  MAIN_LOG->sinks().push_back(sharedFileSink);
+  MAIN_LOG->set_pattern(defaultPattern);
+  MAIN_LOG->set_level(spdlog::level::trace);
+  MAIN_LOG->flush_on(spdlog::level::trace);
+
+  ENGINE_LOG->sinks().push_back(sharedFileSink);
+  ENGINE_LOG->set_pattern(defaultPattern);
+  ENGINE_LOG->set_level(spdlog::level::trace);
+  ENGINE_LOG->flush_on(spdlog::level::trace);
+
+  SEARCH_LOG->sinks().push_back(sharedFileSink);
+  SEARCH_LOG->set_pattern(defaultPattern);
+  SEARCH_LOG->set_level(SEARCH_LOG_LEVEL);
+  SEARCH_LOG->flush_on(spdlog::level::trace);
+
+  TSUITE_LOG->sinks().push_back(sharedFileSink);
+  TSUITE_LOG->set_pattern(defaultPattern);
+  TSUITE_LOG->set_level(spdlog::level::trace);
+  TSUITE_LOG->flush_on(spdlog::level::trace);
+
+  MOVEGEN_LOG->sinks().push_back(sharedFileSink);
+  MOVEGEN_LOG->set_pattern(defaultPattern);
+  MOVEGEN_LOG->set_level(spdlog::level::trace);
+  MOVEGEN_LOG->flush_on(spdlog::level::trace);
+
+  EVAL_LOG->sinks().push_back(sharedFileSink);
+  EVAL_LOG->set_pattern(defaultPattern);
+  EVAL_LOG->set_level(spdlog::level::trace);
+  EVAL_LOG->flush_on(spdlog::level::trace);
+
+  TT_LOG->sinks().push_back(sharedFileSink);
+  TT_LOG->set_pattern(defaultPattern);
+  TT_LOG->set_level(spdlog::level::trace);
+  TT_LOG->flush_on(spdlog::level::trace);
+
+  UCIHAND_LOG->sinks().push_back(sharedFileSink);
+  UCIHAND_LOG->set_pattern(defaultPattern);
+  UCIHAND_LOG->set_level(spdlog::level::trace);
+  UCIHAND_LOG->flush_on(spdlog::level::trace);
+
+  UCI_LOG->sinks().push_back(uciOutSink);
+  UCI_LOG->set_pattern("[%H:%M:%S:%f] %L %v");
+  UCI_LOG->set_level(spdlog::level::trace);
+  UCI_LOG->flush_on(spdlog::level::trace);
+
+  // Logger for Unit Tests
+  TEST_LOG->set_pattern(defaultPattern);
+  TEST_LOG->set_level(spdlog::level::trace);
+  TEST_LOG->flush_on(spdlog::level::trace);
+
+  LOG__INFO(MAIN_LOG, "Logging initialized.");
+  LOG__INFO(MAIN_LOG, "Locale is set to: {}", std::locale().name());
 }
+
+

@@ -27,12 +27,12 @@
 #define FRANKYCPP_MISC_H
 
 #include "types.h"
-#include "Position.h"
+
+// forward declaration
+class Position;
 
 namespace Misc {
-
   Move getMoveFromSAN(const Position &, const std::string &);
-
 }
 
 #endif //FRANKYCPP_MISC_H
