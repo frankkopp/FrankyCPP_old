@@ -244,7 +244,7 @@ enum Value : int16_t {
   VALUE_MIN = -10000,
   VALUE_MAX = 10000,
   VALUE_CHECKMATE = VALUE_MAX,
-  VALUE_CHECKMATE_THRESHOLD = VALUE_CHECKMATE - PLY_MAX,
+  VALUE_CHECKMATE_THRESHOLD = VALUE_CHECKMATE - static_cast<Value>(PLY_MAX),
 };
 
 inline std::ostream &operator<<(std::ostream &os, const Value v) {
@@ -409,7 +409,7 @@ inline PieceType promotionType(Move m) {
 
 /** returns the value of the move */
 inline Value valueOf(Move m) {
-  return Value(((m & MoveShifts::VALUE_MASK) >> MoveShifts::VALUE_SHIFT) + VALUE_NONE);
+  return static_cast<Value>((m & MoveShifts::VALUE_MASK) >> MoveShifts::VALUE_SHIFT) + VALUE_NONE;
 }
 
 /** returns the move without value */
