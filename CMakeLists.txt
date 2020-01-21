@@ -50,14 +50,14 @@ message("EXEC: " ${CMAKE_CXX_LINK_EXECUTABLE})
 
 include_directories(
         ${PROJECT_SOURCE_DIR}/src
-        #${PROJECT_SOURCE_DIR}/test
-        #${PROJECT_SOURCE_DIR}/googletest/googletest/include
+        ${PROJECT_SOURCE_DIR}/test
+        ${PROJECT_SOURCE_DIR}/googletest/googletest/include
 )
 
 # project sub directories - need to have their own CMakeList.txt
 add_subdirectory(src)
-#add_subdirectory(test)
-#add_subdirectory(googletest)
+add_subdirectory(test)
+add_subdirectory(googletest)
 
 
 

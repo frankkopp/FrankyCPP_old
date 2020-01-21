@@ -31,6 +31,10 @@ using testing::Eq;
 #include "types.h"
 #include <boost/timer/timer.hpp>
 
+TEST(BOOST, basic) {
+  std::cout << "Boost Test" << std::endl;
+}
+
 TEST(BOOST, cpu_timer) {
 
   std::cout.imbue(deLocale);
@@ -46,7 +50,6 @@ TEST(BOOST, cpu_timer) {
 
   std::cout << std::endl;
   std::cout << timer.format() << std::endl;
-
 
   while (i++ < iterations) {
     for (int j = 0; j < repetitions; ++j) {

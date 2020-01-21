@@ -86,10 +86,10 @@ set (BOOST_ALL_NO_LIB 1)
 set(testExeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR}_Test)
 
 add_executable(${testExeName}
-        #main.cpp
-        #BOOST_Test.cpp
-        #SemaphoreTest.cpp
-        #GlobalsTest.cpp
+        main.cpp
+        BOOST_Test.cpp
+        SemaphoreTest.cpp
+        GlobalsTest.cpp
         #MiscTest.cpp
         #ValuesTest.cpp
         #BitboardTest.cpp
@@ -125,7 +125,7 @@ if (CYGWIN)
             ${testExeName}
             core
             fmt::fmt
-            #spdlog::spdlog # otherwise linker throws error of duplicate
+            spdlog::spdlog # otherwise linker throws error of duplicate
             gtest
             gtest_main
             ${Boost_LIBRARIES}
