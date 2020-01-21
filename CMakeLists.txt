@@ -28,10 +28,10 @@ elseif (CMAKE_COMPILER_IS_GNUCXX) # CYGWIN
     # additional: -Wno-unknown-pragmas -Wpedantic -Wshadow -Weffc++ -Wimplicit-fallthrough -Wswitch -Wpointer-arith -Wcast-qual -Wconversion -Wno-sign-conversion -Wno-error=padded -Wno-error=inline")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3")
     # spdlog compiled within project - not using installed libs
-#    add_subdirectory(spdlog)
-#    include_directories(
-#            ${PROJECT_SOURCE_DIR}/spdlog/include
-#    )
+    #    add_subdirectory(spdlog)
+    #    include_directories(
+    #            ${PROJECT_SOURCE_DIR}/spdlog/include
+    #    )
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC") # Visual Studio MSVC
     message("Compiler Settings: MSVC")
     set(CMAKE_CXX_FLAGS "/W4")
@@ -39,8 +39,8 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC") # Visual Studio MSVC
     set(CMAKE_CXX_FLAGS_RELEASE "/O2")
     # fmt and spdlog compiled within project - not using installed libs
     include_directories(
-        ${PROJECT_SOURCE_DIR}/spdlog/include
-        ${PROJECT_SOURCE_DIR}/fmt/include
+            ${PROJECT_SOURCE_DIR}/spdlog/include
+            ${PROJECT_SOURCE_DIR}/fmt/include
     )
     add_subdirectory(fmt)
     add_subdirectory(spdlog)

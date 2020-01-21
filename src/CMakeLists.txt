@@ -23,6 +23,10 @@ if (APPLE)
         message("Package spdlog NOT found")
     endif ()
 
+    include_directories(
+            /usr/local/include
+    )
+
 endif ()
 
 if (CYGWIN)
@@ -42,6 +46,10 @@ if (CYGWIN)
     if (NOT spdlog_FOUND)
         message("Package spdlog NOT found")
     endif ()
+
+    include_directories(
+            /usr/local/include
+    )
 
 #    include_directories(
 #            ${PROJECT_SOURCE_DIR}/fmt/include

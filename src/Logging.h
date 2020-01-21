@@ -90,13 +90,13 @@
 /** Singleton class for Logger */
 class Logger {
   Logger() {
+    init();
     std::cout << "Logger Singleton created!" << std::endl;
   };
   ~Logger() = default;
 
-  void init();
 
-  static Logger* instance;
+  void init();
 
 public :
   // disallow copies
@@ -106,12 +106,8 @@ public :
   Logger &operator=(const Logger &&) = delete; // move assignment
 
 public:
-  static Logger* get() {
-    if (!instance) {
-      std::cout << "Creating Logger Singleton..." << std::endl;
-      instance = new Logger();
-      instance->init();
-    }
+  static Logger& get() {
+    static Logger instance;
     return instance;
   }
 
