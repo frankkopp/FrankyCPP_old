@@ -6,6 +6,7 @@ cmake_minimum_required(VERSION 3.13)
 
 # Platform specific
 if (APPLE)
+
     find_package(fmt REQUIRED)
     if (fmt_FOUND)
         message("Package fmt found")
@@ -25,6 +26,7 @@ if (APPLE)
 endif ()
 
 if (CYGWIN)
+    
     find_package(fmt REQUIRED)
     if (fmt_FOUND)
         message("Package fmt found")
@@ -33,17 +35,17 @@ if (CYGWIN)
         message("Package fmt NOT found")
     endif ()
 
-#    find_package(spdlog REQUIRED)
-#    if (spdlog_FOUND)
-#        message("Package spdlog found")
-#    endif ()
-#    if (NOT spdlog_FOUND)
-#        message("Package spdlog NOT found")
-#    endif ()
+    find_package(spdlog REQUIRED)
+    if (spdlog_FOUND)
+        message("Package spdlog found")
+    endif ()
+    if (NOT spdlog_FOUND)
+        message("Package spdlog NOT found")
+    endif ()
 
-    include_directories(
-            ${PROJECT_SOURCE_DIR}/fmt/include
-    )
+#    include_directories(
+#            ${PROJECT_SOURCE_DIR}/fmt/include
+#    )
 
 endif ()
 
