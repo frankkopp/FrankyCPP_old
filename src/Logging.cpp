@@ -28,8 +28,6 @@
 #include "Logging.h"
 
 void Logger::init() {
-  std::cout << "Looger init()" << std::endl;
-
   try {
     std::locale::global(deLocale);
   }
@@ -95,6 +93,7 @@ void Logger::init() {
   TEST_LOG->set_level(spdlog::level::trace);
   TEST_LOG->flush_on(spdlog::level::trace);
 
+  std::cout << "Logger initialized" << std::endl;
 }
 
 

@@ -28,16 +28,14 @@
 #include "Bitboards.h"
 #include "Position.h"
 
-
-
 namespace INIT {
   static bool INITIALIZED = false;
   void init() {
     if (INITIALIZED) return;
-//    Values::init();
-//    Bitboards::init();
+    Values::init();
+    Bitboards::init();
 //    Position::init();
     INITIALIZED = true;
-    Logger::get() -> MAIN_LOG -> info("INIT done.");
+    Logger::get().MAIN_LOG->info("Data initialization done");
   }
 }

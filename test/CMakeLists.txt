@@ -12,8 +12,6 @@ if (APPLE)
     set(BOOST_ROOT "/usr/local/boost_1_72_0")
     set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
     set(Boost_USE_MULTITHREADED ON)
-    #set(Boost_USE_STATIC_LIBS ON) # only find static libs
-    #set(Boost_USE_STATIC_RUNTIME OFF)
 
     find_package(fmt REQUIRED)
     if (fmt_FOUND)
@@ -30,6 +28,10 @@ if (APPLE)
     if (NOT spdlog_FOUND)
         message("Package spdlog NOT found")
     endif ()
+
+    include_directories(
+            /usr/local/include
+    )
 
 endif ()
 
@@ -37,8 +39,6 @@ if (CYGWIN)
     set(BOOST_ROOT "/usr/local/boost_1_72_0")
     set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
     set(Boost_USE_MULTITHREADED ON)
-    #set(Boost_USE_STATIC_LIBS ON) # only find static libs
-    #set(Boost_USE_STATIC_RUNTIME OFF)
 
     find_package(fmt REQUIRED)
     if (fmt_FOUND)
@@ -56,6 +56,9 @@ if (CYGWIN)
         message("Package spdlog NOT found")
     endif ()
 
+    include_directories(
+            /usr/local/include
+    )
 endif ()
 
 if (WIN32)
@@ -83,26 +86,26 @@ set (BOOST_ALL_NO_LIB 1)
 set(testExeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR}_Test)
 
 add_executable(${testExeName}
-        main.cpp
-        BOOST_Test.cpp
-        SemaphoreTest.cpp
-        GlobalsTest.cpp
-        MiscTest.cpp
-        ValuesTest.cpp
-        BitboardTest.cpp
-        MoveGeneratorTest.cpp
-        EngineTest.cpp
-        LoggingTest.cpp
-        TT_Test.cpp
-        PositionTest.cpp
-        EvaluatorTest.cpp
-        UCITests.cpp
-        PerftTest.cpp
-        TimingTests.cpp
-        SearchTest.cpp
-        SearchTreeSizeTest.cpp
-        TestSuiteTests.cpp
-        SelfPlayUCITest.cpp
+        #main.cpp
+        #BOOST_Test.cpp
+        #SemaphoreTest.cpp
+        #GlobalsTest.cpp
+        #MiscTest.cpp
+        #ValuesTest.cpp
+        #BitboardTest.cpp
+        #MoveGeneratorTest.cpp
+        #EngineTest.cpp
+        #LoggingTest.cpp
+        #TT_Test.cpp
+        #PositionTest.cpp
+        #EvaluatorTest.cpp
+        #UCITests.cpp
+        #PerftTest.cpp
+        #TimingTests.cpp
+        #SearchTest.cpp
+        #SearchTreeSizeTest.cpp
+        #TestSuiteTests.cpp
+        #SelfPlayUCITest.cpp
 )
 
 if (APPLE)

@@ -91,10 +91,8 @@
 class Logger {
   Logger() {
     init();
-    std::cout << "Logger Singleton created!" << std::endl;
   };
   ~Logger() = default;
-
 
   void init();
 

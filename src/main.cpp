@@ -23,29 +23,29 @@
  *
  */
 
-#include "version.h"
 #include <thread>
+#include "version.h"
 #include "types.h"
 #include "Logging.h"
 //#include "Engine.h"
 //#include "UCIHandler.h"
 
-class Busybody {
-public:
-  Busybody() {
-    Logger::get().MAIN_LOG->info("Busybody CTOR");
-  }
-
-  void loop() {
-    int counter = 0;
-
-    while (counter < 100) {
-      Logger::get().MAIN_LOG->info("Busybody {}", counter++);
-      std::chrono::milliseconds timespan(1000); // or whatever
-      std::this_thread::sleep_for(timespan);
-    }
-  }
-};
+//class Busybody {
+//public:
+//  Busybody() {
+//    Logger::get().MAIN_LOG->info("Busybody CTOR");
+//  }
+//
+//  void loop() {
+//    int counter = 0;
+//
+//    while (counter < 100) {
+//      Logger::get().MAIN_LOG->info("Busybody {}", counter++);
+//      std::chrono::milliseconds timespan(1000); // or whatever
+//      std::this_thread::sleep_for(timespan);
+//    }
+//  }
+//};
 
 int main() {
 
@@ -62,10 +62,11 @@ int main() {
     std::cout << "DEBUG ASSERTION TESTS ON" << std::endl;
   ASSERT_END
 
-  Busybody bb;
-  bb.loop();
+  Logger::get();
+  INIT::init();
 
-  //  INIT::init();
+  //Busybody bb;
+  //bb.loop();
 
   //  Engine engine;
   //  UCI_Handler uci(&engine);

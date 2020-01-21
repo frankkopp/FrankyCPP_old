@@ -73,7 +73,7 @@ typedef uint64_t MilliSec;
 
 namespace INIT {
   /** initializes Values, Bitboards, Position */
-  extern void init();
+  void init();
 }
 
 ///////////////////////////////////
