@@ -48,16 +48,61 @@ message("Compiler DEBUG flags: " ${CMAKE_CXX_FLAGS} " " ${CMAKE_CXX_FLAGS_DEBUG}
 message("Compiler RELEASE flags: " ${CMAKE_CXX_FLAGS} " " ${CMAKE_CXX_FLAGS_RELEASE})
 message("EXEC: " ${CMAKE_CXX_LINK_EXECUTABLE})
 
+# For downloading with GIT
+message("Finding GIT...")
+set(GIT_EXECUTABLE)
+find_package(Git)
+if (GIT_FOUND)
+    message("git found: ${GIT_EXECUTABLE}")
+elseif ()
+    message("git NOT found:")
+endif()
+
+set(FETCHCONTENT_QUIET OFF)
+set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
+
+# Getting included libs from Github
+include(FetchContent)
+FetchContent_Declare(
+        googletest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG        release-1.10.0
+)
+message("Downloading/Update Google Test")
+FetchContent_MakeAvailable(googletest)
+
+# Getting included libs from Github
+include(FetchContent)
+FetchContent_Declare(
+        fmt
+        GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+        GIT_TAG        6.1.2
+)
+message("Downloading/Update FMT")
+FetchContent_MakeAvailable(fmt)
+
+# Getting included libs from Github
+include(FetchContent)
+FetchContent_Declare(
+        spdlog
+        GIT_REPOSITORY https://github.com/gabime/spdlog.git
+        GIT_TAG        v1.5.0
+)
+message("Downloading/Update SPDLOG")
+set(SPDLOG_FMT_EXTERNAL ON)
+FetchContent_MakeAvailable(spdlog)
+
 include_directories(
         ${PROJECT_SOURCE_DIR}/src
-        #${PROJECT_SOURCE_DIR}/test
-        ${PROJECT_SOURCE_DIR}/googletest/googletest/include
+        ${PROJECT_SOURCE_DIR}/test
+        ${googletest_SOURCE_DIR}/googletest/include
+        ${fmt_SOURCE_DIR}/include
+        ${spdlog_SOURCE_DIR}/include
 )
 
 # project sub directories - need to have their own CMakeList.txt
 add_subdirectory(src)
-#add_subdirectory(test)
-add_subdirectory(googletest)
+add_subdirectory(test)
 
 
 

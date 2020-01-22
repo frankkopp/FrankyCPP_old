@@ -37,19 +37,11 @@ class EvaluatorTest : public ::testing::Test {
 public:
   static void SetUpTestSuite() {
     NEWLINE;
-    LOGGING::init();
     INIT::init();
     NEWLINE;
-    // turn off info and below logging in the application
-    spdlog::set_level(spdlog::level::trace);
   }
-
-  std::shared_ptr<spdlog::logger> LOG = spdlog::get("Test_Logger");
 protected:
-  void SetUp() override {
-    LOG->set_level(spdlog::level::info);
-  }
-
+  void SetUp() override {}
   void TearDown() override {}
 };
 

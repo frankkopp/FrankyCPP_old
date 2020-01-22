@@ -42,14 +42,12 @@ class TimingTests : public ::testing::Test {
 public:
   static void SetUpTestSuite() {
     NEWLINE;
-    LOGGING::init();
     INIT::init();
     NEWLINE;
   }
 
 protected:
   void SetUp() override {}
-
   void TearDown() override {}
 
   // Necessary because of function pointer use below.

@@ -27,6 +27,7 @@
 
 #include <utility>
 #include "Logging.h"
+#include "Position.h"
 #include "Search.h"
 #include "SearchConfig.h"
 #include "Engine.h"
@@ -69,15 +70,9 @@ public:
 
   static void SetUpTestSuite() {
     NEWLINE;
-    LOGGING::init();
     INIT::init();
     NEWLINE;
-
-    // turn off info and below logging in the application
-    spdlog::set_level(spdlog::level::info);
   }
-
-  std::shared_ptr<spdlog::logger> LOG = spdlog::get("Test_Logger");
 
 protected:
 
@@ -93,7 +88,7 @@ protected:
 
 TEST_F(SearchTreeSizeTest, size_test) {
 
-  LOG__INFO(LOG, "Start SIZE Test for depth {}", DEPTH);
+  LOG__INFO(Logger::get().TEST_LOG, "Start SIZE Test for depth {}", DEPTH);
 
   std::vector<std::string> fens = Test_Fens::getFENs();
   std::vector<Result> results{};
@@ -175,7 +170,7 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   // ***********************************
   // TESTS
 
-  LOG->set_level(spdlog::level::info);
+  Logger::get().TEST_LOG->set_level(spdlog::level::info);
 
   ptrToSpecial = &search.getSearchStats().no_moveForPVsorting;
 
@@ -220,8 +215,8 @@ SearchTreeSizeTest::SingleTest
 SearchTreeSizeTest::measureTreeSize(Search &search, const Position &position,
                                     SearchLimits searchLimits, const std::string &featureName) {
 
-  LOG__INFO(LOG, "");
-  LOG__INFO(LOG, "Testing {}", featureName);
+  LOG__INFO(Logger::get().TEST_LOG, "");
+  LOG__INFO(Logger::get().TEST_LOG, "Testing {}", featureName);
   search.clearHash();
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();

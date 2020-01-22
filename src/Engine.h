@@ -90,6 +90,9 @@ public:
   std::string getOption(const std::string &name);
   void newGame();
   void setPosition(const std::string &fen);
+  const std::shared_ptr<Position> &getPosition() const { return pPosition; }
+  const std::shared_ptr<Search> &getPSearch() const { return pSearch; }
+  const std::shared_ptr<SearchLimits> &getPSearchLimits() const { return pSearchLimits; }
   void doMove(const std::string &moveStr);
   void startSearch(const UCISearchMode &uciSearchMode);
   void stopSearch();

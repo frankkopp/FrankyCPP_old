@@ -10,25 +10,33 @@ if (APPLE)
     set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
     set(Boost_USE_MULTITHREADED ON)
 
-    find_package(fmt REQUIRED)
-    if (fmt_FOUND)
-        message("Package fmt found")
-    endif ()
-    if (NOT fmt_FOUND)
-        message("Package fmt NOT found")
-    endif ()
+    #find_package(gtest REQUIRED)
+    #if (gtest_FOUND)
+    #    message("Package goggletest found")
+    #endif ()
+    #if (NOT gtest_FOUND)
+    #    message("Package goggletest NOT found")
+    #endif ()
 
-    find_package(spdlog REQUIRED)
-    if (spdlog_FOUND)
-        message("Package spdlog found")
-    endif ()
-    if (NOT spdlog_FOUND)
-        message("Package spdlog NOT found")
-    endif ()
-
-    include_directories(
-            /usr/local/include
-    )
+    #find_package(fmt REQUIRED)
+    #if (fmt_FOUND)
+    #    message("Package fmt found")
+    #endif ()
+    #if (NOT fmt_FOUND)
+    #    message("Package fmt NOT found")
+    #endif ()
+    #
+    #find_package(spdlog REQUIRED)
+    #if (spdlog_FOUND)
+    #    message("Package spdlog found")
+    #endif ()
+    #if (NOT spdlog_FOUND)
+    #    message("Package spdlog NOT found")
+    #endif ()
+    #
+    #include_directories(
+    #        /usr/local/include
+    #)
 
 endif ()
 
@@ -37,25 +45,25 @@ if (CYGWIN)
     set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
     set(Boost_USE_MULTITHREADED ON)
 
-    find_package(fmt REQUIRED)
-    if (fmt_FOUND)
-        message("Package fmt found")
-    endif ()
-    if (NOT fmt_FOUND)
-        message("Package fmt NOT found")
-    endif ()
-
-    find_package(spdlog REQUIRED)
-    if (spdlog_FOUND)
-        message("Package spdlog found")
-    endif ()
-    if (NOT spdlog_FOUND)
-        message("Package spdlog NOT found")
-    endif ()
-
-    include_directories(
-            /usr/local/include
-    )
+    #find_package(fmt REQUIRED)
+    #if (fmt_FOUND)
+    #    message("Package fmt found")
+    #endif ()
+    #if (NOT fmt_FOUND)
+    #    message("Package fmt NOT found")
+    #endif ()
+    #
+    #find_package(spdlog REQUIRED)
+    #if (spdlog_FOUND)
+    #    message("Package spdlog found")
+    #endif ()
+    #if (NOT spdlog_FOUND)
+    #    message("Package spdlog NOT found")
+    #endif ()
+    #
+    #include_directories(
+    #        /usr/local/include
+    #)
 
 endif ()
 
@@ -66,10 +74,10 @@ if (WIN32)
     set(Boost_USE_MULTITHREADED ON)
     set(Boost_USE_STATIC_LIBS ON)
     set(Boost_USE_STATIC_RUNTIME OFF)
-    include_directories(
-            ${PROJECT_SOURCE_DIR}/fmt/include
-            ${PROJECT_SOURCE_DIR}/spdlog/include
-    )
+    #include_directories(
+    #        ${PROJECT_SOURCE_DIR}/fmt/include
+    #        ${PROJECT_SOURCE_DIR}/spdlog/include
+    #)
 endif ()
 
 find_package(Boost 1.72.0 COMPONENTS timer log log_setup REQUIRED)
@@ -128,7 +136,7 @@ if (CYGWIN)
             ${exeName}
             core
             fmt::fmt
-            #spdlog::spdlog
+            spdlog::spdlog
             ${Boost_LIBRARIES}
     )
 endif ()

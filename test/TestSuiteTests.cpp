@@ -40,14 +40,9 @@ class TestSuiteTests : public ::testing::Test {
 public:
   static void SetUpTestSuite() {
     NEWLINE;
-    LOGGING::init();
     INIT::init();
     NEWLINE;
   }
-
-  std::shared_ptr<spdlog::logger> LOG = spdlog::get("Test_Logger");
-
-
 protected:
   void SetUp() override {
 
@@ -76,7 +71,6 @@ protected:
     SearchConfig::TT_SIZE_MB          = 64;
     SearchConfig::MAX_EXTRA_QDEPTH    = static_cast<Depth>(20);
     SearchConfig::NO_KILLER_MOVES     = 2;
-
     // @formatter:on
 
   }
@@ -139,7 +133,7 @@ TEST_F(TestSuiteTests, runTestSet) {
 
   testSuite.runTestSet(ts);
   for (TestSuite::Test t : ts) {
-    LOG__INFO(LOG, "Test '{}' {}", t.id, TestSuite::print(t.result));
+    LOG__INFO(Logger::get().TEST_LOG, "Test '{}' {}", t.id, TestSuite::print(t.result));
   }
 }
 
