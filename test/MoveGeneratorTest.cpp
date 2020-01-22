@@ -39,16 +39,11 @@ class MoveGenTest : public ::testing::Test {
 public:
   static void SetUpTestSuite() {
     NEWLINE;
-    LOGGING::init();
     INIT::init();
     NEWLINE;
   }
-
-  std::shared_ptr<spdlog::logger> LOG = spdlog::get("Test_Logger");
-
 protected:
   void SetUp() override {}
-
   void TearDown() override {}
 };
 
@@ -525,7 +520,7 @@ TEST_F(MoveGenTest, PERFT_mps) {
   Move killer1 = moves->at(35);
   Move killer2 = moves->at(85);
 
-  LOG__INFO(LOG, "Move Gen Performance Test started.");
+  LOG__INFO(Logger::get().TEST_LOG, "Move Gen Performance Test started.");
 
   auto start = std::chrono::high_resolution_clock::now();
   auto finish = std::chrono::high_resolution_clock::now();
@@ -544,9 +539,9 @@ TEST_F(MoveGenTest, PERFT_mps) {
   }
 
   const double sec = double(sum) / nanoPerSec;
-  LOG__INFO(LOG, "Move generated: {:n} in {:f} seconds\n", generatedMoves, sec);
+  LOG__INFO(Logger::get().TEST_LOG, "Move generated: {:n} in {:f} seconds\n", generatedMoves, sec);
   uint64_t mps = generatedMoves / sec;
-  LOG__INFO(LOG, "Move generated per second: {:n}", mps);
+  LOG__INFO(Logger::get().TEST_LOG, "Move generated per second: {:n}", mps);
   NEWLINE;
   SUCCEED();
 }

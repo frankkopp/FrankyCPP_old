@@ -33,16 +33,10 @@ class LoggingTest : public ::testing::Test {
 public:
   static void SetUpTestSuite() {
     NEWLINE;
-    LOGGING::init();
     INIT::init();
     NEWLINE;
   }
 
-  std::shared_ptr<spdlog::logger> TEST_LOG = spdlog::get("Test_Logger");
-  std::shared_ptr<spdlog::logger> MAIN_LOG = spdlog::get("Main_Logger");
-  std::shared_ptr<spdlog::logger> SEARCH_LOG = spdlog::get("Search_Logger");
-  std::shared_ptr<spdlog::logger> ENGINE_LOG = spdlog::get("Engine_Logger");
-  std::shared_ptr<spdlog::logger> UCI_LOG = spdlog::get("UCI_Logger");
 protected:
   void SetUp() override {
   }
@@ -51,12 +45,12 @@ protected:
 };
 
 TEST_F(LoggingTest, macro) {
-  LOG__CRITICAL(TEST_LOG, "CRITICAL {:n}", 1234567890);
-  LOG__ERROR(TEST_LOG, "ERROR {:n}", 1234567890);
-  LOG__WARN(TEST_LOG, "WARN {:n}", 1234567890);
-  LOG__INFO(TEST_LOG, "INFO {:n}", 1234567890);
-  LOG__DEBUG(TEST_LOG, "DEBUG {:n}", 1234567890);
-  LOG__TRACE(TEST_LOG, "TRACE {:n}", 1234567890);
+  LOG__CRITICAL(Logger::get().TEST_LOG, "CRITICAL {:n}", 1234567890);
+  LOG__ERROR(Logger::get().TEST_LOG, "ERROR {:n}", 1234567890);
+  LOG__WARN(Logger::get().TEST_LOG, "WARN {:n}", 1234567890);
+  LOG__INFO(Logger::get().TEST_LOG, "INFO {:n}", 1234567890);
+  LOG__DEBUG(Logger::get().TEST_LOG, "DEBUG {:n}", 1234567890);
+  LOG__TRACE(Logger::get().TEST_LOG, "TRACE {:n}", 1234567890);
 }
 
 
@@ -64,87 +58,87 @@ TEST_F(LoggingTest, decimal) {
   auto s = fmt::format(deLocale, "{:n}", 1234567890);
   std::cout << "Direct cout  : " << s << std::endl;
   fprintln("Macro with ln: {:n}", 1234567890);
-  LOG__INFO(TEST_LOG, "INFO {:n}", 1234567890);
+  LOG__INFO(Logger::get().TEST_LOG, "INFO {:n}", 1234567890);
   ASSERT_EQ("1.234.567.890", s);
   s = fmt::format("{:n}", 1234567890);
   std::cout << "Direct cout  : " << s << std::endl;
-  LOG__INFO(TEST_LOG, "INFO {:n}", 1234567890);
+  LOG__INFO(Logger::get().TEST_LOG, "INFO {:n}", 1234567890);
   ASSERT_EQ("1.234.567.890", s);
 
   //s = fmt::format("{:n}", std::numeric_limits<__int128_t>::max());
   //std::cout << "Direct cout  : " << s << std::endl;
-  //LOG__INFO(TEST_LOG, "INFO {:n}", std::numeric_limits<__int128_t>::max());
+  //LOG__INFO(Logger::get().TEST_LOG, "INFO {:n}", std::numeric_limits<__int128_t>::max());
   //ASSERT_EQ("170.141.183.460.469.231.731.687.303.715.884.105.727", s);
 }
 
 TEST_F(LoggingTest, basic) {
   // Logger test
-  LOG__INFO(TEST_LOG, "TEST LOGGER:");
- LOG__CRITICAL(TEST_LOG, "CRITICAL");
-  LOG__ERROR(TEST_LOG, "ERROR");
-  LOG__WARN(TEST_LOG, "WARN");
-  LOG__INFO(TEST_LOG, "INFO");
-  LOG__DEBUG(TEST_LOG, "DEBUG");
-  LOG__TRACE(TEST_LOG, "TRACE");
-  LOG__TRACE(TEST_LOG, "TRACE {}",  "MARCO");
-  LOG__INFO(TEST_LOG, "INFO {}", 123456789);
-  LOG__INFO(TEST_LOG, "INFO {:d}", 123456789);
-  LOG__INFO(TEST_LOG, "INFO {:n}", 123456789);
-  LOG__INFO(TEST_LOG, "INFO {:.5n}", double(123456789.12345));
+  LOG__INFO(Logger::get().TEST_LOG, "TEST LOGGER:");
+ LOG__CRITICAL(Logger::get().TEST_LOG, "CRITICAL");
+  LOG__ERROR(Logger::get().TEST_LOG, "ERROR");
+  LOG__WARN(Logger::get().TEST_LOG, "WARN");
+  LOG__INFO(Logger::get().TEST_LOG, "INFO");
+  LOG__DEBUG(Logger::get().TEST_LOG, "DEBUG");
+  LOG__TRACE(Logger::get().TEST_LOG, "TRACE");
+  LOG__TRACE(Logger::get().TEST_LOG, "TRACE {}",  "MARCO");
+  LOG__INFO(Logger::get().TEST_LOG, "INFO {}", 123456789);
+  LOG__INFO(Logger::get().TEST_LOG, "INFO {:d}", 123456789);
+  LOG__INFO(Logger::get().TEST_LOG, "INFO {:n}", 123456789);
+  LOG__INFO(Logger::get().TEST_LOG, "INFO {:.5n}", double(123456789.12345));
 
   // Logger test
-  LOG__INFO(MAIN_LOG, "MAIN LOGGER TESTS:");
- LOG__CRITICAL(MAIN_LOG, "CRITICAL");
-  LOG__ERROR(MAIN_LOG, "ERROR");
-  LOG__WARN(MAIN_LOG, "WARN");
-  LOG__INFO(MAIN_LOG, "INFO");
-  LOG__DEBUG(MAIN_LOG, "DEBUG");
-  LOG__TRACE(MAIN_LOG, "TRACE");
-  LOG__TRACE(MAIN_LOG, "TRACE {}",  "MARCO");
-  LOG__INFO(MAIN_LOG, "INFO {}", 123456789);
-  LOG__INFO(MAIN_LOG, "INFO {:d}", 123456789);
-  LOG__INFO(MAIN_LOG, "INFO {:n}", 123456789);
-  LOG__INFO(MAIN_LOG, "INFO {:.5n}", double(123456789.12345));
+  LOG__INFO(Logger::get().MAIN_LOG, "MAIN LOGGER TESTS:");
+ LOG__CRITICAL(Logger::get().MAIN_LOG, "CRITICAL");
+  LOG__ERROR(Logger::get().MAIN_LOG, "ERROR");
+  LOG__WARN(Logger::get().MAIN_LOG, "WARN");
+  LOG__INFO(Logger::get().MAIN_LOG, "INFO");
+  LOG__DEBUG(Logger::get().MAIN_LOG, "DEBUG");
+  LOG__TRACE(Logger::get().MAIN_LOG, "TRACE");
+  LOG__TRACE(Logger::get().MAIN_LOG, "TRACE {}",  "MARCO");
+  LOG__INFO(Logger::get().MAIN_LOG, "INFO {}", 123456789);
+  LOG__INFO(Logger::get().MAIN_LOG, "INFO {:d}", 123456789);
+  LOG__INFO(Logger::get().MAIN_LOG, "INFO {:n}", 123456789);
+  LOG__INFO(Logger::get().MAIN_LOG, "INFO {:.5n}", double(123456789.12345));
 
   // Logger test
-  LOG__INFO(ENGINE_LOG, "ENGINE LOGGER TESTS:");
-  LOG__CRITICAL(ENGINE_LOG, "CRITICAL");
-  LOG__ERROR(ENGINE_LOG, "ERROR");
-  LOG__WARN(ENGINE_LOG, "WARN");
-  LOG__INFO(ENGINE_LOG, "INFO");
-  LOG__DEBUG(ENGINE_LOG, "DEBUG");
-  LOG__TRACE(ENGINE_LOG, "TRACE");
-  LOG__TRACE(ENGINE_LOG, "TRACE {}",  "MARCO");
-  LOG__INFO(ENGINE_LOG, "INFO {}", 123456789);
-  LOG__INFO(ENGINE_LOG, "INFO {:d}", 123456789);
-  LOG__INFO(ENGINE_LOG, "INFO {:n}", 123456789);
-  LOG__INFO(ENGINE_LOG, "INFO {:.5n}", double(123456789.12345));
+  LOG__INFO(Logger::get().ENGINE_LOG, "ENGINE LOGGER TESTS:");
+  LOG__CRITICAL(Logger::get().ENGINE_LOG, "CRITICAL");
+  LOG__ERROR(Logger::get().ENGINE_LOG, "ERROR");
+  LOG__WARN(Logger::get().ENGINE_LOG, "WARN");
+  LOG__INFO(Logger::get().ENGINE_LOG, "INFO");
+  LOG__DEBUG(Logger::get().ENGINE_LOG, "DEBUG");
+  LOG__TRACE(Logger::get().ENGINE_LOG, "TRACE");
+  LOG__TRACE(Logger::get().ENGINE_LOG, "TRACE {}",  "MARCO");
+  LOG__INFO(Logger::get().ENGINE_LOG, "INFO {}", 123456789);
+  LOG__INFO(Logger::get().ENGINE_LOG, "INFO {:d}", 123456789);
+  LOG__INFO(Logger::get().ENGINE_LOG, "INFO {:n}", 123456789);
+  LOG__INFO(Logger::get().ENGINE_LOG, "INFO {:.5n}", double(123456789.12345));
 
   // Logger test
-  LOG__INFO(SEARCH_LOG, "SEARCH LOGGER TESTS:");
-  LOG__CRITICAL(SEARCH_LOG, "CRITICAL");
-  LOG__ERROR(SEARCH_LOG, "ERROR");
-  LOG__WARN(SEARCH_LOG, "WARN");
-  LOG__INFO(SEARCH_LOG, "INFO");
-  LOG__DEBUG(SEARCH_LOG, "DEBUG");
-  LOG__TRACE(SEARCH_LOG, "TRACE");
-  LOG__TRACE(SEARCH_LOG, "TRACE {}",  "MARCO");
-  LOG__INFO(SEARCH_LOG, "INFO {}", 123456789);
-  LOG__INFO(SEARCH_LOG, "INFO {:d}", 123456789);
-  LOG__INFO(SEARCH_LOG, "INFO {:n}", 123456789);
-  LOG__INFO(SEARCH_LOG, "INFO {:.5n}", double(123456789.12345));
+  LOG__INFO(Logger::get().SEARCH_LOG, "SEARCH LOGGER TESTS:");
+  LOG__CRITICAL(Logger::get().SEARCH_LOG, "CRITICAL");
+  LOG__ERROR(Logger::get().SEARCH_LOG, "ERROR");
+  LOG__WARN(Logger::get().SEARCH_LOG, "WARN");
+  LOG__INFO(Logger::get().SEARCH_LOG, "INFO");
+  LOG__DEBUG(Logger::get().SEARCH_LOG, "DEBUG");
+  LOG__TRACE(Logger::get().SEARCH_LOG, "TRACE");
+  LOG__TRACE(Logger::get().SEARCH_LOG, "TRACE {}",  "MARCO");
+  LOG__INFO(Logger::get().SEARCH_LOG, "INFO {}", 123456789);
+  LOG__INFO(Logger::get().SEARCH_LOG, "INFO {:d}", 123456789);
+  LOG__INFO(Logger::get().SEARCH_LOG, "INFO {:n}", 123456789);
+  LOG__INFO(Logger::get().SEARCH_LOG, "INFO {:.5n}", double(123456789.12345));
 
   // Logger test
-  LOG__INFO(UCI_LOG, "UCI LOGGER TESTS:");
-  LOG__CRITICAL(UCI_LOG, "CRITICAL");
-  LOG__ERROR(UCI_LOG, "ERROR");
-  LOG__WARN(UCI_LOG, "WARN");
-  LOG__INFO(UCI_LOG, "INFO");
-  LOG__DEBUG(UCI_LOG, "DEBUG");
-  LOG__TRACE(UCI_LOG, "TRACE");
-  LOG__TRACE(UCI_LOG, "TRACE {}",  "MARCO");
-  LOG__INFO(UCI_LOG, "INFO {}", 123456789);
-  LOG__INFO(UCI_LOG, "INFO {:d}", 123456789);
-  LOG__INFO(UCI_LOG, "INFO {:n}", 123456789);
-  LOG__INFO(UCI_LOG, "INFO {:.5n}", double(123456789.12345));
+  LOG__INFO(Logger::get().UCI_LOG, "UCI LOGGER TESTS:");
+  LOG__CRITICAL(Logger::get().UCI_LOG, "CRITICAL");
+  LOG__ERROR(Logger::get().UCI_LOG, "ERROR");
+  LOG__WARN(Logger::get().UCI_LOG, "WARN");
+  LOG__INFO(Logger::get().UCI_LOG, "INFO");
+  LOG__DEBUG(Logger::get().UCI_LOG, "DEBUG");
+  LOG__TRACE(Logger::get().UCI_LOG, "TRACE");
+  LOG__TRACE(Logger::get().UCI_LOG, "TRACE {}",  "MARCO");
+  LOG__INFO(Logger::get().UCI_LOG, "INFO {}", 123456789);
+  LOG__INFO(Logger::get().UCI_LOG, "INFO {:d}", 123456789);
+  LOG__INFO(Logger::get().UCI_LOG, "INFO {:n}", 123456789);
+  LOG__INFO(Logger::get().UCI_LOG, "INFO {:.5n}", double(123456789.12345));
 }

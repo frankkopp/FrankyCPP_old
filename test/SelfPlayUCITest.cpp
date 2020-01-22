@@ -27,6 +27,7 @@
 #include <gtest/gtest.h>
 #include <random>
 
+#include "Position.h"
 #include "Engine.h"
 #include "Logging.h"
 #include "UCIHandler.h"
@@ -38,25 +39,20 @@ class UCISelfPlayUCITest : public ::testing::Test {
 public:
   static void SetUpTestSuite() {
     NEWLINE;
-    LOGGING::init();
     INIT::init();
     NEWLINE;
-    // turn off info and below logging in the application
-    spdlog::set_level(spdlog::level::trace);
   }
 
-  std::shared_ptr<spdlog::logger> LOG = spdlog::get("Test_Logger");
-
 protected:
-  void SetUp() override { LOG->set_level(spdlog::level::debug); }
+  void SetUp() override { Logger::get().TEST_LOG->set_level(spdlog::level::debug); }
 
   void TearDown() override {}
 
   std::string sendCommand(Engine &engine, const std::string &command) {
-    LOG__INFO(LOG, "COMMAND: " + command);
+    LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
     std::istringstream is(command);
     std::ostringstream os = std::ostringstream();
-    UCI::Handler uciHandler(&engine, &is, &os);
+    UCI_Handler uciHandler(&engine, &is, &os);
     uciHandler.loop();
     std::string response = os.str();
     return response;
@@ -68,7 +64,7 @@ protected:
   }
 
   void expect(std::string test, std::string str) {
-    LOG__DEBUG(LOG, "{}", str);
+    LOG__DEBUG(Logger::get().TEST_LOG, "{}", str);
     ASSERT_EQ(test, str.substr(0, test.length()));
   }
 };
@@ -100,7 +96,7 @@ TEST_F(UCISelfPlayUCITest, uciTest) {
     Move move = engine.getLastResult().bestMove;
     if (!move)
       break;
-    LOG__INFO(LOG, "UCI NEXT MOVE: {} on position {} (key={})",
+    LOG__INFO(Logger::get().TEST_LOG, "UCI NEXT MOVE: {} on position {} (key={})",
               printMoveVerbose(move), position.printFen(),
               position.getZobristKey());
     position.doMove(move);

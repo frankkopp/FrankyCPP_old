@@ -24,9 +24,10 @@
  */
 
 #include <gtest/gtest.h>
+#include "Logging.h"
 #include "types.h"
 #include "misc.h"
-#include "Logging.h"
+#include <Position.h>
 
 using testing::Eq;
 
@@ -35,7 +36,6 @@ class MiscTest : public ::testing::Test {
 public:
   static void SetUpTestSuite() {
     NEWLINE;
-    LOGGING::init();
     INIT::init();
     NEWLINE;
   }

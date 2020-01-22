@@ -26,10 +26,10 @@
 #ifndef FRANKYCPP_EVALUATOR_H
 #define FRANKYCPP_EVALUATOR_H
 
-#include "gtest/gtest_prod.h"
-#include "Logging.h"
+#include <vector>
 #include "types.h"
 #include "EvaluatorConfig.h"
+#include "gtest/gtest_prod.h"
 
 // pre-fetching of TT entries into CPU caches
 #ifdef __GNUC__
@@ -49,7 +49,7 @@ class Position;
 
 class Evaluator {
 
-  std::shared_ptr<spdlog::logger> LOG = spdlog::get("Eval_Logger");
+//  std::shared_ptr<spdlog::logger> LOG = spdlog::get("Eval_Logger");
 
   /** Entry class for the eval cache */
   struct Entry {
@@ -122,7 +122,7 @@ private:
   int evaluatePiece(const Position &position);
 
   template<Color C, PieceType PT>
-  int mobility(const Position &position, const Square sq);
+  int mobility(const Position &position, Square sq);
 
   template<Color C>
   int evaluateKing(const Position &position);

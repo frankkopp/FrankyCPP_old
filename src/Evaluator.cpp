@@ -23,13 +23,16 @@
  *
  */
 
+#include "Logging.h"
 #include "Evaluator.h"
 #include "Bitboards.h"
 #include "Position.h"
 
 using namespace Bitboards;
 
-Evaluator::Evaluator() { resizePawnTable(config.PAWN_TABLE_SIZE); }
+Evaluator::Evaluator() {
+  resizePawnTable(config.PAWN_TABLE_SIZE);
+}
 
 Evaluator::Evaluator(std::size_t pawnEvalCacheSize) {
   resizePawnTable(pawnEvalCacheSize);
@@ -38,38 +41,37 @@ Evaluator::Evaluator(std::size_t pawnEvalCacheSize) {
 void Evaluator::resizePawnTable(std::size_t size) {
   if (config.USE_PAWN_TABLE) {
     pawnTable.resize(size);
-    LOG__INFO(
-        LOG, "Evaluator pawn table of size {:.2F} MB created with {:n} entries",
-        static_cast<double>(sizeof(Entry) * config.PAWN_TABLE_SIZE) /
-            (1024 * 1024),
-        config.PAWN_TABLE_SIZE);
+    LOG__INFO(Logger::get().EVAL_LOG, "Evaluator pawn table of size {:.2F} MB created with {:n} entries",
+              static_cast<double>(sizeof(Entry) * config.PAWN_TABLE_SIZE) /
+              (1024 * 1024),
+              config.PAWN_TABLE_SIZE);
   }
 }
 
 Value Evaluator::evaluate(const Position &position) {
-  LOG__TRACE(LOG, "Start eval on {}", position.printFen());
+  LOG__TRACE(Logger::get().EVAL_LOG, "Start eval on {}", position.printFen());
 
   // Calculations are always from the view of the white player.
 
   // if not enough material on the board for a win then it is a draw
   if (position.checkInsufficientMaterial()) {
-    LOG__TRACE(LOG, "Eval: DRAW for insufficient material on {}",
+    LOG__TRACE(Logger::get().EVAL_LOG, "Eval: DRAW for insufficient material on {}",
                position.printFen());
     return VALUE_DRAW;
   }
 
   // MATERIAL & POSITION
   int value = (config.USE_MATERIAL
-                   ? position.getMaterial(WHITE) - position.getMaterial(BLACK)
-                   : 0) *
+               ? position.getMaterial(WHITE) - position.getMaterial(BLACK)
+               : 0) *
               config.MATERIAL_WEIGHT;
-  LOG__TRACE(LOG, "Eval value after material: {}", value);
+  LOG__TRACE(Logger::get().EVAL_LOG, "Eval value after material: {}", value);
 
   value += (config.USE_POSITION
-                ? position.getPosValue(WHITE) - position.getPosValue(BLACK)
-                : 0) *
+            ? position.getPosValue(WHITE) - position.getPosValue(BLACK)
+            : 0) *
            config.POSITION_WEIGHT;
-  LOG__TRACE(LOG, "Eval value after position: {}", value);
+  LOG__TRACE(Logger::get().EVAL_LOG, "Eval value after position: {}", value);
 
   // TODO: Early exit if score is very high
 
@@ -77,7 +79,7 @@ Value Evaluator::evaluate(const Position &position) {
   if (config.USE_PAWNEVAL) {
     value += pawnEval(position);
   }
-  LOG__TRACE(LOG, "Eval value after pawns: {}", value);
+  LOG__TRACE(Logger::get().EVAL_LOG, "Eval value after pawns: {}", value);
 
   // evaluate pieces                                                         @formatter:off
   value += evaluatePiece<WHITE, KNIGHT>(position) - evaluatePiece<BLACK, KNIGHT>(position);
@@ -85,33 +87,34 @@ Value Evaluator::evaluate(const Position &position) {
   value += evaluatePiece<WHITE, ROOK  >(position) - evaluatePiece<BLACK, ROOK  >(position);
   value += evaluatePiece<WHITE, QUEEN >(position) - evaluatePiece<BLACK, QUEEN >(position);
   // @formatter:on
-  LOG__TRACE(LOG, "Eval value after pieces: {}", value);
+  LOG__TRACE(Logger::get().EVAL_LOG, "Eval value after pieces: {}", value);
 
   // evaluate king
   value += evaluateKing<WHITE>(position) - evaluateKing<BLACK>(position);
-  LOG__TRACE(LOG, "Eval value after king: {}", value);
+  LOG__TRACE(Logger::get().EVAL_LOG, "Eval value after king: {}", value);
 
   // check bonus: giving check or being in check has value as it forces evasion
   // moves
   if (config.USE_CHECK_BONUS) {
     value += position.isAttacked(position.getKingSquare(BLACK), WHITE)
-                 ? config.CHECK_VALUE
-                 : 0;
+             ? config.CHECK_VALUE
+             : 0;
     value -= position.isAttacked(position.getKingSquare(WHITE), BLACK)
-                 ? config.CHECK_VALUE
-                 : 0;
+             ? config.CHECK_VALUE
+             : 0;
   }
-  LOG__TRACE(LOG, "Eval value after check bonus: {}", value);
+  LOG__TRACE(Logger::get().EVAL_LOG, "Eval value after check bonus: {}", value);
 
   // value is always from the view of the next player
-  if (position.getNextPlayer() == BLACK)
+  if (position.getNextPlayer() == BLACK) {
     value *= -1;
+  }
 
   // TEMPO Bonus for the side to move (helps with evaluation alternation -
   // less difference between side which makes aspiration search faster
   // (not empirically tested)
   value += config.TEMPO;
-  LOG__TRACE(LOG, "Eval value after tempo and player adjust: {}", value);
+  LOG__TRACE(Logger::get().EVAL_LOG, "Eval value after tempo and player adjust: {}", value);
 
   return static_cast<Value>(value);
 }
@@ -120,19 +123,19 @@ int Evaluator::pawnEval(const Position &position) {
   const double gamePhaseFactor = position.getGamePhaseFactor();
   const double revGamePhaseFactor = 1.0 - gamePhaseFactor;
   const Bitboard pawnsBitboard =
-      position.getPieceBB(WHITE, PAWN) | position.getPieceBB(BLACK, PAWN);
+    position.getPieceBB(WHITE, PAWN) | position.getPieceBB(BLACK, PAWN);
 
-  Entry *const entryPtr = [&] { // lambda initialization
+  Entry* const entryPtr = [&] { // lambda initialization
     // Get a pointer to a value entry for pawns
     // Either from the cache or from the default entry.
     if (config.USE_PAWN_TABLE) {
-      LOG__TRACE(LOG, "Using pawn table on {}", pawnsBitboard);
-      return &pawnTable[getTableIndex(pawnsBitboard)];
-      ;
-    } else {
+      LOG__TRACE(Logger::get().EVAL_LOG, "Using pawn table on {}", pawnsBitboard);
+      return &pawnTable[getTableIndex(pawnsBitboard)];;
+    }
+    else {
       // reset the default entry every time it is used
       defaultEntry = {0, 0, 0};
-      LOG__TRACE(LOG, "Not using pawn table.");
+      LOG__TRACE(Logger::get().EVAL_LOG, "Not using pawn table.");
       return &defaultEntry;
     }
   }();
@@ -142,15 +145,17 @@ int Evaluator::pawnEval(const Position &position) {
   if (entryPtr->pawnBitboard != EMPTY_BB &&
       entryPtr->pawnBitboard == pawnsBitboard) {
     cacheHits++;
-    LOG__TRACE(LOG, "Found cache hit: {}", entryPtr->str());
-  } else {
+    LOG__TRACE(Logger::get().EVAL_LOG, "Found cache hit: {}", entryPtr->str());
+  }
+  else {
     cacheMisses++;
     // we did not find an entry or have the default entry when cache is turned
     // off
     if (config.USE_PAWN_TABLE) {
       if (entryPtr->pawnBitboard == 0) {
         cacheEntries++;
-      } else {
+      }
+      else {
         cacheReplace++;
       }
       // replace entry in cache by overwriting the key (=pawns bitboard)
@@ -161,16 +166,16 @@ int Evaluator::pawnEval(const Position &position) {
     // entry values will be overwritten in evaluatePawns and stored in cache or
     // the default entry
     evaluatePawns(position, entryPtr);
-    LOG__TRACE(LOG, "Cache miss or no cache. Created cache entry: {}",
+    LOG__TRACE(Logger::get().EVAL_LOG, "Cache miss or no cache. Created cache entry: {}",
                entryPtr->str());
-    LOG__TRACE(LOG, "{:s}", pawnTableStats());
+    LOG__TRACE(Logger::get().EVAL_LOG, "{:s}", pawnTableStats());
   }
 
   // we have found a matching entry - add the respective mid and end values
   // for the current game phase
   const int value = static_cast<int>(entryPtr->midvalue * gamePhaseFactor +
                                      entryPtr->endvalue * revGamePhaseFactor);
-  LOG__TRACE(LOG,
+  LOG__TRACE(Logger::get().EVAL_LOG,
              "Game phase adjusted pawn eval results in {} (midvalue={}, "
              "endvalue={}, weight={})",
              value * config.PAWNEVAL_WEIGHT,
@@ -181,7 +186,7 @@ int Evaluator::pawnEval(const Position &position) {
 }
 
 // TODO - template it
-void Evaluator::evaluatePawns(const Position &position, Entry *const entry) {
+void Evaluator::evaluatePawns(const Position &position, Entry* const entry) {
 
   // compiler will likely unroll this
   for (Color color = WHITE; color <= BLACK; ++color) {
@@ -208,14 +213,14 @@ void Evaluator::evaluatePawns(const Position &position, Entry *const entry) {
       // passed pawns - no opponent pawns in the area before me and no own pawn
       // before me
       passed |=
-          ((myPawns & sqToFileBB[sq]) | oppPawns) & passedPawnMask[color][sq]
-              ? EMPTY_BB
-              : squareBB[sq];
+        ((myPawns & sqToFileBB[sq]) | oppPawns) & passedPawnMask[color][sq]
+        ? EMPTY_BB
+        : squareBB[sq];
       // blocked pawns
       blocked |= ((myPawns & sqToFileBB[sq]) | oppPawns) &
-                         rays[color == WHITE ? N : S][sq]
-                     ? squareBB[sq]
-                     : EMPTY_BB;
+                 rays[color == WHITE ? N : S][sq]
+                 ? squareBB[sq]
+                 : EMPTY_BB;
       // pawns as neighbours in a row = phalanx
       phalanx |= myPawns & neighbours & sqToRankBB[sq];
       // pawn as neighbours in the row forward = supported pawns
@@ -255,17 +260,18 @@ void Evaluator::evaluatePawns(const Position &position, Entry *const entry) {
     if (color == WHITE) {
       entry->midvalue += midvalue;
       entry->endvalue += endvalue;
-    } else {
+    }
+    else {
       entry->midvalue -= midvalue;
       entry->endvalue -= endvalue;
     }
-    LOG__TRACE(LOG,
+    LOG__TRACE(Logger::get().EVAL_LOG,
                "Raw pawn eval for {} results midvalue = {} and endvalue = {}",
                color ? "BLACK" : "WHITE", midvalue, endvalue);
   }
 }
 
-template <Color C, PieceType PT>
+template<Color C, PieceType PT>
 int Evaluator::evaluatePiece(const Position &position) {
   assert(PT != PAWN && PT != KING);
 
@@ -276,14 +282,17 @@ int Evaluator::evaluatePiece(const Position &position) {
 
   if (config.USE_PIECE_BONI) {
     // bonus/malus for bishop pair
-    if (PT == BISHOP && popcount(pieces) >= 2)
+    if (PT == BISHOP && popcount(pieces) >= 2) {
       value += config.BISHOP_PAIR;
+    }
     // bonus/malus for knight pair
-    if (PT == KNIGHT && popcount(pieces) >= 2)
+    if (PT == KNIGHT && popcount(pieces) >= 2) {
       value += config.KNIGHT_PAIR;
+    }
     // bonus/malus for rook pair
-    if (PT == ROOK && popcount(pieces) >= 2)
+    if (PT == ROOK && popcount(pieces) >= 2) {
       value += config.ROOK_PAIR;
+    }
   }
 
   // LOOP through all pieces of this color and type
@@ -298,23 +307,23 @@ int Evaluator::evaluatePiece(const Position &position) {
       const Bitboard myPawns = position.getPieceBB(C, PAWN);
       if (PT == BISHOP && fromSquare == (C ? SQ_C8 : SQ_C1)) {
         value += myPawns & ((C ? SQ_B7 : SQ_B2) | (C ? SQ_D7 : SQ_D2))
-                     ? config.TRAPPED_BISHOP_PENALTY
-                     : 0;
+                 ? config.TRAPPED_BISHOP_PENALTY
+                 : 0;
       }
       if (PT == BISHOP && fromSquare == (C ? SQ_F1 : SQ_F8)) {
         value += myPawns & ((C ? SQ_E7 : SQ_E2) | (C ? SQ_G7 : SQ_G2))
-                     ? config.TRAPPED_BISHOP_PENALTY
-                     : 0;
+                 ? config.TRAPPED_BISHOP_PENALTY
+                 : 0;
       }
     }
   }
 
-  LOG__TRACE(LOG, "Raw piece eval for {} {:6} results in value = {}",
+  LOG__TRACE(Logger::get().EVAL_LOG, "Raw piece eval for {} {:6} results in value = {}",
              C ? "BLACK" : "WHITE", pieceTypeToString[PT], value);
   return value;
 }
 
-template <Color C, PieceType PT>
+template<Color C, PieceType PT>
 inline int Evaluator::mobility(const Position &position, const Square sq) {
   const Bitboard occupiedBB = position.getOccupiedBB();
   const Bitboard myPiecesBB = position.getOccupiedBB(C);
@@ -324,7 +333,8 @@ inline int Evaluator::mobility(const Position &position, const Square sq) {
     // knights can't be blocked
     Bitboard moves = pseudoMoves & ~myPiecesBB;
     tmpMobility += Bitboards::popcount(moves);
-  } else { // sliding pieces
+  }
+  else { // sliding pieces
     Bitboard pseudoTo = pseudoMoves & ~myPiecesBB;
     while (pseudoTo) {
       const Square toSquare = Bitboards::popLSB(pseudoTo);
@@ -338,7 +348,8 @@ inline int Evaluator::mobility(const Position &position, const Square sq) {
   return tmpMobility * config.MOBILITY_WEIGHT;
 }
 
-template <Color C> int Evaluator::evaluateKing(const Position &position) {
+template<Color C>
+int Evaluator::evaluateKing(const Position &position) {
 
   int value = 0;
 
@@ -347,12 +358,13 @@ template <Color C> int Evaluator::evaluateKing(const Position &position) {
     value += kingCastleSafety<C>(position);
   }
 
-  LOG__TRACE(LOG, "Raw piece eval for {} {:6} results in value = {}",
+  LOG__TRACE(Logger::get().EVAL_LOG, "Raw piece eval for {} {:6} results in value = {}",
              C ? "BLACK" : "WHITE", pieceTypeToString[KING], value);
   return value;
 }
 
-template <Color C> int Evaluator::kingCastleSafety(const Position &position) {
+template<Color C>
+int Evaluator::kingCastleSafety(const Position &position) {
   const Bitboard myRooks = position.getPieceBB(C, ROOK);
   const Bitboard myPawns = position.getPieceBB(C, PAWN);
   const Square kingSquare = position.getKingSquare(C);
@@ -366,7 +378,7 @@ template <Color C> int Evaluator::kingCastleSafety(const Position &position) {
         (squareBB[C ? SQ_G7 : SQ_G2] | squareBB[C ? SQ_G6 : SQ_G3]) & myPawns &&
         (squareBB[C ? SQ_H7 : SQ_H2] | squareBB[C ? SQ_H6 : SQ_H3] |
          squareBB[C ? SQ_H5 : SQ_H4]) &
-            myPawns) {
+        myPawns) {
       value += static_cast<int>(config.KING_SAFETY_PAWNSHIELD *
                                 position.getGamePhaseFactor());
       // trapped rook
@@ -375,7 +387,7 @@ template <Color C> int Evaluator::kingCastleSafety(const Position &position) {
       }
     }
   }
-  // king in queen side castle
+    // king in queen side castle
   else if (queenSideCastleMask[C] & kingSquare) {
     // castle wall
     if (squareBB[C ? SQ_D7 : SQ_D2] & myPawns &&
@@ -383,7 +395,7 @@ template <Color C> int Evaluator::kingCastleSafety(const Position &position) {
         (squareBB[C ? SQ_C7 : SQ_C2] | squareBB[C ? SQ_C6 : SQ_C3]) & myPawns &&
         (squareBB[C ? SQ_A7 : SQ_A2] | squareBB[C ? SQ_A6 : SQ_A3] |
          squareBB[C ? SQ_A5 : SQ_A4]) &
-            myPawns) {
+        myPawns) {
       value += static_cast<int>(config.KING_SAFETY_PAWNSHIELD *
                                 position.getGamePhaseFactor());
       // trapped rook
@@ -398,22 +410,22 @@ template <Color C> int Evaluator::kingCastleSafety(const Position &position) {
 
 // explicitly instantiate all template definitions so other classes can see them
 template int Evaluator::evaluatePiece<Color::WHITE, PieceType::KNIGHT>(
-    const Position &position);
+  const Position &position);
 template int Evaluator::evaluatePiece<Color::WHITE, PieceType::BISHOP>(
-    const Position &position);
+  const Position &position);
 template int Evaluator::evaluatePiece<Color::WHITE, PieceType::ROOK>(
-    const Position &position);
+  const Position &position);
 template int Evaluator::evaluatePiece<Color::WHITE, PieceType::QUEEN>(
-    const Position &position);
+  const Position &position);
 template int Evaluator::evaluatePiece<Color::WHITE, PieceType::KING>(
-    const Position &position);
+  const Position &position);
 template int Evaluator::evaluatePiece<Color::BLACK, PieceType::KNIGHT>(
-    const Position &position);
+  const Position &position);
 template int Evaluator::evaluatePiece<Color::BLACK, PieceType::BISHOP>(
-    const Position &position);
+  const Position &position);
 template int Evaluator::evaluatePiece<Color::BLACK, PieceType::ROOK>(
-    const Position &position);
+  const Position &position);
 template int Evaluator::evaluatePiece<Color::BLACK, PieceType::QUEEN>(
-    const Position &position);
+  const Position &position);
 template int Evaluator::evaluatePiece<Color::BLACK, PieceType::KING>(
-    const Position &position);
+  const Position &position);

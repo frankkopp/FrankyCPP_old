@@ -23,9 +23,8 @@
  *
  */
 
+#include "Logging.h"
 #include "SearchLimits.h"
-
-#include <utility>
 
 SearchLimits::SearchLimits() = default;
 
@@ -105,11 +104,11 @@ void SearchLimits::setupLimits() {
     maxDepth = depth ? depth : DEPTH_MAX;
   }
   else { // invalid search mode - use default
-    LOG__WARN(LOG, "SearchMode is invalid as no mode could be deducted from settings.");
+    LOG__WARN(Logger::get().SEARCH_LOG, "SearchMode is invalid as no mode could be deducted from settings.");
     timeControl = false;
     startDepth = DEPTH_ONE;
     maxDepth = DEPTH_ONE;
-    LOG__WARN(LOG, "SearchMode set to depth {}", maxDepth);
+    LOG__WARN(Logger::get().SEARCH_LOG, "SearchMode set to depth {}", maxDepth);
   }
 }
 

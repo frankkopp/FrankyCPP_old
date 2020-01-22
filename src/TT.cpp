@@ -23,11 +23,14 @@
  *
  */
 
+#include <chrono>
+#include <vector>
+#include <thread>
 #include "Logging.h"
 #include "TT.h"
 
 void TT::resize(const uint64_t newSizeInByte) {
-  LOG__TRACE(LOG, "Resizing TT from {:n} to {:n}", sizeInByte, newSizeInByte);
+  LOG__TRACE(Logger::get().TT_LOG, "Resizing TT from {:n} to {:n}", sizeInByte, newSizeInByte);
   delete[] _data;
   // number of entries
   sizeInByte = newSizeInByte;
@@ -40,14 +43,14 @@ void TT::resize(const uint64_t newSizeInByte) {
   _data = new Entry[maxNumberOfEntries];
   sizeInByte = maxNumberOfEntries * ENTRY_SIZE;
   clear();
-  LOG__INFO(LOG, "TT Size {:n} Byte, Capacity {:n} entries (size={}Byte) (Requested were {:n} Bytes)",
+  LOG__INFO(Logger::get().TT_LOG, "TT Size {:n} Byte, Capacity {:n} entries (size={}Byte) (Requested were {:n} Bytes)",
             sizeInByte, maxNumberOfEntries, sizeof(Entry), newSizeInByte);
 }
 
 void TT::clear() {
   // This clears the TT by overwriting each entry with 0.
   // It uses multiple threads if noOfThreads is > 1.
-  LOG__TRACE(LOG, "Clearing TT ({} threads)...", noOfThreads);
+  LOG__TRACE(Logger::get().TT_LOG, "Clearing TT ({} threads)...", noOfThreads);
   auto startTime = std::chrono::high_resolution_clock::now();
   std::vector<std::thread> threads;
   threads.reserve(noOfThreads);
@@ -71,7 +74,7 @@ void TT::clear() {
   for (std::thread &th: threads) th.join();
   auto finish = std::chrono::high_resolution_clock::now();
   auto time = std::chrono::duration_cast<std::chrono::milliseconds>(finish - startTime).count();
-  LOG__INFO(LOG, "TT cleared {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
+  LOG__INFO(Logger::get().TT_LOG, "TT cleared {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
 }
 
 void TT::put(const Key key, const Depth depth, const Move move, const Value value,
@@ -151,7 +154,7 @@ TT::writeEntry(Entry* const entryPtr, const Key key, const Depth depth, const Mo
 }
 
 void TT::ageEntries() {
-  LOG__TRACE(LOG, "Aging TT ({} threads)...", noOfThreads);
+  LOG__TRACE(Logger::get().TT_LOG, "Aging TT ({} threads)...", noOfThreads);
   auto timePoint = std::chrono::high_resolution_clock::now();
   std::vector<std::thread> threads;
   threads.reserve(noOfThreads);
@@ -171,7 +174,7 @@ void TT::ageEntries() {
   for (std::thread &th: threads) th.join();
   auto finish = std::chrono::high_resolution_clock::now();
   auto time = std::chrono::duration_cast<std::chrono::milliseconds>(finish - timePoint).count();
-  LOG__INFO(LOG, "TT aged {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
+  LOG__INFO(Logger::get().TT_LOG, "TT aged {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
 }
 
 std::ostream &operator<<(std::ostream &os, const TT::Entry &entry) {

@@ -23,11 +23,14 @@
  *
  */
 
+#include <iostream>
 #include <string>
 #include <bitset>
 #include <sstream>
 #include <algorithm>
 #include "types.h"
+
+const std::locale deLocale(std::cout.getloc(), new deLocaleDecimals);
 
 std::string printBitString(uint64_t b) {
   std::ostringstream os;

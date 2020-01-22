@@ -27,7 +27,6 @@
 #include "Position.h"
 #include "Random.h"
 #include "Bitboards.h"
-#include "MoveGenerator.h"
 #include "Values.h"
 
 Key Zobrist::pieces[PIECE_LENGTH][SQ_LENGTH];
@@ -39,7 +38,6 @@ Key Zobrist::nextPlayer;
 ///// STATIC
 
 void Position::init() {
-  LOG__TRACE(spdlog::get("Main_Logger"), "{}:{} INIT", __FILE__, __func__, __LINE__);
 
   // Zobrist Key initialization
   Random random(1070372);
@@ -61,9 +59,7 @@ void Position::init() {
 ///// CONSTRUCTORS
 
 /** Default constructor creates a board with standard start setup */
-Position::Position() : Position(START_POSITION_FEN) {
-  LOG__TRACE(spdlog::get("Main_Logger"), "{}:{} CTOR", __FILENAME__, __func__, __LINE__);
-}
+Position::Position() : Position(START_POSITION_FEN) {}
 
 /** Creates a board with setup from the given fen */
 Position::Position(const std::string &fen) : Position(fen.c_str()) {}
@@ -532,28 +528,6 @@ bool Position::hasCheck() const {
   const bool check = isAttacked(kingSquare[nextPlayer], ~nextPlayer);
   hasCheckFlag = check ? FLAG_TRUE : FLAG_FALSE;
   return check;
-}
-
-/**
- * TODO: This implementation is violating encapsulation as it needs
- *  a move generator to generate all possible moves to see if there are any
- *  legal moves. The MoveGenerator also needs to know Position which leads to
- *  a circle reference.
- */
-bool Position::hasCheckMate() const {
-  if (!hasCheck()) {
-    return false;
-  }
-  if (hasMateFlag != FLAG_TBD) {
-    return (hasMateFlag == FLAG_TRUE);
-  }
-  const bool hasLegalMove = MoveGenerator::hasLegalMove(*this);
-  if (!hasLegalMove) {
-    hasMateFlag = FLAG_TRUE;
-    return true;
-  }
-  hasMateFlag = FLAG_FALSE;
-  return false;
 }
 
 bool Position::checkRepetitions(int reps) const {

@@ -27,16 +27,16 @@
 #define FRANKYCPP_MOVEGENERATOR_H
 
 #include <vector>
-#include "gtest/gtest_prod.h"
 #include "Logging.h"
 #include "types.h"
+#include "gtest/gtest_prod.h"
 
-// circle reference between Position and MoveGenerator - this make it possible
+// forward declaration
 class Position;
 
 class MoveGenerator {
   
-  std::shared_ptr<spdlog::logger> LOG = spdlog::get("MoveGen_Logger");
+//  std::shared_ptr<spdlog::logger> LOG = spdlog::get("MoveGen_Logger");
 
   MoveList pseudoLegalMoves = MoveList();
   MoveList legalMoves = MoveList();

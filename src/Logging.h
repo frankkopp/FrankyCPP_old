@@ -26,7 +26,10 @@
 #ifndef FRANKYCPP_LOGGING_H
 #define FRANKYCPP_LOGGING_H
 
+#include <iosfwd>
 #include <spdlog/spdlog.h>
+#include "spdlog/sinks/stdout_color_sinks.h"
+#include "spdlog/sinks/basic_file_sink.h"
 
 #ifdef NDEBUG
 #define ASSERT_START while(0) {
@@ -38,6 +41,7 @@
 
 #define SEARCH_LOG_LEVEL spdlog::level::trace
 
+#define ZERO__LVL 0
 #define CRITICAL__LVL 1
 #define ERROR__LVL 2
 #define WARN__LVL 3
@@ -83,8 +87,45 @@
 #define LOG__TRACE(logger, ...) void(0)
 #endif
 
-namespace LOGGING {
-  extern void init();
-}
+/** Singleton class for Logger */
+class Logger {
+  Logger() {
+    init();
+  };
+  ~Logger() = default;
 
+  void init();
+
+public :
+  // disallow copies
+  Logger(Logger const &) = delete; // copy
+  Logger &operator=(const Logger &) = delete; // copy assignment
+  Logger(Logger const &&) = delete; // move
+  Logger &operator=(const Logger &&) = delete; // move assignment
+
+public:
+  static Logger& get() {
+    static Logger instance;
+    return instance;
+  }
+
+  const std::string defaultPattern = "[%H:%M:%S:%f] [t:%-10t] [%-17n] [%-8l]: %v";
+  const std::shared_ptr<spdlog::sinks::basic_file_sink_mt> sharedFileSink =
+    std::make_shared<spdlog::sinks::basic_file_sink_mt>("FrankyCPP.log");
+  const std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> uciOutSink
+  = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+
+  // @formatter:off
+  const std::shared_ptr<spdlog::logger> MAIN_LOG    = spdlog::stdout_color_mt("Main_Logger");
+  const std::shared_ptr<spdlog::logger> ENGINE_LOG  = spdlog::stdout_color_mt("Engine_Logger");
+  const std::shared_ptr<spdlog::logger> SEARCH_LOG  = spdlog::stdout_color_mt("Search_Logger");
+  const std::shared_ptr<spdlog::logger> TSUITE_LOG  = spdlog::stdout_color_mt("TSuite_Logger");
+  const std::shared_ptr<spdlog::logger> MOVEGEN_LOG = spdlog::stdout_color_mt("MoveGen_Logger");
+  const std::shared_ptr<spdlog::logger> EVAL_LOG    = spdlog::stdout_color_mt("Eval_Logger");
+  const std::shared_ptr<spdlog::logger> TT_LOG      = spdlog::stdout_color_mt("TT_Logger");
+  const std::shared_ptr<spdlog::logger> UCIHAND_LOG = spdlog::stdout_color_mt("UCIHandler_Logger");
+  const std::shared_ptr<spdlog::logger> UCI_LOG     = spdlog::basic_logger_mt("UCI_Logger", "FrankyCPP_uci.log");
+  const std::shared_ptr<spdlog::logger> TEST_LOG    = spdlog::stdout_color_mt("Test_Logger");
+  // @formatter:on
+};
 #endif //FRANKYCPP_LOGGING_H

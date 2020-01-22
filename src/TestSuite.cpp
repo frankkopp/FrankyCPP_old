@@ -23,9 +23,14 @@
  *
  */
 
+#include <iostream>
 #include <fstream>
 #include <regex>
+#include "Logging.h"
 #include "TestSuite.h"
+#include "Position.h"
+#include "Search.h"
+#include "misc.h"
 
 #include <boost/timer/timer.hpp>
 using namespace boost::timer;
@@ -110,7 +115,7 @@ void TestSuite::runTestSet(std::vector<Test> &ts) const {
   searchLimits.setDepth(searchDepth);
 
   for (Test &t : ts) {
-    LOG__INFO(LOG, "Running Test {} {}", t.id, t.fen);
+    LOG__INFO(Logger::get().TSUITE_LOG, "Running Test {} {}", t.id, t.fen);
     runSingleTest(search, searchLimits, t);
   }
 
@@ -141,14 +146,14 @@ TestSuite::runSingleTest(Search &search, SearchLimits &searchLimits, TestSuite::
 
       // check and store result
       if ("mate " + t.expectedString == printValue(search.getLastSearchResult().bestMoveValue)) {
-        LOG__DEBUG(this->LOG, "TestSet: ID \"{}\" SUCCESS", t.id);
+        LOG__DEBUG(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" SUCCESS", t.id);
         t.actualMove = search.getLastSearchResult().bestMove;
         t.actualValue = search.getLastSearchResult().bestMoveValue;
         t.result = SUCCESS;
         return;
       }
       else {
-        LOG__DEBUG(this->LOG, "TestSet: ID \"{}\" FAILED", t.id);
+        LOG__DEBUG(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" FAILED", t.id);
         t.actualMove = search.getLastSearchResult().bestMove;
         t.actualValue = search.getLastSearchResult().bestMoveValue;
         t.result = SUCCESS;
@@ -171,7 +176,7 @@ TestSuite::runSingleTest(Search &search, SearchLimits &searchLimits, TestSuite::
       }
 
       if (moves.empty()) {
-        LOG__WARN(LOG, "Skipping test {} as expected result {} could not be read", t.id, t.expectedString);
+        LOG__WARN(Logger::get().TSUITE_LOG, "Skipping test {} as expected result {} could not be read", t.id, t.expectedString);
         t.result = SKIPPED;
         return;
       }
@@ -186,7 +191,7 @@ TestSuite::runSingleTest(Search &search, SearchLimits &searchLimits, TestSuite::
       // check against expected moves
       for (Move m : moves) {
         if (m == actual) {
-          LOG__DEBUG(this->LOG, "TestSet: ID \"{}\" SUCCESS", t.id);
+          LOG__DEBUG(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" SUCCESS", t.id);
           t.actualMove = search.getLastSearchResult().bestMove;
           t.actualValue = search.getLastSearchResult().bestMoveValue;
           t.result = SUCCESS;
@@ -196,7 +201,7 @@ TestSuite::runSingleTest(Search &search, SearchLimits &searchLimits, TestSuite::
           continue;
         }
       }
-      LOG__DEBUG(this->LOG, "TestSet: ID \"{}\" FAILED", t.id);
+      LOG__DEBUG(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" FAILED", t.id);
       t.actualMove = search.getLastSearchResult().bestMove;
       t.actualValue = search.getLastSearchResult().bestMoveValue;
       t.result = FAILED;
@@ -205,7 +210,7 @@ TestSuite::runSingleTest(Search &search, SearchLimits &searchLimits, TestSuite::
 
     case NONE:
     default:
-      LOG__WARN(LOG, "Test has invalid type.");
+      LOG__WARN(Logger::get().TSUITE_LOG, "Test has invalid type.");
       t.result = FAILED;
       return;
   }
@@ -235,27 +240,27 @@ void TestSuite::readTestCases(const std::string &filePathStr, std::vector<Test> 
         tests.push_back(test);
       }
       else {
-        LOG__WARN(LOG, "Line does not contain a EPD: {}", line);
+        LOG__WARN(Logger::get().TSUITE_LOG, "Line does not contain a EPD: {}", line);
         continue;
       }
     }
     file.close();
   }
   else {
-    LOG__ERROR(LOG, "Could not open file: {}", filePath);
+    LOG__ERROR(Logger::get().TSUITE_LOG, "Could not open file: {}", filePath);
     return;
   }
 }
 
 bool TestSuite::readOneEPD(const std::string &line, TestSuite::Test &test) const {
 
-  LOG__DEBUG(LOG, "EPD: {}", line);
+  LOG__DEBUG(Logger::get().TSUITE_LOG, "EPD: {}", line);
 
   // Find a EPD line
   std::regex regexPattern(R"(^\s*(.*) (bm|dm) (.*?);.* id \"(.*?)\";.*$)");
   std::smatch matcher;
   if (!std::regex_match(line, matcher, regexPattern)) {
-    LOG__WARN(LOG, "No EPD match found in {}", line);
+    LOG__WARN(Logger::get().TSUITE_LOG, "No EPD match found in {}", line);
     return false;
   }
 
@@ -264,7 +269,7 @@ bool TestSuite::readOneEPD(const std::string &line, TestSuite::Test &test) const
   std::string type = matcher.str(2);
   std::string result = matcher.str(3);
   std::string id = matcher.str(4);
-  LOG__DEBUG(LOG, "Fen: {}    Type: {}    Result: {}    ID: {}", fen, type, result, id);
+  LOG__DEBUG(Logger::get().TSUITE_LOG, "Fen: {}    Type: {}    Result: {}    ID: {}", fen, type, result, id);
 
   // get test type
   TestType testType;
@@ -275,7 +280,7 @@ bool TestSuite::readOneEPD(const std::string &line, TestSuite::Test &test) const
     testType = BM;
   }
   else {
-    LOG__WARN(LOG, "Invalid TestType {}", type);
+    LOG__WARN(Logger::get().TSUITE_LOG, "Invalid TestType {}", type);
     return false;
   }
 

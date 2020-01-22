@@ -27,22 +27,22 @@
 #define FRANKYCPP_SEARCH_H
 
 // included dependencies
-#include <iostream>
+#include <iosfwd>
 #include <ostream>
 #include <thread>
-
-#include "gtest/gtest_prod.h"
+#include <atomic>
 #include "types.h"
-#include "Logging.h"
-#include "MoveGenerator.h"
 #include "Semaphore.h"
 #include "SearchStats.h"
 #include "SearchLimits.h"
-#include "Evaluator.h"
+#include "MoveGenerator.h"
+#include "gtest/gtest_prod.h"
 
 // forward declared dependencies
 class Engine;
 class TT;
+class Evaluator;
+class MoveGenerator;
 
 struct SearchResult {
   Move bestMove = MOVE_NONE;
@@ -69,7 +69,7 @@ inline std::ostream &operator<<(std::ostream &os,
 
 class Search {
 
-  std::shared_ptr<spdlog::logger> LOG = spdlog::get("Search_Logger");
+//  std::shared_ptr<spdlog::logger> LOG = spdlog::get("Search_Logger");
 
   // used to protect the transposition table from clearing and resizing during
   // search
@@ -137,9 +137,7 @@ class Search {
   bool mateThreat[DEPTH_MAX]{};
 
   // Evaluator
-  Evaluator evaluator;
-
-  const char *getTest() { return "TEST"; };
+  std::unique_ptr<Evaluator> pEvaluator;
 
 public:
   // for code re-using through templating we use search types when calling
@@ -312,7 +310,7 @@ private:
   void sendSearchUpdateToEngine();
   void sendResultToEngine() const;
 
-  FRIEND_TEST(SearchTest, goodCapture);
+   FRIEND_TEST(SearchTest, goodCapture);
 };
 
 #endif // FRANKYCPP_SEARCH_H

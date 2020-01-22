@@ -23,8 +23,7 @@
  *
  */
 
-#include <ostream>
-#include "Logging.h"
+#include <iosfwd>
 #include "types.h"
 #include "gtest/gtest_prod.h"
 
@@ -82,7 +81,7 @@ public:
 
 private:
 
-  std::shared_ptr<spdlog::logger> const LOG = spdlog::get("TT_Logger");
+//  std::shared_ptr<spdlog::logger> const LOG = spdlog::get("TT_Logger");
 
   // threads for clearing hash
   int noOfThreads = 4;
@@ -117,9 +116,8 @@ public:
   }
 
   ~TT() {
-    LOG__TRACE(LOG, "Dtor: Delete previous memory allocation");
     delete[] _data;
-  };
+  }
 
   // disallow copies
   TT(TT const &tt) = delete; // copy
@@ -311,6 +309,7 @@ public:
       case TYPE_BETA:
         return "BETA";
     }
+    return "";
   }
 
   FRIEND_TEST(TT_Test, put);

@@ -23,7 +23,6 @@
  *
  */
 
-#include "Logging.h"
 #include "Bitboards.h"
 
 namespace Bitboards {

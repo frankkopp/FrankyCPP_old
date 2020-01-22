@@ -28,7 +28,7 @@
 
 #include <cassert>
 #include <string>
-#include <iostream>
+#include <iosfwd>
 #include <sstream>
 #include <deque>
 #include <bitset>
@@ -73,7 +73,7 @@ typedef uint64_t MilliSec;
 
 namespace INIT {
   /** initializes Values, Bitboards, Position */
-  extern void init();
+  void init();
 }
 
 ///////////////////////////////////
@@ -569,7 +569,7 @@ struct deLocaleDecimals : std::numpunct<char> {
   std::string do_grouping() const override { return "\03"; }
 };
 
-const std::locale deLocale(std::cout.getloc(), new deLocaleDecimals);
+extern const std::locale deLocale;
 
 #define println(s) std::cout << (s) << std::endl
 #define fprint(...) std::cout << fmt::format(deLocale, __VA_ARGS__)

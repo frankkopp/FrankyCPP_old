@@ -25,6 +25,7 @@
 
 #include <chrono>
 #include <iomanip>
+#include <iostream>
 
 #include "Perft.h"
 #include "Position.h"
@@ -130,7 +131,7 @@ void Perft::perft_divide(int maxDepth, bool onDemand) {
         }
         if (cap) captureCounter++;
         if (position.hasCheck()) checkCounter++;
-        if (position.hasCheckMate()) checkMateCounter++;
+        if (!MoveGenerator::hasLegalMove(position)) checkMateCounter++;
         result += totalNodes;
       }
       position.undoMove();
@@ -204,7 +205,7 @@ long Perft::miniMax(int depth, Position &position, MoveGenerator* pMg) {
         }
         if (cap) captureCounter++;
         if (position.hasCheck()) checkCounter++;
-        if (position.hasCheckMate()) checkMateCounter++;
+        if (!MoveGenerator::hasLegalMove(position)) checkMateCounter++;
       }
       position.undoMove();
     }
@@ -252,7 +253,7 @@ long Perft::miniMaxOD(int depth, Position &position, MoveGenerator* pMg) {
         }
         if (cap) captureCounter++;
         if (position.hasCheck()) checkCounter++;
-        if (position.hasCheckMate()) checkMateCounter++;
+        if (!MoveGenerator::hasLegalMove(position)) checkMateCounter++;
       }
       position.undoMove();
     }
