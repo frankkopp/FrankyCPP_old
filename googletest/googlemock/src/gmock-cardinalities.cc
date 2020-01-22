@@ -70,18 +70,18 @@ class BetweenCardinalityImpl : public CardinalityInterface {
 
   // Conservative estimate on the lower/upper bound of the number of
   // calls allowed.
-  int ConservativeLowerBound() const override { return min_; }
-  int ConservativeUpperBound() const override { return max_; }
+  virtual int ConservativeLowerBound() const { return min_; }
+  virtual int ConservativeUpperBound() const { return max_; }
 
-  bool IsSatisfiedByCallCount(int call_count) const override {
+  virtual bool IsSatisfiedByCallCount(int call_count) const {
     return min_ <= call_count && call_count <= max_;
   }
 
-  bool IsSaturatedByCallCount(int call_count) const override {
+  virtual bool IsSaturatedByCallCount(int call_count) const {
     return call_count >= max_;
   }
 
-  void DescribeTo(::std::ostream* os) const override;
+  virtual void DescribeTo(::std::ostream* os) const;
 
  private:
   const int min_;
