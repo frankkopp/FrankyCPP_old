@@ -122,8 +122,8 @@ if (WIN32)
     target_link_libraries(
             ${exeName}
             core
-            fmt
-            spdlog
+            #fmt
+            #spdlog
             ${Boost_LIBRARIES}
     )
 endif ()
