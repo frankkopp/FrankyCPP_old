@@ -74,10 +74,7 @@ if (WIN32)
     set(Boost_USE_MULTITHREADED ON)
     set(Boost_USE_STATIC_LIBS ON)
     set(Boost_USE_STATIC_RUNTIME OFF)
-    #include_directories(
-    #        ${PROJECT_SOURCE_DIR}/fmt/include
-    #        ${PROJECT_SOURCE_DIR}/spdlog/include
-    #)
+
 endif ()
 
 find_package(Boost 1.72.0 COMPONENTS timer log log_setup REQUIRED)
@@ -145,8 +142,8 @@ if (WIN32)
     target_link_libraries(
             ${exeName}
             core
-            fmt
-            spdlog
+            #fmt
+            #spdlog
             ${Boost_LIBRARIES}
     )
 endif ()

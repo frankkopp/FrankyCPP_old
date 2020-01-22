@@ -35,13 +35,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC") # Visual Studio MSVC
     #set(CMAKE_CXX_FLAGS "/W4")
     #set(CMAKE_CXX_FLAGS_DEBUG "/Od")
     #set(CMAKE_CXX_FLAGS_RELEASE "/O2")
-    # fmt and spdlog compiled within project - not using installed libs
-    include_directories(
-            ${PROJECT_SOURCE_DIR}/spdlog/include
-            ${PROJECT_SOURCE_DIR}/fmt/include
-    )
-    add_subdirectory(fmt)
-    add_subdirectory(spdlog)
+
 endif ()
 
 message("Compiler DEBUG flags: " ${CMAKE_CXX_FLAGS} " " ${CMAKE_CXX_FLAGS_DEBUG})
@@ -89,7 +83,7 @@ FetchContent_Declare(
         GIT_TAG        v1.5.0
 )
 message("Downloading/Update SPDLOG")
-set(SPDLOG_FMT_EXTERNAL ON)
+option(SPDLOG_FMT_EXTERNAL ON)
 FetchContent_MakeAvailable(spdlog)
 
 include_directories(
