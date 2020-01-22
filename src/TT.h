@@ -24,9 +24,8 @@
  */
 
 #include <ostream>
-#include "Logging.h"
 #include "types.h"
-//#include "gtest/gtest_prod.h"
+#include "gtest/gtest_prod.h"
 
 #ifndef FRANKYCPP_TT_H
 #define FRANKYCPP_TT_H
@@ -117,9 +116,8 @@ public:
   }
 
   ~TT() {
-    LOG__TRACE(LOG, "Dtor: Delete previous memory allocation");
     delete[] _data;
-  };
+  }
 
   // disallow copies
   TT(TT const &tt) = delete; // copy
@@ -311,12 +309,13 @@ public:
       case TYPE_BETA:
         return "BETA";
     }
+    return "";
   }
 
-//  FRIEND_TEST(TT_Test, put);
-//  FRIEND_TEST(TT_Test, put);
-//  FRIEND_TEST(TT_Test, get);
-//  FRIEND_TEST(TT_Test, probe);
+  FRIEND_TEST(TT_Test, put);
+  FRIEND_TEST(TT_Test, put);
+  FRIEND_TEST(TT_Test, get);
+  FRIEND_TEST(TT_Test, probe);
 
   // using prefetch improves probe lookup speed significantly
   inline void prefetch(const Key key) {

@@ -27,10 +27,9 @@
 #define FRANKYCPP_EVALUATOR_H
 
 #include <vector>
-//#include "gtest/gtest_prod.h"
-#include "Logging.h"
 #include "types.h"
 #include "EvaluatorConfig.h"
+#include "gtest/gtest_prod.h"
 
 // pre-fetching of TT entries into CPU caches
 #ifdef __GNUC__
@@ -131,8 +130,8 @@ private:
   template<Color C>
   int kingCastleSafety(const Position &position);
 
-//  FRIEND_TEST(EvaluatorTest, evaluatePieceMobility);
-//  FRIEND_TEST(EvaluatorTest, evaluatePawns);
+  FRIEND_TEST(EvaluatorTest, evaluatePieceMobility);
+  FRIEND_TEST(EvaluatorTest, evaluatePawns);
 
 };
 

@@ -32,12 +32,11 @@
 #include <thread>
 #include <atomic>
 #include "types.h"
-#include "Logging.h"
 #include "Semaphore.h"
 #include "SearchStats.h"
 #include "SearchLimits.h"
 #include "MoveGenerator.h"
-//#include "gtest/gtest_prod.h"
+#include "gtest/gtest_prod.h"
 
 // forward declared dependencies
 class Engine;
@@ -311,7 +310,7 @@ private:
   void sendSearchUpdateToEngine();
   void sendResultToEngine() const;
 
-  // FRIEND_TEST(SearchTest, goodCapture);
+   FRIEND_TEST(SearchTest, goodCapture);
 };
 
 #endif // FRANKYCPP_SEARCH_H

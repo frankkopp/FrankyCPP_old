@@ -50,7 +50,7 @@ void UCI_Handler::loop() {
 void UCI_Handler::loop(std::istream* pIstream) {
   std::string cmd, token;
   do {
-    LOG__INFO(LOG, "UCI Handler waiting for command:");
+    LOG__INFO(Logger::get().UCIHAND_LOG, "UCI Handler waiting for command:");
 
     // Block here waiting for input or EOF
     // only blocks on cin!!
@@ -58,8 +58,8 @@ void UCI_Handler::loop(std::istream* pIstream) {
     //  create the stream object
     std::istringstream inStream(cmd);
 
-    LOG__INFO(UCI_LOG, "<< {}", inStream.str());
-    LOG__INFO(LOG, "UCI Handler received command: {}", inStream.str());
+    LOG__INFO(Logger::get().UCI_LOG, "<< {}", inStream.str());
+    LOG__INFO(Logger::get().UCIHAND_LOG, "UCI Handler received command: {}", inStream.str());
 
     // clear possible previous entries
     token.clear();
@@ -81,9 +81,9 @@ void UCI_Handler::loop(std::istream* pIstream) {
     else if (token == "debug") { debugCommand(); }
     else if (token == "noop") { /* noop */}
     else
-      LOG__WARN(LOG, "Unknown UCI command: {}", token);
+      LOG__WARN(Logger::get().UCIHAND_LOG, "Unknown UCI command: {}", token);
 
-    LOG__INFO(LOG, "UCI Handler processed command: {}", token);
+    LOG__INFO(Logger::get().UCIHAND_LOG, "UCI Handler processed command: {}", token);
 
   } while (token != "quit");
 
@@ -103,7 +103,7 @@ void UCI_Handler::setOptionCommand(std::istringstream &inStream) const {
   std::string token, name, value;
 
   if (inStream >> token && token != "name") {
-    LOG__WARN(LOG, "Command setoption is malformed - expected 'name': {}",
+    LOG__WARN(Logger::get().UCIHAND_LOG, "Command setoption is malformed - expected 'name': {}",
               token);
     return;
   }
@@ -184,7 +184,7 @@ void UCI_Handler::goCommand(std::istringstream &inStream) {
         std::cerr << "PANIK";
       }
       if (searchMode.whiteTime <= 0) {
-        LOG__WARN(LOG, "Invalid wtime. Was '{}'", token);
+        LOG__WARN(Logger::get().UCIHAND_LOG, "Invalid wtime. Was '{}'", token);
         return;
       }
     }
@@ -196,7 +196,7 @@ void UCI_Handler::goCommand(std::istringstream &inStream) {
         std::cerr << "PANIK";
       }
       if (searchMode.blackTime <= 0) {
-        LOG__WARN(LOG, "Invalid btime. Was '{}'", token);
+        LOG__WARN(Logger::get().UCIHAND_LOG, "Invalid btime. Was '{}'", token);
         return;
       }
     }
@@ -208,7 +208,7 @@ void UCI_Handler::goCommand(std::istringstream &inStream) {
         std::cerr << "PANIK";
       }
       if (searchMode.whiteInc < 0) {
-        LOG__WARN(LOG, "Invalid winc. Was '{}'", token);
+        LOG__WARN(Logger::get().UCIHAND_LOG, "Invalid winc. Was '{}'", token);
         return;
       }
     }
@@ -220,7 +220,7 @@ void UCI_Handler::goCommand(std::istringstream &inStream) {
         std::cerr << "PANIK";
       }
       if (searchMode.blackInc < 0) {
-        LOG__WARN(LOG, "Invalid binc. Was '{}'", token);
+        LOG__WARN(Logger::get().UCIHAND_LOG, "Invalid binc. Was '{}'", token);
         return;
       }
     }
@@ -232,7 +232,7 @@ void UCI_Handler::goCommand(std::istringstream &inStream) {
         std::cerr << "PANIK";
       }
       if (searchMode.movesToGo <= 0) {
-        LOG__WARN(LOG, "Invalid movestogo. Was '{}'", token);
+        LOG__WARN(Logger::get().UCIHAND_LOG, "Invalid movestogo. Was '{}'", token);
         return;
       }
     }
@@ -244,7 +244,7 @@ void UCI_Handler::goCommand(std::istringstream &inStream) {
         std::cerr << "PANIK";
       }
       if (searchMode.depth <= 0 || searchMode.depth > PLY_MAX) {
-        LOG__WARN(LOG, "depth not between 1 and {}. Was '{}'", PLY_MAX, token);
+        LOG__WARN(Logger::get().UCIHAND_LOG, "depth not between 1 and {}. Was '{}'", PLY_MAX, token);
         return;
       }
     }
@@ -256,7 +256,7 @@ void UCI_Handler::goCommand(std::istringstream &inStream) {
         std::cerr << "PANIK";
       }
       if (searchMode.nodes <= 0) {
-        LOG__WARN(LOG, "Invalid nodes. Was '{}'", token);
+        LOG__WARN(Logger::get().UCIHAND_LOG, "Invalid nodes. Was '{}'", token);
         return;
       }
     }
@@ -268,7 +268,7 @@ void UCI_Handler::goCommand(std::istringstream &inStream) {
         std::cerr << "PANIK";
       }
       if (searchMode.mate <= 0 || searchMode.mate > PLY_MAX) {
-        LOG__WARN(LOG, "mate not between 1 and {}. Was '{}'", PLY_MAX, token);
+        LOG__WARN(Logger::get().UCIHAND_LOG, "mate not between 1 and {}. Was '{}'", PLY_MAX, token);
         return;
       }
     }
@@ -280,7 +280,7 @@ void UCI_Handler::goCommand(std::istringstream &inStream) {
         std::cerr << "PANIK";
       }
       if (searchMode.movetime <= 0) {
-        LOG__WARN(LOG, "Invalid movetime. Was '{}'", token);
+        LOG__WARN(Logger::get().UCIHAND_LOG, "Invalid movetime. Was '{}'", token);
         return;
       }
     }
@@ -296,7 +296,7 @@ void UCI_Handler::goCommand(std::istringstream &inStream) {
         std::cerr << "PANIK";
       }
       if (searchMode.depth <= 0 || searchMode.depth > PLY_MAX) {
-        LOG__WARN(LOG, "perft depth not between 1 and {}. Was '{}'", PLY_MAX, token);
+        LOG__WARN(Logger::get().UCIHAND_LOG, "perft depth not between 1 and {}. Was '{}'", PLY_MAX, token);
         return;
       }
     }
@@ -310,16 +310,16 @@ void UCI_Handler::stopCommand() const { pEngine->stopSearch(); }
 
 void UCI_Handler::ponderHitCommand() const { pEngine->ponderHit(); }
 
-void UCI_Handler::registerCommand() const {
-  LOG__WARN(LOG, "UCI Protocol Command: register not implemented!");
+void UCI_Handler::registerCommand() {
+  LOG__WARN(Logger::get().UCIHAND_LOG, "UCI Protocol Command: register not implemented!");
 }
 
-void UCI_Handler::debugCommand() const {
-  LOG__WARN(LOG, "UCI Protocol Command: debug not implemented!");
+void UCI_Handler::debugCommand() {
+  LOG__WARN(Logger::get().UCIHAND_LOG, "UCI Protocol Command: debug not implemented!");
 }
 
 void UCI_Handler::send(const std::string &toSend) const {
-  LOG__INFO(UCI_LOG, ">> {}", toSend);
+  LOG__INFO(Logger::get().UCI_LOG, ">> {}", toSend);
   *pOutputStream << toSend << std::endl;
 }
 

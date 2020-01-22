@@ -28,7 +28,6 @@
 
 #include <string>
 #include <vector>
-#include "Logging.h"
 #include "types.h"
 
 // forward declaration

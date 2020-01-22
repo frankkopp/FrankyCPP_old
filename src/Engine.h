@@ -27,7 +27,7 @@
 #define FRANKYCPP_ENGINE_H
 
 #include <map>
-#include "Logging.h"
+#include <utility>
 #include "UCIOption.h"
 #include "EngineConfig.h"
 #include "UCISearchMode.h"
@@ -77,7 +77,7 @@ public:
 
   // callback reference for sending responses to the uci ui
   void registerUCIHandler(std::shared_ptr<UCI_Handler> handler) {
-    pUciHandler = handler;
+    pUciHandler = std::move(handler);
   };
 
   // output
@@ -112,8 +112,8 @@ public:
   void waitWhileSearching();
 
   // getter
-  const SearchLimits* getSearchLimits();
-  int getHashSize() { return EngineConfig::hash; };
+  std::shared_ptr<SearchLimits> getSearchLimits() { return pSearchLimits; };
+  static int getHashSize() { return EngineConfig::hash; };
   const Result &getLastResult() const { return lastResult; }
   std::shared_ptr<Search> getSearch() const { return pSearch; }
 
@@ -124,7 +124,7 @@ private:
 
   void initOptions();
   void updateConfig();
-  int getInt(const std::string &value) const;
+  static int getInt(const std::string &value) ;
 
 };
 

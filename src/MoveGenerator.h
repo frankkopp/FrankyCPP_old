@@ -27,9 +27,9 @@
 #define FRANKYCPP_MOVEGENERATOR_H
 
 #include <vector>
-//#include "gtest/gtest_prod.h"
 #include "Logging.h"
 #include "types.h"
+#include "gtest/gtest_prod.h"
 
 // forward declaration
 class Position;
@@ -154,11 +154,11 @@ public:
 
 private:
 
-//  FRIEND_TEST(MoveGenTest, pawnMoves);
-//  FRIEND_TEST(MoveGenTest, kingMoves);
-//  FRIEND_TEST(MoveGenTest, normalMoves);
-//  FRIEND_TEST(MoveGenTest, castlingMoves);
-//  FRIEND_TEST(MoveGenTest, storeKiller);
+  FRIEND_TEST(MoveGenTest, pawnMoves);
+  FRIEND_TEST(MoveGenTest, kingMoves);
+  FRIEND_TEST(MoveGenTest, normalMoves);
+  FRIEND_TEST(MoveGenTest, castlingMoves);
+  FRIEND_TEST(MoveGenTest, storeKiller);
   
 
   /**

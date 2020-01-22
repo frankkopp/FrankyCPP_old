@@ -27,8 +27,8 @@
 #include "version.h"
 #include "types.h"
 #include "Logging.h"
-//#include "Engine.h"
-//#include "UCIHandler.h"
+#include "Engine.h"
+#include "UCIHandler.h"
 
 int main() {
 
@@ -47,9 +47,9 @@ int main() {
 
   INIT::init();
 
-  //  Engine engine;
-  //  UCI_Handler uci(&engine);
-  //  uci.loop();
+  Engine engine;
+  UCI_Handler uci(&engine);
+  uci.loop();
 
   return 0;
 }

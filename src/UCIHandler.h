@@ -61,8 +61,8 @@ class Engine;
     void goCommand(std::istringstream &inStream);
     void stopCommand() const;
     void ponderHitCommand() const;
-    void registerCommand() const;
-    void debugCommand() const;
+    static void registerCommand() ;
+    static void debugCommand() ;
     void send(const std::string &toSend) const;
 
     ///////////////////
