@@ -35,13 +35,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC") # Visual Studio MSVC
     #set(CMAKE_CXX_FLAGS "/W4")
     #set(CMAKE_CXX_FLAGS_DEBUG "/Od")
     #set(CMAKE_CXX_FLAGS_RELEASE "/O2")
-    # fmt and spdlog compiled within project - not using installed libs
-    include_directories(
-            ${PROJECT_SOURCE_DIR}/spdlog/include
-            ${PROJECT_SOURCE_DIR}/fmt/include
-    )
-    add_subdirectory(fmt)
-    add_subdirectory(spdlog)
+
 endif ()
 
 message("Compiler DEBUG flags: " ${CMAKE_CXX_FLAGS} " " ${CMAKE_CXX_FLAGS_DEBUG})
@@ -71,15 +65,15 @@ FetchContent_Declare(
 message("Downloading/Update Google Test")
 FetchContent_MakeAvailable(googletest)
 
-# Getting included libs from Github
-include(FetchContent)
-FetchContent_Declare(
-        fmt
-        GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-        GIT_TAG        6.1.2
-)
-message("Downloading/Update FMT")
-FetchContent_MakeAvailable(fmt)
+## Getting included libs from Github
+#include(FetchContent)
+#FetchContent_Declare(
+#        fmt
+#        GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+#        GIT_TAG        6.1.2
+#)
+#message("Downloading/Update FMT")
+#FetchContent_MakeAvailable(fmt)
 
 # Getting included libs from Github
 include(FetchContent)
@@ -89,14 +83,14 @@ FetchContent_Declare(
         GIT_TAG        v1.5.0
 )
 message("Downloading/Update SPDLOG")
-option(SPDLOG_FMT_EXTERNAL ON)
+#option(SPDLOG_FMT_EXTERNAL ON)
 FetchContent_MakeAvailable(spdlog)
 
 include_directories(
         ${PROJECT_SOURCE_DIR}/src
         ${PROJECT_SOURCE_DIR}/test
         ${googletest_SOURCE_DIR}/googletest/include
-        ${fmt_SOURCE_DIR}/include
+        #${fmt_SOURCE_DIR}/include
         ${spdlog_SOURCE_DIR}/include
 )
 
