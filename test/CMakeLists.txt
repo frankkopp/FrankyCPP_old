@@ -88,7 +88,6 @@ if (APPLE)
     target_link_libraries(
             ${testExeName}
             core
-            fmt::fmt
             spdlog::spdlog
             gtest
             gtest_main
@@ -100,7 +99,6 @@ if (CYGWIN)
     target_link_libraries(
             ${testExeName}
             core
-            #fmt
             #spdlog
             gtest
             gtest_main
@@ -112,7 +110,6 @@ if (WIN32)
     target_link_libraries(
             ${testExeName}
             core
-            fmt
             spdlog
             gtest
             gtest_main

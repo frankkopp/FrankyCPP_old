@@ -65,15 +65,15 @@ FetchContent_Declare(
 message("Downloading/Update Google Test")
 FetchContent_MakeAvailable(googletest)
 
-# Getting included libs from Github
-include(FetchContent)
-FetchContent_Declare(
-        fmt
-        GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-        GIT_TAG        6.1.2
-)
-message("Downloading/Update FMT")
-FetchContent_MakeAvailable(fmt)
+## Getting included libs from Github
+#include(FetchContent)
+#FetchContent_Declare(
+#        fmt
+#        GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+#        GIT_TAG        6.1.2
+#)
+#message("Downloading/Update FMT")
+#FetchContent_MakeAvailable(fmt)
 
 # Getting included libs from Github
 include(FetchContent)
@@ -83,14 +83,14 @@ FetchContent_Declare(
         GIT_TAG        v1.5.0
 )
 message("Downloading/Update SPDLOG")
-option(SPDLOG_FMT_EXTERNAL ON)
+#option(SPDLOG_FMT_EXTERNAL ON)
 FetchContent_MakeAvailable(spdlog)
 
 include_directories(
         ${PROJECT_SOURCE_DIR}/src
         ${PROJECT_SOURCE_DIR}/test
         ${googletest_SOURCE_DIR}/googletest/include
-        ${fmt_SOURCE_DIR}/include
+        #${fmt_SOURCE_DIR}/include
         ${spdlog_SOURCE_DIR}/include
 )
 
