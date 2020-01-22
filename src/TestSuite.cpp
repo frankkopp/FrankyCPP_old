@@ -223,14 +223,7 @@ void TestSuite::readTestCases(const std::string &filePathStr, std::vector<Test> 
     while (getline(file, line)) {
 
       // skip empty lines and comments
-      fprintln("{}", line);
-      std::regex whiteSpaceTrim(R"(^\s*(.*)\s*$)");
-      line = std::regex_replace(line, whiteSpaceTrim, "$1" );
-      fprintln("{}", line);
-      std::regex commentTrim(R"(^(.*)#([^;]*)$)");
-      line = std::regex_replace(line, commentTrim, "$1;" );
-      fprintln("{}", line);
-
+      cleanUpLine(line);
       if (line.empty()) {
         continue;
       }
@@ -250,6 +243,19 @@ void TestSuite::readTestCases(const std::string &filePathStr, std::vector<Test> 
     LOG__ERROR(Logger::get().TSUITE_LOG, "Could not open file: {}", filePath);
     return;
   }
+}
+std::string &TestSuite::cleanUpLine(std::string &line) {
+//  fprintln("{}", line);
+  std::regex whiteSpaceTrim(R"(^\s*(.*)\s*$)");
+  line = std::regex_replace(line, whiteSpaceTrim, "$1");
+//  fprintln("{}", line);
+  std::regex leadCommentTrim(R"(^\s*#.*$)");
+  line = std::regex_replace(line, leadCommentTrim, "");
+  //  fprintln("{}", line);
+  std::regex trailCommentTrim(R"(^(.*)#([^;]*)$)");
+  line = std::regex_replace(line, trailCommentTrim, "$1;");
+//  fprintln("{}", line);
+  return line;
 }
 
 bool TestSuite::readOneEPD(const std::string &line, TestSuite::Test &test) const {

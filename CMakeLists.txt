@@ -21,7 +21,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang") # Apple
     message("Compiler Settings: CLANG")
     set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra ")
     set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -Wpedantic -Wshadow -Wno-conversion -Wunreachable-code -Wuninitialized  -Wold-style-cast -Wunused-variable -Wfloat-equal -Wno-gnu-zero-variadic-macro-arguments")
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
 elseif (CMAKE_COMPILER_IS_GNUCXX) # CYGWIN
     message("Compiler Settings: GNU")

@@ -79,6 +79,18 @@ protected:
 };
 
 
+TEST_F(TestSuiteTests, cleanUpLine)  {
+  std::string filePath = "";
+  MilliSec moveTime = 5'000;
+  Depth depth = static_cast<Depth>(10);
+  TestSuite testSuite(filePath, moveTime, depth);
+  TestSuite::Test test;
+
+  std::string line = "# 2rqk2r/pb1nbp1p/4p1p1/1B1n4/Np1N4/7Q/PP3PPP/R1B1R1K1 w - - bm Rxe6; id \"CCC-I No.1\";";
+  TestSuite::cleanUpLine(line);
+  ASSERT_TRUE(line.empty());
+}
+
 TEST_F(TestSuiteTests, readLine) {
 
   std::string filePath = "";
@@ -98,13 +110,15 @@ TEST_F(TestSuiteTests, readLine) {
 
   line = "7k/8/3p4/4N3/8/5p2/P7/1K2N3 w - - bm N5xf3; id \"FRANKY-1 #6\";";
   ASSERT_TRUE(testSuite.readOneEPD(line, test));
+
+  line = "# 2rqk2r/pb1nbp1p/4p1p1/1B1n4/Np1N4/7Q/PP3PPP/R1B1R1K1 w - - bm Rxe6; id \"CCC-I No.1\";";
+  ASSERT_FALSE(testSuite.readOneEPD(line, test));
 }
 
 TEST_F(TestSuiteTests, readFile) {
 
-  fprintln("Project Root is '{}'", FrankyCPP_PROJECT_ROOT );
-
-  std::string filePath = "../../testsets/franky_tests.epd";
+  std::string filePath = FrankyCPP_PROJECT_ROOT;
+  filePath+= + "/testsets/franky_tests.epd";
   MilliSec moveTime = 5'000;
   Depth depth = static_cast<Depth>(10);
 
@@ -166,7 +180,7 @@ TEST_F(TestSuiteTests, FrankyTestSuite) {
 TEST_F(TestSuiteTests, ecm98) {
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath+= + "/testsets/ecm98.epd";
-  MilliSec moveTime = 3'000;
+  MilliSec moveTime = 1'000;
   Depth depth = static_cast<Depth>(0);
   TestSuite testSuite(filePath, moveTime, depth);
   testSuite.runTestSuite();

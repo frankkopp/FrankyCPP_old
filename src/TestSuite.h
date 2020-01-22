@@ -118,6 +118,7 @@ public:
 
   /** string representation of result type */
   static std::string print(TestSuite::ResultType resultType);
+  static std::string &cleanUpLine(std::string &line) ;
 };
 
 

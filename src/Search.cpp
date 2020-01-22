@@ -42,7 +42,6 @@ Search::Search() : Search(nullptr) {}
 Search::Search(Engine* pEng) {
   pEngine = pEng;
   pEvaluator = std::make_unique<Evaluator>();
-  tt_lock.unlock();
 
   tt = new TT;
   if (SearchConfig::USE_TT) {
@@ -387,7 +386,7 @@ SearchResult Search::iterativeDeepening(Position &position) {
     LOG__TRACE(Logger::get().SEARCH_LOG, "Iteration Depth={} END", iterationDepth);
 
   } while (++iterationDepth <= searchLimitsPtr->getMaxDepth());
-  // ### ENDOF Iterative Deepening
+  // ### END OF Iterative Deepening
   // ###########################################
 
   // update searchResult here
