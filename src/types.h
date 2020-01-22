@@ -409,7 +409,7 @@ inline PieceType promotionType(Move m) {
 
 /** returns the value of the move */
 inline Value valueOf(Move m) {
-  return static_cast<Value>((m & MoveShifts::VALUE_MASK) >> MoveShifts::VALUE_SHIFT) + VALUE_NONE;
+  return static_cast<Value>(((m & MoveShifts::VALUE_MASK) >> MoveShifts::VALUE_SHIFT) + VALUE_NONE);
 }
 
 /** returns the move without value */
