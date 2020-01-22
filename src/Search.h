@@ -27,7 +27,7 @@
 #define FRANKYCPP_SEARCH_H
 
 // included dependencies
-#include <iostream>
+#include <iosfwd>
 #include <ostream>
 #include <thread>
 #include <atomic>

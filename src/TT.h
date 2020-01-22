@@ -23,7 +23,7 @@
  *
  */
 
-#include <ostream>
+#include <iosfwd>
 #include "types.h"
 #include "gtest/gtest_prod.h"
 

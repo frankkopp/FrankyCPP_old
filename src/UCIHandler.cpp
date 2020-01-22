@@ -34,6 +34,8 @@
 
 UCI_Handler::UCI_Handler(Engine* ptr) {
   this->pEngine = ptr;
+  pInputStream = &std::cin;
+  pOutputStream = &std::cout;
   pEngine->registerUCIHandler(std::make_shared<UCI_Handler>(*this));
 }
 

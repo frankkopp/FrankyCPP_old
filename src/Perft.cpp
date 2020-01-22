@@ -25,6 +25,7 @@
 
 #include <chrono>
 #include <iomanip>
+#include <iostream>
 
 #include "Perft.h"
 #include "Position.h"

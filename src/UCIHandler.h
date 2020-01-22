@@ -27,7 +27,7 @@
 #define FRANKYCPP_UCIPROTOCOLHANDLER_H
 
 #include <thread>
-#include <iostream>
+#include <iosfwd>
 #include "types.h"
 
 class Engine;
@@ -36,8 +36,8 @@ class Engine;
 
     Engine *pEngine;
 
-    std::istream *pInputStream = &std::cin;
-    std::ostream *pOutputStream = &std::cout;
+    std::istream *pInputStream;
+    std::ostream *pOutputStream;
 
   public:
 

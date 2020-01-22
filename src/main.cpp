@@ -23,7 +23,7 @@
  *
  */
 
-#include <thread>
+#include <iostream>
 #include "version.h"
 #include "types.h"
 #include "Logging.h"
