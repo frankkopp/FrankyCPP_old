@@ -27,6 +27,7 @@
 #define FRANKYCPP_ENGINE_H
 
 #include <map>
+#include <memory>
 #include <utility>
 #include "UCIOption.h"
 #include "EngineConfig.h"
