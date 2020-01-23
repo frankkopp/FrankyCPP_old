@@ -107,7 +107,8 @@ if (APPLE)
     target_link_libraries(
             ${testExeName}
             core
-            spdlog::spdlog
+            fmt
+            spdlog
             gtest
             gtest_main
             ${Boost_LIBRARIES}
@@ -130,6 +131,7 @@ if (WIN32)
     target_link_libraries(
             ${testExeName}
             core
+            fmt
             spdlog
             gtest
             gtest_main

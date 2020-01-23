@@ -102,7 +102,8 @@ if (APPLE)
     target_link_libraries(
             ${exeName}
             core
-            spdlog::spdlog
+            fmt
+            spdlog
             ${Boost_LIBRARIES}
     )
 endif ()
@@ -121,6 +122,7 @@ if (WIN32)
     target_link_libraries(
             ${exeName}
             core
+            fmt
             spdlog
             ${Boost_LIBRARIES}
     )
