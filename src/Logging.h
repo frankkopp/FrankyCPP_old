@@ -128,4 +128,5 @@ public:
   const std::shared_ptr<spdlog::logger> TEST_LOG    = spdlog::stdout_color_mt("Test_Logger");
   // @formatter:on
 };
+
 #endif //FRANKYCPP_LOGGING_H

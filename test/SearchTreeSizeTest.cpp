@@ -57,7 +57,7 @@ public:
     std::string fen = "";
     std::vector<SingleTest> tests{};
 
-    explicit Result(std::string fen) : fen(std::move(fen)) {};
+    explicit Result(std::string _fen) : fen(std::move(_fen)) {};
   };
 
   struct TestSums {
