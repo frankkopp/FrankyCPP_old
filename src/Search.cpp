@@ -28,6 +28,7 @@
 #include <thread>
 #include "Logging.h"
 #include "Search.h"
+#include "Bitboards.h"
 #include "Evaluator.h"
 #include "Engine.h"
 #include "SearchConfig.h"
@@ -1138,7 +1139,13 @@ Move Search::getMove(Position &position, int ply) {
 bool Search::goodCapture(Position &position, Move move) {
   ASSERT_START
     if (!position.isCapturingMove(move)) {
-      LOG__ERROR(Logger::get().SEARCH_LOG, "move send to goodCapture should be capturing {}", printMoveVerbose(move));
+      LOG__ERROR(Logger::get().SEARCH_LOG, "move send to goodCapture should be capturing {:<30s} {}",
+        printMoveVerbose(move), position.printFen());
+//      Bitboard b1 = position.getOccupiedBB(~position.getNextPlayer()) & getToSquare(move);
+//      fprintln("{}", Bitboards::print(b1));
+//      bool b2 = typeOf(move) == ENPASSANT;
+//      fprintln("b1 {} b2 {}", b1, b2);
+//      position.isCapturingMove(move);
     }
   ASSERT_END
   return
