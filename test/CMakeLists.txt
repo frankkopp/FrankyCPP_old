@@ -118,6 +118,7 @@ if (CYGWIN)
     target_link_libraries(
             ${testExeName}
             core
+            fmt
             #spdlog
             gtest
             gtest_main
