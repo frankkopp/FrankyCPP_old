@@ -37,26 +37,7 @@ if (CYGWIN)
     set(BOOST_ROOT "/usr/local/boost_1_72_0")
     set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
     set(Boost_USE_MULTITHREADED ON)
-
-    #find_package(fmt REQUIRED)
-    #if (fmt_FOUND)
-    #    message("Package fmt found")
-    #endif ()
-    #if (NOT fmt_FOUND)
-    #    message("Package fmt NOT found")
-    #endif ()
-    #
-    #find_package(spdlog REQUIRED)
-    #if (spdlog_FOUND)
-    #    message("Package spdlog found")
-    #endif ()
-    #if (NOT spdlog_FOUND)
-    #    message("Package spdlog NOT found")
-    #endif ()
-    #
-    #include_directories(
-    #        /usr/local/include
-    #)
+      
 endif ()
 
 if (WIN32)

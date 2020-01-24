@@ -362,13 +362,10 @@ SearchResult Search::iterativeDeepening(Position &position) {
     ASSERT_START
       if (!_stopSearchFlag && !searchLimitsPtr->isPerft()) {
         if (pv[PLY_ROOT].empty() || pv[PLY_ROOT].at(0) == MOVE_NONE) {
-          LOG__ERROR(
-            Logger::get().SEARCH_LOG, "{}:{} Best root move missing after iteration: pv[0] size {}",
-            __func__, __LINE__, pv[PLY_ROOT].size());
+          LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{} Best root move missing after iteration: pv[0] size {}", __func__, __LINE__, pv[PLY_ROOT].size());
         }
         if (!pv[PLY_ROOT].empty() && valueOf(pv[PLY_ROOT].at(0)) == VALUE_NONE) {
-          LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{}Best root move has no value!( pv size={}",
-                     __func__, __LINE__, pv[PLY_ROOT].size());
+          LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{}Best root move has no value!( pv size={}", __func__, __LINE__, pv[PLY_ROOT].size());
         };
       }
     ASSERT_END
@@ -408,10 +405,6 @@ SearchResult Search::iterativeDeepening(Position &position) {
  * This is the templated search function for root, non-root and quiescence
  * searches. Through the template the compiler will generate specialized
  * versions of this method for each case.
- *
- * @tparam T
- * @param position
- * @param depth
  */
 template<Search::Search_Type ST, Search::Node_Type NT>
 Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
@@ -499,7 +492,8 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
   // TT Lookup
   const TT::Entry* ttEntryPtr = nullptr;
   if (SearchConfig::USE_TT &&
-      (SearchConfig::USE_TT_QSEARCH || ST != QUIESCENCE) && ST != PERFT) {
+      (SearchConfig::USE_TT_QSEARCH || ST != QUIESCENCE)
+      && ST != PERFT) {
     /* TT PROBE
      *  If this is a PV node and value is an EXACT value of a fully
      *  searched node we can cut off the search immediately.
@@ -1033,7 +1027,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
              bestNodeValue, movesSearched, printMoveListUCI(currentVariation));
 
   // best value should in any case not be VALUE_NONE any more
-  assert(ST==PERFT || (bestNodeValue >= VALUE_MIN && bestNodeValue <= VALUE_MAX && "bestNodeValue should not be MIN/MAX here"));
+  assert(ST == PERFT || (bestNodeValue >= VALUE_MIN && bestNodeValue <= VALUE_MAX && "bestNodeValue should not be MIN/MAX here"));
 
   // store TT data
   switch (ST) {
@@ -1140,12 +1134,12 @@ bool Search::goodCapture(Position &position, Move move) {
   ASSERT_START
     if (!position.isCapturingMove(move)) {
       LOG__ERROR(Logger::get().SEARCH_LOG, "move send to goodCapture should be capturing {:<30s} {}",
-        printMoveVerbose(move), position.printFen());
-//      Bitboard b1 = position.getOccupiedBB(~position.getNextPlayer()) & getToSquare(move);
-//      fprintln("{}", Bitboards::print(b1));
-//      bool b2 = typeOf(move) == ENPASSANT;
-//      fprintln("b1 {} b2 {}", b1, b2);
-//      position.isCapturingMove(move);
+                 printMoveVerbose(move), position.printFen());
+      //      Bitboard b1 = position.getOccupiedBB(~position.getNextPlayer()) & getToSquare(move);
+      //      fprintln("{}", Bitboards::print(b1));
+      //      bool b2 = typeOf(move) == ENPASSANT;
+      //      fprintln("b1 {} b2 {}", b1, b2);
+      //      position.isCapturingMove(move);
     }
   ASSERT_END
   return

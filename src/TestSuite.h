@@ -108,17 +108,17 @@ public:
   void readTestCases(const std::string &filePath, std::vector<Test> &tests) const;
 
   /** reads on EPD file and creates a Test */
-  bool readOneEPD(const std::string &line, TestSuite::Test &test) const;
+  bool readOneEPD(std::string &line, TestSuite::Test &test) const;
+
+  static std::string &cleanUpLine(std::string &line) ;
 
   /** runs a single test and stores the result back to given test */
   void runSingleTest(Search &search, SearchLimits &searchLimits, Test &t) const;
 
   /** returns the list of tests */
   const std::vector<Test> &getTestCases() const { return testCases; }
-
   /** string representation of result type */
   static std::string print(TestSuite::ResultType resultType);
-  static std::string &cleanUpLine(std::string &line) ;
 };
 
 
