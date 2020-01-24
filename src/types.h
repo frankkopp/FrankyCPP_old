@@ -405,12 +405,13 @@ inline MoveType typeOf(Move m) { return MoveType(m & MoveShifts::MOVE_TYPE_MASK)
 /** returns the promotion type of the move. This only makes sense if the move
  * actually is of type promotion. Otherwise it must be ignored */
 inline PieceType promotionType(Move m) {
-  return PieceType(((m & MoveShifts::PROM_TYPE_MASK) >> MoveShifts::PROM_TYPE_SHIFT) + KNIGHT);
+  return static_cast<PieceType>(((m & MoveShifts::PROM_TYPE_MASK) >> MoveShifts::PROM_TYPE_SHIFT) + KNIGHT);
 }
 
 /** returns the value of the move */
 inline Value valueOf(Move m) {
-  return static_cast<Value>(((m & MoveShifts::VALUE_MASK) >> MoveShifts::VALUE_SHIFT) + VALUE_NONE);
+  const Value tmp = static_cast<Value>((m & MoveShifts::VALUE_MASK) >> MoveShifts::VALUE_SHIFT);
+  return  static_cast<Value>(tmp + VALUE_NONE);
 }
 
 /** returns the move without value */
