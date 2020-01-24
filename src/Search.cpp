@@ -46,7 +46,6 @@ Search::Search(Engine* pEng) {
 
   tt = new TT;
   if (SearchConfig::USE_TT) {
-    tt->setThreads(4);
     int hashSize = SearchConfig::TT_SIZE_MB;
     if (pEngine) {
       int tmp = Engine::getHashSize();
@@ -494,7 +493,9 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
   const TT::Entry* ttEntryPtr = nullptr;
   if (SearchConfig::USE_TT &&
       (SearchConfig::USE_TT_QSEARCH || ST != QUIESCENCE)
-      && ST != PERFT) {
+      && ST != PERFT
+      && ST != ROOT
+    ) {
     /* TT PROBE
      *  If this is a PV node and value is an EXACT value of a fully
      *  searched node we can cut off the search immediately.
@@ -514,9 +515,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
      */
     ttEntryPtr = tt->probe(position.getZobristKey());
     if (ttEntryPtr) {
-      if (ST != ROOT) {
-        ttMove = ttEntryPtr->move;
-      }
+      ttMove = ttEntryPtr->move;
       ASSERT_START
         if (moveOf(ttMove) != ttMove) {
           LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{} Move from TT should not have internal value.",
@@ -555,30 +554,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
           }
         }
         if (cut) {
-          // set PV for root move
-          if (ST == ROOT) {
-            // root move tt hits should always be exact values
-            assert(ttEntryPtr->type == TYPE_EXACT);
-            ASSERT_START
-              if (ttEntryPtr->type != TYPE_EXACT) {
-                LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{} Cache hit in ROOT ply but type not EXACT", __func__, __LINE__);
-              }
-              if (ttEntryPtr->move == MOVE_NONE) {
-                LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{} Cache hit in ROOT ply but no root in Entry. Value={}", __func__, __LINE__, printValue(ttValue));
-              }
-            ASSERT_END
-            getPVLine(position, pv[PLY_ROOT], depth);
-            setValue(rootMoves.at(currentMoveIndex), ttValue);
-            if (!pv[PLY_ROOT].empty()) {
-              setValue(pv[PLY_ROOT].at(0), ttValue);
-            }
-            else {
-              // FIXME
-              LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{} Cache Hit in ROOT ply but no pv[PLY_ROOT] MOVE", __func__, __LINE__);
-            }
-            // to update UI correctly
-            searchStats.currentSearchDepth = static_cast<Ply>(depth);
-          }
+          getPVLine(position, pv[ply], depth);
           searchStats.tt_Cuts++;
           return ttValue;
         }
@@ -1038,7 +1014,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
         LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}}Search storing into TT: {} {} {} {} {} {} {}", "",
                    ply, position.getZobristKey(), bestNodeValue, TT::str(ttType),
                    depth, printMove(ttStoreMove), false, position.printFen());
-        storeTT(position, bestNodeValue, ttType, depth, ply, ttStoreMove,mateThreat[ply]);
+        storeTT(position, bestNodeValue, ttType, depth, ply, ttStoreMove, mateThreat[ply]);
       }
       break;
     case QUIESCENCE:
@@ -1287,8 +1263,8 @@ inline MilliSec Search::now() {
 #else
   const std::chrono::time_point timePoint = std::chrono::high_resolution_clock::now();
   const std::chrono::duration timeSinceEpoch
-    =  std::chrono::duration_cast<std::chrono::milliseconds>(timePoint.time_since_epoch());
-    return timeSinceEpoch.count();
+    = std::chrono::duration_cast<std::chrono::milliseconds>(timePoint.time_since_epoch());
+  return timeSinceEpoch.count();
 #endif
 }
 

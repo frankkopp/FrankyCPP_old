@@ -82,7 +82,7 @@ add_executable(${testExeName}
         TestSuiteTests.cpp
         SelfPlayUCITest.cpp
         BOOST_Test.cpp
-)
+        PerformanceTests.cpp)
 
 if (APPLE)
     target_link_libraries(

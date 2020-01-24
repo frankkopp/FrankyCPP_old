@@ -28,9 +28,6 @@
 #include "Logging.h"
 #include "TT.h"
 
-#include <boost/timer/timer.hpp>
-using namespace boost::timer;
-
 using testing::Eq;
 
 class TT_Test : public ::testing::Test {
@@ -310,54 +307,6 @@ TEST_F(TT_Test, get) {
 //  ASSERT_EQ(TT::TT_NOCUT, ttHit);
 //
 //}
-
-TEST_F(TT_Test, tt_perft) {
-  std::random_device rd;
-  std::default_random_engine rg1(rd());
-  std::uniform_int_distribution<unsigned long long> randomKey(1, 10'000'000);
-  std::uniform_int_distribution<unsigned short> randomDepth(0, DEPTH_MAX);
-  std::uniform_int_distribution<int> randomValue(VALUE_MIN, VALUE_MAX);
-  std::uniform_int_distribution<int> randomAlpha(VALUE_MIN, 0);
-  std::uniform_int_distribution<unsigned int> randomBeta(0, VALUE_MAX);
-  std::uniform_int_distribution<unsigned short> randomType(1, 3);
-
-  TT tt(64 * TT::MB);
-  tt.setThreads(4);
-
-  fprintln("Start perft test for TT...");
-  fprintln("TT Stats: {:s}", tt.str());
-
-  const Move move = createMove("e2e4");
-
-  cpu_timer timer;
-  const int rounds = 10;
-  const int iterations = 1'000'000;
-  for (int j = 0; j < rounds; ++j) {
-    // puts
-    for (int i = 0; i < iterations; ++i) {
-      const unsigned long long int key = randomKey(rg1);
-      Depth depth = static_cast<Depth>(randomDepth(rg1));
-      Value value = static_cast<Value>(randomValue(rg1));
-      Value_Type type = static_cast<Value_Type>(randomType(rg1));
-      tt.put(key, depth, move, value, type, false, true);
-    }
-    // probes
-    for (int i = 0; i < iterations; ++i) {
-      const unsigned long long int key = randomKey(rg1);
-      tt.probe(key);
-    }
-    tt.ageEntries();
-  }
-  timer.stop();
-
-  auto time = timer.elapsed().wall;
-
-  fprintln("");
-  fprintln("TT Statistics : {:s}", tt.str());
-  fprintln("Run time      : {:n} ns ({:n} put/probes per sec)", time, (rounds * 2 * iterations * nanoPerSec) / time);
-  fprintln("");
-
-}
 
 
 

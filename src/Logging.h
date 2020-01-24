@@ -109,7 +109,7 @@ public:
     return instance;
   }
 
-  const std::string defaultPattern = "[%H:%M:%S:%f] [t:%-10t] [%-17n] [%-8l]: %v";
+  const std::string defaultPattern = "[%H:%M:%S:%f] [t:%-10!t] [%-17n] [%-8l]: %v";
   const std::shared_ptr<spdlog::sinks::basic_file_sink_mt> sharedFileSink =
     std::make_shared<spdlog::sinks::basic_file_sink_mt>("FrankyCPP.log");
   const std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> uciOutSink

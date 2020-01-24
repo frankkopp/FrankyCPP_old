@@ -77,6 +77,14 @@ void TT::clear() {
     });
   }
   for (std::thread &th: threads) th.join();
+  numberOfPuts = 0;
+  numberOfEntries = 0;
+  numberOfHits = 0;
+  numberOfUpdates = 0;
+  numberOfMisses = 0;
+  numberOfCollisions = 0;
+  numberOfOverwrites = 0;
+  numberOfProbes = 0;
   auto finish = std::chrono::high_resolution_clock::now();
   auto time = std::chrono::duration_cast<std::chrono::milliseconds>(finish - startTime).count();
   LOG__INFO(Logger::get().TT_LOG, "TT cleared {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);

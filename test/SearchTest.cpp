@@ -55,6 +55,7 @@ TEST_F(SearchTest, basic) {
   sleep(2);
   search.stopSearch();
   search.waitWhileSearching();
+  SUCCEED();
 }
 
 TEST_F(SearchTest, selective_moves) {
@@ -477,26 +478,8 @@ TEST_F(SearchTest, perft) {
             search.getSearchStats().leafPositionsEvaluated);
 }
 
-TEST_F(SearchTest, nps) {
-  Search search;
-  SearchLimits searchLimits;
-  Position position;
-
-  search.setHashSize(1'024);
-  searchLimits.setMoveTime(30'000);
-
-  search.startSearch(position, searchLimits);
-  search.waitWhileSearching();
-
-  LOG__INFO(Logger::get().TEST_LOG, "Nodes: {:n} Time: {:n} ms NPS: {:n}",
-            search.getSearchStats().nodesVisited,
-            search.getSearchStats().lastSearchTime,
-            (search.getSearchStats().nodesVisited * 1'000) /
-                search.getSearchStats().lastSearchTime);
-}
-
 // for debugging
-TEST_F(SearchTest, nmpStats) {
+TEST_F(SearchTest, DISABLED_nmpStats) {
   Search search;
   SearchLimits searchLimits;
 
@@ -547,7 +530,7 @@ TEST_F(SearchTest, nmpStats) {
   std::cout << str.str();
 }
 
-TEST_F(SearchTest, debuggingIID) {
+TEST_F(SearchTest, DISABLED_debuggingIID) {
   Search search;
   SearchLimits searchLimits;
   Position position;
@@ -567,7 +550,7 @@ TEST_F(SearchTest, debuggingIID) {
   search.waitWhileSearching();
 }
 
-TEST_F(SearchTest, debuggingTTMove) {
+TEST_F(SearchTest, DISABLED_debuggingTTMove) {
   Search search;
   SearchLimits searchLimits;
   Position position;
@@ -585,7 +568,7 @@ TEST_F(SearchTest, debuggingTTMove) {
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 }
-TEST_F(SearchTest, debugging) {
+TEST_F(SearchTest, DISABLED_debugging) {
   Search search;
   SearchLimits searchLimits;
   Position position;

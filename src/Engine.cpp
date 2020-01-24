@@ -101,9 +101,9 @@ std::string Engine::getOption(const std::string &name) {
 }
 
 void Engine::newGame() {
-  LOG__INFO(Logger::get().ENGINE_LOG, "Engine: New Game",0);
-  // stop any search - this is necessary in case of ponder miss
+  LOG__INFO(Logger::get().ENGINE_LOG, "Engine: New Game");
   stopSearch();
+  pSearch->clearHash();
 }
 
 void Engine::setPosition(const std::string &fen) {
