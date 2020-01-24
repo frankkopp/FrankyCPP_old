@@ -438,6 +438,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
         }
       }
       break;
+
     case QUIESCENCE:
       // limit max quiescence depth
       if (ply > static_cast<Ply>(currentIterationDepth + SearchConfig::MAX_EXTRA_QDEPTH) ||
@@ -449,8 +450,8 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
       if (searchStats.currentExtraSearchDepth < ply) {
         searchStats.currentExtraSearchDepth = ply;
       }
-
       break;
+
     case PERFT:
       if (depth <= DEPTH_NONE || ply >= PLY_MAX - 1) {
         Value eval = evaluate(position);
@@ -563,7 +564,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
                 LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{} Cache hit in ROOT ply but type not EXACT", __func__, __LINE__);
               }
               if (ttEntryPtr->move == MOVE_NONE) {
-                LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{} Cache hit in ROOT ply but no root in Entry", __func__, __LINE__);
+                LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{} Cache hit in ROOT ply but no root in Entry. Value={}", __func__, __LINE__, printValue(ttValue));
               }
             ASSERT_END
             getPVLine(position, pv[PLY_ROOT], depth);
@@ -1037,8 +1038,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
         LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}}Search storing into TT: {} {} {} {} {} {} {}", "",
                    ply, position.getZobristKey(), bestNodeValue, TT::str(ttType),
                    depth, printMove(ttStoreMove), false, position.printFen());
-        storeTT(position, bestNodeValue, ttType, depth, ply, ttStoreMove,
-                mateThreat[ply]);
+        storeTT(position, bestNodeValue, ttType, depth, ply, ttStoreMove,mateThreat[ply]);
       }
       break;
     case QUIESCENCE:
