@@ -316,8 +316,8 @@ TEST_F(TT_Test, tt_perft) {
   std::default_random_engine rg1(rd());
   std::uniform_int_distribution<unsigned long long> randomKey(1, 10'000'000);
   std::uniform_int_distribution<unsigned short> randomDepth(0, DEPTH_MAX);
-  std::uniform_int_distribution<unsigned int> randomValue(VALUE_MIN, VALUE_MAX);
-  std::uniform_int_distribution<unsigned int> randomAlpha(VALUE_MIN, 0);
+  std::uniform_int_distribution<int> randomValue(VALUE_MIN, VALUE_MAX);
+  std::uniform_int_distribution<int> randomAlpha(VALUE_MIN, 0);
   std::uniform_int_distribution<unsigned int> randomBeta(0, VALUE_MAX);
   std::uniform_int_distribution<unsigned short> randomType(1, 3);
 
