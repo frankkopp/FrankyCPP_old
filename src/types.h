@@ -410,7 +410,8 @@ inline PieceType promotionType(Move m) {
 
 /** returns the value of the move */
 inline Value valueOf(Move m) {
-  return static_cast<Value>(((m & MoveShifts::VALUE_MASK) >> MoveShifts::VALUE_SHIFT)) + VALUE_NONE;
+  const Value tmp = static_cast<Value>((m & MoveShifts::VALUE_MASK) >> MoveShifts::VALUE_SHIFT);
+  return  static_cast<Value>(tmp + VALUE_NONE);
 }
 
 /** returns the move without value */

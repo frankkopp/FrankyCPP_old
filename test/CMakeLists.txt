@@ -132,7 +132,7 @@ if (WIN32)
             ${testExeName}
             core
             fmt
-            spdlog
+            #spdlog
             gtest
             gtest_main
             ${Boost_LIBRARIES}
