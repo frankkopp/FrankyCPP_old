@@ -81,10 +81,8 @@ public:
 
 private:
 
-//  std::shared_ptr<spdlog::logger> const LOG = spdlog::get("TT_Logger");
-
   // threads for clearing hash
-  int noOfThreads = 4;
+  unsigned int noOfThreads = 1;
 
   // size and fill info
   uint64_t sizeInByte = 0;
@@ -111,9 +109,7 @@ public:
 
   /** @param newSizeInBytes Size of TT in bytes which will be reduced to the next
    * lowest power of 2 size */
-  explicit TT(uint64_t newSizeInBytes) {
-    resize(newSizeInBytes);
-  }
+  explicit TT(uint64_t newSizeInBytes);
 
   ~TT() {
     delete[] _data;
