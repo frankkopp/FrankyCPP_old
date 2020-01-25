@@ -344,12 +344,12 @@ void UCI_Handler::sendIterationEndInfo(int depth, int seldepth, Value value,
 }
 
 void UCI_Handler::sendCurrentRootMove(Move currmove, unsigned long movenumber) const {
-  send(fmt::format("currmove {} currmovenumber {}", printMove(currmove),
+  send(fmt::format("info currmove {} currmovenumber {}", printMove(currmove),
                    movenumber));
 }
 
 void UCI_Handler::sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t nps,
                                    MilliSec time, int hashfull) const {
-  send(fmt::format("depth {} seldepth {} nodes {} nps {} time {} hashfull {}",
+  send(fmt::format("info depth {} seldepth {} nodes {} nps {} time {} hashfull {}",
                    depth, seldepth, nodes, nps, time, hashfull));
 }

@@ -27,14 +27,13 @@ v 0.5 (plan)
 v 0.4 (in progress)
 ================================================================================
 - TODO:
-    - See logfile for errors
     - Debug Search - blunders
-    - New Game - clear hash
-    - Debug and harden play with UCI GUI  XBoard, Arena, etc.
-    - optimize removePiece and putPiece
-    - FASTER LINK TIMES
 
 - DONE:
+    - Debug and harden play with UCI GUI  XBoard, Arena, etc.
+    - See logfile for errors
+    - New Game - clear hash
+    - FASTER LINK TIMES
     - Compile under Cygwin on PC
     - move test src one up
     - Put Position history variables in a struct for better locality

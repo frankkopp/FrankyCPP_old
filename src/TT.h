@@ -211,9 +211,7 @@ public:
   /** Returns how full the transposition table is in permill as per UCI */
   inline int hashFull() const {
     if (!maxNumberOfEntries) return 0;
-    return static_cast<int>(1000 *
-                            (static_cast<double>(numberOfEntries) /
-                             static_cast<double>(maxNumberOfEntries)));
+    return static_cast<int>((1000 * numberOfEntries) / maxNumberOfEntries);
   };
 
   std::string str() {

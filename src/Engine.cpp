@@ -197,8 +197,7 @@ void Engine::sendCurrentRootMove(Move currmove, MoveList::size_type movenumber) 
   if (pUciHandler) pUciHandler->sendCurrentRootMove(currmove, movenumber);
   else
     LOG__WARN(Logger::get().ENGINE_LOG, "<no uci handler>: Engine current move: currmove {} currmovenumber {}",
-              printMove(currmove),
-              movenumber);
+              printMove(currmove), movenumber);
 }
 
 void Engine::sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t nps, MilliSec time,
@@ -207,12 +206,7 @@ void Engine::sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t 
   else
     LOG__WARN(Logger::get().ENGINE_LOG,
       "<no uci handler>: Engine search update: depth {} seldepth {} nodes {} nps {} time {} hashfull {}",
-      depth,
-      seldepth,
-      nodes,
-      nps,
-      time,
-      hashfull);
+      depth, seldepth, nodes, nps, time, hashfull);
 }
 
 void Engine::sendCurrentLine(const MoveList &moveList) const {
