@@ -17,6 +17,9 @@ set(CMAKE_CXX_STANDARD 17)
 # Compiler Settings
 message("Compiler is " ${CMAKE_CXX_COMPILER_ID} " " ${CMAKE_CXX_COMPILER_VERSION} " " ${CMAKE_CXX_COMPILER})
 
+# Unit testing enabled
+enable_testing()
+
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang") # Apple
     message("Compiler Settings: CLANG")
     set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra ")

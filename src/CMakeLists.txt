@@ -66,7 +66,7 @@ endif ()
 set (BOOST_ALL_NO_LIB 1)
 
 # define library files
-set(core_SRCS
+set(FrankyCPPlib_SRCS
         Logging.h Logging.cpp
         types.h types.cpp
         Semaphore.h
@@ -89,7 +89,14 @@ set(core_SRCS
         SearchConfig.h Search.h Search.cpp
         TestSuite.h TestSuite.cpp
         )
-add_library(core ${core_SRCS})
+add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})
+target_link_libraries(
+        FrankyCPPlib
+        PUBLIC
+        fmt 
+        spdlog 
+        ${Boost_LIBRARIES}        
+)
 
 # set the name of the executable
 set(exeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR})
@@ -98,33 +105,9 @@ set(exeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR})
 add_executable(${exeName} main.cpp)
 
 # link executable with library
-if (APPLE)
-    target_link_libraries(
-            ${exeName}
-            core
-            fmt
-            spdlog
-            ${Boost_LIBRARIES}
-    )
-endif ()
-
-if (CYGWIN)
-    target_link_libraries(
-            ${exeName}
-            core
-            fmt
-            spdlog
-            ${Boost_LIBRARIES}
-    )
-endif ()
-
-if (WIN32)
-    target_link_libraries(
-            ${exeName}
-            core
-            fmt
-            spdlog
-            ${Boost_LIBRARIES}
-    )
-endif ()
+target_link_libraries(
+        ${exeName}
+        PUBLIC
+        FrankyCPPlib          
+)
 

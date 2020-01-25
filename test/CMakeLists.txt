@@ -84,39 +84,16 @@ add_executable(${testExeName}
         BOOST_Test.cpp
         PerformanceTests.cpp)
 
-if (APPLE)
-    target_link_libraries(
-            ${testExeName}
-            core
-            fmt
-            spdlog
-            gtest
-            gtest_main
-            ${Boost_LIBRARIES}
+target_link_libraries(
+        ${testExeName}
+        PUBLIC
+        FrankyCPPlib
+        gtest
+        gtest_main
 )
-endif()
 
-if (CYGWIN)
-    target_link_libraries(
-            ${testExeName}
-            core
-            fmt
-            #spdlog
-            gtest
-            gtest_main
-            ${Boost_LIBRARIES}
-    )
-endif()
-
-if (WIN32)
-    target_link_libraries(
-            ${testExeName}
-            core
-            fmt
-            #spdlog
-            gtest
-            gtest_main
-            ${Boost_LIBRARIES}
-    )
-endif()
+add_test(
+  NAME ${testExeName}
+  COMMAND ${testExeName}
+)
 
