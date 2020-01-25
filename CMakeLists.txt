@@ -14,11 +14,11 @@ message("Recognized platform is " ${CMAKE_SYSTEM_NAME} " " ${CMAKE_SYSTEM_VERSIO
 # C++ settings
 set(CMAKE_CXX_STANDARD 17)
 
-# Compiler Settings
-message("Compiler is " ${CMAKE_CXX_COMPILER_ID} " " ${CMAKE_CXX_COMPILER_VERSION} " " ${CMAKE_CXX_COMPILER})
-
 # Unit testing enabled
 enable_testing()
+
+# Compiler Settings
+message("Compiler is " ${CMAKE_CXX_COMPILER_ID} " " ${CMAKE_CXX_COMPILER_VERSION} " " ${CMAKE_CXX_COMPILER})
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang") # Apple
     message("Compiler Settings: CLANG")
@@ -68,7 +68,6 @@ FetchContent_Declare(
 message("Downloading/Update Google Test")
 FetchContent_MakeAvailable(googletest)
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-
 include_directories(
         ${googletest_SOURCE_DIR}/googletest/include
 )
@@ -82,7 +81,6 @@ FetchContent_Declare(
 )
 message("Downloading/Update FMT")
 FetchContent_MakeAvailable(fmt)
-
 include_directories(
         ${fmt_SOURCE_DIR}/include
 )
@@ -97,13 +95,11 @@ FetchContent_Declare(
 message("Downloading/Update SPDLOG")
 option(SPDLOG_FMT_EXTERNAL ON)
 FetchContent_MakeAvailable(spdlog)
-
-message("fmt source dir = " ${fmt_SOURCE_DIR})
-
 include_directories(
         ${spdlog_SOURCE_DIR}/include
 )
 
+# My project
 include_directories(
         ${PROJECT_SOURCE_DIR}/src
         ${PROJECT_SOURCE_DIR}/test
