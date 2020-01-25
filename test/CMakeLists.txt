@@ -62,7 +62,6 @@ set (BOOST_ALL_NO_LIB 1)
 set(testExeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR}_Test)
 
 add_executable(${testExeName}
-        main.cpp
         LoggingTest.cpp
         GlobalsTest.cpp
         SemaphoreTest.cpp
@@ -94,6 +93,6 @@ target_link_libraries(
 
 add_test(
   NAME ${testExeName}
-  COMMAND ${testExeName}
+  COMMAND ${testExeName} 
 )
 

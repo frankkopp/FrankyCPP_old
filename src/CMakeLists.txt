@@ -37,14 +37,12 @@ if (APPLE)
     #include_directories(
     #        /usr/local/include
     #)
-
 endif ()
 
 if (CYGWIN)
     set(BOOST_ROOT "/usr/local/boost_1_72_0")
     set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
     set(Boost_USE_MULTITHREADED ON)
-
 endif ()
 
 if (WIN32)
@@ -54,7 +52,6 @@ if (WIN32)
     set(Boost_USE_MULTITHREADED ON)
     set(Boost_USE_STATIC_LIBS ON)
     set(Boost_USE_STATIC_RUNTIME OFF)
-
 endif ()
 
 find_package(Boost 1.72.0 COMPONENTS timer log log_setup REQUIRED)

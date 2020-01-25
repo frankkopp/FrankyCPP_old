@@ -67,6 +67,7 @@ FetchContent_Declare(
 )
 message("Downloading/Update Google Test")
 FetchContent_MakeAvailable(googletest)
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
 include_directories(
         ${googletest_SOURCE_DIR}/googletest/include
