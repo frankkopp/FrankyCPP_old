@@ -24,12 +24,14 @@
  */
 
 #include <random>
+#include <chrono>
 #include "Logging.h"
 #include "Position.h"
 #include "TT.h"
 #include "Evaluator.h"
 #include "SearchConfig.h"
 #include "Search.h"
+
 #include <gtest/gtest.h>
 #include <boost/timer/timer.hpp>
 
@@ -261,6 +263,10 @@ TEST_F(PerformanceTests, Evaluator_EPS) {
   }
 }
 
+/*
+ * 25.1.2020 cygwin
+ * Nodes: 55.967.744 Time: 30.047 ms NPS: 1.862.673
+ */
 TEST_F(PerformanceTests, Search_NPS) {
 
   Search search;
@@ -273,9 +279,13 @@ TEST_F(PerformanceTests, Search_NPS) {
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 
+  const uint64_t nps = (search.getSearchStats().nodesVisited * 1'000) /
+                       search.getSearchStats().lastSearchTime;
+
   LOG__INFO(Logger::get().TEST_LOG, "Nodes: {:n} Time: {:n} ms NPS: {:n}",
             search.getSearchStats().nodesVisited,
             search.getSearchStats().lastSearchTime,
-            (search.getSearchStats().nodesVisited * 1'000) /
-            search.getSearchStats().lastSearchTime);
+            nps);
+
+  EXPECT_LT(1'800'000, nps);
 }
