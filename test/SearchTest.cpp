@@ -374,19 +374,19 @@ TEST_F(SearchTest, PV_MOVE) {
 
 TEST_F(SearchTest, IID) {
 
-  SearchConfig::USE_TT = true;
-  SearchConfig::TT_SIZE_MB = 64;
-  SearchConfig::USE_IID = true;
-
-  Search search;
-  SearchLimits searchLimits;
-  Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
-  searchLimits.setDepth(9);
-  search.startSearch(position, searchLimits);
-  search.waitWhileSearching();
-
-  LOG__INFO(Logger::get().TEST_LOG, "IID Searches {:n}", search.getSearchStats().iidSearches);
-  ASSERT_GT(search.getSearchStats().iidSearches, 0);
+//  SearchConfig::USE_TT = true;
+//  SearchConfig::TT_SIZE_MB = 64;
+//  SearchConfig::USE_IID = true;
+//
+//  Search search;
+//  SearchLimits searchLimits;
+//  Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
+//  searchLimits.setDepth(9);
+//  search.startSearch(position, searchLimits);
+//  search.waitWhileSearching();
+//
+//  LOG__INFO(Logger::get().TEST_LOG, "IID Searches {:n}", search.getSearchStats().iidSearches);
+//  ASSERT_GT(search.getSearchStats().iidSearches, 0);
 }
 
 TEST_F(SearchTest, TT) {
@@ -548,11 +548,11 @@ TEST_F(SearchTest, debuggingIID) {
   SearchConfig::USE_MPP             = true;
   SearchConfig::USE_PVS             = true;
   SearchConfig::USE_PV_MOVE_SORT    = true;
-  SearchConfig::USE_IID             = false;
-  SearchConfig::IID_DEPTH           = Depth{7}; // remaining depth to do IID
-  SearchConfig::IID_DEPTH_REDUCTION = Depth{5}; // reduction of depth for IID
+//  SearchConfig::USE_IID             = false;
+//  SearchConfig::IID_DEPTH           = Depth{7}; // remaining depth to do IID
+//  SearchConfig::IID_DEPTH_REDUCTION = Depth{5}; // reduction of depth for IID
   SearchConfig::USE_RFP             = true;
-  SearchConfig::USE_RAZOR_PRUNING   = true;
+//  SearchConfig::USE_RAZOR_PRUNING   = true;
   SearchConfig::USE_NMP             = true;
   SearchConfig::USE_EXTENSIONS      = true;
   // @formatter:on
@@ -576,7 +576,7 @@ TEST_F(SearchTest, DISABLED_debuggingTTMove) {
   SearchConfig::USE_TT_QSEARCH = true;
   SearchConfig::USE_RFP = true;
   SearchConfig::USE_NMP = true;
-  SearchConfig::USE_IID = true;
+//  SearchConfig::USE_IID = true;
 
   const int depth = 3;
   position = Position("rnb1kbnr/ppp2ppp/8/3PN1q1/3Pp3/8/PPP2PPP/RNBQKB1R b KQkq d3 0 5");
@@ -603,11 +603,11 @@ TEST_F(SearchTest, debugging) {
   SearchConfig::USE_MPP             = true;
   SearchConfig::USE_PVS             = true;
   SearchConfig::USE_PV_MOVE_SORT    = true;
-  SearchConfig::USE_IID             = true;
-  SearchConfig::IID_DEPTH           = Depth{7}; // remaining depth to do IID
-  SearchConfig::IID_DEPTH_REDUCTION = Depth{5}; // reduction of depth for IID
+//  SearchConfig::USE_IID             = true;
+//  SearchConfig::IID_DEPTH           = Depth{7}; // remaining depth to do IID
+//  SearchConfig::IID_DEPTH_REDUCTION = Depth{5}; // reduction of depth for IID
   SearchConfig::USE_RFP             = true;
-  SearchConfig::USE_RAZOR_PRUNING   = true;
+//  SearchConfig::USE_RAZOR_PRUNING   = true;
   SearchConfig::USE_NMP             = true;
   SearchConfig::USE_EXTENSIONS      = true;
   // @formatter:on

@@ -56,14 +56,14 @@ protected:
     SearchConfig::USE_TT_QSEARCH      = true;
 
     SearchConfig::USE_KILLER_MOVES    = true;
-    SearchConfig::USE_PV_MOVE_SORT = true;
-    SearchConfig::USE_IID             = true;
+    SearchConfig::USE_PV_MOVE_SORT    = true;
+//    SearchConfig::USE_IID             = true;
 
     SearchConfig::USE_MDP             = true;
     SearchConfig::USE_MPP             = true;
     SearchConfig::USE_QS_STANDPAT_CUT = true;
     SearchConfig::USE_RFP             = true;
-    SearchConfig::USE_RAZOR_PRUNING   = true;
+//    SearchConfig::USE_RAZOR_PRUNING   = true;
     SearchConfig::USE_NMP             = true;
 
     SearchConfig::USE_EXTENSIONS      = true;

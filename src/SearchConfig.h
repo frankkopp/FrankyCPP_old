@@ -44,9 +44,9 @@ namespace SearchConfig {
   inline bool USE_KILLER_MOVES      = true; // Store refutation moves (>beta) for move ordering
   inline int NO_KILLER_MOVES        = 2; // number of killers stored
   inline bool USE_PV_MOVE_SORT      = true; // tell the move gen the current pv to return first
-  inline bool USE_IID               = false; // internal iterative deepening if we did not get a TT move
-  inline Depth IID_DEPTH            = Depth{7}; // remaining depth to do IID
-  inline Depth IID_DEPTH_REDUCTION  = Depth{5}; // reduction of depth for IID
+//  inline bool USE_IID               = false; // internal iterative deepening if we did not get a TT move
+//  inline Depth IID_DEPTH            = Depth{7}; // remaining depth to do IID
+//  inline Depth IID_DEPTH_REDUCTION  = Depth{5}; // reduction of depth for IID
   // Pruning features
   inline bool USE_MDP               = true; // mate distance pruning
   inline bool USE_MPP               = true; // minor promotion pruning
@@ -56,9 +56,9 @@ namespace SearchConfig {
   inline Depth NMP_REDUCTION        = Depth{2}; // at least 1
   inline bool USE_RFP               = true; // Reverse Futility Pruning
   inline Value RFP_MARGIN           = Value{99}; // less than 3 pawns per depth
-  inline bool USE_RAZOR_PRUNING     = true; // Razoring - bad move direct into qs
-  inline Depth RAZOR_DEPTH          = Depth{2};
-  inline Value RAZOR_MARGIN         = Value{600};
+//  inline bool USE_RAZOR_PRUNING     = true; // Razoring - bad move direct into qs
+//  inline Depth RAZOR_DEPTH          = Depth{2};
+//  inline Value RAZOR_MARGIN         = Value{600};
   // tactical features
   inline bool USE_EXTENSIONS        = true;
   // @formatter:on

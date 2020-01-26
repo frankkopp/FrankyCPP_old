@@ -29,20 +29,17 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang") # Apple
     set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra ")
     set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -Wpedantic -Wshadow -Wno-conversion -Wunreachable-code -Wuninitialized  -Wold-style-cast -Wunused-variable -Wfloat-equal -Wno-gnu-zero-variadic-macro-arguments")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-
 elseif (CMAKE_COMPILER_IS_GNUCXX) # CYGWIN
     message("Compiler Settings: GNU")
     set(CMAKE_CXX_FLAGS "-std=c++17 -m64 -Wall -Wextra -Wpedantic -Wno-error=pedantic -Wshadow -Wno-unknown-pragmas -Wno-variadic-macros")
     set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -Wno-unused-parameter -Wno-unused-variable")
     # additional: -Wno-unknown-pragmas -Weffc++ -Wimplicit-fallthrough -Wswitch -Wpointer-arith -Wcast-qual -Wconversion -Wno-sign-conversion -Wno-error=padded -Wno-error=inline")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC") # Visual Studio MSVC
     message("Compiler Settings: MSVC")
     #set(CMAKE_CXX_FLAGS "/W4")
     #set(CMAKE_CXX_FLAGS_DEBUG "/Od")
     #set(CMAKE_CXX_FLAGS_RELEASE "/O2")
-
 endif ()
 
 message("Compiler DEBUG flags: " ${CMAKE_CXX_FLAGS} " " ${CMAKE_CXX_FLAGS_DEBUG})
@@ -66,10 +63,13 @@ set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
 include(FetchContent)
 FetchContent_Declare(
         googletest
-        GIT_REPOSITORY https://github.com/google/googletest.git
-        GIT_TAG        release-1.10.0
+        GIT_REPOSITORY      https://github.com/google/googletest.git
+        GIT_TAG             release-1.10.0
+        INSTALL_COMMAND     "NOP"
 )
 message("Downloading/Update Google Test")
+option(INSTALL_GMOCK "Install Googletest's GMock?" OFF)
+option(INSTALL_GTEST "Install Googletest's GTest?" OFF)
 FetchContent_MakeAvailable(googletest)
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 include_directories(
@@ -107,18 +107,15 @@ include_directories(
 if (APPLE OR CYGWIN)
     set(BOOST_ROOT "/usr/local/boost_1_72_0")
     set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
-    set(Boost_USE_MULTITHREADED ON)
-    set(Boost_USE_STATIC_LIBS ON)
-    set(Boost_USE_STATIC_RUNTIME OFF)
 endif ()
 if (WIN32)
     set(BOOST_ROOT "C:/Boost/boost_1_72_0")
     set(BOOST_INCLUDEDIR "C:/Boost/boost_1_72_0")
     set(BOOST_LIBRARYDIR "C:/Boost/boost_1_72_0/lib64-msvc-14.2")
-    set(Boost_USE_MULTITHREADED ON)
-    set(Boost_USE_STATIC_LIBS ON)
-    set(Boost_USE_STATIC_RUNTIME OFF)
 endif ()
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_LIBS ON)
+set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost 1.72.0 COMPONENTS program_options timer log log_setup REQUIRED)
 if (Boost_FOUND)
     message("BOOST found: " ${BOOST_ROOT} " " ${Boost_INCLUDE_DIR})

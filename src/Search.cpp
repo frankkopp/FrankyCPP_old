@@ -365,7 +365,7 @@ SearchResult Search::iterativeDeepening(Position &position) {
         }
         if (!pv[PLY_ROOT].empty() && valueOf(pv[PLY_ROOT].at(0)) == VALUE_NONE) {
           LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{}Best root move has no value!( pv size={}", __func__, __LINE__, pv[PLY_ROOT].size());
-        };
+        }
       }
     ASSERT_END
 
@@ -718,8 +718,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
   while ((move = getMove<ST>(position, ply)) != MOVE_NONE) {
 
     if (ST == ROOT) LOG__TRACE(Logger::get().SEARCH_LOG, "Root Move {} START", printMove(move));
-    else
-      LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}}Depth {} cv {} move {} START", "", ply, ply, printMoveListUCI(currentVariation), printMove(move));
+    else LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}}Depth {} cv {} move {} START", "", ply, ply, printMoveListUCI(currentVariation), printMove(move));
 
     // reduce number of moves searched in quiescence
     // by looking at good captures only
@@ -1075,13 +1074,7 @@ Move Search::getMove(Position &position, int ply) {
 bool Search::goodCapture(Position &position, Move move) {
   ASSERT_START
     if (!position.isCapturingMove(move)) {
-      LOG__ERROR(Logger::get().SEARCH_LOG, "move send to goodCapture should be capturing {:<30s} {}",
-                 printMoveVerbose(move), position.printFen());
-      //      Bitboard b1 = position.getOccupiedBB(~position.getNextPlayer()) & getToSquare(move);
-      //      fprintln("{}", Bitboards::print(b1));
-      //      bool b2 = typeOf(move) == ENPASSANT;
-      //      fprintln("b1 {} b2 {}", b1, b2);
-      //      position.isCapturingMove(move);
+      LOG__ERROR(Logger::get().SEARCH_LOG, "move send to goodCapture should be capturing {:<30s} {}", printMoveVerbose(move), position.printFen());
     }
   ASSERT_END
   return

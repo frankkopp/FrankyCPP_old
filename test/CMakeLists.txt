@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD 17)
 # set the name of the executable
 set(testExeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR}_Test)
 
+include(GoogleTest)
 add_executable(${testExeName}
         LoggingTest.cpp
         GlobalsTest.cpp
@@ -38,8 +39,10 @@ target_link_libraries(
         gtest_main
 )
 
-add_test(
-  NAME ${testExeName}
-  COMMAND ${testExeName} 
-)
+gtest_discover_tests(${testExeName})
+
+#add_test(
+#  NAME ${testExeName}
+#  COMMAND ${testExeName}
+#)
 

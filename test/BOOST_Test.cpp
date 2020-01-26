@@ -31,10 +31,6 @@ using testing::Eq;
 #include "types.h"
 #include <boost/timer/timer.hpp>
 
-TEST(BOOST, basic) {
-  std::cout << "Boost Test" << std::endl;
-}
-
 TEST(BOOST, cpu_timer) {
 
   std::cout.imbue(deLocale);
@@ -48,12 +44,10 @@ TEST(BOOST, cpu_timer) {
   boost::timer::cpu_timer timer;
   timer.stop();
 
-  std::cout << std::endl;
-  std::cout << timer.format() << std::endl;
-
+  std::cout << timer.format();
   while (i++ < iterations) {
     for (int j = 0; j < repetitions; ++j) {
-      uint64_t n = 1000, first = 0, second = 1, next = 0, c = 0;
+      uint64_t n = 100000, first = 0, second = 1, next = 0, c = 0;
       timer.resume();
       auto start = std::chrono::high_resolution_clock::now();
       // Fibunacci numbers
@@ -74,10 +68,9 @@ TEST(BOOST, cpu_timer) {
       //std::cout << std::endl;
     }
   }
-
   std::cout << timer.format();
   std::cout << " " << std::setprecision(7) << static_cast<double>(sum) / 1e9 << std::endl;
-
+  SUCCEED();
 }
 
 //#include <boost/log/core.hpp>

@@ -122,8 +122,10 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
+  // Init all pre calculated data structures
   INIT::init();
 
+  // start engine and UCI loop
   Engine engine;
   UCI_Handler uci(&engine);
   uci.loop();
