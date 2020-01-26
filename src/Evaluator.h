@@ -38,7 +38,7 @@
 
 #ifdef EVAL_ENABLE_PREFETCH
 #include <emmintrin.h>
-#define EVAL_PREFETCH evaluator.prefetch(position.getPieceBB(WHITE, PAWN) | position.getPieceBB(BLACK, PAWN));
+#define EVAL_PREFETCH pEvaluator->prefetch(position.getPieceBB(WHITE, PAWN) | position.getPieceBB(BLACK, PAWN))
 #else
 #define EVAL_PREFETCH void(0);
 #endif
