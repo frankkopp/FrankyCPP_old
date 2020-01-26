@@ -5,36 +5,6 @@ message("====================================================================")
 cmake_minimum_required(VERSION 3.13)
 set(CMAKE_CXX_STANDARD 17)
 
-# Platform specific
-if (APPLE)
-    set(BOOST_ROOT "/usr/local/boost_1_72_0")
-    set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
-    set(Boost_USE_MULTITHREADED ON)
-endif ()
-
-if (CYGWIN)
-    set(BOOST_ROOT "/usr/local/boost_1_72_0")
-    set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
-    set(Boost_USE_MULTITHREADED ON)
-endif ()
-
-if (WIN32)
-    set(BOOST_ROOT "C:/Boost/boost_1_72_0")
-    set(BOOST_INCLUDEDIR "C:/Boost/boost_1_72_0")
-    set(BOOST_LIBRARYDIR "C:/Boost/boost_1_72_0/lib64-msvc-14.2")
-    set(Boost_USE_MULTITHREADED ON)
-    set(Boost_USE_STATIC_LIBS ON) 
-    set(Boost_USE_STATIC_RUNTIME OFF)
-endif ()
-
-find_package(Boost 1.72.0 COMPONENTS timer log log_setup REQUIRED)
-if (Boost_FOUND)
-    message("BOOST found: " ${BOOST_ROOT} " " ${Boost_INCLUDE_DIR})
-    include_directories(${Boost_INCLUDE_DIRS})
-endif ()
-
-set (BOOST_ALL_NO_LIB 1)
-
 # set the name of the executable
 set(testExeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR}_Test)
 
