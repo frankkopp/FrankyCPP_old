@@ -51,7 +51,9 @@ target_link_libraries(
         FrankyCPPlib          
 )
 
-install(TARGETS ${exeName}
+install(
+        TARGETS ${exeName}
         CONFIGURATIONS Release
-        RUNTIME DESTINATION ${PROJECT_SOURCE_DIR}/Release/bin)
+        RUNTIME DESTINATION ${PROJECT_SOURCE_DIR}/Release/bin
+)
 
