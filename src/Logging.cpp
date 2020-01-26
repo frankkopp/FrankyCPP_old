@@ -30,7 +30,7 @@
 #include "boost/program_options.hpp"
 namespace po = boost::program_options;
 
-extern po::variables_map programOptions;
+inline po::variables_map programOptions;
 
 void Logger::init() {
   try {
@@ -40,8 +40,12 @@ void Logger::init() {
     std::cerr << "failed to set locale" << std::endl;
   }
 
+  const auto flushLevel = spdlog::level::warn;
+
+  auto logLvL = !programOptions.empty() ? programOptions["log_lvl"].as<std::string>() : "warn";
+  auto searchLogLvL = !programOptions.empty() ? programOptions["search_log_lvl"].as<std::string>() : "warn";
+
   // default log level
-  auto logLvL = programOptions["log_lvl"].as<std::string>();
   const auto logLevel = [&] {
     if (logLvL == "warn") {
       return spdlog::level::warn;
@@ -59,7 +63,24 @@ void Logger::init() {
     }
   }();
 
-  const auto flushLevel = spdlog::level::warn;
+  // default log level
+  const auto searchLogLevel = [&] {
+    if (searchLogLvL == "warn") {
+      return spdlog::level::warn;
+    }
+    else if (searchLogLvL == "info") {
+      return spdlog::level::info;
+    }
+    else if (searchLogLvL == "debug") {
+      return spdlog::level::debug;
+    }
+    else {
+      std::cerr << "unknown search log level '" << searchLogLvL << "' - using default.\n";
+      searchLogLvL = "warn";
+      return spdlog::level::warn;
+    }
+  }();
+
 
   // global log level
   spdlog::set_level(logLevel);
@@ -83,7 +104,7 @@ void Logger::init() {
 
   SEARCH_LOG->sinks().push_back(sharedFileSink);
   SEARCH_LOG->set_pattern(defaultPattern);
-  SEARCH_LOG->set_level(SEARCH_LOG_LEVEL);
+  SEARCH_LOG->set_level(searchLogLevel);
   SEARCH_LOG->flush_on(flushLevel);
 
   TSUITE_LOG->sinks().push_back(sharedFileSink);
@@ -121,7 +142,7 @@ void Logger::init() {
   TEST_LOG->set_level(logLevel);
   TEST_LOG->flush_on(flushLevel);
 
-  std::cout << "Logger initialized (" << logLvL << ")" << std::endl;
+  std::cout << "Logger initialized (" << logLvL << " / " << searchLogLvL << ")" << std::endl;
 }
 
 

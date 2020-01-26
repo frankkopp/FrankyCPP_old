@@ -66,7 +66,8 @@ int main(int argc, char* argv[]) {
     // and in config file
     po::options_description config("Configuration");
     config.add_options()
-            ("log_lvl,l", po::value<std::string>()->default_value("warn"), "set log level <warn|info|debug>");
+            ("log_lvl,l", po::value<std::string>()->default_value("warn"), "set log level <warn|info|debug>")
+            ("search_log_lvl,s", po::value<std::string>()->default_value("warn"), "set log level for search <warn|info|debug>");
 
     // Hidden options, will be allowed both on command line and in config file,
     // but will not be shown to the user.
@@ -98,8 +99,6 @@ int main(int argc, char* argv[]) {
       std::cout << "Version: " << appName << "\n";
       return 0;
     }
-
-    if (programOptions.count("log_lvl")) {}
 
     std::ifstream ifs(config_file.c_str());
     if (!ifs) {

@@ -39,8 +39,6 @@
 #define ASSERT_END break; }
 #endif
 
-#define SEARCH_LOG_LEVEL spdlog::level::trace
-
 #define ZERO__LVL 0
 #define CRITICAL__LVL 1
 #define ERROR__LVL 2
