@@ -27,6 +27,11 @@
 #include "types.h"
 #include "Logging.h"
 
+#include "boost/program_options.hpp"
+namespace po = boost::program_options;
+
+extern po::variables_map programOptions;
+
 void Logger::init() {
   try {
     std::locale::global(deLocale);
@@ -35,65 +40,88 @@ void Logger::init() {
     std::cerr << "failed to set locale" << std::endl;
   }
 
+  // default log level
+  auto logLvL = programOptions["log_lvl"].as<std::string>();
+  const auto logLevel = [&] {
+    if (logLvL == "warn") {
+      return spdlog::level::warn;
+    }
+    else if (logLvL == "info") {
+      return spdlog::level::info;
+    }
+    else if (logLvL == "debug") {
+      return spdlog::level::debug;
+    }
+    else {
+      std::cerr << "unknown log level '" << logLvL << "' - using default.\n";
+      logLvL = "warn";
+      return spdlog::level::warn;
+    }
+  }();
+
+  const auto flushLevel = spdlog::level::warn;
+
+  // global log level
+  spdlog::set_level(logLevel);
+
+  // default pattern
   spdlog::set_pattern(defaultPattern);
 
-  spdlog::set_level(spdlog::level::trace);
-
   // Shared file sink
-  sharedFileSink->set_level(spdlog::level::trace);
+  sharedFileSink->set_level(logLevel);
 
   // Main Logger
   MAIN_LOG->sinks().push_back(sharedFileSink);
   MAIN_LOG->set_pattern(defaultPattern);
-  MAIN_LOG->set_level(spdlog::level::trace);
-  MAIN_LOG->flush_on(spdlog::level::trace);
+  MAIN_LOG->set_level(logLevel);
+  MAIN_LOG->flush_on(flushLevel);
 
   ENGINE_LOG->sinks().push_back(sharedFileSink);
   ENGINE_LOG->set_pattern(defaultPattern);
-  ENGINE_LOG->set_level(spdlog::level::trace);
-  ENGINE_LOG->flush_on(spdlog::level::trace);
+  ENGINE_LOG->set_level(logLevel);
+  ENGINE_LOG->flush_on(flushLevel);
 
   SEARCH_LOG->sinks().push_back(sharedFileSink);
   SEARCH_LOG->set_pattern(defaultPattern);
   SEARCH_LOG->set_level(SEARCH_LOG_LEVEL);
-  SEARCH_LOG->flush_on(spdlog::level::trace);
+  SEARCH_LOG->flush_on(flushLevel);
 
   TSUITE_LOG->sinks().push_back(sharedFileSink);
   TSUITE_LOG->set_pattern(defaultPattern);
-  TSUITE_LOG->set_level(spdlog::level::trace);
-  TSUITE_LOG->flush_on(spdlog::level::trace);
+  TSUITE_LOG->set_level(logLevel);
+  TSUITE_LOG->flush_on(flushLevel);
 
   MOVEGEN_LOG->sinks().push_back(sharedFileSink);
   MOVEGEN_LOG->set_pattern(defaultPattern);
-  MOVEGEN_LOG->set_level(spdlog::level::trace);
-  MOVEGEN_LOG->flush_on(spdlog::level::trace);
+  MOVEGEN_LOG->set_level(logLevel);
+  MOVEGEN_LOG->flush_on(flushLevel);
 
   EVAL_LOG->sinks().push_back(sharedFileSink);
   EVAL_LOG->set_pattern(defaultPattern);
-  EVAL_LOG->set_level(spdlog::level::trace);
-  EVAL_LOG->flush_on(spdlog::level::trace);
+  EVAL_LOG->set_level(logLevel);
+  EVAL_LOG->flush_on(flushLevel);
 
   TT_LOG->sinks().push_back(sharedFileSink);
   TT_LOG->set_pattern(defaultPattern);
-  TT_LOG->set_level(spdlog::level::trace);
-  TT_LOG->flush_on(spdlog::level::trace);
+  TT_LOG->set_level(logLevel);
+  TT_LOG->flush_on(flushLevel);
 
   UCIHAND_LOG->sinks().push_back(sharedFileSink);
   UCIHAND_LOG->set_pattern(defaultPattern);
-  UCIHAND_LOG->set_level(spdlog::level::trace);
-  UCIHAND_LOG->flush_on(spdlog::level::trace);
+  UCIHAND_LOG->set_level(logLevel);
+  UCIHAND_LOG->flush_on(flushLevel);
 
   UCI_LOG->sinks().push_back(uciOutSink);
   UCI_LOG->set_pattern("[%H:%M:%S:%f] %L %v");
-  UCI_LOG->set_level(spdlog::level::trace);
-  UCI_LOG->flush_on(spdlog::level::trace);
+  UCI_LOG->set_level(logLevel);
+  UCI_LOG->flush_on(flushLevel);
 
   // Logger for Unit Tests
   TEST_LOG->set_pattern(defaultPattern);
-  TEST_LOG->set_level(spdlog::level::trace);
-  TEST_LOG->flush_on(spdlog::level::trace);
+  TEST_LOG->set_level(logLevel);
+  TEST_LOG->flush_on(flushLevel);
 
-  std::cout << "Logger initialized" << std::endl;
+  std::cout << "Logger initialized (" << logLvL << ")" << std::endl;
 }
 
 

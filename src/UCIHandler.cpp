@@ -52,7 +52,7 @@ void UCI_Handler::loop() {
 void UCI_Handler::loop(std::istream* pIstream) {
   std::string cmd, token;
   do {
-    LOG__INFO(Logger::get().UCIHAND_LOG, "UCI Handler waiting for command:");
+    LOG__DEBUG(Logger::get().UCIHAND_LOG, "UCI Handler waiting for command:");
 
     // Block here waiting for input or EOF
     // only blocks on cin!!
@@ -61,7 +61,7 @@ void UCI_Handler::loop(std::istream* pIstream) {
     std::istringstream inStream(cmd);
 
     LOG__INFO(Logger::get().UCI_LOG, "<< {}", inStream.str());
-    LOG__INFO(Logger::get().UCIHAND_LOG, "UCI Handler received command: {}", inStream.str());
+    LOG__DEBUG(Logger::get().UCIHAND_LOG, "UCI Handler received command: {}", inStream.str());
 
     // clear possible previous entries
     token.clear();
@@ -85,7 +85,7 @@ void UCI_Handler::loop(std::istream* pIstream) {
     else
       LOG__WARN(Logger::get().UCIHAND_LOG, "Unknown UCI command: {}", token);
 
-    LOG__INFO(Logger::get().UCIHAND_LOG, "UCI Handler processed command: {}", token);
+    LOG__DEBUG(Logger::get().UCIHAND_LOG, "UCI Handler processed command: {}", token);
 
   } while (token != "quit");
 
@@ -321,7 +321,7 @@ void UCI_Handler::debugCommand() {
 }
 
 void UCI_Handler::send(const std::string &toSend) const {
-  LOG__INFO(Logger::get().UCI_LOG, ">> {}", toSend);
+  LOG__DEBUG(Logger::get().UCI_LOG, ">> {}", toSend);
   *pOutputStream << toSend << std::endl;
 }
 
