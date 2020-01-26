@@ -237,8 +237,8 @@ bool Engine::isSearching() {
 
 void Engine::initOptions() {
   // @formatter:off
-  MAP("Hash", UCI_Option("Hash", EngineConfig::hash, 1, 1024)); // spin
-  MAP("Clear Hash", UCI_Option("Clear Hash"));           // button
+  MAP("Hash", UCI_Option("Hash", EngineConfig::hash, 1, 4096)); // spin
+  MAP("Clear Hash", UCI_Option("Clear Hash"));                  // button
   MAP("Ponder", UCI_Option("Ponder", EngineConfig::ponder));    // check
   // @formatter:on
   updateConfig();
