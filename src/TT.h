@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,7 @@
  *
  */
 
-#include <ostream>
-#include "Logging.h"
+#include <iosfwd>
 #include "types.h"
 #include "gtest/gtest_prod.h"
 
@@ -38,7 +37,7 @@
 
 #ifdef TT_ENABLE_PREFETCH
 #include <emmintrin.h>
-#define TT_PREFETCH tt->prefetch(position.getZobristKey());
+#define TT_PREFETCH tt->prefetch(position.getZobristKey())
 #else
 #define TT_PREFETCH void(0);
 #endif
@@ -57,16 +56,10 @@
 class TT {
 public:
 
+  static constexpr int CacheLineSize = 64;
   static constexpr uint64_t KB = 1024;
   static constexpr uint64_t MB = KB * KB;
   static constexpr uint64_t DEFAULT_TT_SIZE = 2 * MB; // byte
-
-  enum Result {
-    // TT probe has not found an entry or the value does not lead to a cut off.
-      TT_MISS,
-    // TT probe has found an entry and the value leads to a cut off
-      TT_HIT
-  };
 
   struct Entry {
     // sorted by size to achieve smallest struct size
@@ -84,12 +77,12 @@ public:
   // struct Entry has 16 Byte
   static constexpr uint64_t ENTRY_SIZE = sizeof(Entry);
 
+  static_assert(CacheLineSize % ENTRY_SIZE == 0, "Cluster size incorrect");
+
 private:
 
-  std::shared_ptr<spdlog::logger> const LOG = spdlog::get("TT_Logger");
-
   // threads for clearing hash
-  int noOfThreads = 4;
+  unsigned int noOfThreads = 1;
 
   // size and fill info
   uint64_t sizeInByte = 0;
@@ -106,23 +99,27 @@ private:
   mutable uint64_t numberOfHits = 0; // entries with identical key found
   mutable uint64_t numberOfMisses = 0; // no entry with key found
 
-  // these two arrays hold the actual entries for the transposition table
+  // this array hold the actual entries for the transposition table
   Entry* _data = new Entry[0]; // default initialization
 
 public:
 
   // TT default size is 2 MB
-  TT() : TT(DEFAULT_TT_SIZE) {};
+  TT() : TT(DEFAULT_TT_SIZE) {}
 
-  /** @param sizeInByte Size of TT in bytes which will be reduced to the next
+  /** @param newSizeInBytes Size of TT in bytes which will be reduced to the next
    * lowest power of 2 size */
-  TT(uint64_t sizeInByte);
+  explicit TT(uint64_t newSizeInBytes);
 
-  ~TT();
+  ~TT() {
+    delete[] _data;
+  }
 
   // disallow copies
-  TT(TT const &tt) = delete;
-  TT &operator=(const TT &) = delete;
+  TT(TT const &tt) = delete; // copy
+  TT &operator=(const TT &) = delete; // copy assignment
+  TT(TT const &&tt) = delete; // move
+  TT &operator=(const TT &&) = delete; // move assignment
 
   /**
    * Changes the size of the transposition table and clears all entries.
@@ -136,6 +133,9 @@ public:
 
   /**
     * Stores the node value and the depth it has been calculated at.
+    * Also stores the best move for the node.
+    * OBS: move will be stripped of any value before storing as we store value
+    * separately and it may be surprising that a MOVE_NONE has a value.
     * @param forced when true skips age check (mostly for unit testing)
     * @param key Position key (usually Zobrist key)
     * @param depth 0-DEPTH_MAX (usually 127)
@@ -145,8 +145,7 @@ public:
     * @param mateThreat node had a mate threat in the ply
     */
   void
-  put(Key key, Depth depth, Move move, Value value, Value_Type type, bool mateThreat,
-      bool forced);
+  put(Key key, Depth depth, Move move, Value value, Value_Type type, bool mateThreat, bool forced);
 
   /**
     * Stores the node value and the depth it has been calculated at.
@@ -179,7 +178,10 @@ public:
    * @param key Position key (usually Zobrist key)
    * @return Entry for key or 0 if not found
    */
-  Entry getEntry(Key key) const;
+  inline const TT::Entry* getMatch(const Key key) const {
+    const Entry* const entryPtr = getEntryPtr(key);
+    return entryPtr->key == key ? entryPtr : nullptr;
+  }
 
   /**
    * Looks up and returns a result using get(Key key).
@@ -201,10 +203,7 @@ public:
    * @param isPVNode current node type when probing
    * @return A result of the probe with value and move from the TT in case of hit.
    */
-  template<bool NT>
-  const Entry*
-  probe(const Key &key, const Depth &depth, const Value &alpha, const Value &beta,
-        Result &result);
+  const TT::Entry* probe(const Key &key);
 
   /** Age all entries by 1 */
   void ageEntries();
@@ -212,7 +211,7 @@ public:
   /** Returns how full the transposition table is in permill as per UCI */
   inline int hashFull() const {
     if (!maxNumberOfEntries) return 0;
-    return static_cast<int>(1000 * (static_cast<double>(numberOfEntries) / (maxNumberOfEntries)));
+    return static_cast<int>((1000 * numberOfEntries) / maxNumberOfEntries);
   };
 
   std::string str() {
@@ -228,14 +227,19 @@ public:
 private:
 
   static void
-  writeEntry(Entry* entryPtr, Key key, const Depth depth, const Move move, const Value value,
-             const Value_Type type, bool mateThreat, uint8_t age);
+  writeEntry(Entry* entryPtr, Key key, Depth depth, Move move,
+             Value value, Value_Type type, bool mateThreat, uint8_t age);
 
-  /* This retrieves a direct pointer to the entry of this node from cache */
-  Entry* getEntryPtr(Key key) const;
 
   /* generates the index hash key from the position key  */
-  std::size_t getHash(Key key) const;
+  inline std::size_t getHash(const Key key) const {
+    return key & hashKeyMask;
+  }
+
+  /* This retrieves a direct pointer to the entry of this node from cache */
+  inline TT::Entry* getEntryPtr(const Key key) const {
+    return &_data[getHash(key)];
+  }
 
   /** GETTER and SETTER */
 public:
@@ -288,7 +292,7 @@ public:
     TT::noOfThreads = threads;
   }
 
-  static inline std::string str(Value_Type type) {
+  static inline std::string str(const Value_Type type) {
     switch (type) {
       case TYPE_NONE:
         return "NONE";
@@ -299,6 +303,7 @@ public:
       case TYPE_BETA:
         return "BETA";
     }
+    return "";
   }
 
   FRIEND_TEST(TT_Test, put);
@@ -307,18 +312,11 @@ public:
   FRIEND_TEST(TT_Test, probe);
 
   // using prefetch improves probe lookup speed significantly
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-parameter"
-
   inline void prefetch(const Key key) {
 #ifdef TT_ENABLE_PREFETCH
     _mm_prefetch(&_data[(key & hashKeyMask)], _MM_HINT_T0);
 #endif
   }
-
-#pragma clang diagnostic pop
-
 };
-
 
 #endif //FRANKYCPP_TT_H

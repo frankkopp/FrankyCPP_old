@@ -4,12 +4,16 @@
   <component name="CidrRootsConfiguration">
     <sourceRoots>
       <file path="$PROJECT_DIR$/fmt" />
+      <file path="$PROJECT_DIR$/googletest" />
       <file path="$PROJECT_DIR$/spdlog" />
       <file path="$PROJECT_DIR$/src" />
       <file path="$PROJECT_DIR$/test" />
     </sourceRoots>
     <excludeRoots>
+      <file path="$PROJECT_DIR$/cmake-build-debug" />
+      <file path="$PROJECT_DIR$/cmake-build-release" />
       <file path="$PROJECT_DIR$/cmake-build-release/src" />
+      <file path="$PROJECT_DIR$/cmake-build-relwithdebinfo" />
       <file path="$PROJECT_DIR$/temp" />
     </excludeRoots>
   </component>

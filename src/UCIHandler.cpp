@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,343 +24,342 @@
  */
 
 #include <iostream>
+#include <vector>
 #include "version.h"
 #include "types.h"
-#include "Engine.h"
+#include "Logging.h"
 #include "UCIHandler.h"
 #include "UCISearchMode.h"
+#include "Engine.h"
 
-namespace UCI {
+UCI_Handler::UCI_Handler(Engine* ptr) {
+  this->pEngine = ptr;
+  pInputStream = &std::cin;
+  pOutputStream = &std::cout;
+  pEngine->registerUCIHandler(std::make_shared<UCI_Handler>(*this));
+}
 
-  Handler::Handler(Engine *pEngine) {
-    this->pEngine = pEngine;
-    pEngine->registerUCIHandler(this);
+UCI_Handler::UCI_Handler(Engine* pEng, std::istream* pIstream, std::ostream* pOstream)
+  : UCI_Handler::UCI_Handler(pEng) {
+  pInputStream = pIstream;
+  pOutputStream = pOstream;
+}
+
+void UCI_Handler::loop() {
+  loop(pInputStream);
+}
+
+void UCI_Handler::loop(std::istream* pIstream) {
+  std::string cmd, token;
+  do {
+    LOG__DEBUG(Logger::get().UCIHAND_LOG, "UCI Handler waiting for command:");
+
+    // Block here waiting for input or EOF
+    // only blocks on cin!!
+    if (!getline(*pIstream, cmd)) cmd = "quit";
+    //  create the stream object
+    std::istringstream inStream(cmd);
+
+    LOG__INFO(Logger::get().UCI_LOG, "<< {}", inStream.str());
+    LOG__DEBUG(Logger::get().UCIHAND_LOG, "UCI Handler received command: {}", inStream.str());
+
+    // clear possible previous entries
+    token.clear();
+
+    // read word from stream delimiter is whitespace
+    // to get line use inStream.str()
+    inStream >> std::skipws >> token;
+
+    if (token == "quit") { break; }
+    else if (token == "uci") { uciCommand(); }
+    else if (token == "isready") { isReadyCommand(); }
+    else if (token == "setoption") { setOptionCommand(inStream); }
+    else if (token == "ucinewgame") { uciNewGameCommand(); }
+    else if (token == "position") { positionCommand(inStream); }
+    else if (token == "go") { goCommand(inStream); }
+    else if (token == "stop") { stopCommand(); }
+    else if (token == "ponderhit") { ponderHitCommand(); }
+    else if (token == "register") { registerCommand(); }
+    else if (token == "debug") { debugCommand(); }
+    else if (token == "noop") { /* noop */}
+    else
+      LOG__WARN(Logger::get().UCIHAND_LOG, "Unknown UCI command: {}", token);
+
+    LOG__DEBUG(Logger::get().UCIHAND_LOG, "UCI Handler processed command: {}", token);
+
+  } while (token != "quit");
+
+}
+
+void UCI_Handler::uciCommand() const {
+  send("id name FrankyCPP v" + std::to_string(FrankyCPP_VERSION_MAJOR) + "." +
+       std::to_string(FrankyCPP_VERSION_MINOR));
+  send("id author Frank Kopp, Germany");
+  send(pEngine->str());
+  send("uciok");
+}
+
+void UCI_Handler::isReadyCommand() const { send("readyok"); }
+
+void UCI_Handler::setOptionCommand(std::istringstream &inStream) const {
+  std::string token, name, value;
+
+  if (inStream >> token && token != "name") {
+    LOG__WARN(Logger::get().UCIHAND_LOG, "Command setoption is malformed - expected 'name': {}",
+              token);
+    return;
   }
 
-  Handler::Handler(Engine *pEng, std::istream *pIstream, std::ostream *pOstream)
-    : Handler::Handler(pEng) {
-    pInputStream = pIstream;
-    pOutputStream = pOstream;
-  }
-
-  Handler::~Handler() = default;
-
-  void Handler::loop() {
-    loop(pInputStream);
-  }
-
-  void Handler::loop(std::istream *pIstream) {
-    std::string cmd, token;
-    do {
-      LOG->info("UCI Handler waiting for command:");
-
-      // Block here waiting for input or EOF
-      // only blocks on cin!!
-      if (!getline(*pIstream, cmd)) cmd = "quit";
-      //  create the stream object
-      std::istringstream inStream(cmd);
-
-      UCI_LOG->info("<< {}", inStream.str());
-      LOG->info("UCI Handler received command: {}", inStream.str());
-
-      // clear possible previous entries
-      token.clear();
-
-      // read word from stream delimiter is whitespace
-      // to get line use inStream.str()
-      inStream >> skipws >> token;
-
-      if (token == "quit") break;
-      else if (token == "uci") uciCommand();
-      else if (token == "isready") isReadyCommand();
-      else if (token == "setoption") setOptionCommand(inStream);
-      else if (token == "ucinewgame") uciNewGameCommand();
-      else if (token == "position") positionCommand(inStream);
-      else if (token == "go") goCommand(inStream);
-      else if (token == "stop") stopCommand();
-      else if (token == "ponderhit") ponderHitCommand();
-      else if (token == "register") registerCommand();
-      else if (token == "debug") debugCommand();
-      else if (token == "noop") /* noop */;
-      else LOG->warn("Unknown UCI command: {}", token);
-
-      LOG->info("UCI Handler processed command: {}", token);
-
-    } while (token != "quit");
-
-  }
-
-  void Handler::uciCommand() {
-    send("id name FrankyCPP v"
-         + to_string(FrankyCPP_VERSION_MAJOR) + "." + to_string(FrankyCPP_VERSION_MINOR));
-    send("id author Frank Kopp, Germany");
-    send(pEngine->str());
-    send("uciok");
-  }
-
-  void Handler::isReadyCommand() {
-    send("readyok");
-  }
-
-  void Handler::setOptionCommand(std::istringstream &inStream) {
-    string token, name, value;
-
-    if (inStream >> token && token != "name") {
-      LOG->warn("Command setoption is malformed - expected 'name': {}", token);
-      return;
+  // read name which could contain spaces
+  while (inStream >> token && token != "value") {
+    if (!name.empty()) {
+      name += " ";
     }
-
-    // read name which could contain spaces
-    while (inStream >> token && token != "value") {
-      if (!name.empty()) name += " ";
-      name += token;
-    }
-
-    // read value which could contain spaces
-    while (inStream >> token) {
-      if (!value.empty()) name += " ";
-      value += token;
-    }
-    pEngine->setOption(name, value);
+    name += token;
   }
 
-  void Handler::uciNewGameCommand() {
-    pEngine->newGame();
+  // read value which could contain spaces
+  while (inStream >> token) {
+    if (!value.empty()) name += " ";
+    value += token;
   }
+  pEngine->setOption(name, value);
+}
 
-  void Handler::positionCommand(std::istringstream &inStream) {
+void UCI_Handler::uciNewGameCommand() const { pEngine->newGame(); }
 
-    // retrieve additional command parameter
-    std::string token, startFen;
+void UCI_Handler::positionCommand(std::istringstream &inStream) const {
+
+  // retrieve additional command parameter
+  std::string token, startFen;
+  inStream >> token;
+
+  // default
+  startFen = START_POSITION_FEN;
+  if (token == "startpos") { // just keep default
     inStream >> token;
-
-    // default
-    startFen = START_POSITION_FEN;
-    if (token == "startpos") { // just keep default
-      inStream >> token;
-    }
-    else if (token == "fen") {
-      startFen.clear(); // reset to empty
-      while (inStream >> token && token != "moves") {
-        startFen += token + " ";
-      }
-    }
-
-    pEngine->setPosition(startFen);
-
-    if (token == "moves") {
-      std::vector<string> moves;
-      while (inStream >> token) {
-        moves.push_back(token);
-      }
-      for (const std::string &move : moves) {
-        pEngine->doMove(move);
-      }
+  }
+  else if (token == "fen") {
+    startFen.clear(); // reset to empty
+    while (inStream >> token && token != "moves") {
+      startFen += token + " ";
     }
   }
 
-  void Handler::goCommand(std::istringstream &inStream) {
-    std::string token, startFen;
-    searchMode = UCISearchMode();
+  pEngine->setPosition(startFen);
 
+  if (token == "moves") {
+    std::vector<std::string> moves;
     while (inStream >> token) {
-      if (token == "searchmoves") {
-        MoveList searchMoves;
-        while (inStream >> token) {
-          Move move = createMove(token.c_str());
-          if (isMove(move)) searchMoves.push_back(move);
-          else break;
-        }
-        if (!searchMoves.empty()) searchMode.moves = searchMoves;
+      moves.push_back(token);
+    }
+    for (const std::string &move : moves) {
+      pEngine->doMove(move);
+    }
+  }
+}
+
+void UCI_Handler::goCommand(std::istringstream &inStream) {
+  std::string token, startFen;
+
+  // resetting search mode
+  UCISearchMode searchMode = UCISearchMode();
+
+  while (inStream >> token) {
+    if (token == "searchmoves") {
+      MoveList searchMoves;
+      while (inStream >> token) {
+        Move move = createMove(token.c_str());
+        if (isMove(move)) { searchMoves.push_back(move); }
+        else { break; }
       }
-      if (token == "ponder") {
-        searchMode.ponder = true;
+      if (!searchMoves.empty()) searchMode.moves = searchMoves;
+    }
+    if (token == "ponder") {
+      searchMode.ponder = true;
+    }
+    if (token == "wtime") {
+      inStream >> token;
+      try {
+        searchMode.whiteTime = stoi(token);
+      } catch (...) {
+        Logger::get().UCIHAND_LOG->error(
+          "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
       }
-      if (token == "wtime") {
-        inStream >> token;
-        try {
-          searchMode.whiteTime = stoi(token);
-        } catch (...) {
-          cerr << "PANIK";
-        }
-        if (searchMode.whiteTime <= 0) {
-          LOG->warn("Invalid wtime. Was '{}'", token);
-          return;
-        }
-      }
-      if (token == "btime") {
-        inStream >> token;
-        try {
-          searchMode.blackTime = stoi(token);
-        } catch (...) {
-          cerr << "PANIK";
-        }
-        if (searchMode.blackTime <= 0) {
-          LOG->warn("Invalid btime. Was '{}'", token);
-          return;
-        }
-      }
-      if (token == "winc") {
-        inStream >> token;
-        try {
-          searchMode.whiteInc = std::stoi(token);
-        } catch (...) {
-          cerr << "PANIK";
-        }
-        if (searchMode.whiteInc < 0) {
-          LOG->warn("Invalid winc. Was '{}'", token);
-          return;
-        }
-      }
-      if (token == "binc") {
-        inStream >> token;
-        try {
-          searchMode.blackInc = std::stoi(token);
-        } catch (...) {
-          cerr << "PANIK";
-        }
-        if (searchMode.blackInc < 0) {
-          LOG->warn("Invalid binc. Was '{}'", token);
-          return;
-        }
-      }
-      if (token == "movestogo") {
-        inStream >> token;
-        try {
-          searchMode.movesToGo = std::stoi(token);
-        } catch (...) {
-          cerr << "PANIK";
-        }
-        if (searchMode.movesToGo <= 0) {
-          LOG->warn("Invalid movestogo. Was '{}'", token);
-          return;
-        }
-      }
-      if (token == "depth") {
-        inStream >> token;
-        try {
-          searchMode.depth = std::stoi(token);
-        } catch (...) {
-          cerr << "PANIK";
-        }
-        if (searchMode.depth <= 0 || searchMode.depth > PLY_MAX) {
-          LOG->warn("depth not between 1 and {}. Was '{}'", PLY_MAX, token);
-          return;
-        }
-      }
-      if (token == "nodes") {
-        inStream >> token;
-        try {
-          searchMode.nodes = std::stoi(token);
-        } catch (...) {
-          cerr << "PANIK";
-        }
-        if (searchMode.nodes <= 0) {
-          LOG->warn("Invalid nodes. Was '{}'", token);
-          return;
-        }
-      }
-      if (token == "mate") {
-        inStream >> token;
-        try {
-          searchMode.mate = stoi(token);
-        } catch (...) {
-          cerr << "PANIK";
-        }
-        if (searchMode.mate <= 0 || searchMode.mate > PLY_MAX) {
-          LOG->warn("mate not between 1 and {}. Was '{}'", PLY_MAX, token);
-          return;
-        }
-      }
-      if (token == "movetime") {
-        inStream >> token;
-        try {
-          searchMode.movetime = stoi(token);
-        } catch (...) {
-          cerr << "PANIK";
-        }
-        if (searchMode.movetime <= 0) {
-          LOG->warn("Invalid movetime. Was '{}'", token);
-          return;
-        }
-      }
-      if (token == "infinite") {
-        searchMode.infinite = true;
-      }
-      if (token == "perft") {
-        searchMode.perft = true;
-        inStream >> token;
-        try {
-          searchMode.depth = stoi(token);
-        } catch (...) {
-          cerr << "PANIK";
-        }
-        if (searchMode.depth <= 0 || searchMode.depth > PLY_MAX) {
-          LOG->warn("perft depth not between 1 and {}. Was '{}'", PLY_MAX, token);
-          return;
-        }
+      if (searchMode.whiteTime <= 0) {
+        LOG__WARN(Logger::get().UCIHAND_LOG, "Invalid wtime. Was '{}'", token);
+        return;
       }
     }
-
-    // start search in engine
-    pEngine->startSearch(searchMode);
+    if (token == "btime") {
+      inStream >> token;
+      try {
+        searchMode.blackTime = stoi(token);
+      } catch (...) {
+        Logger::get().UCIHAND_LOG->error(
+          "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
+      }
+      if (searchMode.blackTime <= 0) {
+        LOG__WARN(Logger::get().UCIHAND_LOG, "Invalid btime. Was '{}'", token);
+        return;
+      }
+    }
+    if (token == "winc") {
+      inStream >> token;
+      try {
+        searchMode.whiteInc = std::stoi(token);
+      } catch (...) {
+        Logger::get().UCIHAND_LOG->error(
+          "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
+      }
+      if (searchMode.whiteInc < 0) {
+        LOG__WARN(Logger::get().UCIHAND_LOG, "Invalid winc. Was '{}'", token);
+        return;
+      }
+    }
+    if (token == "binc") {
+      inStream >> token;
+      try {
+        searchMode.blackInc = std::stoi(token);
+      } catch (...) {
+        Logger::get().UCIHAND_LOG->error(
+          "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
+      }
+      if (searchMode.blackInc < 0) {
+        LOG__WARN(Logger::get().UCIHAND_LOG, "Invalid binc. Was '{}'", token);
+        return;
+      }
+    }
+    if (token == "movestogo") {
+      inStream >> token;
+      try {
+        searchMode.movesToGo = std::stoi(token);
+      } catch (...) {
+        Logger::get().UCIHAND_LOG->error(
+          "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
+      }
+      if (searchMode.movesToGo <= 0) {
+        LOG__WARN(Logger::get().UCIHAND_LOG, "Invalid movestogo. Was '{}'", token);
+        return;
+      }
+    }
+    if (token == "depth") {
+      inStream >> token;
+      try {
+        searchMode.depth = std::stoi(token);
+      } catch (...) {
+        Logger::get().UCIHAND_LOG->error(
+          "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
+      }
+      if (searchMode.depth <= 0 || searchMode.depth > PLY_MAX) {
+        LOG__WARN(Logger::get().UCIHAND_LOG, "depth not between 1 and {}. Was '{}'", PLY_MAX, token);
+        return;
+      }
+    }
+    if (token == "nodes") {
+      inStream >> token;
+      try {
+        searchMode.nodes = std::stoi(token);
+      } catch (...) {
+        Logger::get().UCIHAND_LOG->error(
+          "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
+      }
+      if (searchMode.nodes <= 0) {
+        LOG__WARN(Logger::get().UCIHAND_LOG, "Invalid nodes. Was '{}'", token);
+        return;
+      }
+    }
+    if (token == "mate") {
+      inStream >> token;
+      try {
+        searchMode.mate = stoi(token);
+      } catch (...) {
+        Logger::get().UCIHAND_LOG->error(
+          "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
+      }
+      if (searchMode.mate <= 0 || searchMode.mate > PLY_MAX) {
+        LOG__WARN(Logger::get().UCIHAND_LOG, "mate not between 1 and {}. Was '{}'", PLY_MAX, token);
+        return;
+      }
+    }
+    if (token == "movetime") {
+      inStream >> token;
+      try {
+        searchMode.movetime = stoi(token);
+      } catch (...) {
+        Logger::get().UCIHAND_LOG->error(
+          "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
+      }
+      if (searchMode.movetime <= 0) {
+        LOG__WARN(Logger::get().UCIHAND_LOG, "Invalid movetime. Was '{}'", token);
+        return;
+      }
+    }
+    if (token == "infinite") {
+      searchMode.infinite = true;
+    }
+    if (token == "perft") {
+      searchMode.perft = true;
+      inStream >> token;
+      try {
+        searchMode.depth = stoi(token);
+      } catch (...) {
+        Logger::get().UCIHAND_LOG->error(
+          "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
+      }
+      if (searchMode.depth <= 0 || searchMode.depth > PLY_MAX) {
+        LOG__WARN(Logger::get().UCIHAND_LOG, "perft depth not between 1 and {}. Was '{}'", PLY_MAX, token);
+        return;
+      }
+    }
   }
 
-  void Handler::stopCommand() {
-    pEngine->stopSearch();
-  }
+  // start search in engine
+  pEngine->startSearch(searchMode);
+}
 
-  void Handler::ponderHitCommand() {
-    pEngine->ponderHit();
-  }
+void UCI_Handler::stopCommand() const { pEngine->stopSearch(); }
 
-  void Handler::registerCommand() {
-    LOG->warn("UCI Protocol Command: register not implemented!");
-  }
+void UCI_Handler::ponderHitCommand() const { pEngine->ponderHit(); }
 
-  void Handler::debugCommand() {
-    LOG->warn("UCI Protocol Command: debug not implemented!");
-  }
+void UCI_Handler::registerCommand() {
+  LOG__WARN(Logger::get().UCIHAND_LOG, "UCI Protocol Command: register not implemented!");
+}
 
-  void Handler::send(const std::string &toSend) const {
-    UCI_LOG->info(">> {}", toSend);
-    *pOutputStream << toSend << endl;
-  }
+void UCI_Handler::debugCommand() {
+  LOG__WARN(Logger::get().UCIHAND_LOG, "UCI Protocol Command: debug not implemented!");
+}
 
-  void Handler::sendResult(Move bestMove, Move ponderMove) {
-    send(
-      fmt::format(
-        "bestmove {}{}",
-        printMove(bestMove),
-        (isMove(ponderMove) ? " ponder " + printMove(ponderMove) : "")));
-  }
+void UCI_Handler::send(const std::string &toSend) const {
+  LOG__DEBUG(Logger::get().UCI_LOG, ">> {}", toSend);
+  *pOutputStream << toSend << std::endl;
+}
 
-  void Handler::sendCurrentLine(const MoveList &moveList) {
-    send(
-      fmt::format(
-        "currline {}",
-        printMoveListUCI(moveList)));
-  }
+void UCI_Handler::sendResult(Move bestMove, Move ponderMove) const {
+  send(fmt::format("bestmove {}{}", printMove(bestMove),
+                   (ponderMove ? " ponder " + printMove(ponderMove) : "")));
+}
 
-  void Handler::sendIterationEndInfo(int depth, int seldepth, Value value, long nodes, int nps,
-                                     MilliSec time, const MoveList &pv) {
-    send(fmt::format(
-      "info depth {} seldepth {} multipv 1 score {} nodes {} nps {} time {} pv {}",
-      depth, seldepth, printValue(Value(value)), nodes, nps, time, printMoveListUCI(pv)
-    ));
-  }
+void UCI_Handler::sendCurrentLine(const MoveList &moveList) const {
+  send(fmt::format("currline {}", printMoveListUCI(moveList)));
+}
 
-  void Handler::sendCurrentRootMove(Move currmove, int movenumber) {
-    send(fmt::format(
-      "currmove {} currmovenumber {}",
-      printMove(currmove), movenumber));
-  }
+void UCI_Handler::sendIterationEndInfo(int depth, int seldepth, Value value,
+                                       uint64_t nodes, uint64_t nps, MilliSec time,
+                                       const MoveList &pv) const {
+  send(fmt::format("info depth {} seldepth {} multipv 1 score {} nodes {} "
+                   "nps {} time {} pv {}",
+                   depth, seldepth, printValue(Value(value)), nodes, nps,
+                   time, printMoveListUCI(pv)));
+}
 
-  void Handler::sendSearchUpdate(int depth, int seldepth, long nodes, int nps, MilliSec time,
-                                 int hashfull) {
-    send(fmt::format(
-      "depth {} seldepth {} nodes {} nps {} time {} hashfull {}",
-      depth, seldepth, nodes, nps, time, hashfull));
-  }
+void UCI_Handler::sendCurrentRootMove(Move currmove, unsigned long movenumber) const {
+  send(fmt::format("info currmove {} currmovenumber {}", printMove(currmove),
+                   movenumber));
+}
 
+void UCI_Handler::sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t nps,
+                                   MilliSec time, int hashfull) const {
+  send(fmt::format("info depth {} seldepth {} nodes {} nps {} time {} hashfull {}",
+                   depth, seldepth, nodes, nps, time, hashfull));
 }

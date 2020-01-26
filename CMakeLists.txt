@@ -1,33 +1,146 @@
+message("====================================================================")
+message("FrankyCPP Main CMAKE")
+message("====================================================================")
+
 cmake_minimum_required(VERSION 3.13)
 
-# C++ Standard
+# Project name and version
+project(FrankyCPP VERSION 0.4)
+
+# updates template file and replaces placeholder variables
+configure_file(src/version.h.in version.h)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
+# Platform
+message("Recognized CMAKE Version is " ${CMAKE_VERSION} " " ${CMAKE_COMMAND})
+message("Recognized platform is " ${CMAKE_SYSTEM_NAME} " " ${CMAKE_SYSTEM_VERSION})
+
+# C++ settings
 set(CMAKE_CXX_STANDARD 17)
 
-# some extra compiler flags
-set(CMAKE_CXX_FLAGS "-m64 -Wpedantic -Wall -Wextra -Winline")
-#set(CMAKE_CXX_FLAGS_DEBUG "-Og")
-#set(CMAKE_CXX_FLAGS_RELEASE "-Ofast")
+# Unit testing enabled
+enable_testing()
 
-# some extra linker flags
-#set(CMAKE_EXE_LINKER_FLAGS "xxx")
-#set(CMAKE_EXE_LINKER_FLAGS_DEBUG "xxx")
-#set(CMAKE_EXE_LINKER_FLAGS_RELEASE "<your flags here>")
+# Compiler Settings
+message("Compiler is " ${CMAKE_CXX_COMPILER_ID} " " ${CMAKE_CXX_COMPILER_VERSION} " " ${CMAKE_CXX_COMPILER})
 
-# Project name and version
-project(FrankyCPP VERSION 0.3)
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang") # Apple
+    message("Compiler Settings: CLANG")
+    set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra ")
+    set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fprofile-instr-generate -fcoverage-mapping -Wpedantic -Wshadow -Wno-conversion -Wunreachable-code -Wuninitialized  -Wold-style-cast -Wunused-variable -Wfloat-equal -Wno-gnu-zero-variadic-macro-arguments")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+elseif (CMAKE_COMPILER_IS_GNUCXX) # CYGWIN
+    message("Compiler Settings: GNU")
+    set(CMAKE_CXX_FLAGS "-std=c++17 -m64 -Wall -Wextra -Wpedantic -Wno-error=pedantic -Wshadow -Wno-unknown-pragmas -Wno-variadic-macros")
+    set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 --coverage -Wno-unused-parameter -Wno-unused-variable")
+    # additional: -Wno-unknown-pragmas -Weffc++ -Wimplicit-fallthrough -Wswitch -Wpointer-arith -Wcast-qual -Wconversion -Wno-sign-conversion -Wno-error=padded -Wno-error=inline")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC") # Visual Studio MSVC
+    message("Compiler Settings: MSVC")
+    #set(CMAKE_CXX_FLAGS "/W4")
+    #set(CMAKE_CXX_FLAGS_DEBUG "/Od")
+    #set(CMAKE_CXX_FLAGS_RELEASE "/O2")
+endif ()
 
+message("Compiler DEBUG flags: " ${CMAKE_CXX_FLAGS} " " ${CMAKE_CXX_FLAGS_DEBUG})
+message("Compiler RELEASE flags: " ${CMAKE_CXX_FLAGS} " " ${CMAKE_CXX_FLAGS_RELEASE})
+message("EXEC: " ${CMAKE_CXX_LINK_EXECUTABLE})
+
+# For downloading with GIT
+message("Finding GIT...")
+set(GIT_EXECUTABLE)
+find_package(Git)
+if (GIT_FOUND)
+    message("git found: ${GIT_EXECUTABLE}")
+elseif ()
+    message("git NOT found:")
+endif()
+
+set(FETCHCONTENT_QUIET OFF)
+set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
+
+# Getting included libs from Github
+include(FetchContent)
+FetchContent_Declare(
+        googletest
+        GIT_REPOSITORY      https://github.com/google/googletest.git
+        GIT_TAG             release-1.10.0
+)
+message("Downloading/Update Google Test")
+FetchContent_GetProperties(googletest)
+if(NOT googletest_POPULATED)
+    # Fetch the content using previously declared details
+    FetchContent_Populate(googletest)
+    # Set custom variables, policies, etc.
+    option(INSTALL_GMOCK "Install Googletest's GMock?" OFF)
+    option(INSTALL_GTEST "Install Googletest's GTest?" OFF)
+    # Bring the populated content into the build
+    add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
+endif()
+
+FetchContent_MakeAvailable(googletest)
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+include_directories(
+        ${googletest_SOURCE_DIR}/googletest/include
+)
+
+## Getting included libs from Github
+include(FetchContent)
+FetchContent_Declare(
+        fmt
+        GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+        GIT_TAG        6.1.2
+)
+message("Downloading/Update FMT")
+FetchContent_MakeAvailable(fmt)
+include_directories(
+        ${fmt_SOURCE_DIR}/include
+)
+
+# Getting included libs from Github
+include(FetchContent)
+FetchContent_Declare(
+        spdlog
+        GIT_REPOSITORY https://github.com/gabime/spdlog.git
+        GIT_TAG        v1.5.0
+)
+message("Downloading/Update SPDLOG")
+option(SPDLOG_FMT_EXTERNAL ON)
+FetchContent_MakeAvailable(spdlog)
+include_directories(
+        ${spdlog_SOURCE_DIR}/include
+)
+
+# BOOST
+if (APPLE OR CYGWIN)
+    set(BOOST_ROOT "/usr/local/boost_1_72_0")
+    set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
+endif ()
+if (WIN32)
+    set(BOOST_ROOT "C:/Boost/boost_1_72_0")
+    set(BOOST_INCLUDEDIR "C:/Boost/boost_1_72_0")
+    set(BOOST_LIBRARYDIR "C:/Boost/boost_1_72_0/lib64-msvc-14.2")
+endif ()
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_LIBS ON)
+set(Boost_USE_STATIC_RUNTIME OFF)
+find_package(Boost 1.72.0 COMPONENTS program_options timer log log_setup REQUIRED)
+if (Boost_FOUND)
+    message("BOOST found: " ${BOOST_ROOT} " " ${Boost_INCLUDE_DIR})
+    include_directories(${Boost_INCLUDE_DIRS})
+endif ()
+set (BOOST_ALL_NO_LIB 0)
+set (BOOST_LIB_DIAGNOSTIC 1)
+
+# My project
 include_directories(
         ${PROJECT_SOURCE_DIR}/src
-        /usr/local/include
-        #${PROJECT_SOURCE_DIR}/spdlog/include
-        #${PROJECT_SOURCE_DIR}/fmt/include
-        ${CMAKE_CURRENT_BINARY_DIR}/test/googletest-src/googletest/include
+        ${PROJECT_SOURCE_DIR}/test
 )
 
 # project sub directories - need to have their own CMakeList.txt
-#add_subdirectory(spdlog EXCLUDE_FROM_ALL)
-#add_subdirectory(fmt EXCLUDE_FROM_ALL)
 add_subdirectory(src)
 add_subdirectory(test)
+
 
 

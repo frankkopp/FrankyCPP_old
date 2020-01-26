@@ -6,3 +6,8 @@ cmake-build-default/
 .idea/
 fmt/build/
 spdlog/build/
+out/
+.vs/
+spdlog/_builds/
+*.~vsdx
+.vscode/

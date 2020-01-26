@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,20 +27,20 @@
 #define FRANKYCPP_MOVEGENERATOR_H
 
 #include <vector>
-#include "gtest/gtest_prod.h"
 #include "Logging.h"
 #include "types.h"
+#include "gtest/gtest_prod.h"
 
-// circle reference between Position and MoveGenerator - this make it possible
+// forward declaration
 class Position;
 
 class MoveGenerator {
   
-  std::shared_ptr<spdlog::logger> LOG = spdlog::get("MoveGen_Logger");
+//  std::shared_ptr<spdlog::logger> LOG = spdlog::get("MoveGen_Logger");
 
-  MoveList pseudoLegalMoves = MoveList(256);
-  MoveList legalMoves = MoveList(256);
-  MoveList onDemandMoves = MoveList(256);
+  MoveList pseudoLegalMoves = MoveList();
+  MoveList legalMoves = MoveList();
+  MoveList onDemandMoves = MoveList();
 
   enum onDemandStage : int {
     OD_NEW, PV, OD1, OD2, OD3, OD4, OD5, OD6, OD7, OD8, OD_END
@@ -49,7 +49,7 @@ class MoveGenerator {
   Key currentIteratorKey{};
   
   MoveList::size_type maxNumberOfKiller = 2; // default
-  MoveList killerMoves = MoveList(0);
+  MoveList killerMoves = MoveList();
   Move pvMove = MOVE_NONE;
 
 public:
@@ -88,7 +88,7 @@ public:
     * @param moves - generated moves will be added to this list
     */
   template<GenMode GM>
-  const MoveList* generateLegalMoves(Position  &position);
+  const MoveList* generateLegalMoves(const Position &position);
 
   /**
    * Returns the next move for the given position. Usually this would be used in a loop
@@ -150,7 +150,7 @@ public:
    * @param move
    * @return true if move is a valid move on the current position.
    */
-  bool validateMove(Position &position, Move move);
+  bool validateMove(const Position &position, const Move move);
 
 private:
 

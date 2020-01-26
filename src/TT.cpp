@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,20 +23,19 @@
  *
  */
 
+#include <chrono>
+#include <vector>
+#include <thread>
 #include "Logging.h"
 #include "TT.h"
 
-TT::TT(uint64_t sizeInByte) {
-  resize(sizeInByte);
+TT::TT(uint64_t newSizeInBytes) {
+  noOfThreads = std::thread::hardware_concurrency();
+  resize(newSizeInBytes);
 }
 
-TT::~TT() {
-  LOG->trace("Dtor: Delete previous memory allocation");
-  delete[] _data;
-}
-
-void TT::resize(uint64_t newSizeInByte) {
-  LOG->trace("Resizing TT from {:n} to {:n}", sizeInByte, newSizeInByte);
+void TT::resize(const uint64_t newSizeInByte) {
+  LOG__TRACE(Logger::get().TT_LOG, "Resizing TT from {:n} to {:n}", sizeInByte, newSizeInByte);
   delete[] _data;
   // number of entries
   sizeInByte = newSizeInByte;
@@ -49,18 +48,18 @@ void TT::resize(uint64_t newSizeInByte) {
   _data = new Entry[maxNumberOfEntries];
   sizeInByte = maxNumberOfEntries * ENTRY_SIZE;
   clear();
-  LOG->info("TT Size {:n} Byte, Capacity {:n} entries (size={}Byte) (Requested were {:n} Bytes)",
+  LOG__INFO(Logger::get().TT_LOG, "TT Size {:n} Byte, Capacity {:n} entries (size={}Byte) (Requested were {:n} Bytes)",
             sizeInByte, maxNumberOfEntries, sizeof(Entry), newSizeInByte);
 }
 
 void TT::clear() {
   // This clears the TT by overwriting each entry with 0.
   // It uses multiple threads if noOfThreads is > 1.
-  LOG->trace("Clearing TT ({} threads)...", noOfThreads);
-  auto start = std::chrono::high_resolution_clock::now();
+  LOG__TRACE(Logger::get().TT_LOG, "Clearing TT ({} threads)...", noOfThreads);
+  auto startTime = std::chrono::high_resolution_clock::now();
   std::vector<std::thread> threads;
   threads.reserve(noOfThreads);
-  for (int t = 0; t < noOfThreads; ++t) {
+  for (unsigned int t = 0; t < noOfThreads; ++t) {
     threads.emplace_back([&, this, t]() {
       auto range = maxNumberOfEntries / noOfThreads;
       auto start = t * range;
@@ -78,36 +77,39 @@ void TT::clear() {
     });
   }
   for (std::thread &th: threads) th.join();
+  numberOfPuts = 0;
+  numberOfEntries = 0;
+  numberOfHits = 0;
+  numberOfUpdates = 0;
+  numberOfMisses = 0;
+  numberOfCollisions = 0;
+  numberOfOverwrites = 0;
+  numberOfProbes = 0;
   auto finish = std::chrono::high_resolution_clock::now();
-  auto time = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start).count();
-  LOG->info("TT cleared {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time,
-            noOfThreads);
+  auto time = std::chrono::duration_cast<std::chrono::milliseconds>(finish - startTime).count();
+  LOG__INFO(Logger::get().TT_LOG, "TT cleared {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
 }
 
-inline std::size_t TT::getHash(Key key) const {
-  return key & hashKeyMask;
-}
-
-void TT::put(Key key, Depth depth, Move move, Value value, Value_Type type, bool mateThreat,
-             bool forced) {
+void TT::put(const Key key, const Depth depth, const Move move, const Value value,
+             const Value_Type type, const bool mateThreat, const bool forced) {
   assert (value > VALUE_NONE);
 
   // if the size of the TT = 0 we
   // do not store anything
   if (!maxNumberOfEntries) return;
 
-  // get hash key
-  std::size_t hash = getHash(key);
+  // read the entries for this hash
+  Entry* entryDataPtr = getEntryPtr(key);
 
-  // read the entries f0r this hash
-  Entry* entryDataPtr = &_data[hash];
+  // cleanup move
+  const Move pureMove = moveOf(move);
 
   numberOfPuts++;
 
   // New entry
   if (entryDataPtr->key == 0) {
     numberOfEntries++;
-    writeEntry(entryDataPtr, key, depth, move, value, type, mateThreat, 1);
+    writeEntry(entryDataPtr, key, depth, pureMove, value, type, mateThreat, 1);
     return;
   }
 
@@ -116,11 +118,11 @@ void TT::put(Key key, Depth depth, Move move, Value value, Value_Type type, bool
     numberOfCollisions++;
     // overwrite if
     // - the new entry's depth is higher
-    // - the new entry's depth is higher and the previous entry has not been used (is aged)
+    // - the new entry's depth is same and the previous entry has not been used (is aged)
     if (depth > entryDataPtr->depth ||
         (depth == entryDataPtr->depth && (forced || entryDataPtr->age > 0))) {
       numberOfOverwrites++;
-      writeEntry(entryDataPtr, key, depth, move, value, type, mateThreat, 1);
+      writeEntry(entryDataPtr, key, depth, pureMove, value, type, mateThreat, 1);
     }
     return;
   }
@@ -131,59 +133,30 @@ void TT::put(Key key, Depth depth, Move move, Value value, Value_Type type, bool
     // we always update as the stored moved can't be any good otherwise
     // we would have found this during the search in a previous probe
     // and we would not have come to store it again
-    writeEntry(entryDataPtr, key, depth, move ? move : entryDataPtr->move, value, type, mateThreat, 1);
+    writeEntry(entryDataPtr, key, depth, pureMove ? pureMove : entryDataPtr->move,
+               value, type, mateThreat, 1);
     return;
   }
+
   assert (numberOfPuts == (numberOfEntries + numberOfCollisions + numberOfUpdates));
 }
 
-template<bool NT>
-const TT::Entry*
-TT::probe(const Key &key, const Depth &depth, const Value &alpha, const Value &beta,
-          Result &result) {
-  // result = TT_MISS at this point
+const TT::Entry* TT::probe(const Key &key) {
   numberOfProbes++;
-  //Entry* ttEntryPtr = getEntryPtr(key);
-  Entry* ttEntryPtr = &_data[(key & hashKeyMask)];
-  // result is a logical TT result considering node type, alpha and beta bounds
+  Entry* ttEntryPtr = getEntryPtr(key);
   if (ttEntryPtr->key == key) {
     numberOfHits++; // entries with identical keys found
-    ttEntryPtr->age = std::max(0, ttEntryPtr->age - 1);
-    // use value only if tt depth was equal or deeper
-    if (ttEntryPtr->depth >= depth) {
-      // In a PV node use the value only for a cut off if it is exact.
-      // In non PV nodes we use it only if it is exact or outside our
-      // current bounds.
-      const Value_Type entryType = ttEntryPtr->type;
-      if (NT) {
-        if (entryType == TYPE_EXACT) {
-          result = TT_HIT;
-          return ttEntryPtr;
-        }
-      }
-      else {
-        if (entryType == TYPE_EXACT ||
-            (entryType == TYPE_ALPHA && ttEntryPtr->value <= alpha) ||
-            (entryType == TYPE_BETA && ttEntryPtr->value >= beta)) {
-          result = TT_HIT;
-          return ttEntryPtr;
-        }
-      }
-    }
+    ttEntryPtr->age--; // mark the entry as used
+    if (ttEntryPtr->age < 0) { ttEntryPtr->age = 0; }
+    return ttEntryPtr;
   }
   numberOfMisses++; // keys not found (not equal to TT misses)
-  result = TT_MISS;
   return nullptr;
 }
 
-TT::Entry TT::getEntry(Key key) const {
-  const Entry* const entryPtr = getEntryPtr(key);
-  return entryPtr->key == key ? *entryPtr : Entry();
-}
-
 inline void
-TT::writeEntry(Entry* entryPtr, Key key, const Depth depth, const Move move, const Value value,
-               const Value_Type type, bool mateThreat, uint8_t age) {
+TT::writeEntry(Entry* const entryPtr, const Key key, const Depth depth, const Move move,
+               const Value value, const Value_Type type, bool mateThreat, uint8_t age) {
   entryPtr->key = key;
   entryPtr->move = move;
   entryPtr->depth = depth;
@@ -193,16 +166,12 @@ TT::writeEntry(Entry* entryPtr, Key key, const Depth depth, const Move move, con
   entryPtr->mateThreat = mateThreat;
 }
 
-inline TT::Entry* TT::getEntryPtr(Key key) const {
-  return &_data[getHash(key)];
-}
-
 void TT::ageEntries() {
-  LOG->trace("Aging TT ({} threads)...", noOfThreads);
-  auto start = std::chrono::high_resolution_clock::now();
+  LOG__TRACE(Logger::get().TT_LOG, "Aging TT ({} threads)...", noOfThreads);
+  auto timePoint = std::chrono::high_resolution_clock::now();
   std::vector<std::thread> threads;
   threads.reserve(noOfThreads);
-  for (int idx = 0; idx < noOfThreads; ++idx) {
+  for (unsigned int idx = 0; idx < noOfThreads; ++idx) {
     threads.emplace_back([&, this, idx]() {
       auto range = maxNumberOfEntries / noOfThreads;
       auto start = idx * range;
@@ -210,14 +179,15 @@ void TT::ageEntries() {
       if (idx == noOfThreads - 1) end = maxNumberOfEntries;
       for (std::size_t i = start; i < end; ++i) {
         if (_data[i].key == 0) continue;
-        _data[i].age = std::min(7, _data[i].age + 1);
+        _data[i].age++;
+        if (_data[i].age > 7) _data[i].age = 7;
       }
     });
   }
   for (std::thread &th: threads) th.join();
   auto finish = std::chrono::high_resolution_clock::now();
-  auto time = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start).count();
-  LOG->info("TT aged {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
+  auto time = std::chrono::duration_cast<std::chrono::milliseconds>(finish - timePoint).count();
+  LOG__INFO(Logger::get().TT_LOG, "TT aged {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
 }
 
 std::ostream &operator<<(std::ostream &os, const TT::Entry &entry) {
@@ -228,10 +198,4 @@ std::ostream &operator<<(std::ostream &os, const TT::Entry &entry) {
 
 }
 
-// explicit template instantiation
-template const TT::Entry*
-TT::probe<true>(const Key &key, const Depth &depth, const Value &alpha, const Value &beta,
-                Result &result);
-template const TT::Entry*
-TT::probe<false>(const Key &key, const Depth &depth, const Value &alpha, const Value &beta,
-                 Result &result);
+

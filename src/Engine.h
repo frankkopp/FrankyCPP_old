@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,38 +27,44 @@
 #define FRANKYCPP_ENGINE_H
 
 #include <map>
-#include <ostream>
-
-#include "Logging.h"
-#include "EngineConfig.h"
+#include <memory>
+#include <utility>
 #include "UCIOption.h"
-#include "UCIHandler.h"
-#include "Position.h"
-#include "Search.h"
-#include "SearchLimits.h"
+#include "EngineConfig.h"
+#include "UCISearchMode.h"
 
-#define MAP(name, option) optionMap.insert(std::make_pair(name, option))
-
-namespace UCI { class Handler; }
+// forward declarations
+class UCI_Handler;
+class Position;
+class Search;
+class SearchLimits;
 
 class Engine {
 
-  std::shared_ptr<spdlog::logger> LOG = spdlog::get("Engine_Logger");
+  //  std::shared_ptr<spdlog::logger> LOG = spdlog::get("Engine_Logger");
 
   // a map for the engine's available options
-  std::map<const std::string, UCI::Option> optionMap;
+  std::map<const std::string, UCI_Option> optionMap;
 
   // callback reference for sending responses to the uci ui
-  UCI::Handler *pUciHandler{nullptr};
+  std::shared_ptr<UCI_Handler> pUciHandler{nullptr};
 
   // engine's search instance
-  Search search = Search(this);
-
-  // engine's current position
-  Position position;
+  std::shared_ptr<Search> pSearch{nullptr};
 
   // engine's search limits
-  SearchLimits searchLimits;
+  std::shared_ptr<SearchLimits> pSearchLimits{nullptr};
+
+  // engine's current position
+  std::shared_ptr<Position> pPosition{nullptr};
+
+  // last result
+  struct Result {
+    bool valid = false;
+    Move bestMove = MOVE_NONE;
+    Move ponderMove = MOVE_NONE;
+  };
+  Result lastResult = Result();
 
 public:
 
@@ -71,7 +77,9 @@ public:
   ///// PUBLIC
 
   // callback reference for sending responses to the uci ui
-  void registerUCIHandler(UCI::Handler* const handler) { pUciHandler = handler; };
+  void registerUCIHandler(std::shared_ptr<UCI_Handler> handler) {
+    pUciHandler = std::move(handler);
+  };
 
   // output
   std::string str() const;
@@ -83,29 +91,35 @@ public:
   std::string getOption(const std::string &name);
   void newGame();
   void setPosition(const std::string &fen);
-  Position *getPosition() { return &position; };
+  const std::shared_ptr<Position> &getPosition() const { return pPosition; }
+  const std::shared_ptr<Search> &getPSearch() const { return pSearch; }
+  const std::shared_ptr<SearchLimits> &getPSearchLimits() const { return pSearchLimits; }
   void doMove(const std::string &moveStr);
   void startSearch(const UCISearchMode &uciSearchMode);
   void stopSearch();
-  bool isSearching() const { return search.isRunning(); }
+  bool isSearching();
   void ponderHit();
 
   // send to UCI
   void
-  sendIterationEndInfo(int depth, int seldepth, Value value, long nodes, int nps, MilliSec time,
-                       const MoveList& pv) const;
+  sendIterationEndInfo(int depth, int seldepth, Value value, uint64_t nodes, uint64_t nps,
+                       MilliSec time,
+                       const MoveList &pv) const;
   void sendCurrentRootMove(Move currmove, MoveList::size_type movenumber) const;
   void
-  sendSearchUpdate(int depth, int seldepth, long nodes, int nps, MilliSec time, int hashfull) const;
-  void sendCurrentLine(const MoveList& moveList) const;
-  void sendResult(Move bestMove, Move ponderMove) const;
+  sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t nps, MilliSec time,
+                   int hashfull) const;
+  void sendCurrentLine(const MoveList &moveList) const;
+  void sendResult(Move bestMove, Value value, Move ponderMove);
 
   // other
   void waitWhileSearching();
 
   // getter
-  inline const SearchLimits &getSearchLimits() const { return searchLimits; };
-  int getHashSize();
+  std::shared_ptr<SearchLimits> getSearchLimits() { return pSearchLimits; };
+  static int getHashSize() { return EngineConfig::hash; };
+  const Result &getLastResult() const { return lastResult; }
+  std::shared_ptr<Search> getSearch() const { return pSearch; }
 
 private:
 
@@ -114,7 +128,7 @@ private:
 
   void initOptions();
   void updateConfig();
-  int getInt(const std::string &value) const;
+  static int getInt(const std::string &value) ;
 
 };
 

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,13 +26,13 @@
 #ifndef FRANKYCPP_PERFT_H
 #define FRANKYCPP_PERFT_H
 
-// forward declared dependencies
-class Position;
-class MoveGenerator;
-
 // included dependencies
 #include <string>
 #include "types.h"
+
+// forward declared dependencies
+class Position;
+class MoveGenerator;
 
 class Perft {
 

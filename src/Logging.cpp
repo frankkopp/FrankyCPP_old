@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,79 +27,122 @@
 #include "types.h"
 #include "Logging.h"
 
-namespace LOGGING {
-  void init() {
-    try {
-      std::locale::global(deLocale);
-    }
-    catch (...) {
-      std::cerr << "failed to set locale" << std::endl;
-    }
+#include "boost/program_options.hpp"
+namespace po = boost::program_options;
 
-    std::string defaultPattern = "[%H:%M:%S:%f] [%-13n] [%L] [t:%t] %v";
+inline po::variables_map programOptions;
 
-    // Shared file sink
-    auto sharedFileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("FrankyCPP.log");
-    sharedFileSink->set_level(spdlog::level::trace);
-
-    // Main Logger
-    auto MAIN_LOG = spdlog::stdout_color_mt("Main_Logger");
-    MAIN_LOG->sinks().push_back(sharedFileSink);
-    MAIN_LOG->set_pattern(defaultPattern);
-    MAIN_LOG->set_level(spdlog::level::debug);
-    MAIN_LOG->flush_on(spdlog::level::trace);
-
-    auto ENGINE_LOG = spdlog::stdout_color_mt("Engine_Logger");
-    ENGINE_LOG->sinks().push_back(sharedFileSink);
-    ENGINE_LOG->set_pattern(defaultPattern);
-    ENGINE_LOG->set_level(spdlog::level::debug);
-    ENGINE_LOG->flush_on(spdlog::level::trace);
-
-    auto SEARCH_LOG = spdlog::stdout_color_mt("Search_Logger");
-    SEARCH_LOG->sinks().push_back(sharedFileSink);
-    SEARCH_LOG->set_pattern(defaultPattern);
-    SEARCH_LOG->set_level(SEARCH_LOG_LEVEL);
-    SEARCH_LOG->flush_on(spdlog::level::trace);
-
-    auto MOVEGEN_LOG = spdlog::stdout_color_mt("MoveGen_Logger");
-    MOVEGEN_LOG->sinks().push_back(sharedFileSink);
-    MOVEGEN_LOG->set_pattern(defaultPattern);
-    MOVEGEN_LOG->set_level(spdlog::level::debug);
-    MOVEGEN_LOG->flush_on(spdlog::level::trace);
-
-    auto EVAL_LOG = spdlog::stdout_color_mt("Eval_Logger");
-    EVAL_LOG->sinks().push_back(sharedFileSink);
-    EVAL_LOG->set_pattern(defaultPattern);
-    EVAL_LOG->set_level(spdlog::level::debug);
-    EVAL_LOG->flush_on(spdlog::level::trace);
-
-    auto TT_LOG = spdlog::stdout_color_mt("TT_Logger");
-    TT_LOG->sinks().push_back(sharedFileSink);
-    TT_LOG->set_pattern(defaultPattern);
-    TT_LOG->set_level(spdlog::level::info);
-    TT_LOG->flush_on(spdlog::level::trace);
-
-    auto UCIHANDLER_LOG = spdlog::stdout_color_mt("UCIHandler_Logger");
-    UCIHANDLER_LOG->sinks().push_back(sharedFileSink);
-    UCIHANDLER_LOG->set_pattern(defaultPattern);
-    UCIHANDLER_LOG->set_level(spdlog::level::debug);
-    UCIHANDLER_LOG->flush_on(spdlog::level::trace);
-
-    auto uciOutSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-    auto UCI_LOG = spdlog::basic_logger_mt("UCI_Logger", "FrankyCPP_uci.log");
-    UCI_LOG->sinks().push_back(uciOutSink);
-    UCI_LOG->set_pattern("[%H:%M:%S:%f] %L %v");
-    UCI_LOG->set_level(spdlog::level::debug);
-    UCI_LOG->flush_on(spdlog::level::trace);
-
-    // Logger for Unit Tests
-    auto TEST_LOG = spdlog::stdout_color_mt("Test_Logger");
-    TEST_LOG->set_pattern(defaultPattern);
-    TEST_LOG->set_level(spdlog::level::trace);
-    TEST_LOG->flush_on(spdlog::level::trace);
-
-    MAIN_LOG->info("Logging initialized.");
-    MAIN_LOG->info("Locale is set to: {}", std::locale().name());
-
+void Logger::init() {
+  try {
+    std::locale::global(deLocale);
   }
+  catch (...) {
+    std::cerr << "failed to set locale" << std::endl;
+  }
+
+  const auto flushLevel = spdlog::level::warn;
+
+  auto logLvL = !programOptions.empty() ? programOptions["log_lvl"].as<std::string>() : "warn";
+  auto searchLogLvL = !programOptions.empty() ? programOptions["search_log_lvl"].as<std::string>() : "warn";
+
+  // default log level
+  const auto logLevel = [&] {
+    if (logLvL == "warn") {
+      return spdlog::level::warn;
+    }
+    else if (logLvL == "info") {
+      return spdlog::level::info;
+    }
+    else if (logLvL == "debug") {
+      return spdlog::level::debug;
+    }
+    else {
+      std::cerr << "unknown log level '" << logLvL << "' - using default.\n";
+      logLvL = "warn";
+      return spdlog::level::warn;
+    }
+  }();
+
+  // default log level
+  const auto searchLogLevel = [&] {
+    if (searchLogLvL == "warn") {
+      return spdlog::level::warn;
+    }
+    else if (searchLogLvL == "info") {
+      return spdlog::level::info;
+    }
+    else if (searchLogLvL == "debug") {
+      return spdlog::level::debug;
+    }
+    else {
+      std::cerr << "unknown search log level '" << searchLogLvL << "' - using default.\n";
+      searchLogLvL = "warn";
+      return spdlog::level::warn;
+    }
+  }();
+
+
+  // global log level
+  spdlog::set_level(logLevel);
+
+  // default pattern
+  spdlog::set_pattern(defaultPattern);
+
+  // Shared file sink
+  sharedFileSink->set_level(logLevel);
+
+  // Main Logger
+  MAIN_LOG->sinks().push_back(sharedFileSink);
+  MAIN_LOG->set_pattern(defaultPattern);
+  MAIN_LOG->set_level(logLevel);
+  MAIN_LOG->flush_on(flushLevel);
+
+  ENGINE_LOG->sinks().push_back(sharedFileSink);
+  ENGINE_LOG->set_pattern(defaultPattern);
+  ENGINE_LOG->set_level(logLevel);
+  ENGINE_LOG->flush_on(flushLevel);
+
+  SEARCH_LOG->sinks().push_back(sharedFileSink);
+  SEARCH_LOG->set_pattern(defaultPattern);
+  SEARCH_LOG->set_level(searchLogLevel);
+  SEARCH_LOG->flush_on(flushLevel);
+
+  TSUITE_LOG->sinks().push_back(sharedFileSink);
+  TSUITE_LOG->set_pattern(defaultPattern);
+  TSUITE_LOG->set_level(logLevel);
+  TSUITE_LOG->flush_on(flushLevel);
+
+  MOVEGEN_LOG->sinks().push_back(sharedFileSink);
+  MOVEGEN_LOG->set_pattern(defaultPattern);
+  MOVEGEN_LOG->set_level(logLevel);
+  MOVEGEN_LOG->flush_on(flushLevel);
+
+  EVAL_LOG->sinks().push_back(sharedFileSink);
+  EVAL_LOG->set_pattern(defaultPattern);
+  EVAL_LOG->set_level(logLevel);
+  EVAL_LOG->flush_on(flushLevel);
+
+  TT_LOG->sinks().push_back(sharedFileSink);
+  TT_LOG->set_pattern(defaultPattern);
+  TT_LOG->set_level(logLevel);
+  TT_LOG->flush_on(flushLevel);
+
+  UCIHAND_LOG->sinks().push_back(sharedFileSink);
+  UCIHAND_LOG->set_pattern(defaultPattern);
+  UCIHAND_LOG->set_level(logLevel);
+  UCIHAND_LOG->flush_on(flushLevel);
+
+  UCI_LOG->sinks().push_back(uciOutSink);
+  UCI_LOG->set_pattern("[%H:%M:%S:%f] %L %v");
+  UCI_LOG->set_level(logLevel);
+  UCI_LOG->flush_on(flushLevel);
+
+  // Logger for Unit Tests
+  TEST_LOG->set_pattern(defaultPattern);
+  TEST_LOG->set_level(logLevel);
+  TEST_LOG->flush_on(flushLevel);
+
+  std::cout << "Logger initialized (" << logLvL << " / " << searchLogLvL << ")" << std::endl;
 }
+
+

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,14 +24,23 @@
  */
 
 #include <map>
-
 #include "Engine.h"
+#include "Position.h"
 #include "SearchLimits.h"
+#include "Search.h"
+#include "UCIHandler.h"
+#include "UCIOption.h"
+#include "MoveGenerator.h"
+
+#define MAP(name, option) optionMap.insert(std::make_pair(name, option))
 
 ////////////////////////////////////////////////
 ///// CONSTRUCTORS
 
 Engine::Engine() {
+  pPosition = std::make_shared<Position>();
+  pSearch = std::make_shared<Search>(this);
+  pSearchLimits = std::make_shared<SearchLimits>();
   initOptions();
 }
 
@@ -46,13 +55,13 @@ std::ostream &operator<<(std::ostream &os, const Engine &engine) {
 std::string Engine::str() const {
   std::stringstream os;
   for (const auto &it : optionMap) {
-    UCI::Option o = it.second;
+    UCI_Option o = it.second;
     os << "\noption name " << it.first << " type " << o.getTypeString();
-    if (o.getType() == UCI::STRING || o.getType() == UCI::CHECK ||
-        o.getType() == UCI::COMBO)
+    if (o.getType() == UCI_Option::STRING || o.getType() == UCI_Option::CHECK ||
+        o.getType() == UCI_Option::COMBO)
       os << " default " << o.getDefaultValue();
 
-    if (o.getType() == UCI::SPIN)
+    if (o.getType() == UCI_Option::SPIN)
       os << " default " << stof(o.getDefaultValue()) << " min "
          << o.getMinValue() << " max " << o.getMaxValue();
   }
@@ -61,7 +70,7 @@ std::string Engine::str() const {
 
 
 void Engine::setOption(const std::string &name, const std::string &value) {
-  LOG->info("Engine: Set option {} = {}", name, value);
+  LOG__INFO(Logger::get().ENGINE_LOG, "Engine: Set option {} = {}", name, value);
 
   const auto mapIterator = optionMap.find(name);
   if (mapIterator != optionMap.end()) {
@@ -75,101 +84,105 @@ void Engine::setOption(const std::string &name, const std::string &value) {
     updateConfig();
   }
   else {
-    LOG->warn("No such option: {}", name);
+    LOG__WARN(Logger::get().ENGINE_LOG, "No such option: {}", name);
   }
 
 }
 
 std::string Engine::getOption(const std::string &name) {
-  LOG->info("Engine: Get option {}", name);
+  LOG__INFO(Logger::get().ENGINE_LOG, "Engine: Get option {}", name);
   const auto pos = optionMap.find(name);
   if (pos != optionMap.end())
     return pos->second.getCurrentValue();
   else {
-    LOG->warn("No such option: {}", name);
+    LOG__WARN(Logger::get().ENGINE_LOG, "No such option: {}", name);
     return "";
   }
 }
 
 void Engine::newGame() {
-  LOG->info("Engine: New Game");
-  // stop any search - this is necessary in case of ponder miss
+  LOG__INFO(Logger::get().ENGINE_LOG, "Engine: New Game");
   stopSearch();
+  pSearch->clearHash();
 }
 
 void Engine::setPosition(const std::string &fen) {
-  LOG->info("Engine: Set position to {}", fen);
-  // stop any search - this is necessary in case of ponder miss
-  stopSearch();
-  position = Position(fen);
+  LOG__INFO(Logger::get().ENGINE_LOG, "Engine: Set position to {}", fen);
+  pPosition = std::make_unique<Position>(fen);
 }
 
 void Engine::doMove(const std::string &moveStr) {
-  LOG->info("Engine: Do move {}", moveStr);
+  LOG__INFO(Logger::get().ENGINE_LOG, "Engine: Do move {}", moveStr);
+  // this is used to check if the given move is valid
+  // on this position and then uses the generated move to
+  // commit the move the internal Engine position
   MoveGenerator moveGenerator;
-  MoveList moves = *moveGenerator.generateLegalMoves<MoveGenerator::GENALL>(position);
-  for (Move m : moves) {
+  const MoveList* movesPtr = moveGenerator.generateLegalMoves<MoveGenerator::GENALL>(*pPosition);
+  for (Move m : *movesPtr) {
     if (printMove(m) == moveStr) {
-      position.doMove(m);
+      pPosition->doMove(m);
       return;
     }
   }
-  LOG->warn("Invalid move {}", moveStr);
+  LOG__WARN(Logger::get().ENGINE_LOG, "Invalid move {}", moveStr);
 }
 
 void Engine::startSearch(const UCISearchMode &uciSearchMode) {
-  LOG->info("Engine: Start Search");
+  LOG__INFO(Logger::get().ENGINE_LOG, "Engine: Start Search");
 
-  if (search.isRunning()) {
+  if (pSearch->isRunning()) {
     // Previous search was still running. Stopping to start new search!
-    LOG->warn("Engine was already searching. Stopping search to start new search.");
-    search.stopSearch();
+    LOG__WARN(Logger::get().ENGINE_LOG, "Engine was already searching. Stopping search to start new search.");
+    pSearch->stopSearch();
   }
+
+  // clear last result
+  lastResult = {false, MOVE_NONE, MOVE_NONE};
 
   assert(uciSearchMode.whiteTime >= 0 && uciSearchMode.blackTime >= 0 &&
          uciSearchMode.whiteInc >= 0 && uciSearchMode.blackInc >= 0 &&
          uciSearchMode.movetime >= 0);
 
-  searchLimits = SearchLimits(static_cast<MilliSec>(uciSearchMode.whiteTime),
-                              static_cast<MilliSec>(uciSearchMode.blackTime),
-                              static_cast<MilliSec>(uciSearchMode.whiteInc),
-                              static_cast<MilliSec>(uciSearchMode.blackInc),
-                              static_cast<MilliSec>(uciSearchMode.movetime),
-                              uciSearchMode.movesToGo, uciSearchMode.depth,
-                              uciSearchMode.nodes, uciSearchMode.moves,
-                              uciSearchMode.mate, uciSearchMode.ponder,
-                              uciSearchMode.infinite, uciSearchMode.perft);
+  pSearchLimits = std::make_shared<SearchLimits>(static_cast<MilliSec>(uciSearchMode.whiteTime),
+                                                 static_cast<MilliSec>(uciSearchMode.blackTime),
+                                                 static_cast<MilliSec>(uciSearchMode.whiteInc),
+                                                 static_cast<MilliSec>(uciSearchMode.blackInc),
+                                                 static_cast<MilliSec>(uciSearchMode.movetime),
+                                                 uciSearchMode.movesToGo, uciSearchMode.depth,
+                                                 uciSearchMode.nodes, uciSearchMode.moves,
+                                                 uciSearchMode.mate, uciSearchMode.ponder,
+                                                 uciSearchMode.infinite, uciSearchMode.perft);
 
   // do not start pondering if not ponder option is set
-  if (searchLimits.isPonder() && !EngineConfig::ponder) {
-    LOG->warn("Engine: go ponder command but ponder option is set to false.");
+  if (pSearchLimits->isPonder() && !EngineConfig::ponder) {
+    LOG__WARN(Logger::get().ENGINE_LOG, "Engine: go ponder command but ponder option is set to false.");
     return;
   }
 
-  search.startSearch(position, searchLimits);
+  pSearch->startSearch(*pPosition, *pSearchLimits);
 }
 
 void Engine::stopSearch() {
-  LOG->info("Engine: Stop Search");
-  search.stopSearch();
+  LOG__INFO(Logger::get().ENGINE_LOG, "Engine: Stop Search");
+  pSearch->stopSearch();
 }
 
 void Engine::ponderHit() {
-  LOG->info("Engine: Ponder Hit");
-  search.ponderhit();
+  LOG__INFO(Logger::get().ENGINE_LOG, "Engine: Ponder Hit");
+  pSearch->ponderhit();
 }
 
 void Engine::clearHash() {
-  LOG->info("Engine: Clear Hash");
-  search.clearHash();
+  LOG__INFO(Logger::get().ENGINE_LOG, "Engine: Clear Hash");
+  pSearch->clearHash();
 }
 
-void Engine::sendIterationEndInfo(int depth, int seldepth, Value value, long nodes, int nps,
+void Engine::sendIterationEndInfo(int depth, int seldepth, Value value, uint64_t nodes, uint64_t nps,
                                   MilliSec time, const MoveList &pv) const {
   if (pUciHandler)
     pUciHandler->sendIterationEndInfo(depth, seldepth, value, nodes, nps, time, pv);
   else
-    LOG->warn(
+    LOG__WARN(Logger::get().ENGINE_LOG,
       "<no uci handler>: Engine iteration end: depth {} seldepth {} multipv 1 {} nodes {} nps {} time {} pv {}",
       depth,
       seldepth,
@@ -183,40 +196,40 @@ void Engine::sendIterationEndInfo(int depth, int seldepth, Value value, long nod
 void Engine::sendCurrentRootMove(Move currmove, MoveList::size_type movenumber) const {
   if (pUciHandler) pUciHandler->sendCurrentRootMove(currmove, movenumber);
   else
-    LOG->warn("<no uci handler>: Engine current move: currmove {} currmovenumber {}",
-              printMove(currmove),
-              movenumber);
+    LOG__WARN(Logger::get().ENGINE_LOG, "<no uci handler>: Engine current move: currmove {} currmovenumber {}",
+              printMove(currmove), movenumber);
 }
 
-void Engine::sendSearchUpdate(int depth, int seldepth, long nodes, int nps, MilliSec time,
+void Engine::sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t nps, MilliSec time,
                               int hashfull) const {
   if (pUciHandler) pUciHandler->sendSearchUpdate(depth, seldepth, nodes, nps, time, hashfull);
   else
-    LOG->warn(
+    LOG__WARN(Logger::get().ENGINE_LOG,
       "<no uci handler>: Engine search update: depth {} seldepth {} nodes {} nps {} time {} hashfull {}",
-      depth,
-      seldepth,
-      nodes,
-      nps,
-      time,
-      hashfull);
+      depth, seldepth, nodes, nps, time, hashfull);
 }
 
 void Engine::sendCurrentLine(const MoveList &moveList) const {
   if (pUciHandler) pUciHandler->sendCurrentLine(moveList);
   else
-    LOG->warn("<no uci handler>: Engine current line: {}", printMoveList(moveList));
+    LOG__WARN(Logger::get().ENGINE_LOG, "<no uci handler>: Engine current line: {}", printMoveList(moveList));
 }
 
-void Engine::sendResult(Move bestMove, Move ponderMove) const {
+void Engine::sendResult(const Move bestMove, const Value value, const Move ponderMove) {
+  lastResult = {true, bestMove, ponderMove};
+
   if (pUciHandler) pUciHandler->sendResult(bestMove, ponderMove);
   else
-    LOG->warn("<no uci handler>: Engine Result: Best Move = {} ({}) Ponder Move = {}",
-              printMoveVerbose(bestMove), valueOf(bestMove), printMoveVerbose(ponderMove));
+    LOG__WARN(Logger::get().ENGINE_LOG, "<no uci handler>: Engine Result: Best Move = {} ({}) Ponder Move = {}",
+              printMoveVerbose(bestMove), printValue(value), printMoveVerbose(ponderMove));
 }
 
 void Engine::waitWhileSearching() {
-  search.waitWhileSearching();
+  pSearch->waitWhileSearching();
+}
+
+bool Engine::isSearching() {
+  return pSearch->isRunning();
 }
 
 ////////////////////////////////////////////////
@@ -224,9 +237,9 @@ void Engine::waitWhileSearching() {
 
 void Engine::initOptions() {
   // @formatter:off
-  MAP("Hash", UCI::Option("Hash", EngineConfig::hash, 1, 1024)); // spin
-  MAP("Clear Hash", UCI::Option("Clear Hash"));           // button
-  MAP("Ponder", UCI::Option("Ponder", EngineConfig::ponder));    // check
+  MAP("Hash", UCI_Option("Hash", EngineConfig::hash, 1, 4096)); // spin
+  MAP("Clear Hash", UCI_Option("Clear Hash"));                  // button
+  MAP("Ponder", UCI_Option("Ponder", EngineConfig::ponder));    // check
   // @formatter:on
   updateConfig();
 }
@@ -234,13 +247,13 @@ void Engine::initOptions() {
 void Engine::updateConfig() {
   // iterate through all UCI options and update config accordingly
   for (const auto &it : optionMap) {
-    const UCI::Option &option = it.second;
+    const UCI_Option &option = it.second;
     const std::string &name = option.getNameID();
 
     if (name == "Hash") {
       EngineConfig::hash = getInt(option.getCurrentValue());
-      LOG->info("Setting hash table size to {} MB", EngineConfig::hash);
-      search.setHashSize(EngineConfig::hash);
+      LOG__INFO(Logger::get().ENGINE_LOG, "Setting hash table size to {} MB", EngineConfig::hash);
+      pSearch->setHashSize(EngineConfig::hash);
     }
     else
       if (name == "Ponder") {
@@ -249,20 +262,16 @@ void Engine::updateConfig() {
   }
 }
 
-int Engine::getHashSize() {
-  return EngineConfig::hash;
-}
-
-int Engine::getInt(const std::string &value) const {
+int Engine::getInt(const std::string &value) {
   int intValue = 0;
   try {
     intValue = stoi(value);
   }
   catch (std::invalid_argument &e) {
-    LOG->warn("depth invalid - expected numeric value. Was {}", value);
+    LOG__WARN(Logger::get().ENGINE_LOG, "depth invalid - expected numeric value. Was {}", value);
   }
   catch (std::out_of_range &e) {
-    LOG->warn("depth invalid - numeric value out of range of int. Was {}", value);
+    LOG__WARN(Logger::get().ENGINE_LOG, "depth invalid - numeric value out of range of int. Was {}", value);
   }
   return intValue;
 }

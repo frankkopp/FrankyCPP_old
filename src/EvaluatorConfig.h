@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,13 +26,55 @@
 #ifndef FRANKYCPP_EVALUATORCONFIG_H
 #define FRANKYCPP_EVALUATORCONFIG_H
 
-namespace EvaluatorConfig {
+#include <cstddef>
 
-  inline bool USE_MATERIAL = true;
-  inline int MATERIAL_WEIGHT = 1;
+struct EvaluatorConfig {
 
-  inline int POSITION_WEIGHT = 1;
-  inline bool USE_POSITION = true;
+  bool USE_PAWN_TABLE = true;
+  std::size_t PAWN_TABLE_SIZE = 1'048'576; // 2^20
+
+  // set values for bonus > 0 and for penalty < 0
+
+   int TEMPO = 30;
+
+   bool USE_MATERIAL = true;
+   int MATERIAL_WEIGHT = 1;
+
+   bool USE_POSITION = true;
+   int POSITION_WEIGHT = 1;
+
+   bool USE_MOBILITY = true;
+   int MOBILITY_WEIGHT = 2;
+
+   bool USE_PAWNEVAL = true;
+   int PAWNEVAL_WEIGHT = 1;
+   int ISOLATED_PAWN_MID_WEIGHT = -5;
+   int ISOLATED_PAWN_END_WEIGHT = -15;
+   int DOUBLED_PAWN_MID_WEIGHT = -5;
+   int DOUBLED_PAWN_END_WEIGHT = -15;
+   int PASSED_PAWN_MID_WEIGHT = 15;
+   int PASSED_PAWN_END_WEIGHT = 20;
+   int BLOCKED_PAWN_MID_WEIGHT = -1;
+   int BLOCKED_PAWN_END_WEIGHT = -10;
+   int PHALANX_PAWN_MID_WEIGHT = 10;
+   int PHALANX_PAWN_END_WEIGHT = 5;
+   int SUPPORTED_PAWN_MID_WEIGHT = 5;
+   int SUPPORTED_PAWN_END_WEIGHT = 5;
+
+   bool USE_CHECK_BONUS = true;
+   int CHECK_VALUE = 30;
+
+   bool USE_PIECE_BONI = true;
+   int BISHOP_PAIR = 30;
+   int KNIGHT_PAIR = 10;
+   int ROOK_PAIR = 15;
+
+   bool USE_KING_CASTLE_SAFETY = true;
+   int KING_CASTLE_SAFETY_WEIGHT = 1;
+   int KING_SAFETY_PAWNSHIELD = 50;
+   int TRAPPED_ROOK_PENALTY = -50;
+   int TRAPPED_BISHOP_PENALTY = -50;
+
 };
 
 #endif //FRANKYCPP_EVALUATORCONFIG_H

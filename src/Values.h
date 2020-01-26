@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,10 +53,10 @@ namespace Values {
   };
   constexpr int pawnsEndGame[SQ_LENGTH] = {
     0,  0,  0,  0,  0,  0,  0,  0,
-    50, 50, 50, 50, 50, 50, 50, 50,
-    10, 20, 20, 30, 30, 20, 20, 10,
-    10, 10, 20, 30, 30, 20, 10, 10,
-    10, 10, 20, 30, 30, 20, 10, 10,
+    90, 90, 90, 90, 90, 90, 90, 90,
+    40, 50, 50, 60, 60, 50, 50, 40,
+    20, 30, 30, 40, 40, 30, 30, 20,
+    10, 10, 20, 20, 20, 10, 10, 10,
     5, 10, 10, 10, 10, 10, 10,  5,
     5, 10, 10, 10, 10, 10, 10,  5,
     0,  0,  0,  0,  0,  0,  0,  0

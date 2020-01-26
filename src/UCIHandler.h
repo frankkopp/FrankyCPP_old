@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,64 +27,53 @@
 #define FRANKYCPP_UCIPROTOCOLHANDLER_H
 
 #include <thread>
-#include <iostream>
-#include "Logging.h"
-#include "UCISearchMode.h"
+#include <iosfwd>
+#include "types.h"
 
 class Engine;
 
-namespace UCI {
-
-  class Handler {
-
-    std::shared_ptr<spdlog::logger> LOG = spdlog::get("UCIHandler_Logger");
-    std::shared_ptr<spdlog::logger> UCI_LOG = spdlog::get("UCI_Logger");
+  class UCI_Handler {
 
     Engine *pEngine;
 
-    std::istream *pInputStream = &std::cin;
-    std::ostream *pOutputStream = &std::cout;
-
-    // stores the last search mode we read in from UCI protocol
-    UCISearchMode searchMode;
+    std::istream *pInputStream;
+    std::ostream *pOutputStream;
 
   public:
 
     /** Constructor */
-    explicit Handler(Engine *pEng);
+    explicit UCI_Handler(Engine *ptr);
     /** Constructor */
-    Handler(Engine *pEng, std::istream *pIstream, std::ostream *pOstream);
-    /** Destructor */
-    virtual ~Handler();
+    UCI_Handler(Engine *pEng, std::istream *pIstream, std::ostream *pOstream);
 
-    /** Starts the handler loop with the istream provided when creating the instance */
+    /** Starts the handler loop with the istream provided when creating the
+     * instance */
     void loop();
 
     /** Starts the handler loop  with the given istream (mainly for testing) */
     void loop(std::istream *pIstream);
 
-    void uciCommand();
-    void isReadyCommand();
-    void setOptionCommand(std::istringstream &inStream);
-    void uciNewGameCommand();
-    void positionCommand(std::istringstream &inStream);
+    void uciCommand() const;
+    void isReadyCommand() const;
+    void setOptionCommand(std::istringstream &inStream) const;
+    void uciNewGameCommand() const;
+    void positionCommand(std::istringstream &inStream) const;
     void goCommand(std::istringstream &inStream);
-    void stopCommand();
-    void ponderHitCommand();
-    void registerCommand();
-    void debugCommand();
-    void send(const std::string& toSend) const;
+    void stopCommand() const;
+    void ponderHitCommand() const;
+    static void registerCommand() ;
+    static void debugCommand() ;
+    void send(const std::string &toSend) const;
 
     ///////////////////
     //// GETTER
-    const UCISearchMode &getSearchMode() const { return searchMode; };
-
-    void sendIterationEndInfo(int depth, int seldepth, Value value, long nodes, int nps, MilliSec time, const MoveList& pv);
-    void sendCurrentRootMove(Move currmove, int movenumber);
-    void sendSearchUpdate(int depth, int seldepth, long nodes, int nps, MilliSec time, int hashfull);
-    void sendCurrentLine(const MoveList& moveList);
-    void sendResult(Move bestMove, Move ponderMove);
+    void sendIterationEndInfo(int depth, int seldepth, Value value, uint64_t nodes,
+                              uint64_t nps, MilliSec time, const MoveList &pv) const;
+    void sendCurrentRootMove(Move currmove, unsigned long movenumber) const;
+    void sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t nps,
+                          MilliSec time, int hashfull) const;
+    void sendCurrentLine(const MoveList &moveList) const;
+    void sendResult(Move bestMove, Move ponderMove) const;
   };
-}
 
 #endif //FRANKYCPP_UCIPROTOCOLHANDLER_H

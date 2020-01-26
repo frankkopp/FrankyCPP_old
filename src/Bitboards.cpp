@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,8 @@
  *
  */
 
-#include <string>
-
+#include <algorithm>
 #include "Bitboards.h"
-
-using namespace std;
 
 namespace Bitboards {
 
@@ -49,16 +46,22 @@ namespace Bitboards {
   Square indexMapR45[SQ_LENGTH];
   Square indexMapL45[SQ_LENGTH];
 
+  Bitboard sqToFileBB[SQ_LENGTH];
+  Bitboard sqToRankBB[SQ_LENGTH];
   Bitboard filesWestMask[SQ_LENGTH];
   Bitboard filesEastMask[SQ_LENGTH];
   Bitboard fileWestMask[SQ_LENGTH];
   Bitboard fileEastMask[SQ_LENGTH];
+  Bitboard neighbourFilesMask[SQ_LENGTH];
   Bitboard ranksNorthMask[SQ_LENGTH];
   Bitboard ranksSouthMask[SQ_LENGTH];
 
   Bitboard rays[OR_LENGTH][SQ_LENGTH];
 
   Bitboard passedPawnMask[COLOR_LENGTH][SQ_LENGTH];
+
+  Bitboard kingSideCastleMask[COLOR_LENGTH];
+  Bitboard queenSideCastleMask[COLOR_LENGTH];
 
   Bitboard whiteSquaresBB;
   Bitboard blackSquaresBB;
@@ -71,101 +74,13 @@ namespace Bitboards {
   uint8_t PopCnt16[1 << 16];
 
   /**
-   * Prints a bitboard a an 8x8 matrix for output on a console
-   */
-  string print(Bitboard b) {
-    string s = "+---+---+---+---+---+---+---+---+\n";
-    for (Rank r = RANK_8; r >= RANK_1; --r) {
-      for (File f = FILE_A; f <= FILE_H; ++f) {
-        s += b & getSquare(f, r) ? "| X " : "|   ";
-      }
-      s += "|\n+---+---+---+---+---+---+---+---+\n";
-    }
-    return s;
-  }
-
-  /**
-   * Prints a bitboard as a series of 0 and 1 grouped in 8 bits
-   * beginning with the LSB (0) on the left and the MSB (63) on the right
-   */
-  string printFlat(Bitboard b) {
-    std::string s;
-    for (int i = 0; i < 64; i++) {
-      if (i > 0 && i % 8 == 0) s += ".";
-      s += b & (1L << i) ? "1" : "0";
-    }
-    s += " (" + std::to_string(b) + ")";
-    return s;
-  }
-
-  /**
-   * Rotates a Bitboard
-   * @param b
-   * @return rotated bitboard
-   */
-  Bitboard rotateR90(Bitboard b) {
-    return rotate(b, rotateMapR90);
-  }
-
-  /**
-   * Rotates a Bitboard
-   * @param b
-   * @return rotated bitboard
-   */
-  Bitboard rotateL90(Bitboard b) {
-    return rotate(b, rotateMapL90);
-  }
-
-  /**
-   * Rotates a Bitboard
-   * @param b
-   * @return rotated bitboard
-   */
-  Bitboard rotateR45(Bitboard b) {
-    return rotate(b, rotateMapR45);
-  }
-
-  /**
-   * Rotates a Bitboard
-   * @param b
-   * @return rotated bitboard
-   */
-  Bitboard rotateL45(Bitboard b) {
-    return rotate(b, rotateMapL45);
-  }
-
-  /**
-   * Rotates a Bitboard
-   * @param b
-   * @param rotMap - array with mapping for rotation
-   * @return rotated bitboard
-   */
-  Bitboard rotate(Bitboard b, const int *rotMap) {
-    Bitboard rotated = EMPTY_BB;
-    for (Square sq = SQ_A1; sq < SQ_LENGTH; ++sq) {
-      if ((b & Square(rotMap[sq])) != 0) rotated |= squareBB[sq];
-    }
-    return rotated;
-  }
-
-  /**
-   * @return popcount16() counts the non-zero bits using SWAR-Popcount algorithm
-   */
-  unsigned popcount16(unsigned u) {
-    u -= (u >> 1U) & 0x5555U;
-    u = ((u >> 2U) & 0x3333U) + (u & 0x3333U);
-    u = ((u >> 4U) + u) & 0x0F0FU;
-    return (u * 0x0101U) >> 8U;
-  }
-
-  /**
    * Initializes various pre-computed bitboards
    */
   void init() {
-
+    
     // pre-computes 16-bit population counter to use in popcount(64-bit)
     for (unsigned i = 0; i < (1U << 16U); ++i)
-      PopCnt16[i] = (uint8_t) popcount16(i);
+      PopCnt16[i] = static_cast<uint8_t>( popcount16(i));
 
     // all squares
     for (Square sq = SQ_A1; sq <= SQ_H8; ++sq) {
@@ -173,7 +88,12 @@ namespace Bitboards {
       // square bitboard
       squareBB[sq] = ONE_BB << sq;
 
+      // file and rank bitboards
+      sqToFileBB[sq] = fileBB(sq);
+      sqToRankBB[sq] = rankBB(sq);
+
       // square diagonals
+      // @formatter:off
       if (DiagUpA8 & sq) squareDiagUpBB[sq] = DiagUpA8;
       else if (DiagUpA7 & sq) squareDiagUpBB[sq] = DiagUpA7;
       else if (DiagUpA6 & sq) squareDiagUpBB[sq] = DiagUpA6;
@@ -189,6 +109,7 @@ namespace Bitboards {
       else if (DiagUpF1 & sq) squareDiagUpBB[sq] = DiagUpF1;
       else if (DiagUpG1 & sq) squareDiagUpBB[sq] = DiagUpG1;
       else if (DiagUpH1 & sq) squareDiagUpBB[sq] = DiagUpH1;
+      
       if (DiagDownH8 & sq) squareDiagDownBB[sq] = DiagDownH8;
       else if (DiagDownH7 & sq) squareDiagDownBB[sq] = DiagDownH7;
       else if (DiagDownH6 & sq) squareDiagDownBB[sq] = DiagDownH6;
@@ -204,19 +125,21 @@ namespace Bitboards {
       else if (DiagDownC1 & sq) squareDiagDownBB[sq] = DiagDownC1;
       else if (DiagDownB1 & sq) squareDiagDownBB[sq] = DiagDownB1;
       else if (DiagDownA1 & sq) squareDiagDownBB[sq] = DiagDownA1;
+      // @formatter:on
     }
-
     // distance between squares
     for (Square sq1 = SQ_A1; sq1 <= SQ_H8; ++sq1) {
       for (Square sq2 = SQ_A1; sq2 <= SQ_H8; ++sq2) {
         if (sq1 != sq2) {
-          squareDistance[sq1][sq2] = (int8_t) max(distance(fileOf(sq1), fileOf(sq2)),
-                                                  distance(rankOf(sq1), rankOf(sq2)));
+          squareDistance[sq1][sq2] =
+            static_cast<int8_t>(std::max(distance(fileOf(sq1), fileOf(sq2)),
+                                         distance(rankOf(sq1), rankOf(sq2))));
         }
       }
     }
 
-    // Reverse index to quickly calculate the index of a square in the rotated board
+    // Reverse index to quickly calculate the index of a square in the rotated
+    // board
     for (Square square1 = SQ_A1; square1 < SQ_LENGTH; ++square1) {
       indexMapR90[rotateMapR90[square1]] = square1;
       indexMapL90[rotateMapL90[square1]] = square1;
@@ -232,12 +155,16 @@ namespace Bitboards {
       for (int j = 0; j < 256; j++) {
         Bitboard mask = 0L;
         for (int x = file - 1; x >= 0; x--) {
-          mask += (1L << x);
-          if ((j & (1 << x)) != 0) break;
+          mask += (ONE_BB << x);
+          if ((j & (1 << x)) != 0) {
+            break;
+          }
         }
         for (int x = file + 1; x < 8; x++) {
-          mask += (1L << x);
-          if ((j & (1 << x)) != 0) break;
+          mask += (ONE_BB << x);
+          if ((j & (1 << x)) != 0) {
+            break;
+          }
         }
         for (Rank rank = RANK_1; rank <= RANK_8; ++rank) {
           movesRank[(rank * 8) + file][j] = mask << (rank * 8);
@@ -251,12 +178,16 @@ namespace Bitboards {
       for (int j = 0; j < 256; j++) {
         Bitboard mask = 0;
         for (int x = 6 - rank; x >= 0; x--) {
-          mask += (1L << (8 * (7 - x)));
-          if ((j & (1 << x)) != 0) break;
+          mask += (ONE_BB << (8 * (7 - x)));
+          if ((j & (1 << x)) != 0) {
+            break;
+          }
         }
         for (int x = 8 - rank; x < 8; x++) {
-          mask += (1L << (8 * (7 - x)));
-          if ((j & (1 << x)) != 0) break;
+          mask += (ONE_BB << (8 * (7 - x)));
+          if ((j & (1 << x)) != 0) {
+            break;
+          }
         }
         for (File file = FILE_A; file <= FILE_H; ++file) {
           movesFile[(rank * 8) + file][j] = mask << file;
@@ -270,7 +201,7 @@ namespace Bitboards {
       File file = fileOf(square);
       Rank rank = rankOf(square);
       /* Get the far left hand square on this diagonal */
-      Square diagstart = (Square) (square - 9 * (min((int) file, (int) rank)));
+      Square diagstart = static_cast<Square>(square - 9 * std::min(static_cast<int>(file), static_cast<int>(rank)));
       File dsfile = fileOf(diagstart);
       int dl = lengthDiagUp[square];
       /* Loop through all possible occupations of this diagonal line */
@@ -279,14 +210,19 @@ namespace Bitboards {
         /* Calculate possible target squares */
         for (int b1 = (file - dsfile) - 1; b1 >= 0; b1--) {
           mask += (ONE_BB << b1);
-          if ((sq & (1 << b1)) != 0) break;
+          if ((sq & (1 << b1)) != 0) {
+            break;
+          }
         }
         for (int b2 = (file - dsfile) + 1; b2 < dl; b2++) {
           mask += (ONE_BB << b2);
-          if ((sq & (1 << b2)) != 0) break;
+          if ((sq & (1 << b2)) != 0) {
+            break;
+          }
         }
         /* Rotate target squares back */
-        for (int x = 0; x < dl; x++) mask2 += (((mask >> x) & 1) << (diagstart + (9 * x)));
+        for (int x = 0; x < dl; x++)
+          mask2 += (((mask >> x) & 1) << (diagstart + (9 * x)));
         movesDiagUp[square][sq] = mask2;
       }
     }
@@ -297,7 +233,8 @@ namespace Bitboards {
       File file = fileOf(square);
       Rank rank = rankOf(square);
       /* Get the far left hand square on this diagonal */
-      Square diagstart = (Square) (7 * (min((int) file, (int) (7 - rank))) + square);
+      Square diagstart =
+        static_cast<Square>((7 * (std::min(static_cast<int>(file), static_cast<int>((7 - rank)))) + square));
       File dsfile = fileOf(diagstart);
       int dl = lengthDiagDown[square];
       /* Loop through all possible occupations of this diagonal line */
@@ -306,14 +243,19 @@ namespace Bitboards {
         /* Calculate possible target squares */
         for (int x = (file - dsfile) - 1; x >= 0; x--) {
           mask += (ONE_BB << x);
-          if ((j & (1 << x)) != 0) break;
+          if ((j & (1 << x)) != 0) {
+            break;
+          }
         }
         for (int x = (file - dsfile) + 1; x < dl; x++) {
           mask += (ONE_BB << x);
-          if ((j & (1 << x)) != 0) break;
+          if ((j & (1 << x)) != 0) {
+            break;
+          }
         }
         /* Rotate the target line back onto the required diagonal */
-        for (int x = 0; x < dl; x++) mask2 += (((mask >> x) & 1) << (diagstart - (7 * x)));
+        for (int x = 0; x < dl; x++)
+          mask2 += (((mask >> x) & 1) << (diagstart - (7 * x)));
         movesDiagDown[square][j] = mask2;
       }
     }
@@ -321,11 +263,19 @@ namespace Bitboards {
     // pawn moves
     for (Square square = SQ_A1; square <= SQ_H8; ++square) {
       // pawn moves
-      if (square > SQ_H1) pawnMoves[WHITE][square] |= ONE_BB << (square + NORTH);
-      if (square < SQ_A8) pawnMoves[BLACK][square] |= ONE_BB << (square + SOUTH);
+      if (square > SQ_H1) {
+        pawnMoves[WHITE][square] |= ONE_BB << (square + NORTH);
+      }
+      if (square < SQ_A8) {
+        pawnMoves[BLACK][square] |= ONE_BB << (square + SOUTH);
+      }
       // pawn double moves
-      if (rankOf(square) == RANK_2) pawnMoves[WHITE][square] |= ONE_BB << (square + NORTH + NORTH);
-      if (rankOf(square) == RANK_7) pawnMoves[BLACK][square] |= ONE_BB << (square + SOUTH + SOUTH);
+      if (rankOf(square) == RANK_2) {
+        pawnMoves[WHITE][square] |= ONE_BB << (square + NORTH + NORTH);
+      }
+      if (rankOf(square) == RANK_7) {
+        pawnMoves[BLACK][square] |= ONE_BB << (square + SOUTH + SOUTH);
+      }
     }
 
     // @formatter:off
@@ -346,8 +296,8 @@ namespace Bitboards {
           for (int i = 0; steps[pt][i]; ++i) {
             Square to = s + Direction(c == WHITE ? steps[pt][i] : -steps[pt][i]);
             if (isSquare(to) && distance(s, to) < 3) {
-              if (pt == PAWN) pawnAttacks[c][s] |= to;
-              else pseudoAttacks[pt][s] |= to;
+              if (pt == PAWN) { pawnAttacks[c][s] |= to; }
+              else { pseudoAttacks[pt][s] |= to; }
             }
           }
         }
@@ -375,8 +325,9 @@ namespace Bitboards {
         if (7 - j > r) ranksNorthMask[square] |= rankBB(7 - j);
         if (j < r) ranksSouthMask[square] |= rankBB(j);
       }
-      if (f > 0) fileWestMask[square] = fileBB(f);
-      if (f < 7) fileEastMask[square] = fileBB(f + 2);
+      if (f > 0) fileWestMask[square] = fileBB(f - 1);
+      if (f < 7) fileEastMask[square] = fileBB(f + 1);
+      neighbourFilesMask[square] = fileEastMask[square] | fileWestMask[square];
     }
 
     // rays
@@ -385,6 +336,7 @@ namespace Bitboards {
       rays[E][square] = pseudoAttacks[ROOK][square] & filesEastMask[square];
       rays[S][square] = pseudoAttacks[ROOK][square] & ranksSouthMask[square];
       rays[W][square] = pseudoAttacks[ROOK][square] & filesWestMask[square];
+
       rays[NW][square] =
         pseudoAttacks[BISHOP][square] & filesWestMask[square] & ranksNorthMask[square];
       rays[NE][square] =
@@ -402,12 +354,12 @@ namespace Bitboards {
       int r = rankOf(square);
       // white pawn - ignore that pawns can'*t be on all squares
       passedPawnMask[WHITE][square] |= rays[N][square];
-      if (f > 0 && r < 7) passedPawnMask[WHITE][square] |= rays[N][square + W];
-      if (f < 7 && r < 7) passedPawnMask[WHITE][square] |= rays[N][square + E];
+      if (f < 7 && r < 7) passedPawnMask[WHITE][square] |= rays[N][square + EAST];
+      if (f > 0 && r < 7) passedPawnMask[WHITE][square] |= rays[N][square + WEST];
       // black pawn - ignore that pawns can'*t be on all squares
       passedPawnMask[BLACK][square] |= rays[S][square];
-      if (f > 0 && r > 0) passedPawnMask[BLACK][square] |= rays[S][square + W];
-      if (f < 7 && r > 0) passedPawnMask[BLACK][square] |= rays[S][square + E];
+      if (f < 7 && r > 0) passedPawnMask[BLACK][square] |= rays[S][square + EAST];
+      if (f > 0 && r > 0) passedPawnMask[BLACK][square] |= rays[S][square + WEST];
     }
 
     // mask for intermediate squares in between two squares
@@ -422,14 +374,19 @@ namespace Bitboards {
       }
     }
 
+    kingSideCastleMask[WHITE] = squareBB[SQ_F1] | squareBB[SQ_G1] | squareBB[SQ_H1];
+    kingSideCastleMask[BLACK] = squareBB[SQ_F8] | squareBB[SQ_G8] | squareBB[SQ_H8];
+    queenSideCastleMask[WHITE] = squareBB[SQ_D1] | squareBB[SQ_C1] | squareBB[SQ_B1] | squareBB[SQ_A1];
+    queenSideCastleMask[BLACK] = squareBB[SQ_D8] | squareBB[SQ_C8] | squareBB[SQ_B8] | squareBB[SQ_A8];
+
     // masks for each square color (good for bishops vs bishops or pawns)
     Bitboard tmpW = EMPTY_BB;
     Bitboard tmpB = EMPTY_BB;
     for (Square square = SQ_A1; square <= SQ_H8; ++square) {
       int f = fileOf(square);
       int r = rankOf(square);
-      if ((f + r) % 2 == 0) tmpB |= 1L << square;
-      else tmpW |= 1L << square;
+      if ((f + r) % 2 == 0) { tmpB |= ONE_BB << square; }
+      else { tmpW |= ONE_BB << square; }
     }
     whiteSquaresBB = tmpW;
     blackSquaresBB = tmpB;
@@ -455,123 +412,4 @@ namespace Bitboards {
     }
   }
 
-  /**
-   * Shifts a bitboard in the given direction.
-   * @param d Direction
-   * @param b Bitboard
-   * @return shifted bitboard
-   */
-  Bitboard shift(Direction d, Bitboard b) {
-    // move the bits and clear the left our right file
-    // after the shift to erase bit jumping over
-    switch (d) {
-      case NORTH:
-        return (b << 8);
-      case EAST:
-        return (b << 1) & ~FileABB;
-      case SOUTH:
-        return (b >> 8);
-      case WEST:
-        return (b >> 1) & ~FileHBB;
-      case NORTH_EAST:
-        return (b << 9) & ~FileABB;
-      case SOUTH_EAST:
-        return (b >> 7) & ~FileABB;
-      case SOUTH_WEST:
-        return (b >> 9) & ~FileHBB;
-      case NORTH_WEST:
-        return (b << 7) & ~FileHBB;
-    }
-    assert(false);
-    return b;
-  }
-
-  /**
-   * Bitboard for all possible horizontal moves on the rank of the square with
-   * the rank content (blocking pieces) determined from the given pieces bitboard.
-   */
-  Bitboard getMovesRank(Square sq, Bitboard content) {
-    // content = the pieces currently on the board and maybe blocking the moves
-    // no rotation necessary for ranks - their squares are already in a row
-    // shift to the least significant bit
-    Bitboard contentIdx = content >> 8 * rankOf(sq);
-    // retrieve all possible moves for this square with the current content
-    // and mask with the first row to erase any other pieces
-    return movesRank[sq][contentIdx & 255];
-  }
-
-  /**
-   * Bitboard for all possible horizontal moves on the rank of the square with
-   * the rank content (blocking pieces) determined from the given non-rotated
-   * bitboard.
-   */
-  Bitboard getMovesFile(Square sq, Bitboard content) {
-    // content = the pieces currently on the board and maybe blocking the moves
-    // rotate the content of the board to get all file squares in a row
-    Bitboard rotated = rotateL90(content);
-    return getMovesFileR(sq, rotated);
-  }
-
-  /**
-   * Bitboard for all possible horizontal moves on the rank of the square with
-   * the rank content (blocking pieces) determined from the given L90 rotated
-   * bitboard.
-   */
-  Bitboard getMovesFileR(Square sq, Bitboard rotated) {
-    // shift to the first byte (to the right in Java)
-    Bitboard contentIdx = rotated >> fileOf(sq) * 8;
-    // retrieve all possible moves for this square with the current content
-    // and mask with the first row to erase any other pieces not erased by shift
-    return movesFile[sq][contentIdx & 255];
-  }
-
-  /**
-  * Bitboard for all possible diagonal up moves of the square with
-  * the content (blocking pieces) determined from the given non rotated bitboard.
-  */
-  Bitboard getMovesDiagUp(Square square, Bitboard content) {
-    // content = the pieces currently on the board and maybe blocking the moves
-    // rotate the content of the board to get all diagonals in a row
-    return getMovesDiagUpR(square, rotateR45(content));
-  }
-
-  /**
-   * Bitboard for all possible diagonal up moves of the square with
-   * the content (blocking pieces) determined from the given R45 rotated
-   * bitboard.
-   */
-  Bitboard getMovesDiagUpR(Square sq, Bitboard rotated) {
-    // shift the correct row to the first byte (to the right in Java)
-    Bitboard shifted = rotated >> shiftsDiagUp[sq];
-    // mask the content with the length of the diagonal to erase any other pieces
-    // which have not been erased by the shift
-    Bitboard contentMasked = shifted & lengthDiagUpMask(sq);
-    // retrieve all possible moves for this square with the current content
-    return movesDiagUp[sq][contentMasked];
-  }
-
-  /**
-   * Bitboard for all possible diagonal up moves of the square with
-   * the content (blocking pieces) determined from the given non rotated bitboard.
-   */
-  Bitboard getMovesDiagDown(Square square, Bitboard content) {
-    // content = the pieces currently on the board and maybe blocking the moves
-    // rotate the content of the board to get all diagonals in a row
-    return getMovesDiagDownR(square, rotateL45(content));
-  }
-
-  /**
-   * Bitboard for all possible diagonal up moves of the square with
-   * the content (blocking pieces) determined from the given L45 rotated
-   * bitboard.
-   */
-  Bitboard getMovesDiagDownR(Square sq, Bitboard rotated) {
-    // shift the correct row to the first byte (to the right in Java)
-    Bitboard shifted = rotated >> shiftsDiagDown[sq];
-    // mask the content with the length of the diagonal to erase any other pieces
-    // which have not been erased by the shift
-    Bitboard contentMasked = shifted & lengthDiagDownMask(sq);
-    // retrieve all possible moves for this square with the current content
-    return movesDiagDown[sq][contentMasked];
-  }
 }

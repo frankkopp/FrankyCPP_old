@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,54 +28,54 @@
 
 #include <sstream>
 
-namespace UCI {
+static const char* optionTypeStrings[] = {"check", "spin", "combo", "button", "std::string"};
 
-  using namespace std;
+/**
+ * UCI Option class
+ */
+class UCI_Option {
 
+public:
   /**
-   * UCI Option can have these types
-   */
-  enum OptionType { CHECK, SPIN, COMBO, BUTTON, STRING };
-  static const char* optionTypeStrings[] = {"check", "spin", "combo", "button", "string"};
-
-  /**
-   * UCI Option class
-   */
-  class Option {
-
-    const string nameID;
-    const OptionType type;
-    const string defaultValue;
-    const string minValue;
-    const string maxValue;
-    const string varValue;
-
-    string currentValue;
-
-  public:
-    explicit Option(const char *nameID);
-    Option(const char *nameID, bool value);
-    Option(const char *nameID, int def, int min, int max);
-    Option(const char *nameID, const char *str);
-    Option(const char *nameID, const char *var, const char *def);
-    Option(const Option &o);
-
-    friend ostream &operator<<(ostream &os, const Option &option);
-
-    const string &getNameID() const { return nameID; }
-    const OptionType &getType() const { return type; }
-    const string getTypeString() const { return optionTypeStrings[type]; }
-    const string &getDefaultValue() const { return defaultValue; }
-    const string &getMinValue() const { return minValue; }
-    const string &getMaxValue() const { return maxValue; }
-    const string &getVarValue() const { return varValue; }
-    string getCurrentValue() const { return currentValue; }
-    void  setCurrentValue(string value)  { currentValue = std::move(value); }
-
+ * UCI Option can have these types
+ */
+  enum UCI_OptionType {
+    CHECK, SPIN, COMBO, BUTTON, STRING
   };
 
-  // print engine config
+private:
 
-}
+  const std::string nameID;
+  const UCI_OptionType type;
+  const std::string defaultValue;
+  const std::string minValue;
+  const std::string maxValue;
+  const std::string varValue;
+
+  std::string currentValue;
+
+public:
+
+  explicit UCI_Option(const char* nameID);
+  UCI_Option(const char* nameID, bool value);
+  UCI_Option(const char* nameID, int def, int min, int max);
+  UCI_Option(const char* nameID, const char* str);
+  UCI_Option(const char* nameID, const char* var, const char* def);
+  UCI_Option(const UCI_Option &o);
+
+  friend std::ostream &operator<<(std::ostream &os, const UCI_Option &option);
+
+  const std::string &getNameID() const { return nameID; }
+  const UCI_OptionType &getType() const { return type; }
+  std::string getTypeString() const { return optionTypeStrings[type]; }
+  const std::string &getDefaultValue() const { return defaultValue; }
+  const std::string &getMinValue() const { return minValue; }
+  const std::string &getMaxValue() const { return maxValue; }
+  const std::string &getVarValue() const { return varValue; }
+  std::string getCurrentValue() const { return currentValue; }
+  void setCurrentValue(std::string value) { currentValue = std::move(value); }
+
+};
+
 
 #endif //FRANKYCPP_UCIOPTION_H

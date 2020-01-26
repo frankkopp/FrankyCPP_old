@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -10,8 +10,8 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -23,16 +23,11 @@
  *
  */
 
-#include "TT.h"
-#include "Engine.h"
-#include "SearchConfig.h"
-#include "Search.h"
 #include <iostream>
-
+#include "Position.h"
 #include "Random.h"
 #include "Bitboards.h"
 #include "Values.h"
-#include "Position.h"
 
 Key Zobrist::pieces[PIECE_LENGTH][SQ_LENGTH];
 Key Zobrist::castlingRights[CR_LENGTH];
@@ -58,7 +53,6 @@ void Position::init() {
     Zobrist::enPassantFile[f] = random.rand<Key>();
   }
   Zobrist::nextPlayer = random.rand<Key>();
-
 }
 
 ////////////////////////////////////////////////
@@ -68,12 +62,10 @@ void Position::init() {
 Position::Position() : Position(START_POSITION_FEN) {}
 
 /** Creates a board with setup from the given fen */
-Position::Position(const std::string &fen) : Position(fen.c_str()) {};
+Position::Position(const std::string &fen) : Position(fen.c_str()) {}
 
 /** Creates a board with setup from the given fen */
-Position::Position(const char* fen) {
-  setupBoard(fen);
-}
+Position::Position(const char* fen) { setupBoard(fen); }
 
 ////////////////////////////////////////////////
 ///// PUBLIC
@@ -90,7 +82,7 @@ void Position::doMove(const Move move) {
   const Piece fromPC = getPiece(fromSq);
   const PieceType fromPT = typeOf(fromPC);
   const Color myColor = colorOf(fromPC);
-  assert (myColor == nextPlayer);
+  assert(myColor == nextPlayer);
 
   const Square toSq = getToSquare(move);
   const Piece targetPC = getPiece(toSq);
@@ -98,15 +90,15 @@ void Position::doMove(const Move move) {
   const PieceType promotionPT = promotionType(move);
 
   // save state of board for undo
-  moveHistory[historyCounter] = move;
-  fromPieceHistory[historyCounter] = fromPC;
-  capturedPieceHistory[historyCounter] = targetPC;
-  castlingRights_History[historyCounter] = castlingRights;
-  enPassantSquare_History[historyCounter] = enPassantSquare;
-  halfMoveClockHistory[historyCounter] = halfMoveClock;
-  zobristKey_History[historyCounter] = zobristKey;
-  hasCheckFlagHistory[historyCounter] = hasCheckFlag;
-  hasMateFlagHistory[historyCounter] = hasMateFlag;
+  historyState[historyCounter].moveHistory = move;
+  historyState[historyCounter].fromPieceHistory = fromPC;
+  historyState[historyCounter].capturedPieceHistory = targetPC;
+  historyState[historyCounter].castlingRights_History = castlingRights;
+  historyState[historyCounter].enPassantSquare_History = enPassantSquare;
+  historyState[historyCounter].halfMoveClockHistory = halfMoveClock;
+  historyState[historyCounter].zobristKey_History = zobristKey;
+  historyState[historyCounter].hasCheckFlagHistory = hasCheckFlag;
+  historyState[historyCounter].hasMateFlagHistory = hasMateFlag;
   historyCounter++;
 
   // reset check and mate flag
@@ -117,7 +109,8 @@ void Position::doMove(const Move move) {
   switch (moveType) {
 
     case NORMAL:
-      if (castlingRights && (Bitboards::CastlingMask & fromSq || Bitboards::CastlingMask & toSq)) {
+      if (castlingRights &&
+          (Bitboards::CastlingMask & fromSq || Bitboards::CastlingMask & toSq)) {
         invalidateCastlingRights(fromSq, toSq);
       }
       clearEnPassant();
@@ -133,14 +126,16 @@ void Position::doMove(const Move move) {
           zobristKey = zobristKey ^ Zobrist::enPassantFile[fileOf(enPassantSquare)]; // in
         }
       }
-      else { halfMoveClock++; }
+      else {
+        halfMoveClock++;
+      }
       movePiece(fromSq, toSq);
       break;
 
     case PROMOTION:
       assert(fromPC == makePiece(myColor, PAWN));
       assert(rankOf(toSq) == (myColor == WHITE ? RANK_8 : RANK_1));
-      if (targetPC != PIECE_NONE) removePiece(toSq); // capture
+      if (targetPC != PIECE_NONE) { removePiece(toSq); } // capture
       if (castlingRights && (Bitboards::CastlingMask & fromSq || Bitboards::CastlingMask & toSq)) {
         invalidateCastlingRights(fromSq, toSq);
       }
@@ -153,7 +148,7 @@ void Position::doMove(const Move move) {
     case ENPASSANT: {
       assert(fromPC == makePiece(myColor, PAWN));
       assert(enPassantSquare != SQ_NONE);
-      Square capSq(toSq + pawnDir[~myColor]);
+      const Square capSq(toSq + pawnDir[~myColor]);
       assert(getPiece(capSq) == makePiece(~myColor, PAWN));
       removePiece(capSq);
       movePiece(fromSq, toSq);
@@ -166,13 +161,13 @@ void Position::doMove(const Move move) {
       assert(fromPC == makePiece(myColor, KING));
       switch (toSq) {
         case SQ_G1:
-          assert (castlingRights == WHITE_OO);
-          assert (fromSq == SQ_E1);
-          assert (getPiece(SQ_E1) == WHITE_KING);
-          assert (getPiece(SQ_H1) == WHITE_ROOK);
-          assert (!(getOccupiedBB() & Bitboards::intermediateBB[SQ_E1][SQ_H1]));
-          movePiece(fromSq, toSq); // King
-          movePiece(SQ_H1, SQ_F1); // Rook
+          assert(castlingRights == WHITE_OO);
+          assert(fromSq == SQ_E1);
+          assert(getPiece(SQ_E1) == WHITE_KING);
+          assert(getPiece(SQ_H1) == WHITE_ROOK);
+          assert(!(getOccupiedBB() & Bitboards::intermediateBB[SQ_E1][SQ_H1]));
+          movePiece(fromSq, toSq);                               // King
+          movePiece(SQ_H1, SQ_F1);                               // Rook
           zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
           // clear both by first OR then XOR
           castlingRights += WHITE_CASTLING;
@@ -180,39 +175,39 @@ void Position::doMove(const Move move) {
           zobristKey ^= Zobrist::castlingRights[castlingRights]; // in;
           break;
         case SQ_C1:
-          assert (castlingRights == WHITE_OOO);
-          assert (fromSq == SQ_E1);
-          assert (getPiece(SQ_E1) == WHITE_KING);
-          assert (getPiece(SQ_A1) == WHITE_ROOK);
-          assert (!(getOccupiedBB() & Bitboards::intermediateBB[SQ_E1][SQ_A1]));
-          movePiece(fromSq, toSq); // King
-          movePiece(SQ_A1, SQ_D1); // Rook
+          assert(castlingRights == WHITE_OOO);
+          assert(fromSq == SQ_E1);
+          assert(getPiece(SQ_E1) == WHITE_KING);
+          assert(getPiece(SQ_A1) == WHITE_ROOK);
+          assert(!(getOccupiedBB() & Bitboards::intermediateBB[SQ_E1][SQ_A1]));
+          movePiece(fromSq, toSq);                               // King
+          movePiece(SQ_A1, SQ_D1);                               // Rook
           zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
           castlingRights += WHITE_CASTLING;
           castlingRights -= WHITE_CASTLING;
           zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
           break;
         case SQ_G8:
-          assert (castlingRights == BLACK_OO);
-          assert (fromSq == SQ_E8);
-          assert (getPiece(SQ_E8) == BLACK_KING);
-          assert (getPiece(SQ_H8) == BLACK_ROOK);
-          assert (!(getOccupiedBB() & Bitboards::intermediateBB[SQ_E8][SQ_H8]));
-          movePiece(fromSq, toSq); // King
-          movePiece(SQ_H8, SQ_F8); // Rook
+          assert(castlingRights == BLACK_OO);
+          assert(fromSq == SQ_E8);
+          assert(getPiece(SQ_E8) == BLACK_KING);
+          assert(getPiece(SQ_H8) == BLACK_ROOK);
+          assert(!(getOccupiedBB() & Bitboards::intermediateBB[SQ_E8][SQ_H8]));
+          movePiece(fromSq, toSq);                               // King
+          movePiece(SQ_H8, SQ_F8);                               // Rook
           zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
           castlingRights += BLACK_CASTLING;
           castlingRights -= BLACK_CASTLING;
           zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
           break;
         case SQ_C8:
-          assert (castlingRights == BLACK_OOO);
-          assert (fromSq == SQ_E8);
-          assert (getPiece(SQ_E8) == BLACK_KING);
-          assert (getPiece(SQ_A8) == BLACK_ROOK);
-          assert (!(getOccupiedBB() & Bitboards::intermediateBB[SQ_E8][SQ_A8]));
-          movePiece(fromSq, toSq); // King
-          movePiece(SQ_A8, SQ_D8); // Rook
+          assert(castlingRights == BLACK_OOO);
+          assert(fromSq == SQ_E8);
+          assert(getPiece(SQ_E8) == BLACK_KING);
+          assert(getPiece(SQ_A8) == BLACK_ROOK);
+          assert(!(getOccupiedBB() & Bitboards::intermediateBB[SQ_E8][SQ_A8]));
+          movePiece(fromSq, toSq);                               // King
+          movePiece(SQ_A8, SQ_D8);                               // Rook
           zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
           castlingRights += BLACK_CASTLING;
           castlingRights -= BLACK_CASTLING;
@@ -241,32 +236,33 @@ void Position::undoMove() {
   historyCounter--;
   nextHalfMoveNumber--;
   nextPlayer = ~nextPlayer;
-  const Move move = moveHistory[historyCounter];
+  const Move move = historyState[historyCounter].moveHistory;
 
   // undo piece move / restore board
   switch (typeOf(move)) {
 
     case NORMAL:
       movePiece(getToSquare(move), getFromSquare(move));
-      if (capturedPieceHistory[historyCounter] != PIECE_NONE) {
-        putPiece(
-          capturedPieceHistory[historyCounter], getToSquare(move));
+      if (historyState[historyCounter].capturedPieceHistory != PIECE_NONE) {
+        putPiece(historyState[historyCounter].capturedPieceHistory,
+                 getToSquare(move));
       }
       break;
 
     case PROMOTION:
       removePiece(getToSquare(move));
       putPiece(makePiece(nextPlayer, PAWN), getFromSquare(move));
-      if (capturedPieceHistory[historyCounter] != PIECE_NONE) {
-        putPiece(
-          capturedPieceHistory[historyCounter], getToSquare(move));
+      if (historyState[historyCounter].capturedPieceHistory != PIECE_NONE) {
+        putPiece(historyState[historyCounter].capturedPieceHistory,
+                 getToSquare(move));
       }
       break;
 
     case ENPASSANT:
       // ignore Zobrist Key as it will be restored via history
       movePiece(getToSquare(move), getFromSquare(move));
-      putPiece(makePiece(~nextPlayer, PAWN), getToSquare(move) + pawnDir[~nextPlayer]);
+      putPiece(makePiece(~nextPlayer, PAWN),
+               getToSquare(move) + pawnDir[~nextPlayer]);
       break;
 
     case CASTLING:
@@ -275,19 +271,19 @@ void Position::undoMove() {
       switch (getToSquare(move)) {
         case SQ_G1:
           movePiece(getToSquare(move), getFromSquare(move)); // King
-          movePiece(SQ_F1, SQ_H1); // Rook
+          movePiece(SQ_F1, SQ_H1);                           // Rook
           break;
         case SQ_C1:
           movePiece(getToSquare(move), getFromSquare(move)); // King
-          movePiece(SQ_D1, SQ_A1); // Rook
+          movePiece(SQ_D1, SQ_A1);                           // Rook
           break;
         case SQ_G8:
           movePiece(getToSquare(move), getFromSquare(move)); // King
-          movePiece(SQ_F8, SQ_H8); // Rook
+          movePiece(SQ_F8, SQ_H8);                           // Rook
           break;
         case SQ_C8:
           movePiece(getToSquare(move), getFromSquare(move)); // King
-          movePiece(SQ_D8, SQ_A8); // Rook
+          movePiece(SQ_D8, SQ_A8);                           // Rook
           break;
         default:
           throw std::invalid_argument("Invalid castle move!");
@@ -296,25 +292,25 @@ void Position::undoMove() {
   }
 
   // restore state part 2
-  castlingRights = castlingRights_History[historyCounter];
-  enPassantSquare = enPassantSquare_History[historyCounter];
-  halfMoveClock = halfMoveClockHistory[historyCounter];
-  zobristKey = zobristKey_History[historyCounter];
-  hasCheckFlag = hasCheckFlagHistory[historyCounter];
-  hasMateFlag = hasMateFlagHistory[historyCounter];
+  castlingRights = historyState[historyCounter].castlingRights_History;
+  enPassantSquare = historyState[historyCounter].enPassantSquare_History;
+  halfMoveClock = historyState[historyCounter].halfMoveClockHistory;
+  zobristKey = historyState[historyCounter].zobristKey_History;
+  hasCheckFlag = historyState[historyCounter].hasCheckFlagHistory;
+  hasMateFlag = historyState[historyCounter].hasMateFlagHistory;
 }
 
 void Position::doNullMove() {
   // save state of board for undo
-  moveHistory[historyCounter] = MOVE_NONE;
-  fromPieceHistory[historyCounter] = PIECE_NONE;
-  capturedPieceHistory[historyCounter] = PIECE_NONE;
-  castlingRights_History[historyCounter] = castlingRights;
-  enPassantSquare_History[historyCounter] = enPassantSquare;
-  halfMoveClockHistory[historyCounter] = halfMoveClock;
-  zobristKey_History[historyCounter] = zobristKey;
-  hasCheckFlagHistory[historyCounter] = hasCheckFlag;
-  hasMateFlagHistory[historyCounter] = hasMateFlag;
+  historyState[historyCounter].moveHistory = MOVE_NONE;
+  historyState[historyCounter].fromPieceHistory = PIECE_NONE;
+  historyState[historyCounter].capturedPieceHistory = PIECE_NONE;
+  historyState[historyCounter].castlingRights_History = castlingRights;
+  historyState[historyCounter].enPassantSquare_History = enPassantSquare;
+  historyState[historyCounter].halfMoveClockHistory = halfMoveClock;
+  historyState[historyCounter].zobristKey_History = zobristKey;
+  historyState[historyCounter].hasCheckFlagHistory = hasCheckFlag;
+  historyState[historyCounter].hasMateFlagHistory = hasMateFlag;
   historyCounter++;
 
   // reset check and mate flag
@@ -323,7 +319,8 @@ void Position::doNullMove() {
 
   // clear en passant
   if (enPassantSquare != SQ_NONE) {
-    zobristKey = zobristKey ^ Zobrist::enPassantFile[fileOf(enPassantSquare)]; // out
+    zobristKey =
+      zobristKey ^ Zobrist::enPassantFile[fileOf(enPassantSquare)]; // out
     enPassantSquare = SQ_NONE;
   }
 
@@ -340,12 +337,12 @@ void Position::undoNullMove() {
   historyCounter--;
   nextHalfMoveNumber--;
   nextPlayer = ~nextPlayer;
-  castlingRights = castlingRights_History[historyCounter];
-  enPassantSquare = enPassantSquare_History[historyCounter];
-  halfMoveClock = halfMoveClockHistory[historyCounter];
-  zobristKey = zobristKey_History[historyCounter];
-  hasCheckFlag = hasCheckFlagHistory[historyCounter];
-  hasMateFlag = hasMateFlagHistory[historyCounter];
+  castlingRights = historyState[historyCounter].castlingRights_History;
+  enPassantSquare = historyState[historyCounter].enPassantSquare_History;
+  halfMoveClock = historyState[historyCounter].halfMoveClockHistory;
+  zobristKey = historyState[historyCounter].zobristKey_History;
+  hasCheckFlag = historyState[historyCounter].hasCheckFlagHistory;
+  hasMateFlag = historyState[historyCounter].hasMateFlagHistory;
 }
 
 bool Position::isAttacked(const Square sq, const Color byColor) const {
@@ -369,22 +366,22 @@ bool Position::isAttacked(const Square sq, const Color byColor) const {
 
   // Sliding
   // rooks and queens
-  if (((Bitboards::pseudoAttacks[ROOK][sq] & piecesBB[byColor][ROOK])
-       || ((Bitboards::pseudoAttacks[QUEEN][sq] & piecesBB[byColor][QUEEN])))
+  if (((Bitboards::pseudoAttacks[ROOK][sq] & piecesBB[byColor][ROOK]) ||
+       ((Bitboards::pseudoAttacks[QUEEN][sq] & piecesBB[byColor][QUEEN])))
 
-      && ((Bitboards::getMovesRank(sq, getOccupiedBB())
-           | Bitboards::getMovesFileR(sq, getOccupiedBBL90())) &
+      && ((Bitboards::getMovesRank(sq, getOccupiedBB()) |
+           Bitboards::getMovesFileR(sq, getOccupiedBBL90())) &
           (piecesBB[byColor][ROOK] | piecesBB[byColor][QUEEN]))) {
     return true;
   }
 
   // bishop and queens
-  if (((Bitboards::pseudoAttacks[BISHOP][sq] & piecesBB[byColor][BISHOP])
-       || ((Bitboards::pseudoAttacks[QUEEN][sq] & piecesBB[byColor][QUEEN])))
+  if (((Bitboards::pseudoAttacks[BISHOP][sq] & piecesBB[byColor][BISHOP]) ||
+       ((Bitboards::pseudoAttacks[QUEEN][sq] & piecesBB[byColor][QUEEN])))
 
-      && ((Bitboards::getMovesDiagUpR(sq, getOccupiedBBR45())
-           | Bitboards::getMovesDiagDownR(sq, getOccupiedBBL45()))
-          & (piecesBB[byColor][BISHOP] | piecesBB[byColor][QUEEN]))) {
+      && ((Bitboards::getMovesDiagUpR(sq, getOccupiedBBR45()) |
+           Bitboards::getMovesDiagDownR(sq, getOccupiedBBL45())) &
+          (piecesBB[byColor][BISHOP] | piecesBB[byColor][QUEEN]))) {
     return true;
   }
 
@@ -398,10 +395,14 @@ bool Position::isAttacked(const Square sq, const Color byColor) const {
         && enPassantSquare + SOUTH == sq) {
       // left
       Square square = sq + WEST;
-      if (Bitboards::distance(square, square) == 1 && getPiece(square) == WHITE_PAWN) return true;
+      if (Bitboards::distance(square, square) == 1 &&
+          getPiece(square) == WHITE_PAWN) {
+        return true;
+      }
       // right
       square = square + EAST;
-      return Bitboards::distance(square, square) == 1 && getPiece(square) == WHITE_PAWN;
+      return Bitboards::distance(square, square) == 1 &&
+             getPiece(square) == WHITE_PAWN;
     }
       // black is attacker (assume not noColor)
     else if (byColor == BLACK
@@ -411,10 +412,14 @@ bool Position::isAttacked(const Square sq, const Color byColor) const {
              && enPassantSquare + NORTH == sq) {
       // attack from left
       Square square = sq + WEST;
-      if (Bitboards::distance(square, square) == 1 && getPiece(square) == BLACK_PAWN) return true;
+      if (Bitboards::distance(square, square) == 1 &&
+          getPiece(square) == BLACK_PAWN) {
+        return true;
+      }
       // right
       square = square + EAST;
-      return Bitboards::distance(square, square) == 1 && getPiece(square) == BLACK_PAWN;
+      return Bitboards::distance(square, square) == 1 &&
+             getPiece(square) == BLACK_PAWN;
     }
   }
   return false;
@@ -425,20 +430,36 @@ bool Position::isLegalMove(const Move move) const {
   if (typeOf(move) == CASTLING) {
     switch (getToSquare(move)) {
       case SQ_G1:
-        if (isAttacked(SQ_E1, ~nextPlayer)) return false;
-        if (isAttacked(SQ_F1, ~nextPlayer)) return false;
+        if (isAttacked(SQ_E1, ~nextPlayer)) {
+          return false;
+        }
+        if (isAttacked(SQ_F1, ~nextPlayer)) {
+          return false;
+        }
         break;
       case SQ_C1:
-        if (isAttacked(SQ_E1, ~nextPlayer)) return false;
-        if (isAttacked(SQ_D1, ~nextPlayer)) return false;
+        if (isAttacked(SQ_E1, ~nextPlayer)) {
+          return false;
+        }
+        if (isAttacked(SQ_D1, ~nextPlayer)) {
+          return false;
+        }
         break;
       case SQ_G8:
-        if (isAttacked(SQ_E8, ~nextPlayer)) return false;
-        if (isAttacked(SQ_F8, ~nextPlayer)) return false;
+        if (isAttacked(SQ_E8, ~nextPlayer)) {
+          return false;
+        }
+        if (isAttacked(SQ_F8, ~nextPlayer)) {
+          return false;
+        }
         break;
       case SQ_C8:
-        if (isAttacked(SQ_E8, ~nextPlayer)) return false;
-        if (isAttacked(SQ_D8, ~nextPlayer)) return false;
+        if (isAttacked(SQ_E8, ~nextPlayer)) {
+          return false;
+        }
+        if (isAttacked(SQ_D8, ~nextPlayer)) {
+          return false;
+        }
         break;
       default:
         break;
@@ -456,25 +477,41 @@ bool Position::isLegalMove(const Move move) const {
 
 bool Position::isLegalPosition() const {
   if (historyCounter > 0) {
-    Move lastMove = moveHistory[historyCounter - 1];
+    const Move lastMove = historyState[historyCounter - 1].moveHistory;
     if (typeOf(lastMove) == CASTLING) {
       // king is not allowed to pass a square which is attacked by opponent
       switch (getToSquare(lastMove)) {
         case SQ_G1:
-          if (isAttacked(SQ_E1, nextPlayer)) return false;
-          if (isAttacked(SQ_F1, nextPlayer)) return false;
+          if (isAttacked(SQ_E1, nextPlayer)) {
+            return false;
+          }
+          if (isAttacked(SQ_F1, nextPlayer)) {
+            return false;
+          }
           break;
         case SQ_C1:
-          if (isAttacked(SQ_E1, nextPlayer)) return false;
-          if (isAttacked(SQ_D1, nextPlayer)) return false;
+          if (isAttacked(SQ_E1, nextPlayer)) {
+            return false;
+          }
+          if (isAttacked(SQ_D1, nextPlayer)) {
+            return false;
+          }
           break;
         case SQ_G8:
-          if (isAttacked(SQ_E8, nextPlayer)) return false;
-          if (isAttacked(SQ_F8, nextPlayer)) return false;
+          if (isAttacked(SQ_E8, nextPlayer)) {
+            return false;
+          }
+          if (isAttacked(SQ_F8, nextPlayer)) {
+            return false;
+          }
           break;
         case SQ_C8:
-          if (isAttacked(SQ_E8, nextPlayer)) return false;
-          if (isAttacked(SQ_D8, nextPlayer)) return false;
+          if (isAttacked(SQ_E8, nextPlayer)) {
+            return false;
+          }
+          if (isAttacked(SQ_D8, nextPlayer)) {
+            return false;
+          }
           break;
         default:
           break;
@@ -485,28 +522,12 @@ bool Position::isLegalPosition() const {
 }
 
 bool Position::hasCheck() const {
-  if (hasCheckFlag != FLAG_TBD) return (hasCheckFlag == FLAG_TRUE);
+  if (hasCheckFlag != FLAG_TBD) {
+    return (hasCheckFlag == FLAG_TRUE);
+  }
   const bool check = isAttacked(kingSquare[nextPlayer], ~nextPlayer);
   hasCheckFlag = check ? FLAG_TRUE : FLAG_FALSE;
   return check;
-}
-
-/**
- * TODO: This implementation is violating encapsulation as it needs
- *  a move generator to generate all possible moves to see if there are any
- *  legal moves. The MoveGenerator also needs to know Position which leads to
- *  a circle reference.
- */
-bool Position::hasCheckMate() const {
-  if (!hasCheck()) return false;
-  if (hasMateFlag != FLAG_TBD) return (hasMateFlag == FLAG_TRUE);
-  const bool hasLegalMove = MoveGenerator::hasLegalMove(*this);
-  if (!hasLegalMove) {
-    hasMateFlag = FLAG_TRUE;
-    return true;
-  }
-  hasMateFlag = FLAG_FALSE;
-  return false;
 }
 
 bool Position::checkRepetitions(int reps) const {
@@ -527,10 +548,18 @@ bool Position::checkRepetitions(int reps) const {
   while (i >= 0) {
     // every time the half move clock gets reset (non reversible position) there
     // can't be any more repetition of positions before this position
-    if (halfMoveClockHistory[i] >= lastHalfMove) { break; }
-    else { lastHalfMove = halfMoveClockHistory[i]; }
-    if (zobristKey == zobristKey_History[i]) counter++;
-    if (counter >= reps) return true;
+    if (historyState[i].halfMoveClockHistory >= lastHalfMove) {
+      break;
+    }
+    else {
+      lastHalfMove = historyState[i].halfMoveClockHistory;
+    }
+    if (zobristKey == historyState[i].zobristKey_History) {
+      counter++;
+    }
+    if (counter >= reps) {
+      return true;
+    }
     i -= 2;
   }
   return false;
@@ -543,9 +572,15 @@ int Position::countRepetitions() const {
   while (i >= 0) {
     // every time the half move clock gets reset (non reversible position) there
     // can't be any more repetition of positions before this position
-    if (halfMoveClockHistory[i] >= lastHalfMove) { break; }
-    else { lastHalfMove = halfMoveClockHistory[i]; }
-    if (zobristKey == zobristKey_History[i]) counter++;
+    if (historyState[i].halfMoveClockHistory >= lastHalfMove) {
+      break;
+    }
+    else {
+      lastHalfMove = historyState[i].halfMoveClockHistory;
+    }
+    if (zobristKey == historyState[i].zobristKey_History) {
+      counter++;
+    }
     i -= 2;
   }
   return counter;
@@ -555,16 +590,16 @@ bool Position::checkInsufficientMaterial() const {
   // TODO optimize??
 
   /*
-    * both sides have a bare king
-    * one side has a king and a minor piece against a bare king
-    * one side has two knights against the bare king
-    * both sides have a king and a bishop, the bishops being the same color
-    */
+   * both sides have a bare king
+   * one side has a king and a minor piece against a bare king
+   * one side has two knights against the bare king
+   * both sides have a king and a bishop, the bishops being the same color
+   */
   if (Bitboards::popcount(piecesBB[WHITE][PAWN]) == 0 &&
-      Bitboards::popcount(piecesBB[BLACK][PAWN]) == 0
-      && Bitboards::popcount(piecesBB[WHITE][ROOK]) == 0 &&
-      Bitboards::popcount(piecesBB[BLACK][ROOK]) == 0
-      && Bitboards::popcount(piecesBB[WHITE][QUEEN]) == 0 &&
+      Bitboards::popcount(piecesBB[BLACK][PAWN]) == 0 &&
+      Bitboards::popcount(piecesBB[WHITE][ROOK]) == 0 &&
+      Bitboards::popcount(piecesBB[BLACK][ROOK]) == 0 &&
+      Bitboards::popcount(piecesBB[WHITE][QUEEN]) == 0 &&
       Bitboards::popcount(piecesBB[BLACK][QUEEN]) == 0) {
 
     // white king bare KK*
@@ -599,17 +634,15 @@ bool Position::checkInsufficientMaterial() const {
 
       // KBKB - B same field color
     else if (Bitboards::popcount(piecesBB[BLACK][KNIGHT]) == 0 &&
-             Bitboards::popcount(piecesBB[BLACK][BISHOP]) == 1
-             && Bitboards::popcount(piecesBB[WHITE][KNIGHT]) == 0 &&
+             Bitboards::popcount(piecesBB[BLACK][BISHOP]) == 1 &&
+             Bitboards::popcount(piecesBB[WHITE][KNIGHT]) == 0 &&
              Bitboards::popcount(piecesBB[WHITE][BISHOP]) == 1) {
 
       // bishops on the same square color
-      return (
-        ((Bitboards::whiteSquaresBB & piecesBB[WHITE][BISHOP]) &&
-         (Bitboards::whiteSquaresBB & piecesBB[BLACK][BISHOP]))
-        ||
-        ((Bitboards::blackSquaresBB & piecesBB[WHITE][BISHOP]) &&
-         (Bitboards::blackSquaresBB & piecesBB[BLACK][BISHOP])));
+      return (((Bitboards::whiteSquaresBB & piecesBB[WHITE][BISHOP]) &&
+               (Bitboards::whiteSquaresBB & piecesBB[BLACK][BISHOP])) ||
+              ((Bitboards::blackSquaresBB & piecesBB[WHITE][BISHOP]) &&
+               (Bitboards::blackSquaresBB & piecesBB[BLACK][BISHOP])));
     }
   }
   return false;
@@ -625,7 +658,7 @@ bool Position::givesCheck(const Move move) const {
   // target square
   Square toSquare = getToSquare(move);
   // the moving piece
-  Piece fromPc = getPiece(fromSquare);
+  const Piece fromPc = getPiece(fromSquare);
   PieceType fromPt = typeOf(fromPc);
   // the square captured by en passant capture
   Square epTargetSquare = SQ_NONE;
@@ -667,7 +700,8 @@ bool Position::givesCheck(const Move move) const {
   if (fromPt == QUEEN) {
     // if queen on same rank or same file then she acts like rook
     // otherwise like bishop
-    if (rankOf(toSquare) == rankOf(kingSq) || fileOf(toSquare) == fileOf(kingSq)) {
+    if (rankOf(toSquare) == rankOf(kingSq) ||
+        fileOf(toSquare) == fileOf(kingSq)) {
       fromPt = ROOK;
     }
     else {
@@ -676,7 +710,7 @@ bool Position::givesCheck(const Move move) const {
   }
 
   // get all pieces to check occupied intermediate squares
-  Bitboard allOccupiedBitboard = getOccupiedBB();
+  const Bitboard allOccupiedBitboard = getOccupiedBB();
   Bitboard intermediate, boardAfterMove;
 
   // #########################################################################
@@ -686,12 +720,20 @@ bool Position::givesCheck(const Move move) const {
 
     case PAWN:
       // normal pawn direct chess include en passant captures
-      if (Bitboards::pawnAttacks[colorOf(fromPc)][toSquare] & kingSq) { return true; }
-      else { break; }
+      if (Bitboards::pawnAttacks[colorOf(fromPc)][toSquare] & kingSq) {
+        return true;
+      }
+      else {
+        break;
+      }
 
     case KNIGHT:
-      if (Bitboards::pseudoAttacks[KNIGHT][toSquare] & kingSq) { return true; }
-      else { break; }
+      if (Bitboards::pseudoAttacks[KNIGHT][toSquare] & kingSq) {
+        return true;
+      }
+      else {
+        break;
+      }
 
     case ROOK:
       // is attack even possible
@@ -703,7 +745,9 @@ bool Position::givesCheck(const Move move) const {
         boardAfterMove = allOccupiedBitboard ^ fromSquare;
         boardAfterMove |= toSquare;
         // if squares in between are not occupied then it is a check
-        if ((intermediate & boardAfterMove) == 0) return true;
+        if ((intermediate & boardAfterMove) == 0) {
+          return true;
+        }
       }
       break;
     case BISHOP:
@@ -712,11 +756,13 @@ bool Position::givesCheck(const Move move) const {
         // squares in between attacker and king
         intermediate = Bitboards::intermediateBB[toSquare][kingSq];
         // adapt board by moving the piece on the bitboard
-        assert (allOccupiedBitboard & fromSquare);
+        assert(allOccupiedBitboard & fromSquare);
         boardAfterMove = allOccupiedBitboard ^ fromSquare;
         boardAfterMove |= toSquare;
         // if squares in between are not occupied then it is a check
-        if ((intermediate & boardAfterMove) == 0) return true;
+        if ((intermediate & boardAfterMove) == 0) {
+          return true;
+        }
       }
       break;
     default:
@@ -739,19 +785,25 @@ bool Position::givesCheck(const Move move) const {
   if (Bitboards::pseudoAttacks[ROOK][kingSq] & rooks) {
     // iterate over all pieces
     while (rooks) {
-      const Square sq = Bitboards::popLSB(&rooks);
+      const Square sq = Bitboards::popLSB(rooks);
       // if the square is not reachable from the piece's square we can skip this
-      if ((Bitboards::pseudoAttacks[ROOK][sq] & kingSq) == 0) continue;
+      if ((Bitboards::pseudoAttacks[ROOK][sq] & kingSq) == 0) {
+        continue;
+      }
       // if there are no occupied squares between the piece square and the
       // target square we have a check
       intermediate = Bitboards::intermediateBB[sq][kingSq];
       // adapt board by moving the piece on the bitboard
-      assert (allOccupiedBitboard & fromSquare);
+      assert(allOccupiedBitboard & fromSquare);
       boardAfterMove = allOccupiedBitboard ^ fromSquare;
       boardAfterMove |= toSquare;
-      if (isEnPassant) boardAfterMove ^= epTargetSquare;
+      if (isEnPassant) {
+        boardAfterMove ^= epTargetSquare;
+      }
       // if squares in between are not occupied then it is a check
-      if ((intermediate & boardAfterMove) == 0) return true;
+      if ((intermediate & boardAfterMove) == 0) {
+        return true;
+      }
     }
   }
 
@@ -760,19 +812,25 @@ bool Position::givesCheck(const Move move) const {
   if ((Bitboards::pseudoAttacks[BISHOP][kingSq] & bishops)) {
     // iterate over all pieces
     while (bishops) {
-      const Square sq = Bitboards::popLSB(&bishops);
+      const Square sq = Bitboards::popLSB(bishops);
       // if the square is not reachable from the piece's square we can skip this
-      if ((Bitboards::pseudoAttacks[BISHOP][sq] & kingSq) == 0) continue;
+      if ((Bitboards::pseudoAttacks[BISHOP][sq] & kingSq) == 0) {
+        continue;
+      }
       // if there are no occupied squares between the piece square and the
       // target square we have a check
       intermediate = Bitboards::intermediateBB[sq][kingSq];
       // adapt board by moving the piece on the bitboard
-      assert (allOccupiedBitboard & fromSquare);
+      assert(allOccupiedBitboard & fromSquare);
       boardAfterMove = allOccupiedBitboard ^ fromSquare;
       boardAfterMove |= toSquare;
-      if (isEnPassant) boardAfterMove ^= epTargetSquare;
+      if (isEnPassant) {
+        boardAfterMove ^= epTargetSquare;
+      }
       // if squares in between are not occupied then it is a check
-      if ((intermediate & boardAfterMove) == 0) return true;
+      if ((intermediate & boardAfterMove) == 0) {
+        return true;
+      }
     }
   }
 
@@ -781,19 +839,25 @@ bool Position::givesCheck(const Move move) const {
   if ((Bitboards::pseudoAttacks[QUEEN][kingSq] & queens)) {
     // iterate over all pieces
     while (queens) {
-      const Square sq = Bitboards::popLSB(&queens);
+      const Square sq = Bitboards::popLSB(queens);
       // if the square is not reachable from the piece's square we can skip this
-      if ((Bitboards::pseudoAttacks[QUEEN][sq] & kingSq) == 0) continue;
+      if ((Bitboards::pseudoAttacks[QUEEN][sq] & kingSq) == 0) {
+        continue;
+      }
       // if there are no occupied squares between the piece square and the
       // target square we have a check
       intermediate = Bitboards::intermediateBB[sq][kingSq];
       // adapt board by moving the piece on the bitboard
-      assert (allOccupiedBitboard & fromSquare);
+      assert(allOccupiedBitboard & fromSquare);
       boardAfterMove = allOccupiedBitboard ^ fromSquare;
       boardAfterMove |= toSquare;
-      if (isEnPassant) boardAfterMove ^= epTargetSquare;
+      if (isEnPassant) {
+        boardAfterMove ^= epTargetSquare;
+      }
       // if squares in between are not occupied then it is a check
-      if ((intermediate & boardAfterMove) == 0) return true;
+      if ((intermediate & boardAfterMove) == 0) {
+        return true;
+      }
     }
   }
 
@@ -809,15 +873,21 @@ std::string Position::str() const {
   output << printBoard();
   output << printFen() << std::endl;
   output << "Check: "
-         << (hasCheckFlag == FLAG_TBD ? "N/A" : hasCheckFlag == FLAG_TRUE ? "Check" : "No check");
+         << (hasCheckFlag == FLAG_TBD
+             ? "N/A"
+             : hasCheckFlag == FLAG_TRUE ? "Check" : "No check");
   output << " Check Mate: "
-         << (hasMateFlag == FLAG_TBD ? "N/A" : hasMateFlag == FLAG_TRUE ? "Mate" : "No mate")
+         << (hasMateFlag == FLAG_TBD
+             ? "N/A"
+             : hasMateFlag == FLAG_TRUE ? "Mate" : "No mate")
          << std::endl;
   output << "Gamephase: " << gamePhase << std::endl;
-  output << "Material: white=" << material[WHITE] << " black=" << material[BLACK] << std::endl;
-  output << "Non Pawn: white=" << materialNonPawn[WHITE] << " black=" << materialNonPawn[BLACK] << std::endl;
-  output << "PosValue: white=" << psqMidValue[WHITE] << " black=" << psqMidValue[BLACK]
-         << std::endl;
+  output << "Material: white=" << material[WHITE]
+         << " black=" << material[BLACK] << std::endl;
+  output << "Non Pawn: white=" << materialNonPawn[WHITE]
+         << " black=" << materialNonPawn[BLACK] << std::endl;
+  output << "PosValue: white=" << psqMidValue[WHITE]
+         << " black=" << psqMidValue[BLACK] << std::endl;
   output << "Zobrist Key: " << zobristKey << std::endl;
   return output.str();
 }
@@ -830,8 +900,12 @@ std::string Position::printBoard() const {
     output << (r + 1) << " |";
     for (File f = FILE_A; f <= FILE_H; ++f) {
       Piece pc = getPiece(getSquare(f, r));
-      if (pc == PIECE_NONE) { output << "   |"; }
-      else { output << " " << ptc[pc] << " |"; }
+      if (pc == PIECE_NONE) {
+        output << "   |";
+      }
+      else {
+        output << " " << ptc[pc] << " |";
+      }
     }
     output << std::endl;
     output << "  +---+---+---+---+---+---+---+---+" << std::endl;
@@ -853,7 +927,9 @@ std::string Position::printFen() const {
     for (File f = FILE_A; f <= FILE_H; ++f) {
       Piece pc = getPiece(getSquare(f, r));
 
-      if (pc == PIECE_NONE) { emptySquares++; }
+      if (pc == PIECE_NONE) {
+        emptySquares++;
+      }
       else {
         if (emptySquares) {
           fen << std::to_string(emptySquares);
@@ -865,19 +941,31 @@ std::string Position::printFen() const {
     if (emptySquares) {
       fen << std::to_string(emptySquares);
     }
-    if (r > RANK_1) fen << "/";
+    if (r > RANK_1) {
+      fen << "/";
+    }
   }
 
   // next player
   fen << (nextPlayer ? " b " : " w ");
 
   // castling
-  if (castlingRights == NO_CASTLING) { fen << "-"; }
+  if (castlingRights == NO_CASTLING) {
+    fen << "-";
+  }
   else {
-    if (castlingRights & WHITE_OO) fen << "K";
-    if (castlingRights & WHITE_OOO) fen << "Q";
-    if (castlingRights & BLACK_OO) fen << "k";
-    if (castlingRights & BLACK_OOO) fen << "q";
+    if (castlingRights & WHITE_OO) {
+      fen << "K";
+    }
+    if (castlingRights & WHITE_OOO) {
+      fen << "Q";
+    }
+    if (castlingRights & BLACK_OO) {
+      fen << "k";
+    }
+    if (castlingRights & BLACK_OOO) {
+      fen << "q";
+    }
   }
 
   // en passant
@@ -892,7 +980,7 @@ std::string Position::printFen() const {
   fen << halfMoveClock << " ";
 
   // full move number
-  fen << (int) ((nextHalfMoveNumber + 1) / 2);
+  fen << ((nextHalfMoveNumber + 1) / 2);
 
   return fen.str();
 }
@@ -914,20 +1002,22 @@ void Position::putPiece(const Piece piece, const Square square) {
   const Color color = colorOf(piece);
 
   // bitboards
-  assert ((piecesBB[color][pieceType] & square) == 0);
+  assert((piecesBB[color][pieceType] & square) == 0);
   piecesBB[color][pieceType] |= square;
-  assert ((occupiedBB[color] & square) == 0);
+  assert((occupiedBB[color] & square) == 0);
   occupiedBB[color] |= square;
   // pre-rotated bb / expensive - ~30% hit
-  occupiedBBR90[color] |= Bitboards::rotateSquareR90(square);
-  occupiedBBL90[color] |= Bitboards::rotateSquareL90(square);
-  occupiedBBR45[color] |= Bitboards::rotateSquareR45(square);
-  occupiedBBL45[color] |= Bitboards::rotateSquareL45(square);
+  occupiedBBR90[color] |= Bitboards::indexMapR90[square]; // Bitboards::rotateSquareR90(square);
+  occupiedBBL90[color] |= Bitboards::indexMapL90[square]; // Bitboards::rotateSquareL90(square);
+  occupiedBBR45[color] |= Bitboards::indexMapR45[square]; // Bitboards::rotateSquareR45(square);
+  occupiedBBL45[color] |= Bitboards::indexMapL45[square]; // Bitboards::rotateSquareL45(square);
 
   // piece board
-  assert (getPiece(square) == PIECE_NONE);
+  assert(getPiece(square) == PIECE_NONE);
   board[square] = piece;
-  if (pieceType == KING) kingSquare[color] = square;
+  if (pieceType == KING) {
+    kingSquare[color] = square;
+  }
 
   // zobrist
   zobristKey ^= Zobrist::pieces[piece][square];
@@ -935,7 +1025,9 @@ void Position::putPiece(const Piece piece, const Square square) {
   gamePhase = gamePhase + gamePhaseValue[pieceType];
   // material
   material[color] += pieceTypeValue[pieceType];
-  if (pieceType > 2) materialNonPawn[color] += pieceTypeValue[pieceType];
+  if (pieceType > 2) {
+    materialNonPawn[color] += pieceTypeValue[pieceType];
+  }
   // position value
   psqMidValue[color] += Values::posMidValue[piece][square];
   psqEndValue[color] += Values::posEndValue[piece][square];
@@ -947,27 +1039,32 @@ Piece Position::removePiece(const Square square) {
   const PieceType pieceType = typeOf(old);
 
   // bitboards
-  assert (piecesBB[color][pieceType] & square);
+  assert(piecesBB[color][pieceType] & square);
   piecesBB[color][pieceType] ^= square;
-  assert (occupiedBB[color] & square);
+  assert(occupiedBB[color] & square);
   occupiedBB[color] ^= square;
   // pre-rotated bb / expensive - ~30% hit
-  occupiedBBR90[color] ^= Bitboards::rotateSquareR90(square);
-  occupiedBBL90[color] ^= Bitboards::rotateSquareL90(square);
-  occupiedBBR45[color] ^= Bitboards::rotateSquareR45(square);
-  occupiedBBL45[color] ^= Bitboards::rotateSquareL45(square);
+  occupiedBBR90[color] ^= Bitboards::indexMapR90[square]; // Bitboards::rotateSquareR90(square);
+  occupiedBBL90[color] ^= Bitboards::indexMapL90[square]; // Bitboards::rotateSquareL90(square);
+  occupiedBBR45[color] ^= Bitboards::indexMapR45[square]; // Bitboards::rotateSquareR45(square);
+  occupiedBBL45[color] ^= Bitboards::indexMapL45[square]; // Bitboards::rotateSquareL45(square);
 
   // piece board
-  assert (getPiece(square) != PIECE_NONE);
+  assert(getPiece(square) != PIECE_NONE);
   board[square] = PIECE_NONE;
 
   // zobrist
   zobristKey ^= Zobrist::pieces[old][square];
   // game phase
-  gamePhase = std::max(0, gamePhase - gamePhaseValue[pieceType]);
+  gamePhase -= gamePhaseValue[pieceType];
+  if (gamePhase < 0) {
+    gamePhase = 0;
+  }
   // material
   material[color] -= pieceTypeValue[pieceType];
-  if (pieceType > 2) materialNonPawn[color] -= pieceTypeValue[pieceType];
+  if (pieceType > 2) {
+    materialNonPawn[color] -= pieceTypeValue[pieceType];
+  }
   // position value
   psqMidValue[color] -= Values::posMidValue[old][square];
   psqEndValue[color] -= Values::posEndValue[old][square];
@@ -1016,7 +1113,8 @@ void Position::invalidateCastlingRights(const Square from, const Square to) {
 
 void Position::clearEnPassant() {
   if (enPassantSquare != SQ_NONE) {
-    zobristKey = zobristKey ^ Zobrist::enPassantFile[fileOf(enPassantSquare)]; // out
+    zobristKey =
+      zobristKey ^ Zobrist::enPassantFile[fileOf(enPassantSquare)]; // out
     enPassantSquare = SQ_NONE;
   }
 }
@@ -1026,13 +1124,10 @@ void Position::initializeBoard() {
   std::fill_n(&board[0], sizeof(board), PIECE_NONE);
 
   castlingRights = NO_CASTLING;
-  std::fill_n(&castlingRights_History[0], sizeof(castlingRights_History), NO_CASTLING);
-
   enPassantSquare = SQ_NONE;
-  std::fill_n(&enPassantSquare_History[0], sizeof(enPassantSquare_History), SQ_NONE);
-
   halfMoveClock = 0;
-  std::fill_n(&halfMoveClockHistory[0], sizeof(halfMoveClockHistory), SQ_NONE);
+
+  historyState.fill(HistoryState());
 
   nextPlayer = WHITE;
 
@@ -1044,7 +1139,8 @@ void Position::initializeBoard() {
     occupiedBBL90[color] = Bitboards::EMPTY_BB;
     occupiedBBR45[color] = Bitboards::EMPTY_BB;
     occupiedBBL45[color] = Bitboards::EMPTY_BB;
-    std::fill_n(&piecesBB[color][0], sizeof(piecesBB[color]), Bitboards::EMPTY_BB);
+    std::fill_n(&piecesBB[color][0], sizeof(piecesBB[color]),
+                Bitboards::EMPTY_BB);
     kingSquare[color] = SQ_NONE;
     material[color] = 0;
     materialNonPawn[color] = 0;
@@ -1069,9 +1165,14 @@ void Position::setupBoard(const char* fen) {
 
   // pieces
   while ((iss >> token) && !isspace(token)) {
-    if (isdigit(token)) { currentSquare += (token - '0') * EAST; }
-    else if (token == '/') { currentSquare += 2 * SOUTH; }
-    else if ((idx = std::string(pieceToChar).find(token)) != std::string::npos) {
+    if (isdigit(token)) {
+      currentSquare += (token - '0') * EAST;
+    }
+    else if (token == '/') {
+      currentSquare += 2 * SOUTH;
+    }
+    else if ((idx = std::string(pieceToChar).find(token)) !=
+             std::string::npos) {
       putPiece(Piece(idx), currentSquare);
       ++currentSquare;
     }
@@ -1079,29 +1180,45 @@ void Position::setupBoard(const char* fen) {
 
   // next player
   if (iss >> token) {
-    if (!(token == 'w' || token == 'b')) return; // malformed - ignore the rest
+    if (!(token == 'w' || token == 'b')) {
+      return;
+    } // malformed - ignore the rest
     if (token == 'b') {
       nextPlayer = BLACK;
       zobristKey ^= Zobrist::nextPlayer;
       nextHalfMoveNumber++; // increase to 2 for black
     }
   }
-  else { return; } // end of line
+  else {
+    return;
+  } // end of line
 
   // skip space
-  if (!(iss >> token)) return; // end of line
+  if (!(iss >> token)) {
+    return;
+  } // end of line
 
   // castling rights
   while ((iss >> token) && !isspace(token)) {
     if (token == '-') {
       // skip space
-      if (!(iss >> token)) return; // end of line
+      if (!(iss >> token)) {
+        return;
+      } // end of line
       break;
     }
-    else if (token == 'K') castlingRights += WHITE_OO;
-    else if (token == 'Q') castlingRights += WHITE_OOO;
-    else if (token == 'k') castlingRights += BLACK_OO;
-    else if (token == 'q') castlingRights += BLACK_OOO;
+    else if (token == 'K') {
+      castlingRights += WHITE_OO;
+    }
+    else if (token == 'Q') {
+      castlingRights += WHITE_OOO;
+    }
+    else if (token == 'k') {
+      castlingRights += BLACK_OO;
+    }
+    else if (token == 'q') {
+      castlingRights += BLACK_OOO;
+    }
   }
   zobristKey ^= Zobrist::castlingRights[castlingRights];
 
@@ -1110,21 +1227,31 @@ void Position::setupBoard(const char* fen) {
     if (token != '-') {
       if (token >= 'a' && token <= 'h') {
         File f = File(token - 'a');
-        if (!(iss >> token)) return; // malformed - ignore the rest
+        if (!(iss >> token)) {
+          return;
+        } // malformed - ignore the rest
         if ((token >= '1' && token <= '8')) {
           Rank r = Rank(token - '1');
           enPassantSquare = getSquare(f, r);
           zobristKey ^= Zobrist::enPassantFile[f];
         }
-        else return; // malformed - ignore the rest
+        else {
+          return;
+        } // malformed - ignore the rest
       }
-      else return; // malformed - ignore the rest
-    } // no en passant
+      else {
+        return;
+      } // malformed - ignore the rest
+    }           // no en passant
   }
-  else return; // end of line
+  else {
+    return;
+  } // end of line
 
   // skip space
-  if (!(iss >> token)) return; // end of line
+  if (!(iss >> token)) {
+    return;
+  } // end of line
 
   // half move clock (50 moves rules)
   iss >> std::skipws >> halfMoveClock;
@@ -1132,7 +1259,7 @@ void Position::setupBoard(const char* fen) {
   // game move number - to be converted into next half move number (ply)
   int moveNumber = 0;
   iss >> std::skipws >> moveNumber;
-  if (moveNumber == 0) moveNumber = 1;
+  if (moveNumber == 0)
+    moveNumber = 1;
   nextHalfMoveNumber = 2 * moveNumber - (nextPlayer == WHITE);
-
 }

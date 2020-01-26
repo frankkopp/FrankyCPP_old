@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +23,21 @@
  *
  */
 
+#include "Logging.h"
 #include "Values.h"
 #include "Bitboards.h"
 #include "Position.h"
 
 namespace INIT {
+  static bool INITIALIZED = false;
   void init() {
+    if (INITIALIZED) return;
+    Logger::get();
     Values::init();
     Bitboards::init();
     Position::init();
+    INITIALIZED = true;
+    Logger::get().MAIN_LOG->info("Data initialization done");
+    Logger::get().MAIN_LOG->debug("BUILD DATE: {} {}", __DATE__, __TIME__);
   }
 }

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,6 @@ namespace EngineConfig {
   inline int hash = 64; // in MB
   inline bool ponder = true;
 
-};
+}
 
 #endif //FRANKYCPP_ENGINECONFIG_H

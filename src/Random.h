@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,7 +51,7 @@ class Random {
 
   uint64_t s;
 
-  uint64_t rand64() {
+  constexpr uint64_t rand64() {
     s ^= s >> 12, s ^= s << 25, s ^= s >> 27;
     return s * 2685821657736338717LL;
   }
@@ -59,13 +59,13 @@ class Random {
 public:
   explicit Random(uint64_t seed) : s(seed) { assert(seed); }
 
-  template<typename T>
-  T rand() { return T(rand64()); }
+  template <typename T> T constexpr rand() { return T(rand64()); }
 
   /// Special generator used to fast init magic numbers.
   /// Output values only have 1/8th of their bits set on average.
-  template<typename T>
-  T sparse_rand() { return T(rand64() & rand64() & rand64()); }
+  template <typename T> T constexpr parse_rand() {
+    return T(rand64() & rand64() & rand64());
+  }
 };
 
 #endif //FRANKYCPP_RANDOM_H

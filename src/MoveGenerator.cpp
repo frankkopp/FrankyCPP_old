@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,11 +24,10 @@
  */
 
 #include <algorithm>
-
+#include "MoveGenerator.h"
 #include "Bitboards.h"
 #include "Values.h"
 #include "Position.h"
-#include "MoveGenerator.h"
 
 ////////////////////////////////////////////////
 ///// CONSTRUCTORS
@@ -47,14 +46,13 @@ const MoveList* MoveGenerator::generatePseudoLegalMoves(const Position &position
   generateCastling<GM>(position, &pseudoLegalMoves);
   generateMoves<GM>(position, &pseudoLegalMoves);
   generateKingMoves<GM>(position, &pseudoLegalMoves);
-  MoveList &list = pseudoLegalMoves;
-  stable_sort(list.begin(), list.end());
+  stable_sort(pseudoLegalMoves.begin(), pseudoLegalMoves.end());
   return &pseudoLegalMoves;
 }
 
 
 template<MoveGenerator::GenMode GM>
-const MoveList* MoveGenerator::generateLegalMoves(Position &position) {
+const MoveList* MoveGenerator::generateLegalMoves(const Position &position) {
   legalMoves.clear();
   generatePseudoLegalMoves<GM>(position);
   for (Move m : pseudoLegalMoves) if (position.isLegalMove(m)) legalMoves.push_back(m);
@@ -90,13 +88,7 @@ Move MoveGenerator::getNextPseudoLegalMove(const Position &position) {
          */
         if (pvMove) {
           pvIsCapture = position.isCapturingMove(pvMove);
-          if (GM == GENALL) {
-            onDemandMoves.push_back(pvMove);
-          }
-          else if (GM == GENCAP && pvIsCapture) {
-            onDemandMoves.push_back(pvMove);
-          }
-          else if (GM == GENNONCAP && !pvIsCapture) {
+          if (GM == GENALL|| (GM == GENCAP && pvIsCapture) || (GM == GENNONCAP && !pvIsCapture)) {
             onDemandMoves.push_back(pvMove);
           }
         }
@@ -168,7 +160,7 @@ Move MoveGenerator::getNextPseudoLegalMove(const Position &position) {
     return MOVE_NONE;
   }
   else {
-    Move move = onDemandMoves.front();
+    const Move move = onDemandMoves.front();
     onDemandMoves.pop_front();
     return move;
   }
@@ -192,12 +184,12 @@ void MoveGenerator::resetOnDemand() {
   killerMoves.clear();
 }
 
-void MoveGenerator::storeKiller(Move move, int maxKillers) {
+void MoveGenerator::storeKiller(const Move move, const int maxKillers) {
   maxNumberOfKiller = maxKillers;
   // only store if not already in list
   if (std::find(killerMoves.begin(), killerMoves.end(), move) == killerMoves.end()) {
     killerMoves.push_front(move);
-    if (killerMoves.size() > maxNumberOfKiller) killerMoves.pop_back();
+    if (killerMoves.size() > maxNumberOfKiller) killerMoves.resize(maxNumberOfKiller);
   }
 }
 
@@ -205,9 +197,9 @@ inline void MoveGenerator::pushKiller(MoveList &list) {
   for (auto k : killerMoves) {
     // Find the move in the list. If move not found ignore killer.
     // Otherwise move element to the front. 
-    auto element = std::find(list.begin(), list.end(), k);
+    const auto element = std::find(list.begin(), list.end(), k);
     if (element != list.end()) {
-      Move tmp = *element;
+      const Move tmp = *element;
       list.erase(element);
       list.push_front(tmp);
     }
@@ -243,7 +235,7 @@ bool MoveGenerator::hasLegalMove(const Position &position) {
   const Square kingSquare = position.getKingSquare(nextPlayer);
   Bitboard tmpMoves = Bitboards::pseudoAttacks[KING][kingSquare] & ~nextPlayerBB;
   while (tmpMoves) {
-    const Square toSquare = Bitboards::popLSB(&tmpMoves);
+    const Square toSquare = Bitboards::popLSB(tmpMoves);
     if (position.isLegalMove(createMove(kingSquare, toSquare))) return true;
   }
 
@@ -251,7 +243,7 @@ bool MoveGenerator::hasLegalMove(const Position &position) {
   // normal pawn captures to the west - promotions first
   tmpMoves = Bitboards::shift(pawnDir[nextPlayer] + WEST, myPawns) & opponentBB;
   while (tmpMoves) {
-    const Square toSquare = Bitboards::popLSB(&tmpMoves);
+    const Square toSquare = Bitboards::popLSB(tmpMoves);
     const Square fromSquare = toSquare + pawnDir[~nextPlayer] + EAST;
     if (position.isLegalMove(createMove(fromSquare, toSquare))) return true;
   }
@@ -259,7 +251,7 @@ bool MoveGenerator::hasLegalMove(const Position &position) {
   // normal pawn captures to the east - promotions first
   tmpMoves = Bitboards::shift(pawnDir[nextPlayer] + EAST, myPawns) & opponentBB;
   while (tmpMoves) {
-    const Square toSquare = Bitboards::popLSB(&tmpMoves);
+    const Square toSquare = Bitboards::popLSB(tmpMoves);
     const Square fromSquare = toSquare + pawnDir[~nextPlayer] + WEST;
     if (position.isLegalMove(createMove(fromSquare, toSquare))) return true;
   }
@@ -272,12 +264,12 @@ bool MoveGenerator::hasLegalMove(const Position &position) {
                                                                          : Bitboards::Rank6BB)) &
                        ~position.getOccupiedBB();
   while (tmpMoves) {
-    const Square toSquare = Bitboards::popLSB(&tmpMoves);
+    const Square toSquare = Bitboards::popLSB(tmpMoves);
     const Square fromSquare = toSquare + pawnDir[~nextPlayer];
     if (position.isLegalMove(createMove(fromSquare, toSquare))) return true;
   }
   while (tmpMoves2) {
-    const Square toSquare = Bitboards::popLSB(&tmpMoves2);
+    const Square toSquare = Bitboards::popLSB(tmpMoves2);
     const Square fromSquare = toSquare + pawnDir[~nextPlayer] + pawnDir[~nextPlayer];
     if (position.isLegalMove(createMove(fromSquare, toSquare))) return true;
   }
@@ -310,14 +302,13 @@ bool MoveGenerator::hasLegalMove(const Position &position) {
   // OFFICERS
   for (PieceType pt = KNIGHT; pt <= QUEEN; ++pt) {
     Bitboard pieces = position.getPieceBB(nextPlayer, pt);
-
     while (pieces) {
-      const Square fromSquare = Bitboards::popLSB(&pieces);
+      const Square fromSquare = Bitboards::popLSB(pieces);
       const Bitboard pseudoMoves = Bitboards::pseudoAttacks[pt][fromSquare];
 
       Bitboard moves = pseudoMoves & ~nextPlayerBB;
       while (moves) {
-        const Square toSquare = Bitboards::popLSB(&moves);
+        const Square toSquare = Bitboards::popLSB(moves);
 
         if (pt > KNIGHT) { // sliding pieces
           if (!(Bitboards::intermediateBB[fromSquare][toSquare] & occupiedBB)) {
@@ -335,7 +326,7 @@ bool MoveGenerator::hasLegalMove(const Position &position) {
   return false;
 }
 
-bool MoveGenerator::validateMove(Position &position, Move move) {
+bool MoveGenerator::validateMove(const Position &position, const Move move) {
   const Move moveOf1 = moveOf(move);
   if (!moveOf1) return false;
   const MoveList* lm = generateLegalMoves<GENALL>(position);
@@ -377,7 +368,7 @@ void MoveGenerator::generatePawnMoves(const Position &position, MoveList* const 
       tmpCaptures = Bitboards::shift(pawnDir[nextPlayer] + dir, myPawns) & oppPieces;
       promCaptures = tmpCaptures & Bitboards::promotionRank[nextPlayer];
       while (promCaptures) {
-        const Square toSquare = Bitboards::popLSB(&promCaptures);
+        const Square toSquare = Bitboards::popLSB(promCaptures);
         const Square fromSquare = toSquare + pawnDir[~nextPlayer] - dir;
         // value is the delta of values from the two pieces involved minus the promotion value
         const Value value =
@@ -396,7 +387,7 @@ void MoveGenerator::generatePawnMoves(const Position &position, MoveList* const 
       }
       tmpCaptures &= ~Bitboards::promotionRank[nextPlayer];
       while (tmpCaptures) {
-        const Square toSquare = Bitboards::popLSB(&tmpCaptures);
+        const Square toSquare = Bitboards::popLSB(tmpCaptures);
         const Square fromSquare = toSquare + pawnDir[~nextPlayer] - dir;
         // value is the delta of values from the two pieces involved
         const Value value =
@@ -444,7 +435,7 @@ void MoveGenerator::generatePawnMoves(const Position &position, MoveList* const 
     // single pawn steps - promotions first
     Bitboard promMoves = tmpMoves & Bitboards::promotionRank[nextPlayer];
     while (promMoves) {
-      const Square toSquare = Bitboards::popLSB(&promMoves);
+      const Square toSquare = Bitboards::popLSB(promMoves);
       const Square fromSquare = toSquare + pawnDir[~nextPlayer];
       // value is done manually for stable_sorting of queen prom first, then knight and others
       pMoves->push_back(
@@ -458,16 +449,16 @@ void MoveGenerator::generatePawnMoves(const Position &position, MoveList* const 
     }
     // double pawn steps
     while (tmpMovesDouble) {
-      const Square toSquare = Bitboards::popLSB(&tmpMovesDouble);
+      const Square toSquare = Bitboards::popLSB(tmpMovesDouble);
       // value is the positional value of the piece at this gamephase
       const Value value1 = Values::posValue[piece][toSquare][gamePhase];
-      const auto value = static_cast<const Value>(10000 - value1);
+      const auto value = static_cast<Value>(10000) - value1;
       pMoves->push_back(createMove(toSquare + 2 * pawnDir[~nextPlayer], toSquare, value));
     }
     // normal single pawn steps
     tmpMoves = tmpMoves & ~Bitboards::promotionRank[nextPlayer];
     while (tmpMoves) {
-      const Square toSquare = Bitboards::popLSB(&tmpMoves);
+      const Square toSquare = Bitboards::popLSB(tmpMoves);
       const Square fromSquare = toSquare + pawnDir[~nextPlayer];
       // value is the positional value of the piece at this gamephase
       const Value value = static_cast<Value>(10000) - Values::posValue[piece][toSquare][gamePhase];
@@ -489,14 +480,14 @@ void MoveGenerator::generateKingMoves(const Position &position, MoveList* const 
   Bitboard pieces = position.getPieceBB(nextPlayer, KING);
   assert(Bitboards::popcount(pieces) == 1 && "More than one king not allowed!");
 
-  const Square fromSquare = Bitboards::popLSB(&pieces);
+  const Square fromSquare = Bitboards::popLSB(pieces);
   const Bitboard pseudoMoves = Bitboards::pseudoAttacks[KING][fromSquare];
 
   // captures
   if (GM == GENCAP || GM == GENALL) {
     Bitboard captures = pseudoMoves & opponentBB;
     while (captures) {
-      const Square toSquare = Bitboards::popLSB(&captures);
+      const Square toSquare = Bitboards::popLSB(captures);
       // value is the positional value of the piece at this gamephase minus the
       // value of the captured piece
       const Value value =
@@ -510,7 +501,7 @@ void MoveGenerator::generateKingMoves(const Position &position, MoveList* const 
   if (GM == GENNONCAP || GM == GENALL) {
     Bitboard nonCaptures = pseudoMoves & ~occupiedBB;
     while (nonCaptures) {
-      const Square toSquare = Bitboards::popLSB(&nonCaptures);
+      const Square toSquare = Bitboards::popLSB(nonCaptures);
       // value is the positional value of the piece at this gamephase
       const Value value = static_cast<Value>(10000) - Values::posValue[piece][toSquare][gamePhase];
       pMoves->push_back(createMove(fromSquare, toSquare, value));
@@ -530,14 +521,14 @@ void MoveGenerator::generateMoves(const Position &position, MoveList* const pMov
     const Piece piece = makePiece(nextPlayer, pt);
 
     while (pieces) {
-      const Square fromSquare = Bitboards::popLSB(&pieces);
+      const Square fromSquare = Bitboards::popLSB(pieces);
       const Bitboard pseudoMoves = Bitboards::pseudoAttacks[pt][fromSquare];
 
       // captures
       if (GM == GENCAP || GM == GENALL) {
         Bitboard captures = pseudoMoves & opponentBB;
         while (captures) {
-          const Square toSquare = Bitboards::popLSB(&captures);
+          const Square toSquare = Bitboards::popLSB(captures);
           if (pt > KNIGHT) { // sliding pieces
             if (!(Bitboards::intermediateBB[fromSquare][toSquare] & occupiedBB)) {
               // value is the delta of values from the two pieces involved
@@ -561,7 +552,7 @@ void MoveGenerator::generateMoves(const Position &position, MoveList* const pMov
       if (GM == GENNONCAP || GM == GENALL) {
         Bitboard nonCaptures = pseudoMoves & ~occupiedBB;
         while (nonCaptures) {
-          const Square toSquare = Bitboards::popLSB(&nonCaptures);
+          const Square toSquare = Bitboards::popLSB(nonCaptures);
           if (pt > KNIGHT) { // sliding pieces
             if (!(Bitboards::intermediateBB[fromSquare][toSquare] & occupiedBB)) {
               // value is the positional value of the piece at this gamephase
@@ -634,14 +625,14 @@ void MoveGenerator::generateCastling(const Position &position, MoveList* const p
 
 // @formatter:off
 
-// explicitly instantiate all template definitions
+// explicitly instantiate all template definitions so other classes can see them
 template const MoveList* MoveGenerator::generatePseudoLegalMoves<MoveGenerator::GENCAP>(const Position &position);
 template const MoveList* MoveGenerator::generatePseudoLegalMoves<MoveGenerator::GENNONCAP>(const Position &position);
 template const MoveList* MoveGenerator::generatePseudoLegalMoves<MoveGenerator::GENALL>(const Position &position);
 
-template const MoveList* MoveGenerator::generateLegalMoves<MoveGenerator::GENCAP>(Position &position);
-template const MoveList* MoveGenerator::generateLegalMoves<MoveGenerator::GENNONCAP>(Position &position);
-template const MoveList* MoveGenerator::generateLegalMoves<MoveGenerator::GENALL>(Position &position);
+template const MoveList* MoveGenerator::generateLegalMoves<MoveGenerator::GENCAP>(const Position &position);
+template const MoveList* MoveGenerator::generateLegalMoves<MoveGenerator::GENNONCAP>(const Position &position);
+template const MoveList* MoveGenerator::generateLegalMoves<MoveGenerator::GENALL>(const Position &position);
 
 template Move MoveGenerator::getNextPseudoLegalMove<MoveGenerator::GENCAP>(const Position &position);
 template Move MoveGenerator::getNextPseudoLegalMove<MoveGenerator::GENNONCAP>(const Position &position);

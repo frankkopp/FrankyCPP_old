@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,6 @@ struct SearchStats {
   // long[] betaCutOffs = new long[MAX_MOVES];
 
   // Search info values
-  Depth currentIterationDepth = DEPTH_NONE;
   Ply currentSearchDepth = PLY_ROOT;
   Ply currentExtraSearchDepth = PLY_ROOT;
   Move currentRootMove = MOVE_NONE;
@@ -57,8 +56,8 @@ struct SearchStats {
   uint64_t enPassantCounter = 0;
 
   // TT Statistics
-  uint64_t tt_Hits = 0;
-  uint64_t tt_Misses = 0;
+  uint64_t tt_Cuts = 0;
+  uint64_t tt_NoCuts = 0;
 
   // Optimization Values
   uint64_t aspirationResearches = 0;
@@ -67,7 +66,10 @@ struct SearchStats {
   uint64_t pvs_root_cutoffs = 0;
   uint64_t pvs_researches = 0;
   uint64_t pvs_cutoffs = 0;
+  uint64_t pv_sortings = 0;
+  uint64_t no_moveForPVsorting = 0;
   uint64_t positionsNonQuiet = 0;
+  uint64_t qStandpatCuts = 0;
   uint64_t minorPromotionPrunings = 0;
   uint64_t mateDistancePrunings = 0;
   uint64_t rfpPrunings = 0;
@@ -81,11 +83,11 @@ struct SearchStats {
   uint64_t qfpPrunings = 0;
   uint64_t lmpPrunings = 0;
   uint64_t lmrReductions = 0;
+
   uint64_t deltaPrunings = 0;
-
   std::string str() const;
-  friend std::ostream &operator<<(std::ostream &os, const SearchStats &stats);
 
+  friend std::ostream &operator<<(std::ostream &os, const SearchStats &stats);
 };
 
 

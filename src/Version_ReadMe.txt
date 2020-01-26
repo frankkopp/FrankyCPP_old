@@ -1,10 +1,13 @@
 v 0.x (plan)
 ================================================================================
 - TODO:
+    - TestSuites
+    - IID (with TT - needs to be revisited)
     - Simple Opening Book
     - IID check
     - ATACKS / SEE
-    - WIN MSC 
+    - EvalCache
+    - WIN MSC
         // GTEST - nice examples
         // Windows:  _MSC_VER
         // _BitScanForward64/_BitScanReverse64
@@ -15,13 +18,26 @@ v 0.x (plan)
         if there is a king capture in one of the succeeding nodes we jump back
         and dismiss this move.
 
-v 0.4 (in progress)
+v 0.5 (plan)
 ================================================================================
 - TODO:
-    - LFP. LFR, ...
-    - Extended Evaluation
-    - EvalCache
     - Aspiration Window Search
+    - RAZOR, LFP. LFR, etc.
+
+v 0.4 (done)
+================================================================================
+- DONE:
+    - Debug Search - blunders
+    - Debug and harden play with UCI GUI  XBoard, Arena, etc.
+    - See logfile for errors
+    - New Game - clear hash
+    - FASTER LINK TIMES
+    - Compile under Cygwin on PC
+    - move test src one up
+    - Put Position history variables in a struct for better locality
+    - Use CLANG compiler warnings
+    - Extended Evaluation
+    - Eval pawn cache
 
 v 0.3 (done)
 ================================================================================
@@ -33,7 +49,7 @@ v 0.3 (done)
     - MDP, MPP
 
 v 0.2 (done)
-================================================================================
+================================================================================           
 - DONE:
     - Testing & Debugging
     - TT in qsearch

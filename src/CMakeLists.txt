@@ -1,39 +1,59 @@
-# updates template file and replaces placeholder variables
-configure_file(version.h.in version.h)
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
+message("====================================================================")
+message("FrankyCPP src/")
+message("====================================================================")
 
- # include BOOST
-set(BOOST_ROOT "/usr/local/boost_1_72_0")
-set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
-set(Boost_USE_MULTITHREADED ON)
-#set(Boost_USE_STATIC_LIBS ON) # only find static libs
-#set(Boost_USE_STATIC_RUNTIME OFF)
-find_package(Boost 1.72.0 COMPONENTS timer log log_setup REQUIRED)
-if (Boost_FOUND)
-    include_directories(${Boost_INCLUDE_DIRS})
-endif ()
-
-# set the name of the executable
-set(execname FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR})
+cmake_minimum_required(VERSION 3.13)
+set(CMAKE_CXX_STANDARD 17)
 
 # define library files
-set(core_SRCS types.h Bitboards.h Bitboards.cpp UCIHandler.cpp UCIHandler.h Semaphore.h Search.cpp Search.h UCIOption.cpp UCIOption.h Engine.cpp Engine.h Position.cpp Position.h Random.h Values.cpp Values.h MoveGenerator.cpp MoveGenerator.h Perft.cpp Perft.h INIT.cpp UCISearchMode.cpp UCISearchMode.h SearchLimits.cpp SearchLimits.h EngineConfig.h SearchStats.cpp SearchStats.h Logging.h Logging.cpp version.h.in Evaluator.cpp Evaluator.h SearchConfig.h EvaluatorConfig.h TT.cpp TT.h)
-add_library(core ${core_SRCS})
+set(FrankyCPPlib_SRCS
+        Logging.h Logging.cpp
+        types.h types.cpp
+        Semaphore.h
+        Random.h
+        INIT.cpp
+        Values.h Values.cpp
+        Bitboards.h Bitboards.cpp
+        Position.h Position.cpp
+        MoveGenerator.h MoveGenerator.cpp
+        SearchLimits.h SearchLimits.cpp
+        SearchStats.h SearchStats.cpp
+        UCIOption.h UCIOption.cpp
+        TT.h TT.cpp
+        EvaluatorConfig.h Evaluator.h Evaluator.cpp
+        misc.h misc.cpp
+        Perft.h Perft.cpp
+        UCISearchMode.h UCISearchMode.cpp
+        UCIHandler.h UCIHandler.cpp
+        EngineConfig.h Engine.h Engine.cpp
+        SearchConfig.h Search.h Search.cpp
+        TestSuite.h TestSuite.cpp
+        )
+add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})
+target_link_libraries(
+        FrankyCPPlib
+        PUBLIC
+        fmt 
+        spdlog 
+        ${Boost_LIBRARIES}        
+)
+
+# set the name of the executable
+set(exeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR})
 
 # define executable
-add_executable(${execname} main.cpp)
-
-find_package(fmt REQUIRED)
-find_package(spdlog REQUIRED)
-
-#spdlog_enable_warnings(${execname})
+add_executable(${exeName} main.cpp)
 
 # link executable with library
 target_link_libraries(
-        ${execname}
-        core
-        fmt::fmt
-        spdlog::spdlog
-        ${Boost_LIBRARIES}
+        ${exeName}
+        PUBLIC
+        FrankyCPPlib          
+)
+
+install(
+        TARGETS ${exeName}
+        CONFIGURATIONS Release
+        RUNTIME DESTINATION ${PROJECT_SOURCE_DIR}/Release/bin
 )
 

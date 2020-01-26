@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,21 @@
  *
  */
 
+#include <string>
+#include <iostream>
+#include <fstream>
 #include "version.h"
+#include "types.h"
 #include "Logging.h"
-#include "UCIHandler.h"
 #include "Engine.h"
+#include "UCIHandler.h"
 
-int main() {
+#include "boost/program_options.hpp"
+namespace po = boost::program_options;
+
+inline po::variables_map programOptions;
+
+int main(int argc, char* argv[]) {
 
   std::string appName = "FrankCPP";
   appName
@@ -36,18 +45,89 @@ int main() {
     .append(std::to_string(FrankyCPP_VERSION_MAJOR))
     .append(".")
     .append(std::to_string(FrankyCPP_VERSION_MINOR));
-
   std::cout << appName << std::endl;
 
-  // initializes and configures logging - only needed once in main()
-  LOGGING::init();
+  ASSERT_START
+    std::cout << "DEBUG ASSERTION TESTS ON" << std::endl;
+  ASSERT_END
 
-  //  auto LOG = spdlog::get("Main_Logger");
-  //  LOG->info("Start {}", appName);
+  std::string config_file;
 
+  // Command line options
+  try {
+    // Declare a group of options that will be allowed only on command line
+    po::options_description generic("Generic options");
+    generic.add_options()
+             ("help,?", "produce help message")
+             ("version,v", "print version string")
+             ("config,c", po::value<std::string>(&config_file)->default_value("FrankyCPP.cfg"), "name of a file of a configuration.");
+
+    // Declare a group of options that will be  allowed both on command line
+    // and in config file
+    po::options_description config("Configuration");
+    config.add_options()
+            ("log_lvl,l", po::value<std::string>()->default_value("warn"), "set log level <warn|info|debug>")
+            ("search_log_lvl,s", po::value<std::string>()->default_value("warn"), "set log level for search <warn|info|debug>");
+
+    // Hidden options, will be allowed both on command line and in config file,
+    // but will not be shown to the user.
+    po::options_description hidden("Hidden options");
+    hidden.add_options()
+            ("test,t", po::value<std::string>(), "test_hidden");
+
+    po::options_description cmdline_options;
+    cmdline_options.add(generic).add(config).add(hidden);
+
+    po::options_description config_file_options;
+    config_file_options.add(config).add(hidden);
+
+    po::options_description visible("Allowed options");
+    visible.add(generic).add(config);
+
+    po::positional_options_description p;
+    p.add("input-file", -1);
+
+    store(po::command_line_parser(argc, argv).options(cmdline_options).positional(p).run(), programOptions);
+    notify(programOptions);
+
+    if (programOptions.count("help")) {
+      std::cout << visible << "\n";
+      return 0;
+    }
+
+    if (programOptions.count("version")) {
+      std::cout << "Version: " << appName << "\n";
+      return 0;
+    }
+
+    std::ifstream ifs(config_file.c_str());
+    if (!ifs) {
+      std::cerr << "could not open config file: " << config_file << "\n";
+    }
+    else {
+      store(parse_config_file(ifs, config_file_options), programOptions);
+      notify(programOptions);
+    }
+
+    if (programOptions.count("test")) {
+      std::cout << programOptions["test"].as<std::string>() << "\n";
+    }
+  }
+  catch (std::exception &e) {
+    std::cerr << "error: " << e.what() << "\n";
+    return 1;
+  }
+  catch (...) {
+    std::cerr << "Exception of unknown type!\n";
+    return 1;
+  }
+
+  // Init all pre calculated data structures
   INIT::init();
+
+  // start engine and UCI loop
   Engine engine;
-  UCI::Handler uci(&engine);
+  UCI_Handler uci(&engine);
   uci.loop();
 
   return 0;

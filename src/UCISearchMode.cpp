@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,18 +24,3 @@
  */
 
 #include "UCISearchMode.h"
-
-std::string UCISearchMode::str() const {
-  std::stringstream os;
-  os << "whiteTime: " << whiteTime << " blackTime: " << blackTime << " whiteInc: "
-     << whiteInc << " blackInc: " << blackInc << " movesToGo: " << movesToGo
-     << " depth: " << depth << " nodes: " << nodes << " mate: " << mate
-     << " movetime: " << movetime << " moves: " << moves << " ponder: " << ponder
-     << " infinite: " << infinite << " perft: " << perft;
-  return os.str();
-}
-
-std::ostream &operator<<(std::ostream &os, const UCISearchMode &mode) {
-  os << mode.str();
-  return os;
-}

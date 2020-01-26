@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Frank Kopp
+ * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,8 +36,8 @@ std::string SearchStats::str() const {
   os.imbue(deLocale);
   os
     << "nodesVisited: " << nodesVisited
-    << " tt_Hits: " << tt_Hits
-    << " tt_Misses: " << tt_Misses
+    << " tt_Cutss: " << tt_Cuts
+    << " tt_NoCuts: " << tt_NoCuts
     << " leafPositionsEvaluated: " << leafPositionsEvaluated
     << " nonLeafPositionsEvaluated: " << nonLeafPositionsEvaluated
     << " prunings: " << prunings
@@ -45,9 +45,11 @@ std::string SearchStats::str() const {
     << " pvs_root_cutoffs: " << pvs_root_cutoffs
     << " pvs_researches: " << pvs_researches
     << " pvs_cutoffs: " << pvs_cutoffs
+    << " pv_sortings: " << pv_sortings
+    << " noTTMoveForPVsorting: " << no_moveForPVsorting
+    << " quiescenceStandpatCuts: " << qStandpatCuts
     << " iid searches: " << iidSearches
     << " movesGenerated: " << movesGenerated
-    << " currentIterationDepth: " << currentIterationDepth
     << " currentSearchDepth: " << currentSearchDepth
     << " currentExtraSearchDepth: " << currentExtraSearchDepth
     << " lastSearchTime: " << lastSearchTime
