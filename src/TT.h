@@ -37,7 +37,7 @@
 
 #ifdef TT_ENABLE_PREFETCH
 #include <emmintrin.h>
-#define TT_PREFETCH tt->prefetch(position.getZobristKey());
+#define TT_PREFETCH tt->prefetch(position.getZobristKey())
 #else
 #define TT_PREFETCH void(0);
 #endif

@@ -56,7 +56,7 @@ protected:
     SearchConfig::USE_TT_QSEARCH      = true;
 
     SearchConfig::USE_KILLER_MOVES    = true;
-    SearchConfig::USE_PV_MOVE_SORTING = true;
+    SearchConfig::USE_PV_MOVE_SORT = true;
     SearchConfig::USE_IID             = true;
 
     SearchConfig::USE_MDP             = true;

@@ -352,7 +352,7 @@ TEST_F(SearchTest, MDPMPP) {
 TEST_F(SearchTest, PV_MOVE) {
 
   SearchConfig::USE_PVS = true;
-  SearchConfig::USE_PV_MOVE_SORTING = true;
+  SearchConfig::USE_PV_MOVE_SORT = true;
 
   Search search;
   SearchLimits searchLimits;
@@ -530,24 +530,41 @@ TEST_F(SearchTest, DISABLED_nmpStats) {
   std::cout << str.str();
 }
 
-TEST_F(SearchTest, DISABLED_debuggingIID) {
+TEST_F(SearchTest, debuggingIID) {
+  Logger::get().SEARCH_LOG->set_level(spdlog::level::info);
+
   Search search;
   SearchLimits searchLimits;
   Position position;
 
-  position =
-    Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
-  const int depth = 8;
-  searchLimits.setDepth(depth);
-  //searchLimits.setInfinite(true);
+  // @formatter:off
+  SearchConfig::USE_QUIESCENCE      = true;
+  SearchConfig::USE_ALPHABETA       = true;
+  SearchConfig::USE_KILLER_MOVES    = true;
+  SearchConfig::USE_TT              = true;
+  SearchConfig::TT_SIZE_MB          = 64;
+  SearchConfig::USE_TT_QSEARCH      = true;
+  SearchConfig::USE_MDP             = true;
+  SearchConfig::USE_MPP             = true;
+  SearchConfig::USE_PVS             = true;
+  SearchConfig::USE_PV_MOVE_SORT    = true;
+  SearchConfig::USE_IID             = false;
+  SearchConfig::IID_DEPTH           = Depth{7}; // remaining depth to do IID
+  SearchConfig::IID_DEPTH_REDUCTION = Depth{5}; // reduction of depth for IID
+  SearchConfig::USE_RFP             = true;
+  SearchConfig::USE_RAZOR_PRUNING   = true;
+  SearchConfig::USE_NMP             = true;
+  SearchConfig::USE_EXTENSIONS      = true;
+  // @formatter:on
 
-  SearchConfig::USE_TT = true;
-  SearchConfig::USE_TT_QSEARCH = true;
-  SearchConfig::USE_RFP = true;
-  SearchConfig::USE_NMP = true;
-  SearchConfig::USE_IID = true;
+  const int depth = 9;
+  position = Position("3r1rk1/1pp2p1p/p3bq2/4bp2/1QP5/P2B2N1/1P3PPP/4RRK1 w - - 3 20");
+  searchLimits.setDepth(depth);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
+
+  EXPECT_NE("e1e5", printMove(search.getLastSearchResult().bestMove));
+  EXPECT_NE("d3f5", printMove(search.getLastSearchResult().bestMove));
 }
 
 TEST_F(SearchTest, DISABLED_debuggingTTMove) {
@@ -568,21 +585,40 @@ TEST_F(SearchTest, DISABLED_debuggingTTMove) {
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 }
-TEST_F(SearchTest, DISABLED_debugging) {
+TEST_F(SearchTest, debugging) {
+  Logger::get().SEARCH_LOG->set_level(spdlog::level::info);
+  
   Search search;
   SearchLimits searchLimits;
   Position position;
 
-  SearchConfig::USE_TT = true;
-  SearchConfig::USE_TT_QSEARCH = true;
-  SearchConfig::USE_RFP = true;
-  SearchConfig::USE_NMP = true;
-  SearchConfig::USE_IID = true;
+  // @formatter:off
+  SearchConfig::USE_QUIESCENCE      = true;
+  SearchConfig::USE_ALPHABETA       = true;
+  SearchConfig::USE_KILLER_MOVES    = true;
+  SearchConfig::USE_TT              = true;
+  SearchConfig::TT_SIZE_MB          = 64;
+  SearchConfig::USE_TT_QSEARCH      = true;
+  SearchConfig::USE_MDP             = true;
+  SearchConfig::USE_MPP             = true;
+  SearchConfig::USE_PVS             = true;
+  SearchConfig::USE_PV_MOVE_SORT    = true;
+  SearchConfig::USE_IID             = true;
+  SearchConfig::IID_DEPTH           = Depth{7}; // remaining depth to do IID
+  SearchConfig::IID_DEPTH_REDUCTION = Depth{5}; // reduction of depth for IID
+  SearchConfig::USE_RFP             = true;
+  SearchConfig::USE_RAZOR_PRUNING   = true;
+  SearchConfig::USE_NMP             = true;
+  SearchConfig::USE_EXTENSIONS      = true;
+  // @formatter:on
 
-  const int depth = 3;
-  position = Position("3r3k/1r3p1p/p1pB1p2/8/p1qNP1Q1/P6P/1P4P1/3R3K w - -");
+  // should not end up in repetition by giving check with Qh6
+  position = Position("5r1k/1r6/4p1Q1/5p2/6p1/P3R3/5PPP/6K1 w - - 1 1 ");
+
+  const int depth = 11;
   searchLimits.setDepth(depth);
-
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
+
+  EXPECT_NE("g6h6", printMove(search.getLastSearchResult().bestMove));
 }

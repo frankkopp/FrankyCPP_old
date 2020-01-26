@@ -76,7 +76,7 @@ class Search {
   std::timed_mutex tt_lock;
 
   // UCI related
-  constexpr static MilliSec UCI_UPDATE_INTERVAL = 1'000;
+  constexpr static MilliSec UCI_UPDATE_INTERVAL = 500;
   MilliSec lastUciUpdateTime{};
 
   // thread control
