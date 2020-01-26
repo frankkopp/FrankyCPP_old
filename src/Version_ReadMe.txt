@@ -22,14 +22,12 @@ v 0.5 (plan)
 ================================================================================
 - TODO:
     - Aspiration Window Search
-    - LFP. LFR, ...
+    - RAZOR, LFP. LFR, etc.
 
-v 0.4 (in progress)
+v 0.4 (done)
 ================================================================================
-- TODO:
-    - Debug Search - blunders
-
 - DONE:
+    - Debug Search - blunders
     - Debug and harden play with UCI GUI  XBoard, Arena, etc.
     - See logfile for errors
     - New Game - clear hash
