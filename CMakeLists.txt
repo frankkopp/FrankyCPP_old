@@ -27,12 +27,12 @@ message("Compiler is " ${CMAKE_CXX_COMPILER_ID} " " ${CMAKE_CXX_COMPILER_VERSION
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang") # Apple
     message("Compiler Settings: CLANG")
     set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra ")
-    set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -Wpedantic -Wshadow -Wno-conversion -Wunreachable-code -Wuninitialized  -Wold-style-cast -Wunused-variable -Wfloat-equal -Wno-gnu-zero-variadic-macro-arguments")
+    set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fprofile-instr-generate -fcoverage-mapping -Wpedantic -Wshadow -Wno-conversion -Wunreachable-code -Wuninitialized  -Wold-style-cast -Wunused-variable -Wfloat-equal -Wno-gnu-zero-variadic-macro-arguments")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 elseif (CMAKE_COMPILER_IS_GNUCXX) # CYGWIN
     message("Compiler Settings: GNU")
     set(CMAKE_CXX_FLAGS "-std=c++17 -m64 -Wall -Wextra -Wpedantic -Wno-error=pedantic -Wshadow -Wno-unknown-pragmas -Wno-variadic-macros")
-    set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -Wno-unused-parameter -Wno-unused-variable")
+    set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 --coverage -Wno-unused-parameter -Wno-unused-variable")
     # additional: -Wno-unknown-pragmas -Weffc++ -Wimplicit-fallthrough -Wswitch -Wpointer-arith -Wcast-qual -Wconversion -Wno-sign-conversion -Wno-error=padded -Wno-error=inline")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC") # Visual Studio MSVC
@@ -65,11 +65,19 @@ FetchContent_Declare(
         googletest
         GIT_REPOSITORY      https://github.com/google/googletest.git
         GIT_TAG             release-1.10.0
-        INSTALL_COMMAND     "NOP"
 )
 message("Downloading/Update Google Test")
-option(INSTALL_GMOCK "Install Googletest's GMock?" OFF)
-option(INSTALL_GTEST "Install Googletest's GTest?" OFF)
+FetchContent_GetProperties(googletest)
+if(NOT googletest_POPULATED)
+    # Fetch the content using previously declared details
+    FetchContent_Populate(googletest)
+    # Set custom variables, policies, etc.
+    option(INSTALL_GMOCK "Install Googletest's GMock?" OFF)
+    option(INSTALL_GTEST "Install Googletest's GTest?" OFF)
+    # Bring the populated content into the build
+    add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
+endif()
+
 FetchContent_MakeAvailable(googletest)
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 include_directories(
