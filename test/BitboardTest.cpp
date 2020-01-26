@@ -51,8 +51,6 @@ protected:
 TEST_F(BitboardsTest, print) {
 
   // TODO do some asserts to really test
-
-
   //std::cout << "\n";
 
   //std::cout << Bitboards::print(EMPTY_BB) << std::endl;
@@ -308,51 +306,51 @@ TEST_F(BitboardsTest, L45) {
   ASSERT_EQ(expected, actual);
 }
 
-//TEST_F(BitboardsTest, movesRank) {
-//  // NEWLINE;
-//  Bitboards::init();
-//  for (Bitboard j = 0b0000'0000; j < 0b1111'1111; j++) {
-//    for (Square sq = SQ_A1; sq <= SQ_H8; ++sq) {
-//      File file = fileOf(sq);
-//      Rank rank = rankOf(sq);
-//
-//      const Bitboard rankMask = rankBB(rank);
-//      const Bitboard blocker = j << 8 * rank;
-//      const Bitboard shifted = blocker >> 8 * rank;
-//      const Bitboard contentIdx = shifted & 255;
-//      const Bitboard moves = movesRank[sq][j];
-//
-//      cout << squareLabel(sq) << std::left << setw(15) << " Rank Mask:"
-//           << Bitboards::printFlat(rankMask) << endl;
-//      cout << squareLabel(sq) << std::left << setw(15) << " Blocker:"
-//           << Bitboards::printFlat(blocker) << endl;
-//      cout << squareLabel(sq) << std::left << setw(15) << " ContentIdx:"
-//           << Bitboards::printFlat(contentIdx) << endl;
-//      cout << squareLabel(sq) << std::left << setw(15) << " Square Mask:"
-//           << Bitboards::printFlat(squareBB[sq]) << endl;
-//      cout << squareLabel(sq) << std::left << setw(15) << " Moves:"
-//           << Bitboards::printFlat(moves) << endl;
-//
-//      // NEWLINE;
-//    }
-//  }
-//}
+/*TEST_F(BitboardsTest, movesRank) {
+  // NEWLINE;
+  Bitboards::init();
+  for (Bitboard j = 0b0000'0000; j < 0b1111'1111; j++) {
+    for (Square sq = SQ_A1; sq <= SQ_H8; ++sq) {
+      File file = fileOf(sq);
+      Rank rank = rankOf(sq);
 
-//TEST_F(BitboardsTest, movesFile) {
-//  // NEWLINE;
-//  Bitboards::init();
-//  for (Bitboard j = 0b0000'0000; j < 0b1111'1111; j++) {
-//    for (Square sq = SQ_A1; sq <= SQ_H8; ++sq) {
-//      File file = fileOf(sq);
-//      Rank rank = rankOf(sq);
-//
-//      cout << squareLabel(sq) << endl;
-//      cout << Bitboards::print(movesFile[sq][j]) << endl << endl;
-//
-//      // NEWLINE;
-//    }
-//  }
-//}
+      const Bitboard rankMask = rankBB(rank);
+      const Bitboard blocker = j << 8 * rank;
+      const Bitboard shifted = blocker >> 8 * rank;
+      const Bitboard contentIdx = shifted & 255;
+      const Bitboard moves = movesRank[sq][j];
+
+      cout << squareLabel(sq) << std::left << setw(15) << " Rank Mask:"
+           << Bitboards::printFlat(rankMask) << endl;
+      cout << squareLabel(sq) << std::left << setw(15) << " Blocker:"
+           << Bitboards::printFlat(blocker) << endl;
+      cout << squareLabel(sq) << std::left << setw(15) << " ContentIdx:"
+           << Bitboards::printFlat(contentIdx) << endl;
+      cout << squareLabel(sq) << std::left << setw(15) << " Square Mask:"
+           << Bitboards::printFlat(squareBB[sq]) << endl;
+      cout << squareLabel(sq) << std::left << setw(15) << " Moves:"
+           << Bitboards::printFlat(moves) << endl;
+
+      // NEWLINE;
+    }
+  }
+}*/
+
+/*TEST_F(BitboardsTest, movesFile) {
+  // NEWLINE;
+  Bitboards::init();
+  for (Bitboard j = 0b0000'0000; j < 0b1111'1111; j++) {
+    for (Square sq = SQ_A1; sq <= SQ_H8; ++sq) {
+      File file = fileOf(sq);
+      Rank rank = rankOf(sq);
+
+      cout << squareLabel(sq) << endl;
+      cout << Bitboards::print(movesFile[sq][j]) << endl << endl;
+
+      // NEWLINE;
+    }
+  }
+}*/
 
 TEST_F(BitboardsTest, movesRankTest) {
   string expected, actual;

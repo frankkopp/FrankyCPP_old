@@ -30,42 +30,38 @@
 
 namespace SearchConfig {
 
+  // @formatter:off
   // basic search strategies and features
-  inline bool USE_QUIESCENCE = true; // use quiescence search
-  inline Depth MAX_EXTRA_QDEPTH = static_cast<Depth>(20);
-  inline bool USE_ALPHABETA = true; // use ALPHA_BETA instead of MinMax
-  inline bool USE_PVS = true; // use PVS null window search
-
+  inline bool USE_QUIESCENCE        = true; // use quiescence search
+  inline Depth MAX_EXTRA_QDEPTH     = Depth{20};
+  inline bool USE_ALPHABETA         = true; // use ALPHA_BETA instead of MinMax
+  inline bool USE_PVS               = true; // use PVS null window search
   // Transposition Table
-  inline bool USE_TT = true; // use transposition table
-  inline bool USE_TT_QSEARCH = true; // use transposition table also in quiescence search
-  inline int TT_SIZE_MB = 64; // size of TT in MB
-
+  inline bool USE_TT                = true; // use transposition table
+  inline bool USE_TT_QSEARCH        = true; // use transposition table also in quiescence search
+  inline int TT_SIZE_MB             = 64; // size of TT in MB
   // Move Sorting Features
-  inline bool USE_KILLER_MOVES = true; // Store refutation moves (>beta) for move ordering
-  inline int NO_KILLER_MOVES = 2; // number of killers stored
-  inline bool USE_PV_MOVE_SORTING = true; // tell the move gen the current pv to return first
-  inline bool USE_IID = true; // internal iterative deepening if we did not get a TT move
-  inline Depth IID_DEPTH = static_cast<Depth>(7); // remaining depth to do IID
-  inline Depth IID_DEPTH_REDUCTION = static_cast<Depth>(5); // reduction of depth for IID
-
+  inline bool USE_KILLER_MOVES      = true; // Store refutation moves (>beta) for move ordering
+  inline int NO_KILLER_MOVES        = 2; // number of killers stored
+  inline bool USE_PV_MOVE_SORT      = true; // tell the move gen the current pv to return first
+//  inline bool USE_IID               = false; // internal iterative deepening if we did not get a TT move
+//  inline Depth IID_DEPTH            = Depth{7}; // remaining depth to do IID
+//  inline Depth IID_DEPTH_REDUCTION  = Depth{5}; // reduction of depth for IID
   // Pruning features
-  inline bool USE_MDP = true; // mate distance pruning
-  inline bool USE_MPP = true; // minor promotion pruning
-  inline bool USE_QS_STANDPAT_CUT = true; // RFP for quiescence
-  inline bool USE_NMP = true;
-  inline Depth NMP_DEPTH = static_cast<Depth>(3);  // at least 2
-  inline Depth NMP_REDUCTION = static_cast<Depth>(2); // at least 1
-  inline bool USE_VERIFY_NMP = true;
-  inline Depth NMP_VERIFICATION_DEPTH = static_cast<Depth>(1); // depth - NMP_DEPTH > NMP_VERIFICATION_DEPTH
-  inline bool USE_RFP = true; // Reverse Futility Pruning
-  inline Value RFP_MARGIN = static_cast<Value>(99); // less than 3 pawns per depth
-  inline bool USE_RAZOR_PRUNING = true; // Razoring - bad move direct into qs
-  inline Depth RAZOR_DEPTH = static_cast<Depth>(2);
-  inline Value RAZOR_MARGIN = static_cast<Value>(600);
-
+  inline bool USE_MDP               = true; // mate distance pruning
+  inline bool USE_MPP               = true; // minor promotion pruning
+  inline bool USE_QS_STANDPAT_CUT   = true; // RFP for quiescence
+  inline bool USE_NMP               = true;
+  inline Depth NMP_DEPTH            = Depth{3};  // at least 2
+  inline Depth NMP_REDUCTION        = Depth{2}; // at least 1
+  inline bool USE_RFP               = true; // Reverse Futility Pruning
+  inline Value RFP_MARGIN           = Value{99}; // less than 3 pawns per depth
+//  inline bool USE_RAZOR_PRUNING     = true; // Razoring - bad move direct into qs
+//  inline Depth RAZOR_DEPTH          = Depth{2};
+//  inline Value RAZOR_MARGIN         = Value{600};
   // tactical features
-  inline bool USE_EXTENSIONS = true;
+  inline bool USE_EXTENSIONS        = true;
+  // @formatter:on
 
 }
 

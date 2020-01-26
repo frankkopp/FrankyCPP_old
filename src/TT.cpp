@@ -29,6 +29,11 @@
 #include "Logging.h"
 #include "TT.h"
 
+TT::TT(uint64_t newSizeInBytes) {
+  noOfThreads = std::thread::hardware_concurrency();
+  resize(newSizeInBytes);
+}
+
 void TT::resize(const uint64_t newSizeInByte) {
   LOG__TRACE(Logger::get().TT_LOG, "Resizing TT from {:n} to {:n}", sizeInByte, newSizeInByte);
   delete[] _data;
@@ -54,7 +59,7 @@ void TT::clear() {
   auto startTime = std::chrono::high_resolution_clock::now();
   std::vector<std::thread> threads;
   threads.reserve(noOfThreads);
-  for (int t = 0; t < noOfThreads; ++t) {
+  for (unsigned int t = 0; t < noOfThreads; ++t) {
     threads.emplace_back([&, this, t]() {
       auto range = maxNumberOfEntries / noOfThreads;
       auto start = t * range;
@@ -72,6 +77,14 @@ void TT::clear() {
     });
   }
   for (std::thread &th: threads) th.join();
+  numberOfPuts = 0;
+  numberOfEntries = 0;
+  numberOfHits = 0;
+  numberOfUpdates = 0;
+  numberOfMisses = 0;
+  numberOfCollisions = 0;
+  numberOfOverwrites = 0;
+  numberOfProbes = 0;
   auto finish = std::chrono::high_resolution_clock::now();
   auto time = std::chrono::duration_cast<std::chrono::milliseconds>(finish - startTime).count();
   LOG__INFO(Logger::get().TT_LOG, "TT cleared {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
@@ -158,7 +171,7 @@ void TT::ageEntries() {
   auto timePoint = std::chrono::high_resolution_clock::now();
   std::vector<std::thread> threads;
   threads.reserve(noOfThreads);
-  for (int idx = 0; idx < noOfThreads; ++idx) {
+  for (unsigned int idx = 0; idx < noOfThreads; ++idx) {
     threads.emplace_back([&, this, idx]() {
       auto range = maxNumberOfEntries / noOfThreads;
       auto start = idx * range;
@@ -184,4 +197,5 @@ std::ostream &operator<<(std::ostream &os, const TT::Entry &entry) {
   return os;
 
 }
+
 

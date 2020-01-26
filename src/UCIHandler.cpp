@@ -52,7 +52,7 @@ void UCI_Handler::loop() {
 void UCI_Handler::loop(std::istream* pIstream) {
   std::string cmd, token;
   do {
-    LOG__INFO(Logger::get().UCIHAND_LOG, "UCI Handler waiting for command:");
+    LOG__DEBUG(Logger::get().UCIHAND_LOG, "UCI Handler waiting for command:");
 
     // Block here waiting for input or EOF
     // only blocks on cin!!
@@ -61,7 +61,7 @@ void UCI_Handler::loop(std::istream* pIstream) {
     std::istringstream inStream(cmd);
 
     LOG__INFO(Logger::get().UCI_LOG, "<< {}", inStream.str());
-    LOG__INFO(Logger::get().UCIHAND_LOG, "UCI Handler received command: {}", inStream.str());
+    LOG__DEBUG(Logger::get().UCIHAND_LOG, "UCI Handler received command: {}", inStream.str());
 
     // clear possible previous entries
     token.clear();
@@ -85,7 +85,7 @@ void UCI_Handler::loop(std::istream* pIstream) {
     else
       LOG__WARN(Logger::get().UCIHAND_LOG, "Unknown UCI command: {}", token);
 
-    LOG__INFO(Logger::get().UCIHAND_LOG, "UCI Handler processed command: {}", token);
+    LOG__DEBUG(Logger::get().UCIHAND_LOG, "UCI Handler processed command: {}", token);
 
   } while (token != "quit");
 
@@ -93,7 +93,7 @@ void UCI_Handler::loop(std::istream* pIstream) {
 
 void UCI_Handler::uciCommand() const {
   send("id name FrankyCPP v" + std::to_string(FrankyCPP_VERSION_MAJOR) + "." +
-         std::to_string(FrankyCPP_VERSION_MINOR));
+       std::to_string(FrankyCPP_VERSION_MINOR));
   send("id author Frank Kopp, Germany");
   send(pEngine->str());
   send("uciok");
@@ -183,7 +183,8 @@ void UCI_Handler::goCommand(std::istringstream &inStream) {
       try {
         searchMode.whiteTime = stoi(token);
       } catch (...) {
-        std::cerr << "PANIK";
+        Logger::get().UCIHAND_LOG->error(
+          "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
       }
       if (searchMode.whiteTime <= 0) {
         LOG__WARN(Logger::get().UCIHAND_LOG, "Invalid wtime. Was '{}'", token);
@@ -195,7 +196,8 @@ void UCI_Handler::goCommand(std::istringstream &inStream) {
       try {
         searchMode.blackTime = stoi(token);
       } catch (...) {
-        std::cerr << "PANIK";
+        Logger::get().UCIHAND_LOG->error(
+          "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
       }
       if (searchMode.blackTime <= 0) {
         LOG__WARN(Logger::get().UCIHAND_LOG, "Invalid btime. Was '{}'", token);
@@ -207,7 +209,8 @@ void UCI_Handler::goCommand(std::istringstream &inStream) {
       try {
         searchMode.whiteInc = std::stoi(token);
       } catch (...) {
-        std::cerr << "PANIK";
+        Logger::get().UCIHAND_LOG->error(
+          "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
       }
       if (searchMode.whiteInc < 0) {
         LOG__WARN(Logger::get().UCIHAND_LOG, "Invalid winc. Was '{}'", token);
@@ -219,7 +222,8 @@ void UCI_Handler::goCommand(std::istringstream &inStream) {
       try {
         searchMode.blackInc = std::stoi(token);
       } catch (...) {
-        std::cerr << "PANIK";
+        Logger::get().UCIHAND_LOG->error(
+          "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
       }
       if (searchMode.blackInc < 0) {
         LOG__WARN(Logger::get().UCIHAND_LOG, "Invalid binc. Was '{}'", token);
@@ -231,7 +235,8 @@ void UCI_Handler::goCommand(std::istringstream &inStream) {
       try {
         searchMode.movesToGo = std::stoi(token);
       } catch (...) {
-        std::cerr << "PANIK";
+        Logger::get().UCIHAND_LOG->error(
+          "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
       }
       if (searchMode.movesToGo <= 0) {
         LOG__WARN(Logger::get().UCIHAND_LOG, "Invalid movestogo. Was '{}'", token);
@@ -243,7 +248,8 @@ void UCI_Handler::goCommand(std::istringstream &inStream) {
       try {
         searchMode.depth = std::stoi(token);
       } catch (...) {
-        std::cerr << "PANIK";
+        Logger::get().UCIHAND_LOG->error(
+          "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
       }
       if (searchMode.depth <= 0 || searchMode.depth > PLY_MAX) {
         LOG__WARN(Logger::get().UCIHAND_LOG, "depth not between 1 and {}. Was '{}'", PLY_MAX, token);
@@ -255,7 +261,8 @@ void UCI_Handler::goCommand(std::istringstream &inStream) {
       try {
         searchMode.nodes = std::stoi(token);
       } catch (...) {
-        std::cerr << "PANIK";
+        Logger::get().UCIHAND_LOG->error(
+          "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
       }
       if (searchMode.nodes <= 0) {
         LOG__WARN(Logger::get().UCIHAND_LOG, "Invalid nodes. Was '{}'", token);
@@ -267,7 +274,8 @@ void UCI_Handler::goCommand(std::istringstream &inStream) {
       try {
         searchMode.mate = stoi(token);
       } catch (...) {
-        std::cerr << "PANIK";
+        Logger::get().UCIHAND_LOG->error(
+          "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
       }
       if (searchMode.mate <= 0 || searchMode.mate > PLY_MAX) {
         LOG__WARN(Logger::get().UCIHAND_LOG, "mate not between 1 and {}. Was '{}'", PLY_MAX, token);
@@ -279,7 +287,8 @@ void UCI_Handler::goCommand(std::istringstream &inStream) {
       try {
         searchMode.movetime = stoi(token);
       } catch (...) {
-        std::cerr << "PANIK";
+        Logger::get().UCIHAND_LOG->error(
+          "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
       }
       if (searchMode.movetime <= 0) {
         LOG__WARN(Logger::get().UCIHAND_LOG, "Invalid movetime. Was '{}'", token);
@@ -295,7 +304,8 @@ void UCI_Handler::goCommand(std::istringstream &inStream) {
       try {
         searchMode.depth = stoi(token);
       } catch (...) {
-        std::cerr << "PANIK";
+        Logger::get().UCIHAND_LOG->error(
+          "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
       }
       if (searchMode.depth <= 0 || searchMode.depth > PLY_MAX) {
         LOG__WARN(Logger::get().UCIHAND_LOG, "perft depth not between 1 and {}. Was '{}'", PLY_MAX, token);
@@ -321,7 +331,7 @@ void UCI_Handler::debugCommand() {
 }
 
 void UCI_Handler::send(const std::string &toSend) const {
-  LOG__INFO(Logger::get().UCI_LOG, ">> {}", toSend);
+  LOG__DEBUG(Logger::get().UCI_LOG, ">> {}", toSend);
   *pOutputStream << toSend << std::endl;
 }
 
@@ -344,12 +354,12 @@ void UCI_Handler::sendIterationEndInfo(int depth, int seldepth, Value value,
 }
 
 void UCI_Handler::sendCurrentRootMove(Move currmove, unsigned long movenumber) const {
-  send(fmt::format("currmove {} currmovenumber {}", printMove(currmove),
+  send(fmt::format("info currmove {} currmovenumber {}", printMove(currmove),
                    movenumber));
 }
 
 void UCI_Handler::sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t nps,
                                    MilliSec time, int hashfull) const {
-  send(fmt::format("depth {} seldepth {} nodes {} nps {} time {} hashfull {}",
+  send(fmt::format("info depth {} seldepth {} nodes {} nps {} time {} hashfull {}",
                    depth, seldepth, nodes, nps, time, hashfull));
 }

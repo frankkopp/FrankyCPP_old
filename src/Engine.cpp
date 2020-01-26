@@ -101,9 +101,9 @@ std::string Engine::getOption(const std::string &name) {
 }
 
 void Engine::newGame() {
-  LOG__INFO(Logger::get().ENGINE_LOG, "Engine: New Game",0);
-  // stop any search - this is necessary in case of ponder miss
+  LOG__INFO(Logger::get().ENGINE_LOG, "Engine: New Game");
   stopSearch();
+  pSearch->clearHash();
 }
 
 void Engine::setPosition(const std::string &fen) {
@@ -197,8 +197,7 @@ void Engine::sendCurrentRootMove(Move currmove, MoveList::size_type movenumber) 
   if (pUciHandler) pUciHandler->sendCurrentRootMove(currmove, movenumber);
   else
     LOG__WARN(Logger::get().ENGINE_LOG, "<no uci handler>: Engine current move: currmove {} currmovenumber {}",
-              printMove(currmove),
-              movenumber);
+              printMove(currmove), movenumber);
 }
 
 void Engine::sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t nps, MilliSec time,
@@ -207,12 +206,7 @@ void Engine::sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t 
   else
     LOG__WARN(Logger::get().ENGINE_LOG,
       "<no uci handler>: Engine search update: depth {} seldepth {} nodes {} nps {} time {} hashfull {}",
-      depth,
-      seldepth,
-      nodes,
-      nps,
-      time,
-      hashfull);
+      depth, seldepth, nodes, nps, time, hashfull);
 }
 
 void Engine::sendCurrentLine(const MoveList &moveList) const {
@@ -243,8 +237,8 @@ bool Engine::isSearching() {
 
 void Engine::initOptions() {
   // @formatter:off
-  MAP("Hash", UCI_Option("Hash", EngineConfig::hash, 1, 1024)); // spin
-  MAP("Clear Hash", UCI_Option("Clear Hash"));           // button
+  MAP("Hash", UCI_Option("Hash", EngineConfig::hash, 1, 4096)); // spin
+  MAP("Clear Hash", UCI_Option("Clear Hash"));                  // button
   MAP("Ponder", UCI_Option("Ponder", EngineConfig::ponder));    // check
   // @formatter:on
   updateConfig();

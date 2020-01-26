@@ -23,6 +23,7 @@
  *
  */
 
+#include <algorithm>
 #include "Bitboards.h"
 
 namespace Bitboards {

@@ -37,7 +37,7 @@
 
 #ifdef TT_ENABLE_PREFETCH
 #include <emmintrin.h>
-#define TT_PREFETCH tt->prefetch(position.getZobristKey());
+#define TT_PREFETCH tt->prefetch(position.getZobristKey())
 #else
 #define TT_PREFETCH void(0);
 #endif
@@ -81,10 +81,8 @@ public:
 
 private:
 
-//  std::shared_ptr<spdlog::logger> const LOG = spdlog::get("TT_Logger");
-
   // threads for clearing hash
-  int noOfThreads = 4;
+  unsigned int noOfThreads = 1;
 
   // size and fill info
   uint64_t sizeInByte = 0;
@@ -111,9 +109,7 @@ public:
 
   /** @param newSizeInBytes Size of TT in bytes which will be reduced to the next
    * lowest power of 2 size */
-  explicit TT(uint64_t newSizeInBytes) {
-    resize(newSizeInBytes);
-  }
+  explicit TT(uint64_t newSizeInBytes);
 
   ~TT() {
     delete[] _data;
@@ -215,9 +211,7 @@ public:
   /** Returns how full the transposition table is in permill as per UCI */
   inline int hashFull() const {
     if (!maxNumberOfEntries) return 0;
-    return static_cast<int>(1000 *
-                            (static_cast<double>(numberOfEntries) /
-                             static_cast<double>(maxNumberOfEntries)));
+    return static_cast<int>((1000 * numberOfEntries) / maxNumberOfEntries);
   };
 
   std::string str() {

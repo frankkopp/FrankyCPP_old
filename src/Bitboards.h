@@ -384,27 +384,22 @@ inline Bitboard operator|(const Square lhs, const Square rhs) {
 
 //// Operators for testing of Bitboards and Squares
 inline Bitboard operator&(const Bitboard b, const Square s) {
-  assert(s >= SQ_A1 && s <= SQ_H8);
   return b & Bitboards::squareBB[s];
 }
 
 inline Bitboard operator|(const Bitboard b, const Square s) {
-  assert(s >= SQ_A1 && s <= SQ_H8);
   return b | Bitboards::squareBB[s];
 }
 
 inline Bitboard operator^(const Bitboard b, const Square s) {
-  assert(s >= SQ_A1 && s <= SQ_H8);
   return b ^ Bitboards::squareBB[s];
 }
 
 inline Bitboard &operator|=(Bitboard &b, const Square s) {
-  assert(s >= SQ_A1 && s <= SQ_H8);
   return b |= Bitboards::squareBB[s];
 }
 
 inline Bitboard &operator^=(Bitboard &b, const Square s) {
-  assert(s >= SQ_A1 && s <= SQ_H8);
   return b ^= Bitboards::squareBB[s];
 }
 

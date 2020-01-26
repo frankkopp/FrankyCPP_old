@@ -364,9 +364,8 @@ public:
    * @param move
    * @return true if move captures (incl. en passant)
    */
-  inline bool isCapturingMove(const Move &move) const {
-    return occupiedBB[~nextPlayer] & getToSquare(move) ||
-           typeOf(move) == ENPASSANT;
+  bool isCapturingMove(const Move &move) const {
+    return (occupiedBB[~nextPlayer] & getToSquare(move)) || typeOf(move) == ENPASSANT;
   };
 
   ////////////////////////////////////////////////

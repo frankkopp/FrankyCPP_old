@@ -39,8 +39,6 @@
 #define ASSERT_END break; }
 #endif
 
-#define SEARCH_LOG_LEVEL spdlog::level::trace
-
 #define ZERO__LVL 0
 #define CRITICAL__LVL 1
 #define ERROR__LVL 2
@@ -109,7 +107,7 @@ public:
     return instance;
   }
 
-  const std::string defaultPattern = "[%H:%M:%S:%f] [t:%-10t] [%-17n] [%-8l]: %v";
+  const std::string defaultPattern = "[%H:%M:%S:%f] [t:%-10!t] [%-17n] [%-8l]: %v";
   const std::shared_ptr<spdlog::sinks::basic_file_sink_mt> sharedFileSink =
     std::make_shared<spdlog::sinks::basic_file_sink_mt>("FrankyCPP.log");
   const std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> uciOutSink
@@ -128,4 +126,5 @@ public:
   const std::shared_ptr<spdlog::logger> TEST_LOG    = spdlog::stdout_color_mt("Test_Logger");
   // @formatter:on
 };
+
 #endif //FRANKYCPP_LOGGING_H

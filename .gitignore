@@ -10,3 +10,4 @@ out/
 .vs/
 spdlog/_builds/
 *.~vsdx
+.vscode/

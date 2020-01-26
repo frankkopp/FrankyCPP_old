@@ -221,20 +221,9 @@ void TestSuite::readTestCases(const std::string &filePathStr, std::vector<Test> 
   if (file.is_open()) {
     std::string line;
     while (getline(file, line)) {
-
-      // skip empty lines and comments
-      cleanUpLine(line);
-      if (line.empty()) {
-        continue;
-      }
-
       Test test;
       if (readOneEPD(line, test)) {
         tests.push_back(test);
-      }
-      else {
-        LOG__WARN(Logger::get().TSUITE_LOG, "Line does not contain a EPD: {}", line);
-        continue;
       }
     }
     file.close();
@@ -244,23 +233,16 @@ void TestSuite::readTestCases(const std::string &filePathStr, std::vector<Test> 
     return;
   }
 }
-std::string &TestSuite::cleanUpLine(std::string &line) {
-//  fprintln("{}", line);
-  std::regex whiteSpaceTrim(R"(^\s*(.*)\s*$)");
-  line = std::regex_replace(line, whiteSpaceTrim, "$1");
-//  fprintln("{}", line);
-  std::regex leadCommentTrim(R"(^\s*#.*$)");
-  line = std::regex_replace(line, leadCommentTrim, "");
-  //  fprintln("{}", line);
-  std::regex trailCommentTrim(R"(^(.*)#([^;]*)$)");
-  line = std::regex_replace(line, trailCommentTrim, "$1;");
-//  fprintln("{}", line);
-  return line;
-}
 
-bool TestSuite::readOneEPD(const std::string &line, TestSuite::Test &test) const {
+bool TestSuite::readOneEPD(std::string &line, TestSuite::Test &test) const {
 
   LOG__DEBUG(Logger::get().TSUITE_LOG, "EPD: {}", line);
+
+  // skip empty lines and comments
+  cleanUpLine(line);
+  if (line.empty()) {
+    return false;
+  }
 
   // Find a EPD line
   std::regex regexPattern(R"(^\s*(.*) (bm|dm) (.*?);.* id \"(.*?)\";.*$)");
@@ -294,6 +276,21 @@ bool TestSuite::readOneEPD(const std::string &line, TestSuite::Test &test) const
   test = {id, fen, testType, result};
 
   return true;
+}
+
+
+std::string &TestSuite::cleanUpLine(std::string &line) {
+  //  fprintln("{}", line);
+  std::regex whiteSpaceTrim(R"(^\s*(.*)\s*$)");
+  line = std::regex_replace(line, whiteSpaceTrim, "$1");
+  //  fprintln("{}", line);
+  std::regex leadCommentTrim(R"(^\s*#.*$)");
+  line = std::regex_replace(line, leadCommentTrim, "");
+  //  fprintln("{}", line);
+  std::regex trailCommentTrim(R"(^(.*)#([^;]*)$)");
+  line = std::regex_replace(line, trailCommentTrim, "$1;");
+  //  fprintln("{}", line);
+  return line;
 }
 
 std::string TestSuite::print(TestSuite::ResultType resultType) {

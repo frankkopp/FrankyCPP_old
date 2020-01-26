@@ -44,11 +44,12 @@ public:
   }
 
 protected:
-  void SetUp() override { Logger::get().TEST_LOG->set_level(spdlog::level::debug); }
-
+  void SetUp() override {
+    Logger::get().TEST_LOG->set_level(spdlog::level::debug);
+  }
   void TearDown() override {}
 
-  std::string sendCommand(Engine &engine, const std::string &command) {
+  static std::string sendCommand(Engine &engine, const std::string &command) {
     LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
     std::istringstream is(command);
     std::ostringstream os = std::ostringstream();
@@ -58,22 +59,22 @@ protected:
     return response;
   }
 
-  void stopSearch(Engine &engine) {
+  static void stopSearch(Engine &engine) {
     engine.stopSearch();
     engine.waitWhileSearching();
   }
 
-  void expect(std::string test, std::string str) {
+  static void expect(std::string test, std::string str) {
     LOG__DEBUG(Logger::get().TEST_LOG, "{}", str);
     ASSERT_EQ(test, str.substr(0, test.length()));
   }
 };
 
 TEST_F(UCISelfPlayUCITest, uciTest) {
-  auto UCI_LOG = spdlog::get("UCI_Logger");
-  UCI_LOG->set_level(spdlog::level::warn);
-  auto UCIHANDLER_LOG = spdlog::get("UCIHandler_Logger");
-  UCIHANDLER_LOG->set_level(spdlog::level::warn);
+  Logger::get().ENGINE_LOG->set_level(spdlog::level::warn);
+  Logger::get().SEARCH_LOG->set_level(spdlog::level::warn);
+  Logger::get().UCI_LOG->set_level(spdlog::level::warn);
+  Logger::get().UCIHAND_LOG->set_level(spdlog::level::warn);
 
   std::mt19937_64 rg(12345);
   std::uniform_int_distribution<MilliSec> moveTime(200, 1000);
@@ -83,7 +84,7 @@ TEST_F(UCISelfPlayUCITest, uciTest) {
 
   SearchConfig::USE_TT = true;
   SearchConfig::USE_TT_QSEARCH = true;
-  SearchConfig::USE_PV_MOVE_SORTING = true;
+  SearchConfig::USE_PV_MOVE_SORT = true;
 
   expect("id name FrankyCPP", sendCommand(engine, "uci"));
   expect("readyok", sendCommand(engine, "isready"));

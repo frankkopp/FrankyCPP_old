@@ -37,7 +37,7 @@ using testing::Eq;
 
 class SearchTreeSizeTest : public ::testing::Test {
 public:
-  static constexpr int DEPTH = 10;
+  static constexpr int DEPTH = 8;
   static constexpr int NUMBER_OF_FENS = 20;
 
   const uint64_t* ptrToSpecial = nullptr;
@@ -57,7 +57,7 @@ public:
     std::string fen = "";
     std::vector<SingleTest> tests{};
 
-    explicit Result(std::string fen) : fen(std::move(fen)) {};
+    explicit Result(std::string _fen) : fen(std::move(_fen)) {};
   };
 
   struct TestSums {
@@ -160,10 +160,10 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   SearchConfig::USE_MDP = false;
   SearchConfig::USE_MPP = false;
   SearchConfig::USE_PVS = false;
-  SearchConfig::USE_PV_MOVE_SORTING = false;
-  SearchConfig::USE_IID = false;
+  SearchConfig::USE_PV_MOVE_SORT = false;
+//  SearchConfig::USE_IID = false;
   SearchConfig::USE_RFP = false;
-  SearchConfig::USE_RAZOR_PRUNING = false;
+//  SearchConfig::USE_RAZOR_PRUNING = false;
   SearchConfig::USE_NMP = false;
   SearchConfig::USE_EXTENSIONS = false;
 
@@ -183,28 +183,25 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   //
   //  SearchConfig::USE_TT = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "MM+QS+TT"));
-  //
+
   SearchConfig::USE_QUIESCENCE = true;
   SearchConfig::USE_ALPHABETA = true;
   SearchConfig::USE_PVS = true;
   SearchConfig::USE_KILLER_MOVES = true;
-  SearchConfig::USE_PV_MOVE_SORTING = true;
+  SearchConfig::USE_PV_MOVE_SORT = true;
   SearchConfig::USE_MPP = true;
   SearchConfig::USE_MDP = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 -TT"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 -TT"));
 
   SearchConfig::USE_TT = true;
   SearchConfig::USE_TT_QSEARCH = true;
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "10 +TT"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "10 +TT"));
 
   SearchConfig::USE_NMP = true;
-  //result.tests.push_back(measureTreeSize(search, position, searchLimits, "20 NMP"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "20 NMP"));
 
   SearchConfig::USE_RFP = true;
-  //result.tests.push_back(measureTreeSize(search, position, searchLimits, "30 RFP"));
-
-  SearchConfig::USE_IID = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "40 IID"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "30 RFP"));
 
   // ***********************************
 

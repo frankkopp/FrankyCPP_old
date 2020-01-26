@@ -267,46 +267,6 @@ TEST_F(EvaluatorTest, fens) {
   fprint("{}", timerTotal.format());
 }
 
-TEST_F(EvaluatorTest, DISABLED_PERFT_eps) {
-  using namespace boost::timer;
-  std::string fen;
-  Position position;
-  const int nano_sec = 1'000'000'000;
-
-  fen = "r3k2r/1ppn3p/2q1q1nb/4P2N/2q1Pp2/B5RP/pbp2PP1/1R4K1 w kq - 0 1";
-  position = Position(fen);
-  const uint64_t iterations = 50'000'000;
-  const uint64_t rounds = 5;
-
-  Evaluator evaluator;
-  evaluator.config.USE_MATERIAL = true;
-  evaluator.config.USE_POSITION = true;
-  evaluator.config.USE_PAWNEVAL = true;
-  evaluator.config.USE_PAWN_TABLE = true;
-  evaluator.config.PAWN_TABLE_SIZE = 2'097'152;
-  evaluator.config.USE_CHECK_BONUS = true;
-  evaluator.config.USE_MOBILITY = true;
-  evaluator.config.USE_PIECE_BONI = true;
-  evaluator.config.USE_KING_CASTLE_SAFETY = true;
-  evaluator.resizePawnTable(evaluator.config.PAWN_TABLE_SIZE);
-
-  for (uint64_t round = 0; round < rounds; ++round) {
-    fprintln("ROUND: {}", round + 1);
-    auto timer = cpu_timer();
-    for (uint64_t i = 0; i < iterations; ++i) {
-      evaluator.evaluate(position);
-    }
-    timer.stop();
-    const nanosecond_type cpuTime = timer.elapsed().user + timer.elapsed().system;
-    fprintln("WALL Time: {:n} ns ({:3f} sec)", timer.elapsed().wall, static_cast<double>(timer.elapsed().wall) / nano_sec);
-    fprintln("CPU  Time: {:n} ns ({:3f} sec)", cpuTime, static_cast<double>(cpuTime) / nano_sec);
-    fprintln("EPS:       {:n} eps", (iterations * nano_sec) / cpuTime);
-    fprintln("TPE:       {:n} ns", cpuTime / iterations);
-    NEWLINE;
-  }
-}
-
-
 TEST_F(EvaluatorTest, DISABLED_debugging) {
 
   Evaluator evaluator;

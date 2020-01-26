@@ -53,7 +53,7 @@ TEST_F(MiscTest, moveFromSAN) {
   Move expected;
   Move actual;
 
-//  spdlog::get("Main_Logger")->set_level(spdlog::level::trace);
+  Logger::get().MAIN_LOG->set_level(spdlog::level::critical);
 
   expected = createMove("e2e4");
   actual = Misc::getMoveFromSAN(position, "e4");
