@@ -111,6 +111,7 @@ public:
                    int hashfull) const;
   void sendCurrentLine(const MoveList &moveList) const;
   void sendResult(Move bestMove, Value value, Move ponderMove);
+  void sendString(const std::string &anyString) const;
 
   // other
   void waitWhileSearching();

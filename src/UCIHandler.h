@@ -74,6 +74,7 @@ class Engine;
                           MilliSec time, int hashfull) const;
     void sendCurrentLine(const MoveList &moveList) const;
     void sendResult(Move bestMove, Move ponderMove) const;
+    void sendString(const std::string &anyString) const;
   };
 
 #endif //FRANKYCPP_UCIPROTOCOLHANDLER_H

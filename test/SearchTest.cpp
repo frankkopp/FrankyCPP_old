@@ -90,7 +90,21 @@ TEST_F(SearchTest, nodes) {
   ASSERT_EQ(1'000'000, search.getSearchStats().nodesVisited);
 }
 
+TEST_F(SearchTest, timerTest) {
+//  Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
+  Search search;
+  SearchLimits searchLimits;
+  Position position;
+  searchLimits.setWhiteTime(60'000);  //  1.475 ms
+  searchLimits.setBlackTime(60'000);
+  search.startSearch(position, searchLimits);
+  search.addExtraTime(2.0); // 2.950 ms
+  search.waitWhileSearching();
+  EXPECT_GT(search.getSearchStats().lastSearchTime, 2'950);
+}
+
 TEST_F(SearchTest, movetime) {
+//  Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
   Search search;
   SearchLimits searchLimits;
   Position position;
@@ -450,6 +464,7 @@ TEST_F(SearchTest, NULLMOVE) {
 }
 
 TEST_F(SearchTest, perft) {
+//  Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
 
   int DEPTH = 6;
 

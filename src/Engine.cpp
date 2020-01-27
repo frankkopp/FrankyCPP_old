@@ -177,6 +177,8 @@ void Engine::clearHash() {
   pSearch->clearHash();
 }
 
+
+
 void Engine::sendIterationEndInfo(int depth, int seldepth, Value value, uint64_t nodes, uint64_t nps,
                                   MilliSec time, const MoveList &pv) const {
   if (pUciHandler)
@@ -224,6 +226,12 @@ void Engine::sendResult(const Move bestMove, const Value value, const Move ponde
               printMoveVerbose(bestMove), printValue(value), printMoveVerbose(ponderMove));
 }
 
+void Engine::sendString(const std::string& anyString) const {
+  if (pUciHandler) pUciHandler->sendString(anyString);
+  else
+    LOG__WARN(Logger::get().ENGINE_LOG, "<no uci handler>: Engine String: {}", anyString);
+}
+
 void Engine::waitWhileSearching() {
   pSearch->waitWhileSearching();
 }
@@ -252,7 +260,7 @@ void Engine::updateConfig() {
 
     if (name == "Hash") {
       EngineConfig::hash = getInt(option.getCurrentValue());
-      LOG__INFO(Logger::get().ENGINE_LOG, "Setting hash table size to {} MB", EngineConfig::hash);
+      LOG__DEBUG(Logger::get().ENGINE_LOG, "Setting hash table size to {} MB", EngineConfig::hash);
       pSearch->setHashSize(EngineConfig::hash);
     }
     else

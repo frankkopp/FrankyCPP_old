@@ -40,7 +40,7 @@ void Logger::init() {
     std::cerr << "failed to set locale" << std::endl;
   }
 
-  const auto flushLevel = spdlog::level::warn;
+  const auto flushLevel = spdlog::level::trace;
 
   auto logLvL = !programOptions.empty() ? programOptions["log_lvl"].as<std::string>() : "warn";
   auto searchLogLvL = !programOptions.empty() ? programOptions["search_log_lvl"].as<std::string>() : "warn";
@@ -133,9 +133,9 @@ void Logger::init() {
   UCIHAND_LOG->flush_on(flushLevel);
 
   UCI_LOG->sinks().push_back(uciOutSink);
-  UCI_LOG->set_pattern("[%H:%M:%S:%f] %L %v");
-  UCI_LOG->set_level(logLevel);
-  UCI_LOG->flush_on(flushLevel);
+  UCI_LOG->set_pattern("[%H:%M:%S:%f] %v");
+  UCI_LOG->set_level(spdlog::level::trace);
+  UCI_LOG->flush_on(spdlog::level::trace);
 
   // Logger for Unit Tests
   TEST_LOG->set_pattern(defaultPattern);

@@ -82,7 +82,8 @@ class Search {
   // thread control
   Semaphore initSemaphore;   // used to block while initializing thread
   Semaphore searchSemaphore; // used to block while searching
-  std::thread myThread;
+  std::thread searchThread;
+  std::thread timerThread;
 
   // pointer to engine of available
   Engine* pEngine{nullptr};
@@ -260,7 +261,7 @@ private:
   static Value valueFromTT(Value value, Ply ply);
 
   void configureTimeLimits();
-  inline bool stopConditions(bool shouldTimeCheck);
+  inline bool stopConditions();
 
   /**
    * Changes the time limit by the given factor and also sets the soft time
@@ -303,14 +304,23 @@ private:
    */
   static inline MilliSec now();
 
+  /**
+   * Starts a thread which waits for the timeLimit amount auf time and then
+   * set the stopSearchFlag to true;
+   */
+  void startTimer();
+
   inline MilliSec getNps() const;
 
   void sendIterationEndInfoToEngine() const;
   void sendCurrentRootMoveToEngine() const;
   void sendSearchUpdateToEngine();
   void sendResultToEngine() const;
+  void sendStringToEngine(const std::string& anyString) const;
 
-   FRIEND_TEST(SearchTest, goodCapture);
+  FRIEND_TEST(SearchTest, goodCapture);
+  FRIEND_TEST(SearchTest, timerTest);
+
 };
 
 #endif // FRANKYCPP_SEARCH_H

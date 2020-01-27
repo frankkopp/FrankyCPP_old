@@ -87,7 +87,7 @@ void TT::clear() {
   numberOfProbes = 0;
   auto finish = std::chrono::high_resolution_clock::now();
   auto time = std::chrono::duration_cast<std::chrono::milliseconds>(finish - startTime).count();
-  LOG__INFO(Logger::get().TT_LOG, "TT cleared {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
+  LOG__DEBUG(Logger::get().TT_LOG, "TT cleared {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
 }
 
 void TT::put(const Key key, const Depth depth, const Move move, const Value value,
@@ -187,7 +187,7 @@ void TT::ageEntries() {
   for (std::thread &th: threads) th.join();
   auto finish = std::chrono::high_resolution_clock::now();
   auto time = std::chrono::duration_cast<std::chrono::milliseconds>(finish - timePoint).count();
-  LOG__INFO(Logger::get().TT_LOG, "TT aged {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
+  LOG__DEBUG(Logger::get().TT_LOG, "TT aged {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
 }
 
 std::ostream &operator<<(std::ostream &os, const TT::Entry &entry) {

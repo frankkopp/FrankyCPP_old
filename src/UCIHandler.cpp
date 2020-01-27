@@ -331,8 +331,12 @@ void UCI_Handler::debugCommand() {
 }
 
 void UCI_Handler::send(const std::string &toSend) const {
-  LOG__DEBUG(Logger::get().UCI_LOG, ">> {}", toSend);
+  LOG__INFO(Logger::get().UCI_LOG, ">> {}", toSend);
   *pOutputStream << toSend << std::endl;
+}
+
+void UCI_Handler::sendString(const std::string& anyString) const {
+  send(fmt::format("info string {}", anyString));
 }
 
 void UCI_Handler::sendResult(Move bestMove, Move ponderMove) const {
