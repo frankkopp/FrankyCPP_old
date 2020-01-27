@@ -4,14 +4,7 @@ v 0.x (plan)
     - TestSuites
     - IID (with TT - needs to be revisited)
     - Simple Opening Book
-    - IID check
     - ATACKS / SEE
-    - EvalCache
-    - WIN MSC
-        // GTEST - nice examples
-        // Windows:  _MSC_VER
-        // _BitScanForward64/_BitScanReverse64
-        // https://docs.microsoft.com/en-us/cpp/intrinsics/bitscanreverse-bitscanreverse64?view=vs-2019
     - IDEA: (credit to Robert Hyatt)
         Instead of testing each move
         for legality we could simply go ahead and recurse into each node and
@@ -27,7 +20,8 @@ v 0.5 (in progress)
 v 0.4 (done)
 ================================================================================
 - DONE:
-    - Debug Search - blunders
+    - Compile on Windows with Cygwin and VS and on Mac with Clion. Xcode not yet
+    - Debug Search - blunders (IID removed for now)
     - Debug and harden play with UCI GUI  XBoard, Arena, etc.
     - See logfile for errors
     - New Game - clear hash

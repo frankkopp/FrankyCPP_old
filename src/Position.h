@@ -262,19 +262,6 @@ public:
   bool hasCheck() const;
 
   /**
-   * Tests for mate on this position. If true the next player has has no move
-   * and is in check. Expensive test as all legal moves have to be generated.
-   *
-   * TODO: This is violating encapsulation as it's current implementation
-   * needs a move generator to generate all possible moves to see if there are
-   * any legal moves. The MoveGenerator also needs to know Position which
-   * leads to a circle reference.
-   *
-   * @return true if current position is mate for next player
-   */
-//  bool hasCheckMate() const;
-
-  /**
    * Checks if move is giving check to the opponent.
    * This method is faster than making the move and checking for legality and
    * giving check. Needs to be a valid move for the position otherwise will
