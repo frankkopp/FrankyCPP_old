@@ -148,6 +148,9 @@ public:
   // in PV we search the full window in NonPV we try a zero window first
   enum Node_Type { NonPV, PV };
 
+  // If this is true we are allowed to do a NULL move in this ply. This is to
+  // avoid recursive null move searches or other prunings which do not make sense
+  // in a null move search
   enum Do_Null : bool { No_Null_Move = false, Do_Null_Move = true };
 
   ////////////////////////////////////////////////
@@ -206,61 +209,108 @@ private:
   ////////////////////////////////////////////////
   ///// PRIVATE
 
+  /**
+   * Called after starting the search in a new thread. Configures the search
+   * and eventually calls iterativeDeepening. After the search it takes the
+   * result to send it to the UCI engine.
+   * @param position
+   */
   void run(Position position);
 
+  /**
+   * The iterative search function searches through each consecutive depth until
+   * time is up or some other criteria (number of nodes searched, etc.) is met.
+   */
   SearchResult iterativeDeepening(Position &refPosition);
 
+  /**
+   * The main search function. The templating distinguishes between
+   * search in the root node, normal non root nodes and quiscence nodes.
+   * Also takes care of the special PERFT case.
+   * Template parameter node type will distinguish between PV and NonPV nodes
+   * for PVS search.
+   */
   template <Search_Type ST, Node_Type NT>
   Value search(Position &position, Depth depth, Ply ply, Value alpha,
                Value beta, Do_Null doNull);
 
-  template <Search_Type ST> Move getMove(Position &position, int ply);
+  /**
+   * Returns the next move from the move generator depending on the search type.
+   * In the root node the next root move, in non root the next move from the
+   * on demand move generator and in quiescence the next capturing move also
+   * from the on demand move generator.
+   */
+  template <Search_Type ST>
+  Move getMove(Position &position, int ply);
 
-  template <Search_Type ST> bool checkDrawRepAnd50(Position &position) const;
+  /**
+   * Returns true if we either have a 3-fold repetition ot have more than 100 reversible moves.
+   * OBS: In quiescence search we only check for a single repetition
+   */
+  template <Search_Type ST>
+  bool checkDrawRepAnd50(Position &position) const;
 
+  /**
+   * Calculates an evaluation value for the given position
+   */
   Value evaluate(Position &position);
 
   /**
    * Generates root moves and filters them according to the UCI searchmoves list
-   * @param position
-   * @return UCI filtered root moves
    */
   MoveList generateRootMoves(Position &refPosition);
+
+  /**
+   * Sort the root moves according to their numerical value.
+   * As root moves have their calculated value stored as the upper 16-bit
+   * of the 32-bit int this will sort them very quickly.
+   */
   static bool rootMovesSort(Move m1, Move m2);
-  static bool goodCapture(Position &refPosition, Move move);
+
+  /**
+   * Used to filter out only valuable captures in quiescence search.
+   * Will be replaced by SEE in the future.
+   */
+  static bool goodCapture(Position &position, Move move);
+
+  /**
+   * Stores the best move of a ply search (a move which raised alpha) into the
+   * principal variation list. As we have such a list for each depth we can
+   * add them up to get a list of the overall best variation at the root node.
+   */
   static void savePV(Move move, MoveList &src, MoveList &dest);
 
   /**
    * Retrieves the PV line from the transposition table in root search.
-   *
-   * @param position
-   * @param depth
-   * @param pvRoot
    */
   void getPVLine(Position &position, MoveList &pvRoot, Depth depth);
 
+  /**
+   * Stores search result of a node to the transposition table
+   */
   void storeTT(Position &position, Value value, Value_Type ttType, Depth depth,
                Ply ply, Move move, bool mateThreat);
 
   /**
    * correct any mate values which are sent to TT so that
    * they are relative to the ply we are in
-   * @param value
-   * @param ply
-   * @return
    */
   static Value valueToTT(Value value, Ply ply);
 
   /**
    * correct any mate values coming from the TT so that
    * they are relative to the ply we are in
-   * @param value
-   * @param ply
-   * @return
    */
   static Value valueFromTT(Value value, Ply ply);
 
+  /**
+   * configures the timeLimit value from the given searchLimits
+   */
   void configureTimeLimits();
+
+  /**
+   * checks if search should stop
+   */
   inline bool stopConditions();
 
   /**
@@ -268,22 +318,21 @@ private:
    * limit to 0.8 of the hard time limit. Factor 1 is neutral. <1 shortens the
    * time, >1 adds time<br/> Example: factor 0.8 is 20% less time. Factor 1.2 is
    * 20% additional time Always calculated from the initial time budget.
-   *
-   * @param d
    */
   void addExtraTime(double d);
 
   /**
    * Time limit is used to check time regularly in the search to stop the search
    * when time is out
-   * IDEA instead of checking this regularly we could use a
-   *  timer thread to set stopSearch to true.
-   *
    * @return true if hard time limit is reached, false otherwise
    */
   inline bool timeLimitReached();
 
-  inline bool shouldTimeCheck() const;
+  /**
+   * Starts a thread which waits for the timeLimit + extraTime amount
+   * of time and then sets the stopSearchFlag to true;
+   */
+  void startTimer();
 
   /**
    * @param t time point since the elapsed time
@@ -305,13 +354,11 @@ private:
   static inline MilliSec now();
 
   /**
-   * Starts a thread which waits for the timeLimit amount auf time and then
-   * set the stopSearchFlag to true;
+   * Returns the current nodes per second value
    */
-  void startTimer();
-
   inline MilliSec getNps() const;
 
+  /** these are sending information to the UCI protocol */
   void sendIterationEndInfoToEngine() const;
   void sendCurrentRootMoveToEngine() const;
   void sendSearchUpdateToEngine();
