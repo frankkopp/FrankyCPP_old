@@ -66,8 +66,8 @@ int main(int argc, char* argv[]) {
     // and in config file
     po::options_description config("Configuration");
     config.add_options()
-            ("log_lvl,l", po::value<std::string>()->default_value("warn"), "set log level <warn|info|debug>")
-            ("search_log_lvl,s", po::value<std::string>()->default_value("warn"), "set log level for search <warn|info|debug>");
+            ("log_lvl,l", po::value<std::string>()->default_value("warn"), "set log level critical|error|warn|info|debug|trace>")
+            ("search_log_lvl,s", po::value<std::string>()->default_value("warn"), "set log level for search <critical|error|warn|info|debug|trace>");
 
     // Hidden options, will be allowed both on command line and in config file,
     // but will not be shown to the user.
