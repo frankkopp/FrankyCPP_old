@@ -32,7 +32,15 @@
 class Position;
 
 namespace Misc {
+
+  /* Creates a move from the given SAN string */
   Move getMoveFromSAN(const Position &, const std::string &);
+
+  /* returns the given string with as lower case string */
+  std::string toLowerCase(std::string str);
+
+  /* returns the given string with as upper case string */
+  std::string toUpperCase(std::string str);
 }
 
 #endif //FRANKYCPP_MISC_H

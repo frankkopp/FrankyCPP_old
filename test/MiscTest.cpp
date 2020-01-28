@@ -168,3 +168,14 @@ TEST_F(MiscTest, moveFromSAN) {
 
 }
 
+
+TEST_F(MiscTest, toLowerCase) {
+  std::string str = "AbCdEfGhIjKlMnOpQrStUvWxYz";
+  EXPECT_EQ("abcdefghijklmnopqrstuvwxyz", Misc::toLowerCase(str));
+}
+
+TEST_F(MiscTest, toUpperCase) {
+  std::string str = "AbCdEfGhIjKlMnOpQrStUvWxYz";
+  EXPECT_EQ("ABCDEFGHIJKLMNOPQRSTUVWXYZ", Misc::toUpperCase(str));
+}
+
