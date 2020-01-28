@@ -165,9 +165,7 @@ TEST_F(MiscTest, moveFromSAN) {
   expected = createMove("d4d5");
   actual = Misc::getMoveFromSAN(position, "d5");
   ASSERT_EQ(expected, actual);
-
 }
-
 
 TEST_F(MiscTest, toLowerCase) {
   std::string str = "AbCdEfGhIjKlMnOpQrStUvWxYz";

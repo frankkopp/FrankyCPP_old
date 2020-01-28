@@ -24,6 +24,7 @@
  */
 
 #include <map>
+#include "misc.h"
 #include "Engine.h"
 #include "Position.h"
 #include "SearchLimits.h"
@@ -58,12 +59,14 @@ std::string Engine::str() const {
     UCI_Option o = it.second;
     os << "\noption name " << it.first << " type " << o.getTypeString();
     if (o.getType() == UCI_Option::STRING || o.getType() == UCI_Option::CHECK ||
-        o.getType() == UCI_Option::COMBO)
+        o.getType() == UCI_Option::COMBO) {
       os << " default " << o.getDefaultValue();
+    }
 
-    if (o.getType() == UCI_Option::SPIN)
+    if (o.getType() == UCI_Option::SPIN) {
       os << " default " << stof(o.getDefaultValue()) << " min "
          << o.getMinValue() << " max " << o.getMaxValue();
+    }
   }
   return os.str();
 }
@@ -92,8 +95,9 @@ void Engine::setOption(const std::string &name, const std::string &value) {
 std::string Engine::getOption(const std::string &name) {
   LOG__INFO(Logger::get().ENGINE_LOG, "Engine: Get option {}", name);
   const auto pos = optionMap.find(name);
-  if (pos != optionMap.end())
+  if (pos != optionMap.end()) {
     return pos->second.getCurrentValue();
+  }
   else {
     LOG__WARN(Logger::get().ENGINE_LOG, "No such option: {}", name);
     return "";
@@ -119,12 +123,12 @@ void Engine::doMove(const std::string &moveStr) {
   MoveGenerator moveGenerator;
   const MoveList* movesPtr = moveGenerator.generateLegalMoves<MoveGenerator::GENALL>(*pPosition);
   for (Move m : *movesPtr) {
-    if (printMove(m) == moveStr) {
+    if (Misc::toLowerCase(printMove(m)) == Misc::toLowerCase(moveStr)) {
       pPosition->doMove(m);
       return;
     }
   }
-  LOG__WARN(Logger::get().ENGINE_LOG, "Invalid move {}", moveStr);
+  LOG__ERROR(Logger::get().ENGINE_LOG, "Invalid move {}", moveStr);
 }
 
 void Engine::startSearch(const UCISearchMode &uciSearchMode) {
@@ -178,25 +182,26 @@ void Engine::clearHash() {
 }
 
 
-
-void Engine::sendIterationEndInfo(int depth, int seldepth, Value value, uint64_t nodes, uint64_t nps,
-                                  MilliSec time, const MoveList &pv) const {
-  if (pUciHandler)
+void
+Engine::sendIterationEndInfo(int depth, int seldepth, Value value, uint64_t nodes, uint64_t nps,
+                             MilliSec time, const MoveList &pv) const {
+  if (pUciHandler) {
     pUciHandler->sendIterationEndInfo(depth, seldepth, value, nodes, nps, time, pv);
+  }
   else
     LOG__WARN(Logger::get().ENGINE_LOG,
-      "<no uci handler>: Engine iteration end: depth {} seldepth {} multipv 1 {} nodes {} nps {} time {} pv {}",
-      depth,
-      seldepth,
-      value,
-      nodes,
-      nps,
-      time,
-      printMoveListUCI(pv));
+              "<no uci handler>: Engine iteration end: depth {} seldepth {} multipv 1 {} nodes {} nps {} time {} pv {}",
+              depth,
+              seldepth,
+              value,
+              nodes,
+              nps,
+              time,
+              printMoveListUCI(pv));
 }
 
 void Engine::sendCurrentRootMove(Move currmove, MoveList::size_type movenumber) const {
-  if (pUciHandler) pUciHandler->sendCurrentRootMove(currmove, movenumber);
+  if (pUciHandler) { pUciHandler->sendCurrentRootMove(currmove, movenumber); }
   else
     LOG__WARN(Logger::get().ENGINE_LOG, "<no uci handler>: Engine current move: currmove {} currmovenumber {}",
               printMove(currmove), movenumber);
@@ -204,15 +209,15 @@ void Engine::sendCurrentRootMove(Move currmove, MoveList::size_type movenumber) 
 
 void Engine::sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t nps, MilliSec time,
                               int hashfull) const {
-  if (pUciHandler) pUciHandler->sendSearchUpdate(depth, seldepth, nodes, nps, time, hashfull);
+  if (pUciHandler) { pUciHandler->sendSearchUpdate(depth, seldepth, nodes, nps, time, hashfull); }
   else
     LOG__WARN(Logger::get().ENGINE_LOG,
-      "<no uci handler>: Engine search update: depth {} seldepth {} nodes {} nps {} time {} hashfull {}",
-      depth, seldepth, nodes, nps, time, hashfull);
+              "<no uci handler>: Engine search update: depth {} seldepth {} nodes {} nps {} time {} hashfull {}",
+              depth, seldepth, nodes, nps, time, hashfull);
 }
 
 void Engine::sendCurrentLine(const MoveList &moveList) const {
-  if (pUciHandler) pUciHandler->sendCurrentLine(moveList);
+  if (pUciHandler) { pUciHandler->sendCurrentLine(moveList); }
   else
     LOG__WARN(Logger::get().ENGINE_LOG, "<no uci handler>: Engine current line: {}", printMoveList(moveList));
 }
@@ -220,14 +225,14 @@ void Engine::sendCurrentLine(const MoveList &moveList) const {
 void Engine::sendResult(const Move bestMove, const Value value, const Move ponderMove) {
   lastResult = {true, bestMove, ponderMove};
 
-  if (pUciHandler) pUciHandler->sendResult(bestMove, ponderMove);
+  if (pUciHandler) { pUciHandler->sendResult(bestMove, ponderMove); }
   else
     LOG__WARN(Logger::get().ENGINE_LOG, "<no uci handler>: Engine Result: Best Move = {} ({}) Ponder Move = {}",
               printMoveVerbose(bestMove), printValue(value), printMoveVerbose(ponderMove));
 }
 
-void Engine::sendString(const std::string& anyString) const {
-  if (pUciHandler) pUciHandler->sendString(anyString);
+void Engine::sendString(const std::string &anyString) const {
+  if (pUciHandler) { pUciHandler->sendString(anyString); }
   else
     LOG__WARN(Logger::get().ENGINE_LOG, "<no uci handler>: Engine String: {}", anyString);
 }
@@ -263,10 +268,9 @@ void Engine::updateConfig() {
       LOG__DEBUG(Logger::get().ENGINE_LOG, "Setting hash table size to {} MB", EngineConfig::hash);
       pSearch->setHashSize(EngineConfig::hash);
     }
-    else
-      if (name == "Ponder") {
-        EngineConfig::ponder = to_bool(option.getCurrentValue());
-      }
+    else if (name == "Ponder") {
+      EngineConfig::ponder = to_bool(option.getCurrentValue());
+    }
   }
 }
 

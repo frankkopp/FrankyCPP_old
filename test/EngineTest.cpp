@@ -27,6 +27,7 @@
 #include "types.h"
 #include "Logging.h"
 #include "Engine.h"
+#include "Position.h"
 
 
 using testing::Eq;
@@ -63,6 +64,27 @@ TEST_F(EngineTest, startSearch) {
     engine.waitWhileSearching();
   }
   SUCCEED();
+}
+
+TEST_F(EngineTest, doMove) {
+  Logger::get().ENGINE_LOG->set_level(spdlog::level::debug);
+  Engine engine;
+  // position fen 8/P7/8/7k/8/8/1p6/5K2 w - - 1 1 moves a7a8q
+  engine.setPosition("8/P7/8/7k/8/8/1p6/5K2 w - - 1 1");
+  engine.doMove("a7a8q");
+  EXPECT_EQ("Q7/8/8/7k/8/8/1p6/5K2 b - - 0 1", engine.getPosition()->printFen());
+
+  engine.setPosition("8/P7/8/7k/8/8/1p6/5K2 w - - 1 1");
+  engine.doMove("a7a8Q");
+  EXPECT_EQ("Q7/8/8/7k/8/8/1p6/5K2 b - - 0 1", engine.getPosition()->printFen());
+
+  engine.setPosition("8/P7/8/7k/8/8/1p6/5K2 b - - 1 1");
+  engine.doMove("b2b1q");
+  EXPECT_EQ("8/P7/8/7k/8/8/8/1q3K2 w - - 0 2", engine.getPosition()->printFen());
+
+  engine.setPosition("8/P7/8/7k/8/8/1p6/5K2 b - - 1 1");
+  engine.doMove("b2b1Q");
+  EXPECT_EQ("8/P7/8/7k/8/8/8/1q3K2 w - - 0 2", engine.getPosition()->printFen());
 }
 
 
