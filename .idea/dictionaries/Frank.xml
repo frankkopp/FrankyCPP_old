@@ -16,9 +16,11 @@
       <w>passant</w>
       <w>perft</w>
       <w>ponderhit</w>
+      <w>prefrontier</w>
       <w>prunings</w>
       <w>seldepth</w>
       <w>spdlog</w>
+      <w>templated</w>
       <w>zobrist</w>
     </words>
   </dictionary>
