@@ -448,8 +448,8 @@ TEST_F(MoveGenTest, pushKiller) {
     move = mg.getNextPseudoLegalMove<MoveGenerator::GENALL>(position);
     if (move == MOVE_NONE) break;
     cout << counter << " " << printMoveVerbose(move) << " (" << int(move) << ")" << endl;
-    if (counter == 18) { ASSERT_EQ(allMoves->at(21), move); }
-    else if (counter == 33) {ASSERT_EQ(allMoves->at(81), move); }
+    if (counter == 21) { ASSERT_EQ(moveOf(allMoves->at(21)), moveOf(move)); }
+    else if (counter == 81) {ASSERT_EQ(moveOf(allMoves->at(81)), moveOf(move)); }
     counter++;
   }
   println("Moves: " + to_string(counter));

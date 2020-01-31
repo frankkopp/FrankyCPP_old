@@ -37,9 +37,10 @@ using testing::Eq;
 
 class SearchTreeSizeTest : public ::testing::Test {
 public:
-  static constexpr int DEPTH = 8;
+  static constexpr int DEPTH = 9;
   static constexpr int NUMBER_OF_FENS = 20;
 
+  /* special is used to collect a dedicated stat */
   const uint64_t* ptrToSpecial = nullptr;
 
   struct SingleTest {
@@ -161,18 +162,22 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   SearchConfig::USE_MPP = false;
   SearchConfig::USE_PVS = false;
   SearchConfig::USE_PV_MOVE_SORT = false;
-//  SearchConfig::USE_IID = false;
   SearchConfig::USE_RFP = false;
-//  SearchConfig::USE_RAZOR_PRUNING = false;
+  SearchConfig::USE_RAZOR_PRUNING = false;
   SearchConfig::USE_NMP = false;
-  SearchConfig::USE_EXTENSIONS = false;
+  SearchConfig::USE_AVOID_REDUCTIONS = false;
+  SearchConfig::USE_FUTILITY_PRUNING = false;
+  SearchConfig::USE_EFUTILITY_PRUNING = false;
+  SearchConfig::USE_LMP = false;
+  SearchConfig::USE_LMR = false;
+
 
   // ***********************************
   // TESTS
 
   Logger::get().TEST_LOG->set_level(spdlog::level::info);
-
-  ptrToSpecial = &search.getSearchStats().no_moveForPVsorting;
+  Logger::get().SEARCH_LOG->set_level(spdlog::level::info);
+  ptrToSpecial = &search.getSearchStats().fpPrunings;
 
   //  // pure MiniMax
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "MINIMAX-QS"));
@@ -191,17 +196,31 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   SearchConfig::USE_PV_MOVE_SORT = true;
   SearchConfig::USE_MPP = true;
   SearchConfig::USE_MDP = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 -TT"));
-
   SearchConfig::USE_TT = true;
   SearchConfig::USE_TT_QSEARCH = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "10 +TT"));
-
-  SearchConfig::USE_NMP = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "20 NMP"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "10 BASE"));
 
   SearchConfig::USE_RFP = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "30 RFP"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "20 RFP"));
+
+  SearchConfig::USE_NMP = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "30 NMP"));
+
+  SearchConfig::USE_RAZOR_PRUNING = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "40 RAZOR"));
+
+  SearchConfig::USE_AVOID_REDUCTIONS = true;
+  SearchConfig::USE_FUTILITY_PRUNING = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "60 FP"));
+
+  SearchConfig::USE_EFUTILITY_PRUNING = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "70 EFP"));
+//
+//  SearchConfig::USE_LMP = true;
+//  result.tests.push_back(measureTreeSize(search, position, searchLimits, "80 LMP"));
+
+  SearchConfig::USE_LMR = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "90 LMR"));
 
   // ***********************************
 
@@ -213,7 +232,8 @@ SearchTreeSizeTest::measureTreeSize(Search &search, const Position &position,
                                     SearchLimits searchLimits, const std::string &featureName) {
 
   LOG__INFO(Logger::get().TEST_LOG, "");
-  LOG__INFO(Logger::get().TEST_LOG, "Testing {}", featureName);
+  LOG__INFO(Logger::get().TEST_LOG, "Testing {} ####################################", featureName);
+  LOG__INFO(Logger::get().TEST_LOG, "");
   search.clearHash();
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();

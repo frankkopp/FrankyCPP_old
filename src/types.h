@@ -79,11 +79,13 @@ namespace INIT {
 
 ///////////////////////////////////
 //// DEPTH
-enum Depth : uint8_t {
+enum Depth : int8_t {
   DEPTH_NONE = 0,
   DEPTH_ONE = 1,
   DEPTH_FRONTIER = 1,
-  DEPTH_MAX = 128
+  DEPTH_PRE_FRONTIER = 2,
+  DEPTH_PRE_PRE_FRONTIER = 3,
+  DEPTH_MAX = 127
 };
 
 ///////////////////////////////////

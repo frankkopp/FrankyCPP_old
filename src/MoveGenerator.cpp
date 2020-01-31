@@ -47,6 +47,9 @@ const MoveList* MoveGenerator::generatePseudoLegalMoves(const Position &position
   generateMoves<GM>(position, &pseudoLegalMoves);
   generateKingMoves<GM>(position, &pseudoLegalMoves);
   stable_sort(pseudoLegalMoves.begin(), pseudoLegalMoves.end());
+  // remove internal sort value
+  std::transform(pseudoLegalMoves.begin(), pseudoLegalMoves.end(),
+                 pseudoLegalMoves.begin(), [](Move m) { return moveOf(m); });
   return &pseudoLegalMoves;
 }
 
@@ -88,7 +91,7 @@ Move MoveGenerator::getNextPseudoLegalMove(const Position &position) {
          */
         if (pvMove) {
           pvIsCapture = position.isCapturingMove(pvMove);
-          if (GM == GENALL|| (GM == GENCAP && pvIsCapture) || (GM == GENNONCAP && !pvIsCapture)) {
+          if (GM == GENALL || (GM == GENCAP && pvIsCapture) || (GM == GENNONCAP && !pvIsCapture)) {
             onDemandMoves.push_back(pvMove);
           }
         }
@@ -162,7 +165,7 @@ Move MoveGenerator::getNextPseudoLegalMove(const Position &position) {
   else {
     const Move move = onDemandMoves.front();
     onDemandMoves.pop_front();
-    return move;
+    return moveOf(move); // remove internal sort value
   }
 }
 

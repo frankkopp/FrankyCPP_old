@@ -93,6 +93,7 @@ void TT::clear() {
 void TT::put(const Key key, const Depth depth, const Move move, const Value value,
              const Value_Type type, const bool mateThreat, const bool forced) {
   assert (value > VALUE_NONE);
+  assert (depth >= 0);
 
   // if the size of the TT = 0 we
   // do not store anything

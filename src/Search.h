@@ -177,10 +177,10 @@ public:
   void stopSearch();
 
   /** checks if the search is already running */
-  bool isRunning() const;
+  bool isRunning() const { return _isRunning; }
 
   /** signals if we have a result */
-  bool hasResult() const;
+  bool hasResult() const { return _hasResult; }
 
   /** wait while searching */
   void waitWhileSearching();
@@ -320,13 +320,6 @@ private:
    * 20% additional time Always calculated from the initial time budget.
    */
   void addExtraTime(double d);
-
-  /**
-   * Time limit is used to check time regularly in the search to stop the search
-   * when time is out
-   * @return true if hard time limit is reached, false otherwise
-   */
-  inline bool timeLimitReached();
 
   /**
    * Starts a thread which waits for the timeLimit + extraTime amount

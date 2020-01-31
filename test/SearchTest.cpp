@@ -164,6 +164,7 @@ TEST_F(SearchTest, mate1Search) {
 }
 
 TEST_F(SearchTest, mate2Search) {
+  Logger::get().SEARCH_LOG->set_level(spdlog::level::info);
   Search search;
   SearchLimits searchLimits;
   Position position("8/8/8/8/8/5K2/R7/7k w - - 0 7");
@@ -569,7 +570,7 @@ TEST_F(SearchTest, debuggingIID) {
   SearchConfig::USE_RFP             = true;
 //  SearchConfig::USE_RAZOR_PRUNING   = true;
   SearchConfig::USE_NMP             = true;
-  SearchConfig::USE_EXTENSIONS      = true;
+  SearchConfig::USE_AVOID_REDUCTIONS      = true;
   // @formatter:on
 
   const int depth = 9;
@@ -608,29 +609,30 @@ TEST_F(SearchTest, debugging) {
   Position position;
 
   // @formatter:off
-  SearchConfig::USE_QUIESCENCE      = true;
-  SearchConfig::USE_ALPHABETA       = true;
-  SearchConfig::USE_KILLER_MOVES    = true;
-  SearchConfig::USE_TT              = true;
-  SearchConfig::TT_SIZE_MB          = 64;
-  SearchConfig::USE_TT_QSEARCH      = true;
-  SearchConfig::USE_MDP             = true;
-  SearchConfig::USE_MPP             = true;
-  SearchConfig::USE_PVS             = true;
-  SearchConfig::USE_PV_MOVE_SORT    = true;
-//  SearchConfig::USE_IID             = true;
-//  SearchConfig::IID_DEPTH           = Depth{7}; // remaining depth to do IID
-//  SearchConfig::IID_DEPTH_REDUCTION = Depth{5}; // reduction of depth for IID
-  SearchConfig::USE_RFP             = true;
-//  SearchConfig::USE_RAZOR_PRUNING   = true;
-  SearchConfig::USE_NMP             = true;
-  SearchConfig::USE_EXTENSIONS      = true;
+  SearchConfig::USE_QUIESCENCE        = true;
+  SearchConfig::USE_ALPHABETA         = true;
+  SearchConfig::USE_KILLER_MOVES      = true;
+  SearchConfig::USE_TT                = true;
+  SearchConfig::TT_SIZE_MB            = 64;
+  SearchConfig::USE_TT_QSEARCH        = true;
+  SearchConfig::USE_MDP               = true;
+  SearchConfig::USE_MPP               = true;
+  SearchConfig::USE_PVS               = true;
+  SearchConfig::USE_PV_MOVE_SORT      = true;
+  SearchConfig::USE_RFP               = true;
+  SearchConfig::USE_RAZOR_PRUNING     = true;
+  SearchConfig::USE_NMP               = true;
+  SearchConfig::USE_AVOID_REDUCTIONS  = true;
+  SearchConfig::USE_FUTILITY_PRUNING  = true;
+  SearchConfig::USE_EFUTILITY_PRUNING = true;
+  SearchConfig::USE_LMP               = true;
+  SearchConfig::USE_LMR               = true;
   // @formatter:on
 
   // should not end up in repetition by giving check with Qh6
-  position = Position("5r1k/1r6/4p1Q1/5p2/6p1/P3R3/5PPP/6K1 w - - 1 1 ");
+  //position = Position("5r1k/1r6/4p1Q1/5p2/6p1/P3R3/5PPP/6K1 w - - 1 1");
 
-  const int depth = 11;
+  const int depth = 5;
   searchLimits.setDepth(depth);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
