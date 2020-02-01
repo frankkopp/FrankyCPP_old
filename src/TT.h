@@ -214,6 +214,13 @@ public:
     return static_cast<int>((1000 * numberOfEntries) / maxNumberOfEntries);
   };
 
+  // using prefetch improves probe lookup speed significantly
+  inline void prefetch(const Key key) {
+#ifdef TT_ENABLE_PREFETCH
+    _mm_prefetch(&_data[(key & hashKeyMask)], _MM_HINT_T0);
+#endif
+  }
+
   /** return a string representation of the TT instance */
   std::string str();
 
@@ -231,13 +238,6 @@ private:
   /* This retrieves a direct pointer to the entry of this node from cache */
   inline TT::Entry* getEntryPtr(const Key key) const {
     return &_data[getHash(key)];
-  }
-
-  // using prefetch improves probe lookup speed significantly
-  inline void prefetch(const Key key) {
-#ifdef TT_ENABLE_PREFETCH
-    _mm_prefetch(&_data[(key & hashKeyMask)], _MM_HINT_T0);
-#endif
   }
 
   /** GETTER and SETTER */
