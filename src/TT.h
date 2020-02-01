@@ -66,7 +66,7 @@ public:
     // using bitfield for smallest size
     Key key = 0; // 64 bit
     Move move = MOVE_NONE; // 32 bit
-    Value value = VALUE_NONE; // 8 bit signed
+    Value value = VALUE_NONE; // 16 bit signed
     Depth depth:7; // 0-127
     uint8_t age:3; // 0-7
     Value_Type type:2; // 4 values
@@ -214,22 +214,14 @@ public:
     return static_cast<int>((1000 * numberOfEntries) / maxNumberOfEntries);
   };
 
-  std::string str() {
-    return fmt::format(
-      "TT: size {:n} MB max entries {:n} of size {:n} Bytes entries {:n} ({:n}%) puts {:n} "
-      "updates {:n} collisions {:n} overwrites {:n} probes {:n} hits {:n} ({:n}%) misses {:n} ({:n}%)",
-      sizeInByte / MB, maxNumberOfEntries, sizeof(Entry), numberOfEntries, hashFull() / 10,
-      numberOfPuts, numberOfUpdates, numberOfCollisions, numberOfOverwrites, numberOfProbes,
-      numberOfHits, numberOfProbes ? (numberOfHits * 100) / numberOfProbes : 0,
-      numberOfMisses, numberOfProbes ? (numberOfMisses * 100) / numberOfProbes : 0);
-  }
+  /** return a string representation of the TT instance */
+  std::string str();
 
 private:
 
   static void
   writeEntry(Entry* entryPtr, Key key, Depth depth, Move move,
              Value value, Value_Type type, bool mateThreat, uint8_t age);
-
 
   /* generates the index hash key from the position key  */
   inline std::size_t getHash(const Key key) const {
@@ -239,6 +231,13 @@ private:
   /* This retrieves a direct pointer to the entry of this node from cache */
   inline TT::Entry* getEntryPtr(const Key key) const {
     return &_data[getHash(key)];
+  }
+
+  // using prefetch improves probe lookup speed significantly
+  inline void prefetch(const Key key) {
+#ifdef TT_ENABLE_PREFETCH
+    _mm_prefetch(&_data[(key & hashKeyMask)], _MM_HINT_T0);
+#endif
   }
 
   /** GETTER and SETTER */
@@ -311,12 +310,6 @@ public:
   FRIEND_TEST(TT_Test, get);
   FRIEND_TEST(TT_Test, probe);
 
-  // using prefetch improves probe lookup speed significantly
-  inline void prefetch(const Key key) {
-#ifdef TT_ENABLE_PREFETCH
-    _mm_prefetch(&_data[(key & hashKeyMask)], _MM_HINT_T0);
-#endif
-  }
 };
 
 #endif //FRANKYCPP_TT_H

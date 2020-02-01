@@ -66,6 +66,9 @@ constexpr const int GAME_PHASE_MAX = 24;
 /** 64 bit Key for zobrist etc. */
 typedef uint64_t Key;
 
+/** 64 bit Bitboard type for storing boards as bits */
+typedef uint64_t Bitboard;
+
 /** for time keeping */
 typedef uint64_t MilliSec;
 
@@ -79,7 +82,7 @@ namespace INIT {
 
 ///////////////////////////////////
 //// DEPTH
-enum Depth : int8_t {
+enum Depth : int {
   DEPTH_NONE = 0,
   DEPTH_ONE = 1,
   DEPTH_FRONTIER = 1,
@@ -90,7 +93,7 @@ enum Depth : int8_t {
 
 ///////////////////////////////////
 //// PLY
-enum Ply : uint8_t {
+enum Ply : int {
   PLY_ROOT = 0,
   PLY_NONE = 0,
   PLY_MAX = DEPTH_MAX
@@ -98,7 +101,7 @@ enum Ply : uint8_t {
 
 ///////////////////////////////////
 //// COLOR
-enum Color {
+enum Color : int {
   WHITE = 0,
   BLACK = 1,
   NOCOLOR = 2,
@@ -107,9 +110,7 @@ enum Color {
 
 constexpr Color operator~(Color c) { return Color(c ^ BLACK); }
 
-///////////////////////////////////
-//// BITBOARD
-typedef uint64_t Bitboard;
+
 
 ///////////////////////////////////
 //// SQUARES
@@ -290,7 +291,7 @@ std::string printValue(Value value);
 
 ///////////////////////////////////
 //// VALUE TYPE
-enum Value_Type : uint8_t {
+enum Value_Type : int {
   TYPE_NONE = 0,
   // the node for the value was fully calculated and is exact
     TYPE_EXACT = 1,
@@ -307,7 +308,7 @@ enum Value_Type : uint8_t {
 //// MOVE
 enum Move : uint32_t {
   /** A move is basically a 32-bit int */
-    MOVE_NONE = 0
+  MOVE_NONE = 0
 };
 
 /* @formatter:off
@@ -465,7 +466,7 @@ enum CastlingSide : int {
 /** CastlingRight */
 enum CastlingRights : unsigned int {
   // @formatter:off
-    NO_CASTLING = 0,                                // 0000
+  NO_CASTLING = 0,                                // 0000
 
   WHITE_OO,                                       // 0001
   WHITE_OOO = WHITE_OO << 1,                      // 0010
@@ -555,7 +556,7 @@ ENABLE_INCR_OPERATORS_ON(CastlingRights)
 #undef ENABLE_BASE_OPERATORS_ON
 
 constexpr const char* boolStr(bool b) { return b ? "true" : "false"; }
-constexpr const char* boolStr(int b) { return b ? "true" : "false"; }
+constexpr const char* boolStr(int b) { return boolStr(bool(b)); }
 
 /** Reads a bool from a string */
 bool to_bool(std::string str);

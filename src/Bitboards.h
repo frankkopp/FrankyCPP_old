@@ -37,9 +37,6 @@ namespace Bitboards {
 
   void init();
 
-  std::string print(Bitboard b);
-  std::string printFlat(Bitboard b);
-
   constexpr Bitboard EMPTY_BB = Bitboard(0);
   constexpr Bitboard ALL_BB = ~EMPTY_BB;
   constexpr Bitboard ONE_BB = Bitboard(1);
@@ -173,10 +170,10 @@ namespace Bitboards {
     63
   };
 
- inline Square rotateSquareR90(Square sq) { return indexMapR90[sq]; }
- inline Square rotateSquareL90(Square sq) { return indexMapL90[sq]; }
- inline Square rotateSquareR45 (Square sq) { return indexMapR45[sq]; }
- inline Square rotateSquareL45(Square sq) { return indexMapL45[sq]; }
+  constexpr Square rotateSquareR90(Square sq) { return indexMapR90[sq]; }
+  constexpr Square rotateSquareL90(Square sq) { return indexMapL90[sq]; }
+  constexpr Square rotateSquareR45(Square sq) { return indexMapR45[sq]; }
+  constexpr Square rotateSquareL45(Square sq) { return indexMapL45[sq]; }
 
   constexpr int lengthDiagUp[SQ_LENGTH] = {
     8, 7, 6, 5, 4, 3, 2, 1,
@@ -314,7 +311,7 @@ namespace Bitboards {
    * bitboard */
   inline Square lsb(Bitboard b) {
     if (!b) return SQ_NONE;
-    
+
 #ifdef __GNUC__ // GCC, Clang, ICC
     return static_cast<Square>(__builtin_ctzll(b));
 
@@ -572,35 +569,15 @@ namespace Bitboards {
   }
 
   /**
-   * Prints a bitboard a an 8x8 matrix for output on a console
+   * Prints a bitboard in an 8x8 matrix for output on a console
    */
-  inline std::string print(Bitboard b) {
-    std::ostringstream os;
-    os << "+---+---+---+---+---+---+---+---+\n";
-    for (Rank r = RANK_8; r >= RANK_1; --r) {
-      for (File f = FILE_A; f <= FILE_H; ++f) {
-        os << (b & getSquare(f, r) ? "| X " : "|   ");
-      }
-      os << "|\n+---+---+---+---+---+---+---+---+\n";
-    }
-    return os.str();
-  }
+  std::string print(Bitboard b);
 
   /**
    * Prints a bitboard as a series of 0 and 1 grouped in 8 bits
    * beginning with the LSB (0) on the left and the MSB (63) on the right
    */
-  inline std::string printFlat(Bitboard b) {
-    std::ostringstream os;
-    for (uint16_t i = 0; i < 64; i++) {
-      if (i > 0 && i % 8 == 0) {
-        os << ".";
-      }
-      os << (b & (Bitboards::ONE_BB << i) ? "1" : "0");
-    }
-    os << " (" + std::to_string(b) + ")";
-    return os.str();
-  }
+  std::string printFlat(Bitboard b);
 
 } // namespace Bitboards
 

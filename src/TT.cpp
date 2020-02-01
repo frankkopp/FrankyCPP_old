@@ -191,6 +191,16 @@ void TT::ageEntries() {
   LOG__DEBUG(Logger::get().TT_LOG, "TT aged {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
 }
 
+std::string TT::str() {
+  return fmt::format(
+    "TT: size {:n} MB max entries {:n} of size {:n} Bytes entries {:n} ({:n}%) puts {:n} "
+    "updates {:n} collisions {:n} overwrites {:n} probes {:n} hits {:n} ({:n}%) misses {:n} ({:n}%)",
+    sizeInByte / MB, maxNumberOfEntries, sizeof(Entry), numberOfEntries, hashFull() / 10,
+    numberOfPuts, numberOfUpdates, numberOfCollisions, numberOfOverwrites, numberOfProbes,
+    numberOfHits, numberOfProbes ? (numberOfHits * 100) / numberOfProbes : 0,
+    numberOfMisses, numberOfProbes ? (numberOfMisses * 100) / numberOfProbes : 0);
+}
+
 std::ostream &operator<<(std::ostream &os, const TT::Entry &entry) {
   os << "key: " << entry.key << " depth: " << entry.depth << " move: " << entry.move << " value: "
      << entry.value << " type: " << entry.type << " mateThreat: " << entry.mateThreat

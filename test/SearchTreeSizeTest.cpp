@@ -209,18 +209,18 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   SearchConfig::USE_RAZOR_PRUNING = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "40 RAZOR"));
 
-  SearchConfig::USE_AVOID_REDUCTIONS = false;
+  SearchConfig::USE_AVOID_REDUCTIONS = true;
   SearchConfig::USE_FUTILITY_PRUNING = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "60 FP"));
 
   SearchConfig::USE_EFUTILITY_PRUNING = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "70 EFP"));
 
-//  SearchConfig::USE_LMP = true;
-//  result.tests.push_back(measureTreeSize(search, position, searchLimits, "80 LMP"));
+  SearchConfig::USE_LMP = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "80 LMP"));
 
-//  SearchConfig::USE_LMR = true;
-//  result.tests.push_back(measureTreeSize(search, position, searchLimits, "90 LMR"));
+  SearchConfig::USE_LMR = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "90 LMR"));
 
   // ***********************************
 
