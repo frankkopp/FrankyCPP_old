@@ -751,15 +751,14 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
     bool avoidReductions = false;
     if (SearchConfig::USE_AVOID_REDUCTIONS
         && ST == NONROOT
-        && NT == NonPV
       ) {
       if (mateThreat[ply] // mate threat from null move search or TT
           || typeOf(move) == MoveType::CASTLING  // really?
           || typeOf(move) == MoveType::PROMOTION // promotion or close to promotion
           || (typeOf(position.getPiece(getFromSquare(move))) == PieceType::PAWN
-              && (position.getNextPlayer()
-                  ? rankOf(getToSquare(move)) == RANK_2      // BLACK
-                  : rankOf(getToSquare(move)) == RANK_7)) // WHITE
+              && (position.getNextPlayer() == WHITE
+                  ? rankOf(getToSquare(move)) == RANK_7   // WHITE
+                  : rankOf(getToSquare(move)) == RANK_2)) // BLACK
           || position.givesCheck(move) // we are giving check
           || !position.hasCheck() // we are in check
         ) {
@@ -788,7 +787,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
     // already any search extensions has been determined.
     // Also not when in check.
     if (ST == NONROOT
-        && NT == NonPV
+        //&& NT == NonPV
         && !avoidReductions
       ) {
       const int myMat = position.getMaterial(position.getNextPlayer());
@@ -803,7 +802,6 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
       // http://people.csail.mit.edu/heinz/dt/node25.html
       if (SearchConfig::USE_EFUTILITY_PRUNING
           && depth == DEPTH_PRE_FRONTIER
-          && NT == NonPV
         ) {
         constexpr Value extFutilityMargin = pieceTypeValue[ROOK];
         const Value testValue = gainedValue + extFutilityMargin;
@@ -825,7 +823,6 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
       // evaluations only (without material difference)
       if (SearchConfig::USE_FUTILITY_PRUNING
           && depth == DEPTH_FRONTIER
-          && NT == NonPV
         ) {
         constexpr Value futilityMargin = 3 * valueOf(PAWN);
         Value testVal = gainedValue + futilityMargin;
