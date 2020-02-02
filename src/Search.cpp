@@ -1218,7 +1218,7 @@ inline void Search::storeTT(Position &position, Value value, Value_Type ttType,
   // store the position in the TT
   // correct the value for mate distance and remove the value from the move to
   // later be able to easier compare it wh read from TT
-  tt->put(position.getZobristKey(), depth, moveOf(move), valueToTT(value, ply),
+  tt->put(position.getZobristKey(), depth, move, valueToTT(value, ply),
           ttType, _mateThreat);
 }
 
