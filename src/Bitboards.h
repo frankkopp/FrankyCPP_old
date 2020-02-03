@@ -170,10 +170,10 @@ namespace Bitboards {
     63
   };
 
-  constexpr Square rotateSquareR90(Square sq) { return indexMapR90[sq]; }
-  constexpr Square rotateSquareL90(Square sq) { return indexMapL90[sq]; }
-  constexpr Square rotateSquareR45(Square sq) { return indexMapR45[sq]; }
-  constexpr Square rotateSquareL45(Square sq) { return indexMapL45[sq]; }
+  inline Square rotateSquareR90(Square sq) { return indexMapR90[sq]; }
+  inline Square rotateSquareL90(Square sq) { return indexMapL90[sq]; }
+  inline Square rotateSquareR45(Square sq) { return indexMapR45[sq]; }
+  inline Square rotateSquareL45(Square sq) { return indexMapL45[sq]; }
 
   constexpr int lengthDiagUp[SQ_LENGTH] = {
     8, 7, 6, 5, 4, 3, 2, 1,

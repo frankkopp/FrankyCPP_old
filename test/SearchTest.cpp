@@ -91,7 +91,7 @@ TEST_F(SearchTest, nodes) {
 }
 
 TEST_F(SearchTest, timerTest) {
-//  Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
+  Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
   Search search;
   SearchLimits searchLimits;
   Position position;
@@ -100,7 +100,16 @@ TEST_F(SearchTest, timerTest) {
   search.startSearch(position, searchLimits);
   search.addExtraTime(2.0); // 2.950 ms
   search.waitWhileSearching();
-  EXPECT_GT(search.getSearchStats().lastSearchTime, 2'950);
+  EXPECT_GE(search.getSearchStats().lastSearchTime, 2'950);
+  EXPECT_LT(search.getSearchStats().lastSearchTime, 3'200);
+
+  searchLimits.setWhiteTime(60'000);  //  1.475 ms
+  searchLimits.setBlackTime(60'000);
+  search.startSearch(position, searchLimits);
+  search.addExtraTime(0.5); // 0.737
+  search.waitWhileSearching();
+  EXPECT_GE(search.getSearchStats().lastSearchTime, 737);
+  EXPECT_LT(search.getSearchStats().lastSearchTime, 1'000);
 }
 
 TEST_F(SearchTest, movetime) {

@@ -70,7 +70,7 @@ typedef uint64_t Key;
 typedef uint64_t Bitboard;
 
 /** for time keeping */
-typedef uint64_t MilliSec;
+typedef int64_t MilliSec;
 
 ///////////////////////////////////
 //// INITIALIZATION

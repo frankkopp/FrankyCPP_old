@@ -113,7 +113,7 @@ class Search {
   MilliSec startTime{};
   MilliSec stopTime{};
   MilliSec timeLimit{};
-  MilliSec extraTime{};
+  std::atomic_int64_t extraTime{};
 
   // the color of the searching player
   Color myColor = NOCOLOR;
@@ -349,7 +349,7 @@ private:
   /**
    * Returns the current nodes per second value
    */
-  inline MilliSec getNps() const;
+  inline uint64_t getNps() const;
 
   /** these are sending information to the UCI protocol */
   void sendIterationEndInfoToEngine() const;

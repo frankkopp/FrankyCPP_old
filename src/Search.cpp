@@ -1299,19 +1299,19 @@ void Search::configureTimeLimits() {
 void Search::addExtraTime(const double d) {
   if (!searchLimitsPtr->getMoveTime()) {
     extraTime += static_cast<MilliSec>(timeLimit * (d - 1));
-    LOG__DEBUG(Logger::get().SEARCH_LOG, "Time added {:n} ms to {:n} ms", extraTime, timeLimit + extraTime);
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "Time added/reduced {:n} ms to {:n} ms", extraTime, timeLimit + extraTime);
   }
 }
 
 void Search::startTimer() {
   this->timerThread = std::thread([&] {
     Logger::get().SEARCH_LOG->debug("Timer thread started with time limit of {:n} ms", timeLimit);
-    do {
-      const MilliSec sleepTime = (timeLimit + extraTime) - elapsedTime(startTime);
-      std::this_thread::sleep_for(std::chrono::milliseconds(sleepTime));
-    } while (elapsedTime(startTime) < timeLimit + extraTime);
+    // relaxed busy wait
+    while (elapsedTime(startTime) < timeLimit + extraTime) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
     this->_stopSearchFlag = true;
-    Logger::get().SEARCH_LOG->debug("Timer thread stopped search after time limit {:n} ms and extra time {:n} (wall: {:n} ms)", timeLimit, extraTime, elapsedTime(this->startTime));
+    Logger::get().SEARCH_LOG->debug("Timer thread stopped search after wall time: {:n} ms (time limit {:n} ms and extra time {:n})", elapsedTime(this->startTime), timeLimit, extraTime);
   });
 }
 
