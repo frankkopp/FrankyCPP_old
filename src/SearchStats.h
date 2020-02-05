@@ -33,7 +33,8 @@
 struct SearchStats {
 
   // counter for cut off to measure quality of move ordering
-  // long[] betaCutOffs = new long[MAX_MOVES];
+  std::array<uint64_t, MAX_MOVES> betaCutOffs{};
+  std::array<uint64_t, MAX_MOVES> alphaImprovements{};
 
   // Search info values
   Ply currentSearchDepth = PLY_ROOT;
@@ -86,6 +87,7 @@ struct SearchStats {
 
   uint64_t deltaPrunings = 0;
   std::string str() const;
+
 
   friend std::ostream &operator<<(std::ostream &os, const SearchStats &stats);
 };

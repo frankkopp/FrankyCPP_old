@@ -110,8 +110,6 @@ enum Color : int {
 
 constexpr Color operator~(Color c) { return Color(c ^ BLACK); }
 
-
-
 ///////////////////////////////////
 //// SQUARES
 // @formatter:off
@@ -135,7 +133,8 @@ constexpr bool isSquare(Square s) { return s >= SQ_A1 && s <= SQ_H8; }
 ///////////////////////////////////
 //// FILES
 enum File : int {
-  FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H, FILE_NONE,
+  FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H,
+  FILE_NONE,
   FILE_LENGTH = 9
 };
 
@@ -145,7 +144,8 @@ constexpr File fileOf(Square s) { return File(s & 7); }
 ///////////////////////////////////
 //// RANKS
 enum Rank : int {
-  RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_NONE,
+  RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8,
+  RANK_NONE,
   RANK_LENGTH = 9
 };
 
@@ -248,11 +248,14 @@ enum Value : int16_t {
   VALUE_MIN = -10000,
   VALUE_MAX = 10000,
   VALUE_CHECKMATE = VALUE_MAX,
-  VALUE_CHECKMATE_THRESHOLD = VALUE_CHECKMATE - static_cast<Value>(PLY_MAX),
+  VALUE_CHECKMATE_THRESHOLD = VALUE_CHECKMATE - static_cast<Value>(PLY_MAX) - 1,
 };
 
+/** Returns a UCI compatible std::string for the score in cp or in mate in ply */
+std::string printValue(Value value);
+
 inline std::ostream &operator<<(std::ostream &os, const Value v) {
-  os << std::to_string(v);
+  os << printValue(v);
   return os;
 }
 
@@ -275,7 +278,7 @@ constexpr Value valueOf(const Piece p) { return pieceTypeValue[typeOf(p)]; }
 
 /** Returns true if value is considered a checkmate */
 inline bool isCheckMateValue(const Value value) {
-  return abs(value) >= VALUE_CHECKMATE_THRESHOLD && abs(value) <= VALUE_CHECKMATE;
+  return abs(value) > VALUE_CHECKMATE_THRESHOLD && abs(value) <= VALUE_CHECKMATE;
 }
 
 inline Value operator+(Value d1, Ply d2) {
@@ -285,9 +288,6 @@ inline Value operator+(Value d1, Ply d2) {
 inline Value operator-(Value d1, Ply d2) {
   return static_cast<Value>(static_cast<int>(d1) - static_cast<int>(d2));
 }
-
-/** Returns a UCI compatible std::string for the score in cp or in mate in ply */
-std::string printValue(Value value);
 
 ///////////////////////////////////
 //// VALUE TYPE
@@ -419,7 +419,6 @@ inline Value valueOf(Move m) {
 
 /** returns the move without value */
 inline Move moveOf(Move m) { return Move(m & MoveShifts::MOVE_MASK); }
-
 
 /** sets the value for the move. E.g. used by the move generator for move sorting */
 inline void setValue(Move &m, Value v) {

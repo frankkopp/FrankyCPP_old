@@ -165,7 +165,7 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   SearchConfig::USE_RFP = false;
   SearchConfig::USE_RAZOR_PRUNING = false;
   SearchConfig::USE_NMP = false;
-  SearchConfig::USE_AVOID_REDUCTIONS = false;
+  SearchConfig::USE_FORWARD_PRUNING_CHECK = false;
   SearchConfig::USE_FUTILITY_PRUNING = false;
   SearchConfig::USE_EFUTILITY_PRUNING = false;
   SearchConfig::USE_LMP = false;
@@ -177,7 +177,7 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
 
   Logger::get().TEST_LOG->set_level(spdlog::level::info);
   Logger::get().SEARCH_LOG->set_level(spdlog::level::info);
-  ptrToSpecial = &search.getSearchStats().fpPrunings;
+  ptrToSpecial = &search.getSearchStats().nullMoveVerifications;
 
   //  // pure MiniMax
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "MINIMAX-QS"));
@@ -200,27 +200,27 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   SearchConfig::USE_TT_QSEARCH = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "10 BASE"));
 
-  SearchConfig::USE_RFP = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "20 RFP"));
-
   SearchConfig::USE_NMP = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "30 NMP"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "20 NMP"));
 
-  SearchConfig::USE_RAZOR_PRUNING = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "40 RAZOR"));
+  //  SearchConfig::USE_RFP = true;
+  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "20 RFP"));
 
-  SearchConfig::USE_AVOID_REDUCTIONS = true;
-  SearchConfig::USE_FUTILITY_PRUNING = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "60 FP"));
-
-  SearchConfig::USE_EFUTILITY_PRUNING = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "70 EFP"));
-
-  SearchConfig::USE_LMP = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "80 LMP"));
-
-  SearchConfig::USE_LMR = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "90 LMR"));
+  //  SearchConfig::USE_RAZOR_PRUNING = true;
+  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "40 RAZOR"));
+  //
+  //  SearchConfig::USE_AVOID_REDUCTIONS = true;
+  //  SearchConfig::USE_FUTILITY_PRUNING = true;
+  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "60 FP"));
+  //
+  //  SearchConfig::USE_EFUTILITY_PRUNING = true;
+  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "70 EFP"));
+  //
+  //  SearchConfig::USE_LMP = true;
+  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "80 LMP"));
+  //
+  //  SearchConfig::USE_LMR = true;
+  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "90 LMR"));
 
   // ***********************************
 

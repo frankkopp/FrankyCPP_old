@@ -31,6 +31,11 @@ std::ostream &operator<<(std::ostream &os, const SearchStats &stats) {
   return os;
 }
 
+std::ostream &operator<<(std::ostream &os, const std::array<uint64_t, MAX_MOVES> &array) {
+  for (auto n : array) { os << n << " "; };
+  return os;
+}
+
 std::string SearchStats::str() const {
   std::stringstream os;
   os.imbue(deLocale);
@@ -74,7 +79,9 @@ std::string SearchStats::str() const {
     << " qfpPrunings: " << qfpPrunings
     << " lmpPrunings: " << lmpPrunings
     << " lmrReductions: " << lmrReductions
-    << " deltaPrunings: " << deltaPrunings;
+    << " deltaPrunings: " << deltaPrunings
+    << " betaCutOffs: " << betaCutOffs
+    << " alphaImprovements: " << alphaImprovements;
   return os.str();
 }
 

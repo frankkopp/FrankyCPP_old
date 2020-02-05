@@ -66,7 +66,7 @@ protected:
 //    SearchConfig::USE_RAZOR_PRUNING   = true;
     SearchConfig::USE_NMP             = true;
 
-    SearchConfig::USE_AVOID_REDUCTIONS      = true;
+    SearchConfig::USE_FORWARD_PRUNING_CHECK      = true;
 
     SearchConfig::TT_SIZE_MB          = 64;
     SearchConfig::MAX_EXTRA_QDEPTH    = static_cast<Depth>(20);

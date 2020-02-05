@@ -579,7 +579,7 @@ TEST_F(SearchTest, debuggingIID) {
   SearchConfig::USE_RFP             = true;
 //  SearchConfig::USE_RAZOR_PRUNING   = true;
   SearchConfig::USE_NMP             = true;
-  SearchConfig::USE_AVOID_REDUCTIONS      = true;
+  SearchConfig::USE_FORWARD_PRUNING_CHECK      = true;
   // @formatter:on
 
   const int depth = 9;
@@ -631,7 +631,7 @@ TEST_F(SearchTest, debugging) {
   SearchConfig::USE_RFP               = true;
   SearchConfig::USE_RAZOR_PRUNING     = true;
   SearchConfig::USE_NMP               = true;
-  SearchConfig::USE_AVOID_REDUCTIONS  = true;
+  SearchConfig::USE_FORWARD_PRUNING_CHECK  = true;
   SearchConfig::USE_FUTILITY_PRUNING  = true;
   SearchConfig::USE_EFUTILITY_PRUNING = true;
   SearchConfig::USE_LMP               = true;

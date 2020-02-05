@@ -49,15 +49,18 @@ namespace SearchConfig {
   inline bool USE_MPP               = true; // minor promotion pruning
   inline bool USE_QS_STANDPAT_CUT   = true; // RFP for quiescence
   inline bool USE_NMP               = true;
-  inline Depth NMP_DEPTH            = Depth{3};  // at least 2
-  inline Depth NMP_REDUCTION        = Depth{2}; // at least 1
+  inline Depth NMP_DEPTH            = Depth{3}; 
+  inline Depth NMP_REDUCTION        = Depth{3};
+  inline bool NMP_VERIFICATION      = true;
+  inline Depth NMP_V_REDUCTION      = Depth{3};
+
   inline bool USE_RFP               = true; // Reverse Futility Pruning
-  inline Value RFP_MARGIN           = Value{99}; // less than 3 pawns per depth
+  inline Value RFP_MARGIN           = Value{250}; // less than 3 pawns per depth
   inline bool USE_RAZOR_PRUNING     = true; // Razoring - bad move direct into qs
   inline Depth RAZOR_DEPTH          = Depth{2};
   inline Value RAZOR_MARGIN         = Value{600};
   // tactical features
-  inline bool USE_AVOID_REDUCTIONS  = true;
+  inline bool USE_FORWARD_PRUNING_CHECK  = true;
   inline bool USE_FUTILITY_PRUNING  = false;
   inline bool USE_EFUTILITY_PRUNING = false;
   inline bool USE_LMP               = true; // Late Move Pruning
