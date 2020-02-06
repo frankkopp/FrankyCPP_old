@@ -73,9 +73,10 @@ struct SearchStats {
   uint64_t qStandpatCuts = 0;
   uint64_t minorPromotionPrunings = 0;
   uint64_t mateDistancePrunings = 0;
-  uint64_t rfpPrunings = 0;
   uint64_t nullMovePrunings = 0;
   uint64_t nullMoveVerifications = 0;
+  uint64_t extensions = 0;
+  uint64_t rfpPrunings = 0;
   uint64_t razorReductions = 0;
   uint64_t iidSearches = 0;
   uint64_t lrReductions = 0;

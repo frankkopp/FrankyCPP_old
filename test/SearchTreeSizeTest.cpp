@@ -162,9 +162,14 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   SearchConfig::USE_MPP = false;
   SearchConfig::USE_PVS = false;
   SearchConfig::USE_PV_MOVE_SORT = false;
+  SearchConfig::USE_NMP = false;
+  SearchConfig::USE_EXTENSIONS = false;
+
+
+  // not yet implemented
+  // vvvvvvvvvvvvvvvvvvv
   SearchConfig::USE_RFP = false;
   SearchConfig::USE_RAZOR_PRUNING = false;
-  SearchConfig::USE_NMP = false;
   SearchConfig::USE_FORWARD_PRUNING_CHECK = false;
   SearchConfig::USE_FUTILITY_PRUNING = false;
   SearchConfig::USE_EFUTILITY_PRUNING = false;
@@ -177,31 +182,32 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
 
   Logger::get().TEST_LOG->set_level(spdlog::level::info);
   Logger::get().SEARCH_LOG->set_level(spdlog::level::info);
-  ptrToSpecial = &search.getSearchStats().nullMoveVerifications;
+  ptrToSpecial = &search.getSearchStats().no_moveForPVsorting;
 
   //  // pure MiniMax
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "MINIMAX-QS"));
   //
   //  // pure MiniMax + quiescence
-  //  SearchConfig::USE_QUIESCENCE = true;
+  SearchConfig::USE_QUIESCENCE = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "MM+QS"));
   //
-  //  SearchConfig::USE_TT = true;
+  SearchConfig::USE_TT = true;
+  SearchConfig::USE_TT_QSEARCH = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "MM+QS+TT"));
 
-  SearchConfig::USE_QUIESCENCE = true;
   SearchConfig::USE_ALPHABETA = true;
   SearchConfig::USE_PVS = true;
   SearchConfig::USE_KILLER_MOVES = true;
   SearchConfig::USE_PV_MOVE_SORT = true;
   SearchConfig::USE_MPP = true;
   SearchConfig::USE_MDP = true;
-  SearchConfig::USE_TT = true;
-  SearchConfig::USE_TT_QSEARCH = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "10 BASE"));
 
   SearchConfig::USE_NMP = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "20 NMP"));
+
+  SearchConfig::USE_EXTENSIONS = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "30 EXT"));
 
   //  SearchConfig::USE_RFP = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "20 RFP"));

@@ -41,7 +41,11 @@ std::string SearchStats::str() const {
   os.imbue(deLocale);
   os
     << "nodesVisited: " << nodesVisited
-    << " tt_Cutss: " << tt_Cuts
+    << " nullMovePrunings: " << nullMovePrunings
+    << " nullMoveVerifications: " << nullMoveVerifications
+    << " extensions: " << extensions
+    << " noTTMoveForPVsorting: " << no_moveForPVsorting
+    << " tt_Cuts: " << tt_Cuts
     << " tt_NoCuts: " << tt_NoCuts
     << " leafPositionsEvaluated: " << leafPositionsEvaluated
     << " nonLeafPositionsEvaluated: " << nonLeafPositionsEvaluated
@@ -51,7 +55,6 @@ std::string SearchStats::str() const {
     << " pvs_researches: " << pvs_researches
     << " pvs_cutoffs: " << pvs_cutoffs
     << " pv_sortings: " << pv_sortings
-    << " noTTMoveForPVsorting: " << no_moveForPVsorting
     << " quiescenceStandpatCuts: " << qStandpatCuts
     << " iid searches: " << iidSearches
     << " movesGenerated: " << movesGenerated
@@ -69,8 +72,7 @@ std::string SearchStats::str() const {
     << " aspirationResearches: " << aspirationResearches
     << " positionsNonQuiet: " << positionsNonQuiet
     << " rfpPrunings: " << rfpPrunings
-    << " nullMovePrunings: " << nullMovePrunings
-    << " nullMoveVerifications: " << nullMoveVerifications
+
     << " razorReductions: " << razorReductions
     << " iidSearches: " << iidSearches
     << " lrReductions: " << lrReductions

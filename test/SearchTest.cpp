@@ -41,7 +41,9 @@ public:
   }
 
 protected:
-  void SetUp() override {}
+  void SetUp() override {
+    Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
+  }
 
   void TearDown() override {}
 };
@@ -91,7 +93,6 @@ TEST_F(SearchTest, nodes) {
 }
 
 TEST_F(SearchTest, timerTest) {
-  Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
   Search search;
   SearchLimits searchLimits;
   Position position;
@@ -113,7 +114,6 @@ TEST_F(SearchTest, timerTest) {
 }
 
 TEST_F(SearchTest, movetime) {
-//  Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
   Search search;
   SearchLimits searchLimits;
   Position position;
@@ -173,7 +173,6 @@ TEST_F(SearchTest, mate1Search) {
 }
 
 TEST_F(SearchTest, mate2Search) {
-  Logger::get().SEARCH_LOG->set_level(spdlog::level::info);
   Search search;
   SearchLimits searchLimits;
   Position position("8/8/8/8/8/5K2/R7/7k w - - 0 7");
@@ -451,7 +450,7 @@ TEST_F(SearchTest, TT) {
        (search.getSearchStats().tt_Cuts + search.getSearchStats().tt_NoCuts)));
 }
 
-TEST_F(SearchTest, NULLMOVE) {
+TEST_F(SearchTest, null_move) {
   Search search;
   SearchLimits searchLimits;
   Position position;
@@ -473,11 +472,23 @@ TEST_F(SearchTest, NULLMOVE) {
             search.getSearchStats().nullMoveVerifications);
 }
 
+TEST_F(SearchTest, extensions) {
+
+  Search search;
+  SearchLimits searchLimits;
+  Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
+
+  SearchConfig::USE_EXTENSIONS = true;
+
+  searchLimits.setMoveTime(5'000);
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+
+}
+
 TEST_F(SearchTest, perft) {
-//  Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
-
   int DEPTH = 6;
-
+  
   long perftResults[] = {0,
                          20,             // 1
                          400,            // 2
@@ -555,8 +566,7 @@ TEST_F(SearchTest, DISABLED_nmpStats) {
   std::cout << str.str();
 }
 
-TEST_F(SearchTest, debuggingIID) {
-  Logger::get().SEARCH_LOG->set_level(spdlog::level::info);
+TEST_F(SearchTest, DISABLED_debuggingIID) {
 
   Search search;
   SearchLimits searchLimits;
@@ -610,9 +620,9 @@ TEST_F(SearchTest, DISABLED_debuggingTTMove) {
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 }
+
 TEST_F(SearchTest, debugging) {
-  Logger::get().SEARCH_LOG->set_level(spdlog::level::info);
-  
+
   Search search;
   SearchLimits searchLimits;
   Position position;
@@ -628,9 +638,12 @@ TEST_F(SearchTest, debugging) {
   SearchConfig::USE_MPP               = true;
   SearchConfig::USE_PVS               = true;
   SearchConfig::USE_PV_MOVE_SORT      = true;
+  SearchConfig::USE_NMP               = true;
+
+  // not yet implemented
+  // vvvvvvvvvvvvvvvvvvv
   SearchConfig::USE_RFP               = true;
   SearchConfig::USE_RAZOR_PRUNING     = true;
-  SearchConfig::USE_NMP               = true;
   SearchConfig::USE_FORWARD_PRUNING_CHECK  = true;
   SearchConfig::USE_FUTILITY_PRUNING  = true;
   SearchConfig::USE_EFUTILITY_PRUNING = true;

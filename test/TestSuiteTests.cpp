@@ -46,31 +46,36 @@ public:
 protected:
   void SetUp() override {
 
+    Logger::get().SEARCH_LOG->set_level(spdlog::level::info);
+
     // @formatter:off
     SearchConfig::USE_QUIESCENCE      = true;
     SearchConfig::USE_ALPHABETA       = true;
     SearchConfig::USE_PVS             = true;
 
-
     SearchConfig::USE_TT              = true;
     SearchConfig::USE_TT_QSEARCH      = true;
+    SearchConfig::TT_SIZE_MB          = 1024;
 
     SearchConfig::USE_KILLER_MOVES    = true;
     SearchConfig::USE_PV_MOVE_SORT    = true;
-//    SearchConfig::USE_IID             = true;
 
     SearchConfig::USE_MDP             = true;
     SearchConfig::USE_MPP             = true;
     SearchConfig::USE_QS_STANDPAT_CUT = true;
-    SearchConfig::USE_RFP             = true;
-//    SearchConfig::USE_RAZOR_PRUNING   = true;
+
     SearchConfig::USE_NMP             = true;
 
-    SearchConfig::USE_FORWARD_PRUNING_CHECK      = true;
+    // not yet implemented
+    // vvvvvvvvvvvvvvvvvvv
+    SearchConfig::USE_RFP = false;
+    SearchConfig::USE_RAZOR_PRUNING = false;
+    SearchConfig::USE_FORWARD_PRUNING_CHECK = false;
+    SearchConfig::USE_FUTILITY_PRUNING = false;
+    SearchConfig::USE_EFUTILITY_PRUNING = false;
+    SearchConfig::USE_LMP = false;
+    SearchConfig::USE_LMR = false;
 
-    SearchConfig::TT_SIZE_MB          = 64;
-    SearchConfig::MAX_EXTRA_QDEPTH    = static_cast<Depth>(20);
-    SearchConfig::NO_KILLER_MOVES     = 2;
     // @formatter:on
 
   }
@@ -172,7 +177,7 @@ TEST_F(TestSuiteTests, FrankyTestSuite) {
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath+= + "/testsets/franky_tests.epd";
   MilliSec moveTime = 1'000;
-  Depth depth = static_cast<Depth>(0);
+  Depth depth = Depth{0};
   TestSuite testSuite(filePath, moveTime, depth);
   testSuite.runTestSuite();
 }
@@ -181,7 +186,7 @@ TEST_F(TestSuiteTests, ecm98) {
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath+= + "/testsets/ecm98.epd";
   MilliSec moveTime = 1'000;
-  Depth depth = static_cast<Depth>(0);
+  Depth depth = Depth{0};
   TestSuite testSuite(filePath, moveTime, depth);
   testSuite.runTestSuite();
 }

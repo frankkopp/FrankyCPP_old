@@ -623,15 +623,15 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
     // - recursive null moves should be avoided
     if (SearchConfig::USE_NMP && ply > 1        // start with my color
         && NT == NonPV
-        && depth >= SearchConfig::NMP_DEPTH     // don't do it too close to leaf nodes (excl. QUIESCENCE)
+        && depth >= SearchConfig::NMP_DEPTH     // don't do it too close to leaf nodes 
         && doNull                               // don't do recursive null moves
         && position.getMaterialNonPawn(position.getNextPlayer()) // to avoid Zugzwang
         && ST == NONROOT // NMP will be removed from the compiler for qsearch
       ) {
 
-      // don't go into quiescence directly
       Depth newDepth = depth - SearchConfig::NMP_REDUCTION;
 
+      // do a null move search with a null window
       position.doNullMove();
       Value nullValue =
         -search<NONROOT, NonPV>(position, newDepth, ply + 1, -beta, -beta + 1, No_Null_Move);
@@ -642,13 +642,14 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
           && nullValue >= beta) {
         searchStats.nullMoveVerifications++;
         newDepth = depth - SearchConfig::NMP_V_REDUCTION;
+        // confirm >beta by doing a shallow normal search on the position
         nullValue = search<NONROOT, PV>(position, newDepth, ply, alpha, beta, No_Null_Move);
       }
 
-      // Check for mate threat
+      // Check for mate threat and do not return an unproven mate value
       if ((mateThreat[ply] = isCheckMateValue(nullValue))) nullValue = VALUE_CHECKMATE_THRESHOLD;;
 
-      if (nullValue >= beta) {
+      if (nullValue >= beta) { // cut off node
         searchStats.nullMovePrunings++;
         LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}}Search in ply {} for depth {}: NULL CUT", "", ply, ply, depth);
         storeTT(position, nullValue, TYPE_BETA, newDepth, ply, MOVE_NONE, mateThreat[ply]);
@@ -683,7 +684,6 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
   Move move = MOVE_NONE;
   int movesSearched = 0; // to detect mate situations
   int moveNumber = 0; // to count where cutoffs take place
-  Depth newDepth = depth - 1; // reduce depth by 1 in the next search
 
   // ###########################################################################
   // MOVE LOOP
@@ -718,39 +718,31 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
     // ###############################################
 
     // ###############################################
-    // FORWARD PRUNING CHECK
-    // Some positions should not be cut or reduced.
-    bool forwardPruning = true;
-    if (SearchConfig::USE_FORWARD_PRUNING_CHECK
-        && ST == NONROOT
-      ) {
-      if (mateThreat[ply] // mate threat from null move search or TT
-          || typeOf(move) == MoveType::CASTLING  // really?
-          || typeOf(move) == MoveType::PROMOTION // promotion or close to promotion
-          || (typeOf(position.getPiece(getFromSquare(move))) == PieceType::PAWN
-              && (position.getNextPlayer() == WHITE
-                  ? rankOf(getToSquare(move)) == RANK_7   // WHITE
-                  : rankOf(getToSquare(move)) == RANK_2)) // BLACK
-          || position.givesCheck(move) // we are giving check
-          || !position.hasCheck() // we are in check
+    // EXTENSIONS
+    Depth extension = DEPTH_NONE;
+    if (SearchConfig::USE_EXTENSIONS) {
+      if ( // position has check is implicit in quiescence
+        // move gives check
+        position.givesCheck(move)
+        // move is close to promotion
+        || (typeOf(position.getPiece(getFromSquare(move))) == PieceType::PAWN
+            && (position.getNextPlayer() == WHITE
+                ? rankOf(getToSquare(move)) == RANK_7   // WHITE
+                : rankOf(getToSquare(move)) == RANK_2)) // BLACK
+        // promotion
+        || typeOf(move) == MoveType::PROMOTION
+        // || mateThreat[ply] // mate threat from null move search or TT
+        // Recapture?
+        // Single Reply?
+        // Pawn Endgame?
         ) {
-        forwardPruning = false;
-        {
-          LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}}Search in ply {} for depth {}: AVOID REDUCTION {} Move: {} ST={} NT={} mate={} castling={} prom={} preprom={} givecheck={}",
-                     "", ply, ply, depth, forwardPruning, printMoveVerbose(move),
-                     ST, NT,
-                     mateThreat[ply],
-                     typeOf(move) == MoveType::CASTLING,
-                     typeOf(move) == MoveType::PROMOTION,
-                     (typeOf(position.getPiece(getFromSquare(move))) == PieceType::PAWN
-                      && (position.getNextPlayer() == WHITE
-                          ? rankOf(getToSquare(move)) == RANK_7   // WHITE
-                          : rankOf(getToSquare(move)) == RANK_2)) // BLACK
-                       position.givesCheck(move)
-          );
-        }
+        ++extension;
+        searchStats.extensions++;
+        LOG__DEBUG(Logger::get().SEARCH_LOG, "{:>{}}Search in ply {} for depth {}: EXTENSION Move: {} ST={} NT={} mate={} castling={} prom={} preprom={} givecheck={}",
+                   "", ply, ply, depth, printMoveVerbose(move), ST, NT, mateThreat[ply], typeOf(move) == MoveType::CASTLING, typeOf(move) == MoveType::PROMOTION, (typeOf(position.getPiece(getFromSquare(move))) == PieceType::PAWN && (position.getNextPlayer() == WHITE ? rankOf(getToSquare(move)) == RANK_7 : rankOf(getToSquare(move)) == RANK_2)), position.givesCheck(move));
       }
     }
+    // EXTENSIONS
     // ###############################################
 
     // ###############################################
@@ -760,19 +752,14 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
     // Will not be done when in a pvNode search or when
     // already any search extensions has been determined.
     // Also not when in check.
-    if (ST == NONROOT
-        && forwardPruning
+    if (NT != PV
+        && !position.hasCheck()
+        && !extension
       ) {
-      //      const int myMat = position.getMaterial(position.getNextPlayer());
-      //      const int oppMat = position.getMaterial(~position.getNextPlayer());
-      //      const auto materialEval = static_cast<const Value>(myMat - oppMat);
-      //      const Piece targetPiece = position.getPiece(getToSquare(move));
-      //      const Value moveGain = targetPiece == PIECE_NONE ? VALUE_ZERO : valueOf(typeOf(targetPiece));
-      //      const Value gainedValue = materialEval + moveGain;
-
-      // TODO: PRUNINGS
 
     }
+
+    // FORWARD PRUNING ALPHA
     // ###############################################
 
     // ###############################################
@@ -784,6 +771,9 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
     if (position.isLegalPosition()) {
       currentVariation.push_back(move);
       sendSearchUpdateToEngine();
+
+      // reduce depth by 1 in the next search and add extension for this move
+      Depth newDepth = depth - DEPTH_ONE + extension;
 
       // check for repetition or 50-move-rule draws
       if (checkDrawRepAnd50<ST>(position)) {
@@ -1053,17 +1043,14 @@ Move Search::getMove(Position &position, int ply) {
       }
       break;
     case NONROOT:
-      move = moveGenerators[ply].getNextPseudoLegalMove<MoveGenerator::GENALL>(
-        position);
+      move = moveGenerators[ply].getNextPseudoLegalMove<MoveGenerator::GENALL>(position);
       break;
     case QUIESCENCE:
       if (position.hasCheck()) { // if in check look at all moves in quiescence
-        move = moveGenerators[ply].getNextPseudoLegalMove<MoveGenerator::GENALL>(
-          position);
+        move = moveGenerators[ply].getNextPseudoLegalMove<MoveGenerator::GENALL>(position);
       }
       else { // if not in check only look at captures
-        move = moveGenerators[ply].getNextPseudoLegalMove<MoveGenerator::GENCAP>(
-          position);
+        move = moveGenerators[ply].getNextPseudoLegalMove<MoveGenerator::GENCAP>(position);
       }
       break;
     case PERFT:
@@ -1074,8 +1061,7 @@ Move Search::getMove(Position &position, int ply) {
         }
       }
       else {
-        move = moveGenerators[ply].getNextPseudoLegalMove<MoveGenerator::GENALL>(
-          position);
+        move = moveGenerators[ply].getNextPseudoLegalMove<MoveGenerator::GENALL>(position);
       }
       break;
   }
