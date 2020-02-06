@@ -48,11 +48,17 @@ namespace SearchConfig {
   inline bool USE_MDP               = true; // mate distance pruning
   inline bool USE_MPP               = true; // minor promotion pruning
   inline bool USE_QS_STANDPAT_CUT   = true; // RFP for quiescence
-  inline bool USE_NMP               = true;
+  inline bool USE_NMP               = true; // Null Move Pruning
   inline Depth NMP_DEPTH            = Depth{3}; 
   inline Depth NMP_REDUCTION        = Depth{3};
   inline bool NMP_VERIFICATION      = true;
   inline Depth NMP_V_REDUCTION      = Depth{3};
+
+  inline bool USE_EXTENSIONS            = true;
+
+  
+  // not yet implemented
+  // vvvvvvvvvvvvvvvvvvv
 
   inline bool USE_RFP               = true; // Reverse Futility Pruning
   inline Value RFP_MARGIN           = Value{250}; // less than 3 pawns per depth
