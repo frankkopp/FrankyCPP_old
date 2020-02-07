@@ -720,7 +720,10 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
     // ###############################################
     // EXTENSIONS
     Depth extension = DEPTH_NONE;
-    if (SearchConfig::USE_EXTENSIONS) {
+    if (SearchConfig::USE_EXTENSIONS
+      && ST != QUIESCENCE
+      && depth <= DEPTH_FRONTIER // to limit search extension
+    ) {
       if ( // position has check is implicit in quiescence
         // move gives check
         position.givesCheck(move)
@@ -731,14 +734,14 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
                 : rankOf(getToSquare(move)) == RANK_2)) // BLACK
         // promotion
         || typeOf(move) == MoveType::PROMOTION
-        // || mateThreat[ply] // mate threat from null move search or TT
+        || mateThreat[ply] // mate threat from null move search or TT
         // Recapture?
         // Single Reply?
         // Pawn Endgame?
         ) {
         ++extension;
         searchStats.extensions++;
-        LOG__DEBUG(Logger::get().SEARCH_LOG, "{:>{}}Search in ply {} for depth {}: EXTENSION Move: {} ST={} NT={} mate={} castling={} prom={} preprom={} givecheck={}",
+        LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}}Search in ply {} for depth {}: EXTENSION Move: {} ST={} NT={} mate={} castling={} prom={} preprom={} givecheck={}",
                    "", ply, ply, depth, printMoveVerbose(move), ST, NT, mateThreat[ply], typeOf(move) == MoveType::CASTLING, typeOf(move) == MoveType::PROMOTION, (typeOf(position.getPiece(getFromSquare(move))) == PieceType::PAWN && (position.getNextPlayer() == WHITE ? rankOf(getToSquare(move)) == RANK_7 : rankOf(getToSquare(move)) == RANK_2)), position.givesCheck(move));
       }
     }
@@ -772,8 +775,6 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
       currentVariation.push_back(move);
       sendSearchUpdateToEngine();
 
-      // reduce depth by 1 in the next search and add extension for this move
-      Depth newDepth = depth - DEPTH_ONE + extension;
 
       // check for repetition or 50-move-rule draws
       if (checkDrawRepAnd50<ST>(position)) {
@@ -783,6 +784,9 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
 
         // ROOT is used only at the start - changes directly to NONROOT
         const Search::Search_Type nextST = ST == ROOT ? NONROOT : ST;
+
+        // reduce depth by 1 in the next search and add extension for this move
+        Depth newDepth = depth - DEPTH_ONE + extension;
 
         // in quiescence we do not have depth any more
         if (ST == QUIESCENCE || newDepth < DEPTH_NONE) newDepth = DEPTH_NONE;
