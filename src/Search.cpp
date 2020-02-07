@@ -298,7 +298,7 @@ void Search::run(Position position) {
 /**
  * Generates root moves and calls search in a loop increasing depth
  * with each iteration.
- * 
+ *
  * Detects mate if started on a mate position.
  * @param position
  * @return a SearchResult
@@ -623,7 +623,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
     // - recursive null moves should be avoided
     if (SearchConfig::USE_NMP && ply > 1        // start with my color
         && NT == NonPV
-        && depth >= SearchConfig::NMP_DEPTH     // don't do it too close to leaf nodes 
+        && depth >= SearchConfig::NMP_DEPTH     // don't do it too close to leaf nodes
         && doNull                               // don't do recursive null moves
         && position.getMaterialNonPawn(position.getNextPlayer()) // to avoid Zugzwang
         && ST == NONROOT // NMP will be removed from the compiler for qsearch
@@ -665,10 +665,53 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
   // ###############################################
 
   // ###############################################
+  // IID
+  // If we are here without a ttMove to search first
+  // we try to find a good move to try first by doing
+  // a shallow search. This is most effective with bad
+  // move ordering. If move ordering is quite good
+  // this might be a waste of search time.
+  if (SearchConfig::USE_IID
+    && ST != PERFT
+    && ST != QUIESCENCE
+    && NT == PV
+    && ttMove == MOVE_NONE
+    && depth > 4
+    ) {
+    searchStats.iidSearches++;
+    const Depth iidDepth = depth - SearchConfig::IID_REDUCTION;
+    if (iidDepth <= DEPTH_NONE) { ;
+      search<QUIESCENCE, PV>(position, iidDepth, ply, alpha, beta, doNull);
+    }
+    else {
+      search<NONROOT, PV>(position, iidDepth, ply, alpha, beta, doNull);
+    }
+
+    const TT::Entry* iidTTEntryPtr = tt->probe(position.getZobristKey());
+    if (iidTTEntryPtr != nullptr && iidTTEntryPtr->move != MOVE_NONE) {
+      ttMove = iidTTEntryPtr->move;
+      LOG__DEBUG(Logger::get().SEARCH_LOG, "{:>{}}Search in ply {} for depth {}: IID SUCCESS: ttMove={}", "", ply, ply, depth, printMoveVerbose(ttMove));
+    } else {
+      LOG__DEBUG(Logger::get().SEARCH_LOG, "{:>{}}Search in ply {} for depth {}: IID FAILED", "", ply, ply, depth);
+      if (pv[ply].empty()) {
+        LOG__DEBUG(Logger::get().SEARCH_LOG, "{:>{}}Search in ply {} for depth {}: IID PV FAILED", "", ply, ply, depth);
+      }
+      else {
+        ttMove = pv[ply][0];
+        LOG__DEBUG(Logger::get().SEARCH_LOG, "{:>{}}Search in ply {} for depth {}: IID PV SUCCESS: ttMove={}", "", ply, ply, depth, printMoveVerbose(ttMove));
+      };
+
+    }
+  }
+  // IID
+  // ###############################################
+
+
+  // ###############################################
   // PV MOVE SORT
   // make sure the pv move is returned first by the move generator
   if (SearchConfig::USE_PV_MOVE_SORT && ST != ROOT && ST != PERFT) {
-    if (ttMove) {
+    if (ttMove != MOVE_NONE) {
       assert(moveGenerators[ply].validateMove(position, ttMove));
       moveGenerators[ply].setPV(ttMove);
       searchStats.pv_sortings++;
@@ -722,7 +765,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
     Depth extension = DEPTH_NONE;
     if (SearchConfig::USE_EXTENSIONS
       && ST != QUIESCENCE
-      && depth <= DEPTH_FRONTIER // to limit search extension
+      && depth <= DEPTH_FRONTIER // to limit search extensions and avoid search explosion
     ) {
       if ( // position has check is implicit in quiescence
         // move gives check

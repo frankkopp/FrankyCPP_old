@@ -184,24 +184,8 @@ public:
   }
 
   /**
-   * Looks up and returns a result using get(Key key).
-   * Result is a logical TT result. HIT means we can cut the search of the node.
-   * MISS means we need to be searching on.
-   * In both cases we might have a ttMove.
-   * A HIT is returned when entry type is either EXACT or ALPHA and value<alpha
-   * or BETA and value>beta. In a PV node only EXACT values are a HIT. 
-   *
-   * May write to ttValue and ttMove.
-   *
-   * @tparam NT true for a PV node, false for NonPV
-   * @param key Position key (usually Zobrist key)
-   * @param depth 1-DEPTH_MAX (127)
-   * @param alpha current alpha when probing
-   * @param beta current beta when probing
-   * @param ttValue TT value will be stored into this
-   * @param ttMove TT move will be stored into this
-   * @param isPVNode current node type when probing
-   * @return A result of the probe with value and move from the TT in case of hit.
+   * Looks up and returns a pointer to an TT Entry. Decreases age of the entry
+   * if an entry was found
    */
   const TT::Entry* probe(const Key &key);
 

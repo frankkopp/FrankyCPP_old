@@ -44,6 +44,9 @@ namespace SearchConfig {
   inline bool USE_KILLER_MOVES      = true; // Store refutation moves (>beta) for move ordering
   inline int NO_KILLER_MOVES        = 2; // number of killers stored
   inline bool USE_PV_MOVE_SORT      = true; // tell the move gen the current pv to return first
+  inline bool USE_IID               = true; // Internal Iterative Deepening to find good frist move
+  inline Depth IID_REDUCTION        = Depth{2};
+
   // Pruning features
   inline bool USE_MDP               = true; // mate distance pruning
   inline bool USE_MPP               = true; // minor promotion pruning
