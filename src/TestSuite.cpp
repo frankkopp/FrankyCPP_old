@@ -125,6 +125,8 @@ void TestSuite::runTestSet(std::vector<Test> &ts) const {
 void
 TestSuite::runSingleTest(Search &search, SearchLimits &searchLimits, TestSuite::Test &t) const {
 
+  LOG__INFO(Logger::get().TSUITE_LOG, "Testing TestSet: ID \"{}\"", t.id);
+
   // clear search
   search.clearHash();
 
@@ -147,14 +149,14 @@ TestSuite::runSingleTest(Search &search, SearchLimits &searchLimits, TestSuite::
 
       // check and store result
       if ("mate " + t.expectedString == printValue(search.getLastSearchResult().bestMoveValue)) {
-        LOG__DEBUG(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" SUCCESS", t.id);
+        LOG__INFO(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" SUCCESS", t.id);
         t.actualMove = search.getLastSearchResult().bestMove;
         t.actualValue = search.getLastSearchResult().bestMoveValue;
         t.result = SUCCESS;
         return;
       }
       else {
-        LOG__DEBUG(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" FAILED", t.id);
+        LOG__INFO(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" FAILED", t.id);
         t.actualMove = search.getLastSearchResult().bestMove;
         t.actualValue = search.getLastSearchResult().bestMoveValue;
         t.result = SUCCESS;
@@ -166,15 +168,7 @@ TestSuite::runSingleTest(Search &search, SearchLimits &searchLimits, TestSuite::
     case BM: {
       // get best move
       // EPD allows for multiple best moves
-      MoveList moves;
-      std::regex splitPattern("\\s+");
-      std::sregex_token_iterator iter(t.expectedString.begin(), t.expectedString.end(), splitPattern, -1);
-      std::sregex_token_iterator end;
-      while (iter != end) {
-        Move move = Misc::getMoveFromSAN(Position(t.fen), iter->str());
-        if (move) moves.push_back(move);
-        ++iter;
-      }
+      MoveList moves = getResultMoveList(t);
 
       if (moves.empty()) {
         LOG__WARN(Logger::get().TSUITE_LOG, "Skipping test {} as expected result {} could not be read", t.id, t.expectedString);
@@ -192,7 +186,7 @@ TestSuite::runSingleTest(Search &search, SearchLimits &searchLimits, TestSuite::
       // check against expected moves
       for (Move m : moves) {
         if (m == actual) {
-          LOG__DEBUG(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" SUCCESS", t.id);
+          LOG__INFO(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" SUCCESS", t.id);
           t.actualMove = search.getLastSearchResult().bestMove;
           t.actualValue = search.getLastSearchResult().bestMoveValue;
           t.result = SUCCESS;
@@ -202,14 +196,51 @@ TestSuite::runSingleTest(Search &search, SearchLimits &searchLimits, TestSuite::
           continue;
         }
       }
-      LOG__DEBUG(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" FAILED", t.id);
+      LOG__INFO(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" FAILED", t.id);
       t.actualMove = search.getLastSearchResult().bestMove;
       t.actualValue = search.getLastSearchResult().bestMoveValue;
       t.result = FAILED;
       return;
     }
 
-    // TODO: Add AM (avoid move)
+    // Avoid move test
+    case AM: {
+      // get moves to avoid
+      // EPD allows for multiple moves
+      MoveList moves = getResultMoveList(t);
+
+      if (moves.empty()) {
+        LOG__WARN(Logger::get().TSUITE_LOG, "Skipping test {} as expected result {} could not be read", t.id, t.expectedString);
+        t.result = SKIPPED;
+        return;
+      }
+
+      // do the search
+      search.startSearch(position, searchLimits);
+      search.waitWhileSearching();
+
+      // get the result
+      const Move actual = moveOf(search.getLastSearchResult().bestMove);
+
+      // check against expected moves to avoid
+      for (Move m : moves) {
+        if (m == actual) {
+          LOG__INFO(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" FAILED", t.id);
+          t.actualMove = search.getLastSearchResult().bestMove;
+          t.actualValue = search.getLastSearchResult().bestMoveValue;
+          t.result = FAILED;
+          return;
+        }
+        else {
+          continue;
+        }
+      }
+      LOG__INFO(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" SUCCESS", t.id);
+      t.actualMove = search.getLastSearchResult().bestMove;
+      t.actualValue = search.getLastSearchResult().bestMoveValue;
+      t.result = SUCCESS;
+      return;
+    }
 
     case NONE:
     default:
@@ -217,6 +248,19 @@ TestSuite::runSingleTest(Search &search, SearchLimits &searchLimits, TestSuite::
       t.result = SKIPPED;
       return;
   }
+}
+
+MoveList TestSuite::getResultMoveList(const TestSuite::Test &t) const {
+  MoveList moves;
+  std::regex splitPattern("\\s+");
+  std::sregex_token_iterator iter(t.expectedString.begin(), t.expectedString.end(), splitPattern, -1);
+  std::sregex_token_iterator end;
+  while (iter != end) {
+    Move move = Misc::getMoveFromSAN(Position(t.fen), iter->str());
+    if (move) moves.push_back(move);
+    ++iter;
+  }
+  return moves;
 }
 
 void TestSuite::readTestCases(const std::string &filePathStr, std::vector<Test> &tests) const {

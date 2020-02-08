@@ -122,6 +122,7 @@ public:
   
   /** string representation of result type */
   static std::string print(TestSuite::ResultType resultType);
+  MoveList getResultMoveList(const Test &t) const;
 };
 
 

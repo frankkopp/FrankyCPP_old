@@ -73,7 +73,7 @@ TEST_F(TestSuiteTests, runTestSet) {
   }
 }
 
-TEST_F(TestSuiteTests, cleanUpLine)  {
+TEST_F(TestSuiteTests, cleanUpLine) {
   std::string filePath = "";
   MilliSec moveTime = 5'000;
   Depth depth = static_cast<Depth>(10);
@@ -115,10 +115,10 @@ TEST_F(TestSuiteTests, readLine) {
   // Result has additional chars (! or ?)
   line = "2kr4/ppq2pp1/2b1pn2/2P4r/2P5/3BQN1P/P4PP1/R4RK1 b - - bm Ng4!; id \"CCC-I No.3\";";
   ASSERT_TRUE(testSuite.readOneEPD(line, test));
-  
+
   line = "6k1/p3b1np/6pr/6P1/1B2p2Q/K7/7P/8 w - - am Qxh6??; id \"CCC-I No.6\";";
   ASSERT_TRUE(testSuite.readOneEPD(line, test));
-  
+
   line = "7r/8/pB1p1R2/4k2q/1p6/1Pr5/P5Q1/6K1 w - - bm Bd4+; c0 \"M15\"; id \"CCC-I No.8\";";
   ASSERT_TRUE(testSuite.readOneEPD(line, test));
 
@@ -127,7 +127,7 @@ TEST_F(TestSuiteTests, readLine) {
 TEST_F(TestSuiteTests, readFile) {
 
   std::string filePath = FrankyCPP_PROJECT_ROOT;
-  filePath+= + "/testsets/franky_tests.epd";
+  filePath += +"/testsets/franky_tests.epd";
   MilliSec moveTime = 5'000;
   Depth depth = static_cast<Depth>(10);
 
@@ -150,15 +150,22 @@ TEST_F(TestSuiteTests, singleTest) {
   searchLimits.setDepth(depth);
   TestSuite testSuite(filePath, moveTime, depth);
 
-  TestSuite::Test test = {"N5xf3", "7k/8/3p4/4N3/8/5p2/P7/1K2N3 w - -", TestSuite::BM, "N5xf3"};
-
+  TestSuite::Test test = {"CaptureTest", "7k/8/3p4/4N3/8/5p2/P7/1K2N3 w - -", TestSuite::BM,
+                          "N5xf3"};
   testSuite.runSingleTest(search, searchLimits, test);
+  EXPECT_EQ(TestSuite::SUCCESS, test.result);
+
+  // 6k1/p3b1np/6pr/6P1/1B2p2Q/K7/7P/8 w - - am Qxh6??; id "CCC-I No.6";
+  // Currently this test will not avoid the move
+  test = {"AvoidMoveTest", "6k1/p3b1np/6pr/6P1/1B2p2Q/K7/7P/8 w - -", TestSuite::AM, "Qxh6"};
+  testSuite.runSingleTest(search, searchLimits, test);
+  EXPECT_EQ(TestSuite::FAILED, test.result);
 }
 
 // 100%
 TEST_F(TestSuiteTests, FrankyTestSuite) {
   std::string filePath = FrankyCPP_PROJECT_ROOT;
-  filePath+= + "/testsets/franky_tests.epd";
+  filePath += +"/testsets/franky_tests.epd";
   MilliSec moveTime = 1'000;
   Depth depth = Depth{0};
   TestSuite testSuite(filePath, moveTime, depth);
