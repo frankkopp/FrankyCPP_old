@@ -61,14 +61,7 @@ void TestSuite::runTestSuite() {
   fprintln("All {} tests DONE", testCases.size());
   fprintln("");
 
-  fprintln("Results for Test Suite {}", filePath);
-  fprintln("=================================================================="
-           "==================================================================");
-  fprintln(" {:<4s} | {:<10s} | {:<8s} | {:<8s} | {:<15s} | {:s} | {:s}",
-           " Nr.", "Result", "Move", "Value", "Expected Result", "Fen", "ID");
-  fprintln("=================================================================="
-           "==================================================================");
-
+  // add up results
   for (const Test &t : testCases) {
     tr.counter++;
     switch (t.result) {
@@ -85,23 +78,14 @@ void TestSuite::runTestSuite() {
         tr.successCounter++;
         break;
     }
-
-    fprintln(" {:<4d} | {:<10s} | {:<8s} | {:<8s} | {:<15s} | {:s} | {:s}",
-             tr.counter, print(t.result), printMove(t.actualMove),
-             printValue(t.actualValue),
-             (t.type == DM ? "dm " : t.type == BM ? "bm " : "-") + t.expectedString,
-             t.fen, t.id);
   }
 
-  fprintln("=================================================================="
-           "==================================================================");
+  // test duration
   timer.stop();
   fprintln("{}", timer.format());
-  fprintln("Successful: {:3n} ({:d} %)", tr.successCounter, 100 * tr.successCounter / tr.counter);
-  fprintln("Failed:     {:3n} ({:d} %)", tr.failedCounter, 100 * tr.failedCounter / tr.counter);
-  fprintln("Skipped:    {:3n} ({:d} %)", tr.skippedCounter, 100 * tr.skippedCounter / tr.counter);
-  fprintln("Not tested: {:3n} ({:d} %)", tr.notTestedCounter, 100 * tr.notTestedCounter / tr.counter);
-  fprintln("");
+
+  // print results
+  printResult();
 
 }
 
@@ -358,4 +342,28 @@ std::string TestSuite::print(TestSuite::ResultType resultType) {
   return "";
 }
 
+void TestSuite::printResult() const {
+  fprintln("Results for Test Suite {}", filePath);
+  fprintln("=================================================================="
+           "==================================================================");
+  fprintln(" {:<4s} | {:<10s} | {:<8s} | {:<8s} | {:<15s} | {:s} | {:s}",
+           " Nr.", "Result", "Move", "Value", "Expected Result", "Fen", "ID");
+  fprintln("=================================================================="
+           "==================================================================");
 
+  for (const Test &t : testCases) {
+    fprintln(" {:<4d} | {:<10s} | {:<8s} | {:<8s} | {:<15s} | {:s} | {:s}",
+             tr.counter, print(t.result), printMove(t.actualMove),
+             printValue(t.actualValue),
+             (t.type == DM ? "dm " : t.type == BM ? "bm " : "-") + t.expectedString,
+             t.fen, t.id);
+  }
+
+  fprintln("=================================================================="
+           "==================================================================");
+  fprintln("Successful: {:3n} ({:d} %)", tr.successCounter, 100 * tr.successCounter / tr.counter);
+  fprintln("Failed:     {:3n} ({:d} %)", tr.failedCounter, 100 * tr.failedCounter / tr.counter);
+  fprintln("Skipped:    {:3n} ({:d} %)", tr.skippedCounter, 100 * tr.skippedCounter / tr.counter);
+  fprintln("Not tested: {:3n} ({:d} %)", tr.notTestedCounter, 100 * tr.notTestedCounter / tr.counter);
+  fprintln("");
+}

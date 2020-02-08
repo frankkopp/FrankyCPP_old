@@ -88,6 +88,15 @@ TEST_F(TestSuiteTests, ZugzwangSuite) {
   testSuite.runTestSuite();
 }
 
+TEST_F(TestSuiteTests, STS_Suite) {
+  std::string filePath = FrankyCPP_PROJECT_ROOT;
+  filePath+= + "/testsets/STS1-STS15_LAN.EPD";
+  MilliSec moveTime = 5'000;
+  Depth depth{0};
+  TestSuite testSuite(filePath, moveTime, depth);
+  testSuite.runTestSuite();
+}
+
 TEST_F(TestSuiteTests, ecm98) {
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath+= + "/testsets/ecm98.epd";

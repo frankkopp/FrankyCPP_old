@@ -139,6 +139,7 @@ private:
   MoveList getResultMoveList(const Test &t) const;
 
 
+  void printResult() const;
 };
 
 
