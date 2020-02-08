@@ -24,6 +24,7 @@
  */
 
 #include <algorithm>
+#include <iostream>
 #include "MoveGenerator.h"
 #include "Bitboards.h"
 #include "Values.h"
@@ -190,17 +191,19 @@ void MoveGenerator::resetOnDemand() {
 void MoveGenerator::storeKiller(const Move move, const int maxKillers) {
   maxNumberOfKiller = maxKillers;
   // only store if not already in list
-  if (std::find(killerMoves.begin(), killerMoves.end(), move) == killerMoves.end()) {
-    killerMoves.push_front(move);
+  if (std::find(killerMoves.begin(), killerMoves.end(), moveOf(move)) == killerMoves.end()) {
+    killerMoves.push_front(moveOf(move));
     if (killerMoves.size() > maxNumberOfKiller) killerMoves.resize(maxNumberOfKiller);
   }
 }
 
 inline void MoveGenerator::pushKiller(MoveList &list) {
-  for (auto k : killerMoves) {
+  for (auto killerMove : killerMoves) {
     // Find the move in the list. If move not found ignore killer.
     // Otherwise move element to the front. 
-    const auto element = std::find(list.begin(), list.end(), k);
+    const auto element = std::find_if(list.begin(), list.end(),
+      [&](Move m) { return (moveOf(m) == killerMove); });
+    
     if (element != list.end()) {
       const Move tmp = *element;
       list.erase(element);
@@ -210,9 +213,8 @@ inline void MoveGenerator::pushKiller(MoveList &list) {
 }
 
 inline void MoveGenerator::filterPV(MoveList &moveList) {
-  moveList.erase(std::remove_if(moveList.begin(), moveList.end(), [&](Move m) {
-    return (moveOf(m) == pvMove);
-  }), moveList.end());
+  moveList.erase(std::remove_if(moveList.begin(), moveList.end(), 
+    [&](Move m) { return (moveOf(m) == pvMove); }), moveList.end());
 }
 
 void MoveGenerator::setPV(Move move) {
