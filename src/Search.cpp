@@ -237,11 +237,9 @@ void Search::run(Position position) {
 
   // if we arrive here and the search is not stopped it means that the search
   // was finished before it has been stopped (by stopSearchFlag or ponderhit)
-  if (!_stopSearchFlag &&
-      (searchLimitsPtr->isPonder() || searchLimitsPtr->isInfinite())) {
+  if (!_stopSearchFlag && (searchLimitsPtr->isPonder() || searchLimitsPtr->isInfinite())) {
     LOG__INFO(Logger::get().SEARCH_LOG, "Search finished before stopped or ponderhit! Waiting for stop/ponderhit to send result");
-    while (!_stopSearchFlag &&
-           (searchLimitsPtr->isPonder() || searchLimitsPtr->isInfinite())) {
+    while (!_stopSearchFlag && (searchLimitsPtr->isPonder() || searchLimitsPtr->isInfinite())) {
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
   }
@@ -281,7 +279,8 @@ void Search::run(Position position) {
                     perftResults[searchLimitsPtr->getDepth()]));
     }
   }
-
+  // to stop timer if running
+  _stopSearchFlag = true;
   if (timerThread.joinable()) { timerThread.join(); }
   _isRunning = false;
   searchSemaphore.reset();
@@ -1194,8 +1193,8 @@ void Search::startTimer() {
   this->timerThread = std::thread([&] {
     Logger::get().SEARCH_LOG->debug("Timer thread started with time limit of {:n} ms", timeLimit);
     // relaxed busy wait
-    while (elapsedTime(startTime) < timeLimit + extraTime) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    while (elapsedTime(startTime) < timeLimit + extraTime && !_stopSearchFlag) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
     this->_stopSearchFlag = true;
     Logger::get().SEARCH_LOG->debug("Timer thread stopped search after wall time: {:n} ms (time limit {:n} ms and extra time {:n})", elapsedTime(this->startTime), timeLimit, extraTime);
