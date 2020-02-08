@@ -44,7 +44,7 @@ public:
 protected:
   void SetUp() override {
     Logger::get().TEST_LOG->set_level(spdlog::level::debug);
-    Logger::get().SEARCH_LOG->set_level(spdlog::level::warn);
+    Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
   }
 
   void TearDown() override {}

@@ -714,6 +714,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
     Depth extension = DEPTH_NONE;
     if (SearchConfig::USE_EXTENSIONS
         && ST != QUIESCENCE
+        && ST != PERFT
         && depth <= DEPTH_FRONTIER // to limit search extensions and avoid search explosion
       ) {
       if ( // position has check is implicit in quiescence
@@ -747,6 +748,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
     // already any search extensions has been determined.
     // Also not when in check.
     if (NT != PV
+        && ST != PERFT
         && !position.hasCheck()
         && !extension
       ) {
@@ -759,58 +761,70 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
     // ###############################################
     // Execute move
     position.doMove(move);
-    TT_PREFETCH;   // if available tell the cpu prefetch the tt entry into cpu cache
+
+    // if available on platform tells the cpu to
+    // prefetch the data into cpu caches
+    TT_PREFETCH;
     EVAL_PREFETCH;
+
+    // check if legal move or skip
+    if (!position.isLegalPosition()) {
+      position.undoMove();
+      continue;
+    }
+
+    // update statistics
     searchStats.nodesVisited++;
-    if (position.isLegalPosition()) {
-      currentVariation.push_back(move);
-      sendSearchUpdateToEngine();
+    currentVariation.push_back(move);
+    sendSearchUpdateToEngine();
 
+    // check for repetition or 50-move-rule draws
+    if (checkDrawRepAnd50<ST>(position)) {
+      value = VALUE_DRAW;
+    }
+    // search next ply
+    else {
 
-      // check for repetition or 50-move-rule draws
-      if (checkDrawRepAnd50<ST>(position)) {
-        value = VALUE_DRAW;
+      // ROOT is used only at the start - changes directly to NONROOT
+      const Search::Search_Type nextST = ST == ROOT ? NONROOT : ST;
+
+      // reduce depth by 1 in the next search and add extension for this move
+      Depth newDepth = depth - DEPTH_ONE + extension;
+
+      // in quiescence we do not have depth any more
+      if (ST == QUIESCENCE || newDepth < DEPTH_NONE) newDepth = DEPTH_NONE;
+
+      if (!SearchConfig::USE_PVS || movesSearched == 0 || ST == PERFT) {
+        // AlphaBeta Search or initial search in PVS
+        value = -search<nextST, PV>(position, newDepth, ply + 1, -beta, -alpha, doNull);
       }
       else {
-
-        // ROOT is used only at the start - changes directly to NONROOT
-        const Search::Search_Type nextST = ST == ROOT ? NONROOT : ST;
-
-        // reduce depth by 1 in the next search and add extension for this move
-        Depth newDepth = depth - DEPTH_ONE + extension;
-
-        // in quiescence we do not have depth any more
-        if (ST == QUIESCENCE || newDepth < DEPTH_NONE) newDepth = DEPTH_NONE;
-
-        if (!SearchConfig::USE_PVS || movesSearched == 0 || ST == PERFT) {
-          // AlphaBeta Search or initial search in PVS
+        // #############################
+        // PVS Search /START
+        value = -search<nextST, NonPV>(position, newDepth, ply + 1, -alpha - 1, -alpha, doNull);
+        if (value > alpha && value < beta && !stopConditions()) {
+          if (ST == ROOT) { searchStats.pvs_root_researches++; }
+          else { searchStats.pvs_researches++; }
           value = -search<nextST, PV>(position, newDepth, ply + 1, -beta, -alpha, doNull);
         }
         else {
-          // #############################
-          // PVS Search /START
-          value = -search<nextST, NonPV>(position, newDepth, ply + 1, -alpha - 1, -alpha, doNull);
-          if (value > alpha && value < beta && !stopConditions()) {
-            if (ST == ROOT) { searchStats.pvs_root_researches++; }
-            else { searchStats.pvs_researches++; }
-            value = -search<nextST, PV>(position, newDepth, ply + 1, -beta, -alpha, doNull);
-          }
-          else {
-            if (ST == ROOT) { searchStats.pvs_root_cutoffs++; }
-            else { searchStats.pvs_cutoffs++; }
-          }
-          // PVS Search /END
-          // #############################
+          if (ST == ROOT) { searchStats.pvs_root_cutoffs++; }
+          else { searchStats.pvs_cutoffs++; }
         }
+        // PVS Search /END
+        // #############################
       }
-      assert((value != VALUE_NONE || _stopSearchFlag) && "Value should not be NONE at this point.");
+    }
+    assert((value != VALUE_NONE || _stopSearchFlag) && "Value should not be NONE at this point.");
 
-      movesSearched++;
-      currentVariation.pop_back();
-    } // if (position.isLegalPosition())
+    movesSearched++;
+    currentVariation.pop_back();
+
     position.undoMove();
-    //  ###############################################
+    // Execute move
+    // ###############################################
 
+    // check if we need to stop the search
     if (stopConditions()) { return VALUE_NONE; }
 
     // For root moves encode value into the move
@@ -834,6 +848,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
       // not for all of the ply (not yet clear if >alpha)
       bestNodeValue = value;
 
+      // update some stats for root moves
       if (ST == ROOT) {
         searchStats.bestMoveChanges++;
         searchStats.bestMoveDepth = depth;

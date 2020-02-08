@@ -47,7 +47,7 @@ struct SearchStats {
 
   // performance statistics
   uint64_t movesGenerated = 0;
-  uint64_t nodesVisited = 0;
+  uint64_t nodesVisited = 0; // legal nodes visited
 
   // PERFT Values
   uint64_t leafPositionsEvaluated = 0;
