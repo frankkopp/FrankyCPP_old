@@ -52,7 +52,6 @@ protected:
   void TearDown() override {}
 };
 
-// 100% 1sec
 TEST_F(TestSuiteTests, MateTestSuite) {
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath+= + "/testsets/mate_test_suite.epd";
@@ -71,7 +70,6 @@ TEST_F(TestSuiteTests, CCC1Suite) {
   testSuite.runTestSuite();
 }
 
-// 0%
 TEST_F(TestSuiteTests, NoLotSuite) {
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath+= + "/testsets/nolot.epd";
@@ -81,7 +79,6 @@ TEST_F(TestSuiteTests, NoLotSuite) {
   testSuite.runTestSuite();
 }
 
-// 60% 5sec
 TEST_F(TestSuiteTests, ZugzwangSuite) {
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath+= + "/testsets/nullMoveZugZwangTest.epd";

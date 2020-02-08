@@ -251,12 +251,9 @@ void Search::run(Position position) {
   // print result of the search
   LOG__INFO(Logger::get().SEARCH_LOG, "Search statistics: {}", searchStats.str());
   if (SearchConfig::USE_TT) { LOG__INFO(Logger::get().SEARCH_LOG, tt->str()); }
+  LOG__INFO(Logger::get().SEARCH_LOG, "Search Result was: {} ({})", printMove(lastSearchResult.bestMove), printMove(lastSearchResult.ponderMove));
   LOG__INFO(Logger::get().SEARCH_LOG, "Search Depth was {} ({})", searchStats.currentSearchDepth, searchStats.currentExtraSearchDepth);
-  LOG__INFO(Logger::get().SEARCH_LOG, "Search took {},{:03} sec ({:n} nps)",
-            (searchStats.lastSearchTime % 1'000'000) / 1'000,
-            (searchStats.lastSearchTime % 1'000),
-            (searchStats.nodesVisited * 1'000) /
-            (searchStats.lastSearchTime + 1));
+  LOG__INFO(Logger::get().SEARCH_LOG, "Search took {},{:03} sec ({:n} nps)", (searchStats.lastSearchTime % 1'000'000) / 1'000, (searchStats.lastSearchTime % 1'000), (searchStats.nodesVisited * 1'000) / (searchStats.lastSearchTime + 1));
 
   // check perft and print result
   if (searchLimitsPtr->isPerft()) {
@@ -271,17 +268,13 @@ void Search::run(Position position) {
                                84'998'978'956}; // 8
 
     if (searchStats.leafPositionsEvaluated == perftResults[searchLimitsPtr->getDepth()]) {
-      LOG__INFO(Logger::get().SEARCH_LOG, "Perft test successful: {:n} leaf nodes at depth {}",
-                searchStats.leafPositionsEvaluated, searchLimitsPtr->getDepth());
+      LOG__INFO(Logger::get().SEARCH_LOG, "Perft test successful: {:n} leaf nodes at depth {}", searchStats.leafPositionsEvaluated, searchLimitsPtr->getDepth());
       sendStringToEngine(
         fmt::format("Perft test successful: {:n} leaf nodes at depth {}",
                     searchStats.leafPositionsEvaluated, searchLimitsPtr->getDepth()));
     }
     else {
-      LOG__ERROR(Logger::get().SEARCH_LOG,
-                 "Perft test failed: {:n} leaf nodes at depth {} - should have been {:n}",
-                 searchStats.leafPositionsEvaluated, searchLimitsPtr->getDepth(),
-                 perftResults[searchLimitsPtr->getDepth()]);
+      LOG__ERROR(Logger::get().SEARCH_LOG, "Perft test failed: {:n} leaf nodes at depth {} - should have been {:n}", searchStats.leafPositionsEvaluated, searchLimitsPtr->getDepth(), perftResults[searchLimitsPtr->getDepth()]);
       sendStringToEngine(
         fmt::format("Perft test failed: {:n} leaf nodes at depth {} - should have been {:n}",
                     searchStats.leafPositionsEvaluated, searchLimitsPtr->getDepth(),

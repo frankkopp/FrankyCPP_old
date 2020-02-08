@@ -140,9 +140,9 @@ TEST_F(TestSuiteTests, readFile) {
 }
 
 TEST_F(TestSuiteTests, singleTest) {
-  std::string filePath = "";
+  std::string filePath{};
   MilliSec moveTime = 2'000;
-  Depth depth = static_cast<Depth>(0);
+  Depth depth{0};
 
   Search search;
   SearchLimits searchLimits;
@@ -160,6 +160,15 @@ TEST_F(TestSuiteTests, singleTest) {
   test = {"AvoidMoveTest", "6k1/p3b1np/6pr/6P1/1B2p2Q/K7/7P/8 w - -", TestSuite::AM, "Qxh6"};
   testSuite.runSingleTest(search, searchLimits, test);
   EXPECT_EQ(TestSuite::FAILED, test.result);
+
+  // Direct mate
+  test = {"Direct Mate #1", "4r1b1/1p4B1/pN2pR2/RB2k3/1P2N2p/2p3b1/n2P1p1r/5K1n w - -", TestSuite::DM, "3"};
+  testSuite.runSingleTest(search, searchLimits, test);
+  EXPECT_EQ(TestSuite::SUCCESS, test.result);
+
+  test = {"Direct Mate #2", "r3r3/p1p2p1k/3p2pp/2p5/2P2n2/2N2B2/PPR1PP1q/3RQK2 b - -", TestSuite::DM, "4"};
+  testSuite.runSingleTest(search, searchLimits, test);
+  EXPECT_EQ(TestSuite::SUCCESS, test.result);
 }
 
 // 100%

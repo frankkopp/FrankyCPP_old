@@ -155,7 +155,7 @@ TestSuite::runSingleTest(Search &search, SearchLimits &searchLimits, TestSuite::
         LOG__INFO(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" FAILED", t.id);
         t.actualMove = search.getLastSearchResult().bestMove;
         t.actualValue = search.getLastSearchResult().bestMoveValue;
-        t.result = SUCCESS;
+        t.result = FAILED;
         return;
       }
     }
