@@ -88,9 +88,9 @@ TEST_F(TestSuiteTests, ZugzwangSuite) {
   testSuite.runTestSuite();
 }
 
-TEST_F(TestSuiteTests, STS_Suite) {
+TEST_F(TestSuiteTests, WAC_Suite) {
   std::string filePath = FrankyCPP_PROJECT_ROOT;
-  filePath+= + "/testsets/STS1-STS15_LAN.EPD";
+  filePath+= + "/testsets/wac.epd";
   MilliSec moveTime = 5'000;
   Depth depth{0};
   TestSuite testSuite(filePath, moveTime, depth);
@@ -101,6 +101,19 @@ TEST_F(TestSuiteTests, ecm98) {
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath+= + "/testsets/ecm98.epd";
   MilliSec moveTime = 1'000;
+  Depth depth{0};
+  TestSuite testSuite(filePath, moveTime, depth);
+  testSuite.runTestSuite();
+}
+
+/**
+ * https://sites.google.com/site/strategictestsuite/
+ * 10 sec
+ */
+TEST_F(TestSuiteTests, STS_Suite) {
+  std::string filePath = FrankyCPP_PROJECT_ROOT;
+  filePath+= + "/testsets/STS1-STS15_LAN.EPD";
+  MilliSec moveTime = 10'000;
   Depth depth{0};
   TestSuite testSuite(filePath, moveTime, depth);
   testSuite.runTestSuite();
