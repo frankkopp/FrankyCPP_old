@@ -22,6 +22,7 @@
       <w>seldepth</w>
       <w>spdlog</w>
       <w>templated</w>
+      <w>testsets</w>
       <w>zobrist</w>
     </words>
   </dictionary>

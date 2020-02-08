@@ -77,6 +77,14 @@ public:
     ResultType result;
   };
 
+  struct TestSuiteResult {
+    int counter = 0;
+    int successCounter = 0;
+    int failedCounter = 0;
+    int skippedCounter = 0;
+    int notTestedCounter = 0;
+  };
+
 private:
 
   //std::shared_ptr<spdlog::logger> LOG = spdlog::get("TSuite_Logger");
@@ -87,6 +95,7 @@ private:
 
   std::vector<Test> testCases;
 
+  TestSuiteResult tr{};
 public:
 
   /** Creates a TestSuite instance with a given path, search time per test and
@@ -122,7 +131,14 @@ public:
   
   /** string representation of result type */
   static std::string print(TestSuite::ResultType resultType);
+
+  /** Return the results of the last test suite run */
+  const TestSuiteResult &getTestResults() const { return tr; }
+
+private:
   MoveList getResultMoveList(const Test &t) const;
+
+
 };
 
 

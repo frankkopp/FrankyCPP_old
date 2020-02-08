@@ -39,8 +39,8 @@ using namespace boost::timer;
 void TestSuite::runTestSuite() {
 
   cpu_timer timer;
-
   testCases.clear();
+  tr = TestSuiteResult{};
 
   fprintln("Running Test Suite");
   fprintln("==================================================================");
@@ -69,29 +69,25 @@ void TestSuite::runTestSuite() {
   fprintln("=================================================================="
            "==================================================================");
 
-  int counter = 0;
-  int successCounter = 0;
-  int failedCounter = 0;
-  int skippedCounter = 0;
-  int notTestedCounter = 0;
-
   for (const Test &t : testCases) {
+    tr.counter++;
     switch (t.result) {
       case NOT_TESTED:
-        notTestedCounter++;
+        tr.notTestedCounter++;
         break;
       case SKIPPED:
-        skippedCounter++;
+        tr.skippedCounter++;
         break;
       case FAILED:
-        failedCounter++;
+        tr.failedCounter++;
         break;
       case SUCCESS:
-        successCounter++;
+        tr.successCounter++;
         break;
     }
+
     fprintln(" {:<4d} | {:<10s} | {:<8s} | {:<8s} | {:<15s} | {:s} | {:s}",
-             ++counter, print(t.result), printMove(t.actualMove),
+             tr.counter, print(t.result), printMove(t.actualMove),
              printValue(t.actualValue),
              (t.type == DM ? "dm " : t.type == BM ? "bm " : "-") + t.expectedString,
              t.fen, t.id);
@@ -101,10 +97,10 @@ void TestSuite::runTestSuite() {
            "==================================================================");
   timer.stop();
   fprintln("{}", timer.format());
-  fprintln("Successful: {:3n} ({:d} %)", successCounter, 100 * successCounter / testCases.size());
-  fprintln("Failed:     {:3n} ({:d} %)", failedCounter, 100 * failedCounter / testCases.size());
-  fprintln("Skipped:    {:3n} ({:d} %)", skippedCounter, 100 * skippedCounter / testCases.size());
-  fprintln("Not tested: {:3n} ({:d} %)", notTestedCounter, 100 * notTestedCounter / testCases.size());
+  fprintln("Successful: {:3n} ({:d} %)", tr.successCounter, 100 * tr.successCounter / tr.counter);
+  fprintln("Failed:     {:3n} ({:d} %)", tr.failedCounter, 100 * tr.failedCounter / tr.counter);
+  fprintln("Skipped:    {:3n} ({:d} %)", tr.skippedCounter, 100 * tr.skippedCounter / tr.counter);
+  fprintln("Not tested: {:3n} ({:d} %)", tr.notTestedCounter, 100 * tr.notTestedCounter / tr.counter);
   fprintln("");
 
 }

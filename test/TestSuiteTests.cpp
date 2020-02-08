@@ -57,7 +57,7 @@ TEST_F(TestSuiteTests, MateTestSuite) {
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath+= + "/testsets/mate_test_suite.epd";
   MilliSec moveTime = 1'000;
-  Depth depth = Depth{0};
+  Depth depth{0};
   TestSuite testSuite(filePath, moveTime, depth);
   testSuite.runTestSuite();
 }
@@ -66,7 +66,7 @@ TEST_F(TestSuiteTests, CCC1Suite) {
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath+= + "/testsets/ccc-1.epd";
   MilliSec moveTime = 5'000;
-  Depth depth = Depth{0};
+  Depth depth{0};
   TestSuite testSuite(filePath, moveTime, depth);
   testSuite.runTestSuite();
 }
@@ -76,7 +76,7 @@ TEST_F(TestSuiteTests, NoLotSuite) {
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath+= + "/testsets/nolot.epd";
   MilliSec moveTime = 5'000;
-  Depth depth = Depth{0};
+  Depth depth{0};
   TestSuite testSuite(filePath, moveTime, depth);
   testSuite.runTestSuite();
 }
@@ -86,7 +86,7 @@ TEST_F(TestSuiteTests, ZugzwangSuite) {
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath+= + "/testsets/nullMoveZugZwangTest.epd";
   MilliSec moveTime = 5'000;
-  Depth depth = Depth{0};
+  Depth depth{0};
   TestSuite testSuite(filePath, moveTime, depth);
   testSuite.runTestSuite();
 }
@@ -95,7 +95,7 @@ TEST_F(TestSuiteTests, ecm98) {
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath+= + "/testsets/ecm98.epd";
   MilliSec moveTime = 1'000;
-  Depth depth = Depth{0};
+  Depth depth{0};
   TestSuite testSuite(filePath, moveTime, depth);
   testSuite.runTestSuite();
 }

@@ -167,7 +167,11 @@ TEST_F(TestSuiteTests, FrankyTestSuite) {
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath += +"/testsets/franky_tests.epd";
   MilliSec moveTime = 1'000;
-  Depth depth = Depth{0};
+  Depth depth{0};
   TestSuite testSuite(filePath, moveTime, depth);
   testSuite.runTestSuite();
+  EXPECT_EQ(testSuite.getTestResults().counter, testSuite.getTestResults().successCounter);
+  EXPECT_EQ(0, testSuite.getTestResults().skippedCounter);
+  EXPECT_EQ(0, testSuite.getTestResults().notTestedCounter);
+  EXPECT_EQ(0, testSuite.getTestResults().failedCounter);
 }
