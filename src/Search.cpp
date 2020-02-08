@@ -665,49 +665,6 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
   // ###############################################
 
   // ###############################################
-  // IID
-  // If we are here without a ttMove to search first
-  // we try to find a good move to try first by doing
-  // a shallow search. This is most effective with bad
-  // move ordering. If move ordering is quite good
-  // this might be a waste of search time.
-  if (SearchConfig::USE_IID
-    && ST != PERFT
-    && ST != QUIESCENCE
-    && NT == PV
-    && ttMove == MOVE_NONE
-    && depth > 4
-    ) {
-    searchStats.iidSearches++;
-    const Depth iidDepth = depth - SearchConfig::IID_REDUCTION;
-    if (iidDepth <= DEPTH_NONE) { ;
-      search<QUIESCENCE, PV>(position, iidDepth, ply, alpha, beta, doNull);
-    }
-    else {
-      search<NONROOT, PV>(position, iidDepth, ply, alpha, beta, doNull);
-    }
-
-    const TT::Entry* iidTTEntryPtr = tt->probe(position.getZobristKey());
-    if (iidTTEntryPtr != nullptr && iidTTEntryPtr->move != MOVE_NONE) {
-      ttMove = iidTTEntryPtr->move;
-      LOG__DEBUG(Logger::get().SEARCH_LOG, "{:>{}}Search in ply {} for depth {}: IID SUCCESS: ttMove={}", "", ply, ply, depth, printMoveVerbose(ttMove));
-    } else {
-      LOG__DEBUG(Logger::get().SEARCH_LOG, "{:>{}}Search in ply {} for depth {}: IID FAILED", "", ply, ply, depth);
-      if (pv[ply].empty()) {
-        LOG__DEBUG(Logger::get().SEARCH_LOG, "{:>{}}Search in ply {} for depth {}: IID PV FAILED", "", ply, ply, depth);
-      }
-      else {
-        ttMove = pv[ply][0];
-        LOG__DEBUG(Logger::get().SEARCH_LOG, "{:>{}}Search in ply {} for depth {}: IID PV SUCCESS: ttMove={}", "", ply, ply, depth, printMoveVerbose(ttMove));
-      };
-
-    }
-  }
-  // IID
-  // ###############################################
-
-
-  // ###############################################
   // PV MOVE SORT
   // make sure the pv move is returned first by the move generator
   if (SearchConfig::USE_PV_MOVE_SORT && ST != ROOT && ST != PERFT) {
@@ -764,9 +721,9 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
     // EXTENSIONS
     Depth extension = DEPTH_NONE;
     if (SearchConfig::USE_EXTENSIONS
-      && ST != QUIESCENCE
-      && depth <= DEPTH_FRONTIER // to limit search extensions and avoid search explosion
-    ) {
+        && ST != QUIESCENCE
+        && depth <= DEPTH_FRONTIER // to limit search extensions and avoid search explosion
+      ) {
       if ( // position has check is implicit in quiescence
         // move gives check
         position.givesCheck(move)
@@ -784,8 +741,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
         ) {
         ++extension;
         searchStats.extensions++;
-        LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}}Search in ply {} for depth {}: EXTENSION Move: {} ST={} NT={} mate={} castling={} prom={} preprom={} givecheck={}",
-                   "", ply, ply, depth, printMoveVerbose(move), ST, NT, mateThreat[ply], typeOf(move) == MoveType::CASTLING, typeOf(move) == MoveType::PROMOTION, (typeOf(position.getPiece(getFromSquare(move))) == PieceType::PAWN && (position.getNextPlayer() == WHITE ? rankOf(getToSquare(move)) == RANK_7 : rankOf(getToSquare(move)) == RANK_2)), position.givesCheck(move));
+        LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}}Search in ply {} for depth {}: EXTENSION Move: {} ST={} NT={} mate={} castling={} prom={} preprom={} givecheck={}", "", ply, ply, depth, printMoveVerbose(move), ST, NT, mateThreat[ply], typeOf(move) == MoveType::CASTLING, typeOf(move) == MoveType::PROMOTION, (typeOf(position.getPiece(getFromSquare(move))) == PieceType::PAWN && (position.getNextPlayer() == WHITE ? rankOf(getToSquare(move)) == RANK_7 : rankOf(getToSquare(move)) == RANK_2)), position.givesCheck(move));
       }
     }
     // EXTENSIONS
@@ -1019,9 +975,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
        the StandPat */
   }
 
-  LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}}Search {} in ply {} for depth {}: END value={} ({} moves searched) ({})",
-             "", ply, (ST == ROOT ? "ROOT" : ST == NONROOT ? "NONROOT" : "QUIESCENCE"), ply, depth,
-             bestNodeValue, movesSearched, printMoveListUCI(currentVariation));
+  LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}}Search {} in ply {} for depth {}: END value={} ({} moves searched) ({})", "", ply, (ST == ROOT ? "ROOT" : ST == NONROOT ? "NONROOT" : "QUIESCENCE"), ply, depth, bestNodeValue, movesSearched, printMoveListUCI(currentVariation));
 
   // best value should in any case not be VALUE_NONE any more
   assert(ST == PERFT || (bestNodeValue >= VALUE_MIN && bestNodeValue <= VALUE_MAX && "bestNodeValue should not be MIN/MAX here"));
@@ -1030,18 +984,13 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
   switch (ST) {
     case NONROOT:
       if (SearchConfig::USE_TT) {
-        LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}}Search storing into TT: {} {} {} {} {} {} {}", "",
-                   ply, position.getZobristKey(), bestNodeValue, TT::str(ttType),
-                   depth, printMove(ttStoreMove), false, position.printFen());
+        LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}}Search storing into TT: {} {} {} {} {} {} {}", "", ply, position.getZobristKey(), bestNodeValue, TT::str(ttType), depth, printMove(ttStoreMove), false, position.printFen());
         storeTT(position, bestNodeValue, ttType, depth, ply, ttStoreMove, mateThreat[ply]);
       }
       break;
     case QUIESCENCE:
       if (SearchConfig::USE_TT && SearchConfig::USE_TT_QSEARCH) {
-        LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}}Quiescence storing into TT: {} {} {} {} {} {} {}",
-                   "", ply, position.getZobristKey(), bestNodeValue,
-                   TT::str(ttType), depth, printMove(ttStoreMove), false,
-                   position.printFen());
+        LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}}Quiescence storing into TT: {} {} {} {} {} {} {}", "", ply, position.getZobristKey(), bestNodeValue, TT::str(ttType), depth, printMove(ttStoreMove), false, position.printFen());
         storeTT(position, bestNodeValue, ttType, DEPTH_NONE, ply, ttStoreMove, mateThreat[ply]);
       }
       break;

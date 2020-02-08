@@ -32,6 +32,7 @@
 #include "Search.h"
 #include "misc.h"
 
+#include <boost/algorithm/string.hpp>
 #include <boost/timer/timer.hpp>
 using namespace boost::timer;
 
@@ -208,10 +209,12 @@ TestSuite::runSingleTest(Search &search, SearchLimits &searchLimits, TestSuite::
       return;
     }
 
+    // TODO: Add AM (avoid move)
+
     case NONE:
     default:
       LOG__WARN(Logger::get().TSUITE_LOG, "Test has invalid type.");
-      t.result = FAILED;
+      t.result = SKIPPED;
       return;
   }
 }
@@ -245,7 +248,7 @@ bool TestSuite::readOneEPD(std::string &line, TestSuite::Test &test) const {
   }
 
   // Find a EPD line
-  std::regex regexPattern(R"(^\s*(.*) (bm|dm) (.*?);.* id \"(.*?)\";.*$)");
+  std::regex regexPattern(R"(^\s*(.*) (bm|dm|am) (.*?);(.* id \"(.*?)\";)?.*$)");
   std::smatch matcher;
   if (!std::regex_match(line, matcher, regexPattern)) {
     LOG__WARN(Logger::get().TSUITE_LOG, "No EPD match found in {}", line);
@@ -256,7 +259,7 @@ bool TestSuite::readOneEPD(std::string &line, TestSuite::Test &test) const {
   std::string fen = matcher.str(1);
   std::string type = matcher.str(2);
   std::string result = matcher.str(3);
-  std::string id = matcher.str(4);
+  std::string id = matcher.str(5).empty() ? "no ID" : matcher.str(5);
   LOG__DEBUG(Logger::get().TSUITE_LOG, "Fen: {}    Type: {}    Result: {}    ID: {}", fen, type, result, id);
 
   // get test type
@@ -267,9 +270,18 @@ bool TestSuite::readOneEPD(std::string &line, TestSuite::Test &test) const {
   else if (type == "bm") {
     testType = BM;
   }
+  else if (type == "am") {
+    testType = AM;
+  }
   else {
     LOG__WARN(Logger::get().TSUITE_LOG, "Invalid TestType {}", type);
     return false;
+  }
+
+  // Cleanup Result
+  if (testType == BM || testType == AM) {
+    boost::replace_all(result,"!", "");
+    boost::replace_all(result,"?", "");
   }
 
   // store
@@ -277,7 +289,6 @@ bool TestSuite::readOneEPD(std::string &line, TestSuite::Test &test) const {
 
   return true;
 }
-
 
 std::string &TestSuite::cleanUpLine(std::string &line) {
   //  fprintln("{}", line);

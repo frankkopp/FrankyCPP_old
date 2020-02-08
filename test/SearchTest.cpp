@@ -23,6 +23,7 @@
  *
  */
 
+#include <sstream>
 #include "Position.h"
 #include "Search.h"
 #include "Engine.h"
@@ -43,7 +44,7 @@ public:
 protected:
   void SetUp() override {
     Logger::get().TEST_LOG->set_level(spdlog::level::debug);
-    Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
+    Logger::get().SEARCH_LOG->set_level(spdlog::level::warn);
   }
 
   void TearDown() override {}
@@ -394,41 +395,6 @@ TEST_F(SearchTest, PV_MOVE) {
             search.getSearchStats().pvs_root_researches);
   ASSERT_GT(search.getSearchStats().pvs_cutoffs, 10);
   ASSERT_GT(search.getSearchStats().pvs_researches, 10);
-}
-
-TEST_F(SearchTest, IID) {
-  Search search;
-  SearchLimits searchLimits;
-  Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
-
-  searchLimits.setDepth(8);
-
-  SearchConfig::USE_IID = false;
-  search.startSearch(position, searchLimits);
-  search.waitWhileSearching();
-
-  const uint64_t nodes1 = search.getSearchStats().nodesVisited;
-  const uint64_t iidSearches1 = search.getSearchStats().iidSearches;
-  const uint64_t noMoveForPVsorting1 = search.getSearchStats().no_moveForPVsorting;
-  const uint64_t pvSortings1 = search.getSearchStats().pv_sortings;
-
-  search.clearHash();
-
-  SearchConfig::USE_IID = true;
-  search.startSearch(position, searchLimits);
-  search.waitWhileSearching();
-
-  const uint64_t nodes2 = search.getSearchStats().nodesVisited;
-  const uint64_t iidSearches2 = search.getSearchStats().iidSearches;
-  const uint64_t noMoveForPVsorting2 = search.getSearchStats().no_moveForPVsorting;
-  const uint64_t pvSortings2 = search.getSearchStats().pv_sortings;
-
-
-  LOG__INFO(Logger::get().TEST_LOG, "Nodes         {:n} {:n}", nodes1, nodes2);
-  LOG__INFO(Logger::get().TEST_LOG, "IID Searches  {:n} {:n}", iidSearches1, iidSearches2);
-  LOG__INFO(Logger::get().TEST_LOG, "No PV Sorting {:n} {:n}", noMoveForPVsorting1, noMoveForPVsorting2);
-  LOG__INFO(Logger::get().TEST_LOG, "PV Sorting    {:n} {:n}", pvSortings1, pvSortings2);
-
 }
 
 TEST_F(SearchTest, TT) {
