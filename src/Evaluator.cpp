@@ -161,8 +161,7 @@ int Evaluator::pawnEval(const Position &position) {
     // entry values will be overwritten in evaluatePawns and stored in cache or
     // the default entry
     evaluatePawns(position, entryPtr);
-    LOG__TRACE(Logger::get().EVAL_LOG, "Cache miss or no cache. Created cache entry: {}",
-               entryPtr->str());
+    LOG__TRACE(Logger::get().EVAL_LOG, "Cache miss or no cache. Created cache entry: {}", entryPtr->str());
     LOG__TRACE(Logger::get().EVAL_LOG, "{:s}", pawnTableStats());
   }
 
@@ -170,12 +169,7 @@ int Evaluator::pawnEval(const Position &position) {
   // for the current game phase
   const int value = static_cast<int>(entryPtr->midvalue * gamePhaseFactor +
                                      entryPtr->endvalue * revGamePhaseFactor);
-  LOG__TRACE(Logger::get().EVAL_LOG,
-             "Game phase adjusted pawn eval results in {} (midvalue={}, "
-             "endvalue={}, weight={})",
-             value * config.PAWNEVAL_WEIGHT,
-             entryPtr->midvalue * gamePhaseFactor,
-             entryPtr->endvalue * revGamePhaseFactor, config.PAWNEVAL_WEIGHT);
+  LOG__TRACE(Logger::get().EVAL_LOG, "Game phase adjusted pawn eval results in {} (midvalue={}, endvalue={}, weight={})", value * config.PAWNEVAL_WEIGHT, entryPtr->midvalue * gamePhaseFactor, entryPtr->endvalue * revGamePhaseFactor, config.PAWNEVAL_WEIGHT);
 
   return value * config.PAWNEVAL_WEIGHT;
 }
@@ -404,23 +398,15 @@ int Evaluator::kingCastleSafety(const Position &position) {
 }
 
 // explicitly instantiate all template definitions so other classes can see them
-template int Evaluator::evaluatePiece<Color::WHITE, PieceType::KNIGHT>(
-  const Position &position);
-template int Evaluator::evaluatePiece<Color::WHITE, PieceType::BISHOP>(
-  const Position &position);
-template int Evaluator::evaluatePiece<Color::WHITE, PieceType::ROOK>(
-  const Position &position);
-template int Evaluator::evaluatePiece<Color::WHITE, PieceType::QUEEN>(
-  const Position &position);
-template int Evaluator::evaluatePiece<Color::WHITE, PieceType::KING>(
-  const Position &position);
-template int Evaluator::evaluatePiece<Color::BLACK, PieceType::KNIGHT>(
-  const Position &position);
-template int Evaluator::evaluatePiece<Color::BLACK, PieceType::BISHOP>(
-  const Position &position);
-template int Evaluator::evaluatePiece<Color::BLACK, PieceType::ROOK>(
-  const Position &position);
-template int Evaluator::evaluatePiece<Color::BLACK, PieceType::QUEEN>(
-  const Position &position);
-template int Evaluator::evaluatePiece<Color::BLACK, PieceType::KING>(
-  const Position &position);
+// @formatter:off
+template int Evaluator::evaluatePiece<Color::WHITE, PieceType::KNIGHT>(const Position &position);
+template int Evaluator::evaluatePiece<Color::WHITE, PieceType::BISHOP>(const Position &position);
+template int Evaluator::evaluatePiece<Color::WHITE, PieceType::ROOK>(const Position &position);
+template int Evaluator::evaluatePiece<Color::WHITE, PieceType::QUEEN>(const Position &position);
+template int Evaluator::evaluatePiece<Color::WHITE, PieceType::KING>(const Position &position);
+template int Evaluator::evaluatePiece<Color::BLACK, PieceType::KNIGHT>(const Position &position);
+template int Evaluator::evaluatePiece<Color::BLACK, PieceType::BISHOP>(const Position &position);
+template int Evaluator::evaluatePiece<Color::BLACK, PieceType::ROOK>(const Position &position);
+template int Evaluator::evaluatePiece<Color::BLACK, PieceType::QUEEN>(const Position &position);
+template int Evaluator::evaluatePiece<Color::BLACK, PieceType::KING>(const Position &position);
+// @formatter:on
