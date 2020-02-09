@@ -117,7 +117,7 @@ TEST_F(UCITest, positionTest) {
     UCI_Handler uciHandler(&engine, &is, &os);
     uciHandler.loop();
     ASSERT_EQ("rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2",
-              engine.getPosition()->printFen());
+              engine.getPositionPtr()->printFen());
   }
 
   // castling
@@ -128,7 +128,7 @@ TEST_F(UCITest, positionTest) {
     UCI_Handler uciHandler(&engine, &is, &os);
     uciHandler.loop();
     ASSERT_EQ("r1bqkb1r/pppp1ppp/2n2n2/1B2p3/4P3/5N2/PPPP1PPP/RNBQ1RK1 b kq - 1 1",
-              engine.getPosition()->printFen());
+              engine.getPositionPtr()->printFen());
   }
 
   // promotion
@@ -139,7 +139,7 @@ TEST_F(UCITest, positionTest) {
     UCI_Handler uciHandler(&engine, &is, &os);
     uciHandler.loop();
     ASSERT_EQ("3Q4/8/6K1/8/8/1k6/8/8 b - - 0 1",
-              engine.getPosition()->printFen());
+              engine.getPositionPtr()->printFen());
   }
 
   // normal
@@ -150,7 +150,7 @@ TEST_F(UCITest, positionTest) {
     UCI_Handler uciHandler(&engine, &is, &os);
     uciHandler.loop();
     ASSERT_EQ("rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2",
-              engine.getPosition()->printFen());
+              engine.getPositionPtr()->printFen());
   }
 
   // normal
@@ -161,7 +161,7 @@ TEST_F(UCITest, positionTest) {
     UCI_Handler uciHandler(&engine, &is, &os);
     uciHandler.loop();
     ASSERT_EQ("rnbq1bnr/4k3/8/8/8/8/4K3/RNBQ1BNR w - - 2 2",
-              engine.getPosition()->printFen());
+              engine.getPositionPtr()->printFen());
   }
 
   // normal
@@ -172,7 +172,7 @@ TEST_F(UCITest, positionTest) {
     UCI_Handler uciHandler(&engine, &is, &os);
     uciHandler.loop();
     ASSERT_EQ("7K/6P1/5p1k/6pP/1p1p2P1/1p1p4/1P1P4/8 b - - 0 12",
-              engine.getPosition()->printFen());
+              engine.getPositionPtr()->printFen());
   }
 
   // normal
@@ -183,7 +183,7 @@ TEST_F(UCITest, positionTest) {
     UCI_Handler uciHandler(&engine, &is, &os);
     uciHandler.loop();
     ASSERT_EQ("7K/6P1/7k/5ppP/1p1p2P1/1p1p4/1P1P4/8 w - - 0 13",
-              engine.getPosition()->printFen());
+              engine.getPositionPtr()->printFen());
   }
 }
 

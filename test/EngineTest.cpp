@@ -74,19 +74,19 @@ TEST_F(EngineTest, doMove) {
   // position fen 8/P7/8/7k/8/8/1p6/5K2 w - - 1 1 moves a7a8q
   engine.setPosition("8/P7/8/7k/8/8/1p6/5K2 w - - 1 1");
   engine.doMove("a7a8q");
-  EXPECT_EQ("Q7/8/8/7k/8/8/1p6/5K2 b - - 0 1", engine.getPosition()->printFen());
+  EXPECT_EQ("Q7/8/8/7k/8/8/1p6/5K2 b - - 0 1", engine.getPositionPtr()->printFen());
 
   engine.setPosition("8/P7/8/7k/8/8/1p6/5K2 w - - 1 1");
   engine.doMove("a7a8Q");
-  EXPECT_EQ("Q7/8/8/7k/8/8/1p6/5K2 b - - 0 1", engine.getPosition()->printFen());
+  EXPECT_EQ("Q7/8/8/7k/8/8/1p6/5K2 b - - 0 1", engine.getPositionPtr()->printFen());
 
   engine.setPosition("8/P7/8/7k/8/8/1p6/5K2 b - - 1 1");
   engine.doMove("b2b1q");
-  EXPECT_EQ("8/P7/8/7k/8/8/8/1q3K2 w - - 0 2", engine.getPosition()->printFen());
+  EXPECT_EQ("8/P7/8/7k/8/8/8/1q3K2 w - - 0 2", engine.getPositionPtr()->printFen());
 
   engine.setPosition("8/P7/8/7k/8/8/1p6/5K2 b - - 1 1");
   engine.doMove("b2b1Q");
-  EXPECT_EQ("8/P7/8/7k/8/8/8/1q3K2 w - - 0 2", engine.getPosition()->printFen());
+  EXPECT_EQ("8/P7/8/7k/8/8/8/1q3K2 w - - 0 2", engine.getPositionPtr()->printFen());
 }
 
 

@@ -91,9 +91,9 @@ public:
   std::string getOption(const std::string &name);
   void newGame();
   void setPosition(const std::string &fen);
-  const std::shared_ptr<Position> &getPosition() const { return pPosition; }
-  const std::shared_ptr<Search> &getPSearch() const { return pSearch; }
-  const std::shared_ptr<SearchLimits> &getPSearchLimits() const { return pSearchLimits; }
+  const std::shared_ptr<Position> &getPositionPtr() const { return pPosition; }
+  const std::shared_ptr<Search> &getSearchPtr() const { return pSearch; }
+  const std::shared_ptr<SearchLimits> &getSearchLimitsPtr() const { return pSearchLimits; }
   void doMove(const std::string &moveStr);
   void startSearch(const UCISearchMode &uciSearchMode);
   void stopSearch();
@@ -101,16 +101,14 @@ public:
   void ponderHit();
 
   // send to UCI
-  void
-  sendIterationEndInfo(int depth, int seldepth, Value value, uint64_t nodes, uint64_t nps,
-                       MilliSec time, const MoveList &pv) const;
-  void sendAspirationResearchInfo(int depth, int seldepth, Value value, const std::string& bound,
+  void sendIterationEndInfo(int depth, int seldepth, Value value, uint64_t nodes, uint64_t nps,
+                            MilliSec time, const MoveList &pv) const;
+  void sendAspirationResearchInfo(int depth, int seldepth, Value value, const std::string &bound,
                                   uint64_t nodes, uint64_t nps, MilliSec time,
                                   const MoveList &pv) const;
   void sendCurrentRootMove(Move currmove, MoveList::size_type movenumber) const;
-  void
-  sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t nps, MilliSec time,
-                   int hashfull) const;
+  void sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t nps, MilliSec time,
+                        int hashfull) const;
   void sendCurrentLine(const MoveList &moveList) const;
   void sendResult(Move bestMove, Value value, Move ponderMove);
   void sendString(const std::string &anyString) const;
