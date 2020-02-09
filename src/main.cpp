@@ -33,6 +33,7 @@
 #include "UCIHandler.h"
 
 #include "boost/program_options.hpp"
+#include "TestSuite.h"
 namespace po = boost::program_options;
 
 inline po::variables_map programOptions;
@@ -52,6 +53,9 @@ int main(int argc, char* argv[]) {
   ASSERT_END
 
   std::string config_file;
+  std::string testsuite_File;
+  int testsuite_Time;
+  int testsuite_Depth;
 
   // Command line options
   try {
@@ -66,8 +70,11 @@ int main(int argc, char* argv[]) {
     // and in config file
     po::options_description config("Configuration");
     config.add_options()
-            ("log_lvl,l", po::value<std::string>()->default_value("warn"), "set log level critical|error|warn|info|debug|trace>")
-            ("search_log_lvl,s", po::value<std::string>()->default_value("warn"), "set log level for search <critical|error|warn|info|debug|trace>");
+            ("log_lvl,l", po::value<std::string>()->default_value("warn"), "set general log level <critical|error|warn|info|debug|trace>")
+            ("search_log_lvl,s", po::value<std::string>()->default_value("warn"), "set search log level <critical|error|warn|info|debug|trace>")
+            ("testsuite", po::value<std::string>(&testsuite_File), "run testsuite in given file")
+            ("tsTime", po::value<int>(&testsuite_Time)->default_value(1'000), "time in ms per test in testsuite")
+            ("tsDepth", po::value<int>(&testsuite_Depth)->default_value(0), "max search depth per test in testsuite");
 
     // Hidden options, will be allowed both on command line and in config file,
     // but will not be shown to the user.
@@ -109,7 +116,29 @@ int main(int argc, char* argv[]) {
       notify(programOptions);
     }
 
+    if (programOptions.count("testsuite")) {
+      INIT::init();
+      std::cout << "RUNNING TEST SUITE\n";
+      std::cout << "########################################################\n";
+      std::cout << "Version: " << appName << "\n";
+      std::ifstream file(testsuite_File);
+      if (file.is_open()) {
+        std::cout << "Running Testsuite:  " << testsuite_File << "\n";
+        file.close();
+      }
+      else {
+        std::cerr << "Could not read file: " << testsuite_File << "\n";
+        return 1;
+      }
+      std::cout << "Time per Test:      " << fmt::format("{:n}", testsuite_Time) << "\n";
+      std::cout << "Max depth per Test: " << fmt::format("{:n}", testsuite_Depth) << "\n";
+      TestSuite testSuite(testsuite_File, testsuite_Time, Depth{testsuite_Depth});
+      testSuite.runTestSuite();
+      return 0;
+    }
+
     if (programOptions.count("test")) {
+      std::cout << "Test of hidden parameter." << "\n";
       std::cout << programOptions["test"].as<std::string>() << "\n";
     }
   }

@@ -113,7 +113,7 @@ class Search {
   MilliSec startTime{};
   MilliSec stopTime{};
   MilliSec timeLimit{};
-  MilliSec extraTime{};
+  std::atomic_int64_t extraTime{};
 
   // the color of the searching player
   Color myColor = NOCOLOR;
@@ -177,10 +177,10 @@ public:
   void stopSearch();
 
   /** checks if the search is already running */
-  bool isRunning() const;
+  bool isRunning() const { return _isRunning; }
 
   /** signals if we have a result */
-  bool hasResult() const;
+  bool hasResult() const { return _hasResult; }
 
   /** wait while searching */
   void waitWhileSearching();
@@ -322,13 +322,6 @@ private:
   void addExtraTime(double d);
 
   /**
-   * Time limit is used to check time regularly in the search to stop the search
-   * when time is out
-   * @return true if hard time limit is reached, false otherwise
-   */
-  inline bool timeLimitReached();
-
-  /**
    * Starts a thread which waits for the timeLimit + extraTime amount
    * of time and then sets the stopSearchFlag to true;
    */
@@ -356,7 +349,7 @@ private:
   /**
    * Returns the current nodes per second value
    */
-  inline MilliSec getNps() const;
+  inline uint64_t getNps() const;
 
   /** these are sending information to the UCI protocol */
   void sendIterationEndInfoToEngine() const;

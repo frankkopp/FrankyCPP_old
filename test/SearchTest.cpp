@@ -23,6 +23,7 @@
  *
  */
 
+#include <sstream>
 #include "Position.h"
 #include "Search.h"
 #include "Engine.h"
@@ -41,7 +42,10 @@ public:
   }
 
 protected:
-  void SetUp() override {}
+  void SetUp() override {
+    Logger::get().TEST_LOG->set_level(spdlog::level::debug);
+    Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
+  }
 
   void TearDown() override {}
 };
@@ -91,7 +95,6 @@ TEST_F(SearchTest, nodes) {
 }
 
 TEST_F(SearchTest, timerTest) {
-//  Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
   Search search;
   SearchLimits searchLimits;
   Position position;
@@ -100,11 +103,19 @@ TEST_F(SearchTest, timerTest) {
   search.startSearch(position, searchLimits);
   search.addExtraTime(2.0); // 2.950 ms
   search.waitWhileSearching();
-  EXPECT_GT(search.getSearchStats().lastSearchTime, 2'950);
+  EXPECT_GE(search.getSearchStats().lastSearchTime, 2'950);
+  EXPECT_LT(search.getSearchStats().lastSearchTime, 3'200);
+
+  searchLimits.setWhiteTime(60'000);  //  1.475 ms
+  searchLimits.setBlackTime(60'000);
+  search.startSearch(position, searchLimits);
+  search.addExtraTime(0.5); // 0.737
+  search.waitWhileSearching();
+  EXPECT_GE(search.getSearchStats().lastSearchTime, 737);
+  EXPECT_LT(search.getSearchStats().lastSearchTime, 1'000);
 }
 
 TEST_F(SearchTest, movetime) {
-//  Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
   Search search;
   SearchLimits searchLimits;
   Position position;
@@ -386,23 +397,6 @@ TEST_F(SearchTest, PV_MOVE) {
   ASSERT_GT(search.getSearchStats().pvs_researches, 10);
 }
 
-TEST_F(SearchTest, IID) {
-
-//  SearchConfig::USE_TT = true;
-//  SearchConfig::TT_SIZE_MB = 64;
-//  SearchConfig::USE_IID = true;
-//
-//  Search search;
-//  SearchLimits searchLimits;
-//  Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
-//  searchLimits.setDepth(9);
-//  search.startSearch(position, searchLimits);
-//  search.waitWhileSearching();
-//
-//  LOG__INFO(Logger::get().TEST_LOG, "IID Searches {:n}", search.getSearchStats().iidSearches);
-//  ASSERT_GT(search.getSearchStats().iidSearches, 0);
-}
-
 TEST_F(SearchTest, TT) {
   Search search;
   SearchLimits searchLimits;
@@ -441,7 +435,7 @@ TEST_F(SearchTest, TT) {
        (search.getSearchStats().tt_Cuts + search.getSearchStats().tt_NoCuts)));
 }
 
-TEST_F(SearchTest, NULLMOVE) {
+TEST_F(SearchTest, null_move) {
   Search search;
   SearchLimits searchLimits;
   Position position;
@@ -463,11 +457,23 @@ TEST_F(SearchTest, NULLMOVE) {
             search.getSearchStats().nullMoveVerifications);
 }
 
+TEST_F(SearchTest, extensions) {
+
+  Search search;
+  SearchLimits searchLimits;
+  Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
+
+  SearchConfig::USE_EXTENSIONS = true;
+
+  searchLimits.setMoveTime(5'000);
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+
+}
+
 TEST_F(SearchTest, perft) {
-//  Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
-
   int DEPTH = 6;
-
+  
   long perftResults[] = {0,
                          20,             // 1
                          400,            // 2
@@ -545,8 +551,7 @@ TEST_F(SearchTest, DISABLED_nmpStats) {
   std::cout << str.str();
 }
 
-TEST_F(SearchTest, debuggingIID) {
-  Logger::get().SEARCH_LOG->set_level(spdlog::level::info);
+TEST_F(SearchTest, DISABLED_debuggingIID) {
 
   Search search;
   SearchLimits searchLimits;
@@ -569,7 +574,7 @@ TEST_F(SearchTest, debuggingIID) {
   SearchConfig::USE_RFP             = true;
 //  SearchConfig::USE_RAZOR_PRUNING   = true;
   SearchConfig::USE_NMP             = true;
-  SearchConfig::USE_EXTENSIONS      = true;
+  SearchConfig::USE_FORWARD_PRUNING_CHECK      = true;
   // @formatter:on
 
   const int depth = 9;
@@ -600,37 +605,34 @@ TEST_F(SearchTest, DISABLED_debuggingTTMove) {
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 }
+
 TEST_F(SearchTest, debugging) {
-  Logger::get().SEARCH_LOG->set_level(spdlog::level::info);
-  
+
   Search search;
   SearchLimits searchLimits;
   Position position;
 
   // @formatter:off
-  SearchConfig::USE_QUIESCENCE      = true;
-  SearchConfig::USE_ALPHABETA       = true;
-  SearchConfig::USE_KILLER_MOVES    = true;
-  SearchConfig::USE_TT              = true;
-  SearchConfig::TT_SIZE_MB          = 64;
-  SearchConfig::USE_TT_QSEARCH      = true;
-  SearchConfig::USE_MDP             = true;
-  SearchConfig::USE_MPP             = true;
-  SearchConfig::USE_PVS             = true;
-  SearchConfig::USE_PV_MOVE_SORT    = true;
-//  SearchConfig::USE_IID             = true;
-//  SearchConfig::IID_DEPTH           = Depth{7}; // remaining depth to do IID
-//  SearchConfig::IID_DEPTH_REDUCTION = Depth{5}; // reduction of depth for IID
-  SearchConfig::USE_RFP             = true;
-//  SearchConfig::USE_RAZOR_PRUNING   = true;
-  SearchConfig::USE_NMP             = true;
-  SearchConfig::USE_EXTENSIONS      = true;
+  SearchConfig::USE_QUIESCENCE        = true;
+  SearchConfig::USE_TT                = true;
+  SearchConfig::USE_TT_QSEARCH        = true;
+  SearchConfig::TT_SIZE_MB            = 64;
+  SearchConfig::USE_ALPHABETA         = true;
+  SearchConfig::USE_PVS               = true;
+  SearchConfig::USE_PV_MOVE_SORT      = true;
+  SearchConfig::USE_KILLER_MOVES      = true;
+  SearchConfig::NO_KILLER_MOVES       = 5;
+
+  SearchConfig::USE_NMP               = false;
+  SearchConfig::USE_MDP               = false;
+  SearchConfig::USE_MPP               = false;
+  SearchConfig::USE_QS_STANDPAT_CUT   = false;
   // @formatter:on
 
   // should not end up in repetition by giving check with Qh6
-  position = Position("5r1k/1r6/4p1Q1/5p2/6p1/P3R3/5PPP/6K1 w - - 1 1 ");
+  position = Position("5r1k/1r6/4p1Q1/5p2/6p1/P3R3/5PPP/6K1 w - - 1 1");
 
-  const int depth = 11;
+  const int depth = 6;
   searchLimits.setDepth(depth);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();

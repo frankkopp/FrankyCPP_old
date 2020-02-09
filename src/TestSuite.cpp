@@ -32,14 +32,15 @@
 #include "Search.h"
 #include "misc.h"
 
+#include <boost/algorithm/string.hpp>
 #include <boost/timer/timer.hpp>
 using namespace boost::timer;
 
 void TestSuite::runTestSuite() {
 
   cpu_timer timer;
-
   testCases.clear();
+  tr = TestSuiteResult{};
 
   fprintln("Running Test Suite");
   fprintln("==================================================================");
@@ -60,51 +61,31 @@ void TestSuite::runTestSuite() {
   fprintln("All {} tests DONE", testCases.size());
   fprintln("");
 
-  fprintln("Results for Test Suite {}", filePath);
-  fprintln("=================================================================="
-           "==================================================================");
-  fprintln(" {:<4s} | {:<10s} | {:<8s} | {:<8s} | {:<15s} | {:s} | {:s}",
-           " Nr.", "Result", "Move", "Value", "Expected Result", "Fen", "ID");
-  fprintln("=================================================================="
-           "==================================================================");
-
-  int counter = 0;
-  int successCounter = 0;
-  int failedCounter = 0;
-  int skippedCounter = 0;
-  int notTestedCounter = 0;
-
+  // add up results
   for (const Test &t : testCases) {
+    tr.counter++;
     switch (t.result) {
       case NOT_TESTED:
-        notTestedCounter++;
+        tr.notTestedCounter++;
         break;
       case SKIPPED:
-        skippedCounter++;
+        tr.skippedCounter++;
         break;
       case FAILED:
-        failedCounter++;
+        tr.failedCounter++;
         break;
       case SUCCESS:
-        successCounter++;
+        tr.successCounter++;
         break;
     }
-    fprintln(" {:<4d} | {:<10s} | {:<8s} | {:<8s} | {:<15s} | {:s} | {:s}",
-             ++counter, print(t.result), printMove(t.actualMove),
-             printValue(t.actualValue),
-             (t.type == DM ? "dm " : t.type == BM ? "bm " : "-") + t.expectedString,
-             t.fen, t.id);
   }
 
-  fprintln("=================================================================="
-           "==================================================================");
+  // test duration
   timer.stop();
   fprintln("{}", timer.format());
-  fprintln("Successful: {:3n} ({:d} %)", successCounter, 100 * successCounter / testCases.size());
-  fprintln("Failed:     {:3n} ({:d} %)", failedCounter, 100 * failedCounter / testCases.size());
-  fprintln("Skipped:    {:3n} ({:d} %)", skippedCounter, 100 * skippedCounter / testCases.size());
-  fprintln("Not tested: {:3n} ({:d} %)", notTestedCounter, 100 * notTestedCounter / testCases.size());
-  fprintln("");
+
+  // print results
+  printResult();
 
 }
 
@@ -123,6 +104,8 @@ void TestSuite::runTestSet(std::vector<Test> &ts) const {
 
 void
 TestSuite::runSingleTest(Search &search, SearchLimits &searchLimits, TestSuite::Test &t) const {
+
+  LOG__INFO(Logger::get().TSUITE_LOG, "Testing TestSet: ID \"{}\"", t.id);
 
   // clear search
   search.clearHash();
@@ -146,17 +129,17 @@ TestSuite::runSingleTest(Search &search, SearchLimits &searchLimits, TestSuite::
 
       // check and store result
       if ("mate " + t.expectedString == printValue(search.getLastSearchResult().bestMoveValue)) {
-        LOG__DEBUG(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" SUCCESS", t.id);
+        LOG__INFO(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" SUCCESS", t.id);
         t.actualMove = search.getLastSearchResult().bestMove;
         t.actualValue = search.getLastSearchResult().bestMoveValue;
         t.result = SUCCESS;
         return;
       }
       else {
-        LOG__DEBUG(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" FAILED", t.id);
+        LOG__INFO(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" FAILED", t.id);
         t.actualMove = search.getLastSearchResult().bestMove;
         t.actualValue = search.getLastSearchResult().bestMoveValue;
-        t.result = SUCCESS;
+        t.result = FAILED;
         return;
       }
     }
@@ -165,15 +148,7 @@ TestSuite::runSingleTest(Search &search, SearchLimits &searchLimits, TestSuite::
     case BM: {
       // get best move
       // EPD allows for multiple best moves
-      MoveList moves;
-      std::regex splitPattern("\\s+");
-      std::sregex_token_iterator iter(t.expectedString.begin(), t.expectedString.end(), splitPattern, -1);
-      std::sregex_token_iterator end;
-      while (iter != end) {
-        Move move = Misc::getMoveFromSAN(Position(t.fen), iter->str());
-        if (move) moves.push_back(move);
-        ++iter;
-      }
+      MoveList moves = getResultMoveList(t);
 
       if (moves.empty()) {
         LOG__WARN(Logger::get().TSUITE_LOG, "Skipping test {} as expected result {} could not be read", t.id, t.expectedString);
@@ -191,7 +166,7 @@ TestSuite::runSingleTest(Search &search, SearchLimits &searchLimits, TestSuite::
       // check against expected moves
       for (Move m : moves) {
         if (m == actual) {
-          LOG__DEBUG(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" SUCCESS", t.id);
+          LOG__INFO(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" SUCCESS", t.id);
           t.actualMove = search.getLastSearchResult().bestMove;
           t.actualValue = search.getLastSearchResult().bestMoveValue;
           t.result = SUCCESS;
@@ -201,19 +176,71 @@ TestSuite::runSingleTest(Search &search, SearchLimits &searchLimits, TestSuite::
           continue;
         }
       }
-      LOG__DEBUG(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" FAILED", t.id);
+      LOG__INFO(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" FAILED", t.id);
       t.actualMove = search.getLastSearchResult().bestMove;
       t.actualValue = search.getLastSearchResult().bestMoveValue;
       t.result = FAILED;
       return;
     }
 
+    // Avoid move test
+    case AM: {
+      // get moves to avoid
+      // EPD allows for multiple moves
+      MoveList moves = getResultMoveList(t);
+
+      if (moves.empty()) {
+        LOG__WARN(Logger::get().TSUITE_LOG, "Skipping test {} as expected result {} could not be read", t.id, t.expectedString);
+        t.result = SKIPPED;
+        return;
+      }
+
+      // do the search
+      search.startSearch(position, searchLimits);
+      search.waitWhileSearching();
+
+      // get the result
+      const Move actual = moveOf(search.getLastSearchResult().bestMove);
+
+      // check against expected moves to avoid
+      for (Move m : moves) {
+        if (m == actual) {
+          LOG__INFO(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" FAILED", t.id);
+          t.actualMove = search.getLastSearchResult().bestMove;
+          t.actualValue = search.getLastSearchResult().bestMoveValue;
+          t.result = FAILED;
+          return;
+        }
+        else {
+          continue;
+        }
+      }
+      LOG__INFO(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" SUCCESS", t.id);
+      t.actualMove = search.getLastSearchResult().bestMove;
+      t.actualValue = search.getLastSearchResult().bestMoveValue;
+      t.result = SUCCESS;
+      return;
+    }
+
     case NONE:
     default:
       LOG__WARN(Logger::get().TSUITE_LOG, "Test has invalid type.");
-      t.result = FAILED;
+      t.result = SKIPPED;
       return;
   }
+}
+
+MoveList TestSuite::getResultMoveList(const TestSuite::Test &t) const {
+  MoveList moves;
+  std::regex splitPattern("\\s+");
+  std::sregex_token_iterator iter(t.expectedString.begin(), t.expectedString.end(), splitPattern, -1);
+  std::sregex_token_iterator end;
+  while (iter != end) {
+    Move move = Misc::getMoveFromSAN(Position(t.fen), iter->str());
+    if (move) moves.push_back(move);
+    ++iter;
+  }
+  return moves;
 }
 
 void TestSuite::readTestCases(const std::string &filePathStr, std::vector<Test> &tests) const {
@@ -245,7 +272,7 @@ bool TestSuite::readOneEPD(std::string &line, TestSuite::Test &test) const {
   }
 
   // Find a EPD line
-  std::regex regexPattern(R"(^\s*(.*) (bm|dm) (.*?);.* id \"(.*?)\";.*$)");
+  std::regex regexPattern(R"(^\s*(.*) (bm|dm|am) (.*?);(.* id \"(.*?)\";)?.*$)");
   std::smatch matcher;
   if (!std::regex_match(line, matcher, regexPattern)) {
     LOG__WARN(Logger::get().TSUITE_LOG, "No EPD match found in {}", line);
@@ -256,7 +283,7 @@ bool TestSuite::readOneEPD(std::string &line, TestSuite::Test &test) const {
   std::string fen = matcher.str(1);
   std::string type = matcher.str(2);
   std::string result = matcher.str(3);
-  std::string id = matcher.str(4);
+  std::string id = matcher.str(5).empty() ? "no ID" : matcher.str(5);
   LOG__DEBUG(Logger::get().TSUITE_LOG, "Fen: {}    Type: {}    Result: {}    ID: {}", fen, type, result, id);
 
   // get test type
@@ -267,9 +294,18 @@ bool TestSuite::readOneEPD(std::string &line, TestSuite::Test &test) const {
   else if (type == "bm") {
     testType = BM;
   }
+  else if (type == "am") {
+    testType = AM;
+  }
   else {
     LOG__WARN(Logger::get().TSUITE_LOG, "Invalid TestType {}", type);
     return false;
+  }
+
+  // Cleanup Result
+  if (testType == BM || testType == AM) {
+    boost::replace_all(result,"!", "");
+    boost::replace_all(result,"?", "");
   }
 
   // store
@@ -277,7 +313,6 @@ bool TestSuite::readOneEPD(std::string &line, TestSuite::Test &test) const {
 
   return true;
 }
-
 
 std::string &TestSuite::cleanUpLine(std::string &line) {
   //  fprintln("{}", line);
@@ -307,4 +342,28 @@ std::string TestSuite::print(TestSuite::ResultType resultType) {
   return "";
 }
 
+void TestSuite::printResult() const {
+  fprintln("Results for Test Suite {}", filePath);
+  fprintln("=================================================================="
+           "==================================================================");
+  fprintln(" {:<4s} | {:<10s} | {:<8s} | {:<8s} | {:<15s} | {:s} | {:s}",
+           " Nr.", "Result", "Move", "Value", "Expected Result", "Fen", "ID");
+  fprintln("=================================================================="
+           "==================================================================");
 
+  for (const Test &t : testCases) {
+    fprintln(" {:<4d} | {:<10s} | {:<8s} | {:<8s} | {:<15s} | {:s} | {:s}",
+             tr.counter, print(t.result), printMove(t.actualMove),
+             printValue(t.actualValue),
+             (t.type == DM ? "dm " : t.type == BM ? "bm " : "-") + t.expectedString,
+             t.fen, t.id);
+  }
+
+  fprintln("=================================================================="
+           "==================================================================");
+  fprintln("Successful: {:3n} ({:d} %)", tr.successCounter, 100 * tr.successCounter / tr.counter);
+  fprintln("Failed:     {:3n} ({:d} %)", tr.failedCounter, 100 * tr.failedCounter / tr.counter);
+  fprintln("Skipped:    {:3n} ({:d} %)", tr.skippedCounter, 100 * tr.skippedCounter / tr.counter);
+  fprintln("Not tested: {:3n} ({:d} %)", tr.notTestedCounter, 100 * tr.notTestedCounter / tr.counter);
+  fprintln("");
+}
