@@ -602,6 +602,24 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
     // FORWARD PRUNING BETA
 
     // ###############################################
+    // Reverse Futility Pruning, (RFP, Static Null Move Pruning)
+    // https://www.chessprogramming.org/Reverse_Futility_Pruning
+    // Anticipate likely alpha low in the next ply by a beta cut
+    // off before making and evaluating the move
+    if (SearchConfig::USE_RFP
+        && NT == NonPV
+        && ST == NONROOT
+      ) {
+      const Value rfpValue = staticEval - (SearchConfig::RFP_MARGIN * static_cast<int>(depth));
+      if (rfpValue >= beta) {
+        searchStats.rfpPrunings++;
+        LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}}Search in ply {} for depth {}: RFP CUT", "", ply, ply, depth);
+        return rfpValue; // fail-hard: beta / fail-soft:
+      }
+    }
+    // ###############################################
+
+    // ###############################################
     // NULL MOVE PRUNING
     // https://www.chessprogramming.org/Null_Move_Pruning
     // Under the assumption the in most chess position it would be better
@@ -619,7 +637,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
         && doNull                               // don't do recursive null moves
         && position.getMaterialNonPawn(position.getNextPlayer()) // to avoid Zugzwang
         && ST == NONROOT // NMP will be removed from the compiler for qsearch
-      ) {
+      ) {              
 
       Depth newDepth = depth - SearchConfig::NMP_REDUCTION;
 
@@ -715,7 +733,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
     if (SearchConfig::USE_EXTENSIONS
         && ST != QUIESCENCE
         && ST != PERFT
-        && depth <= DEPTH_FRONTIER // to limit search extensions and avoid search explosion
+        && depth <= DEPTH_PRE_FRONTIER // to limit search extensions and avoid search explosion
       ) {
       if ( // position has check is implicit in quiescence
         // move gives check
@@ -740,6 +758,8 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
     // EXTENSIONS
     // ###############################################
 
+    Depth reductions = DEPTH_NONE;
+
     // ###############################################
     // FORWARD PRUNING ALPHA
     // Avoid making the move on the position if we can
@@ -747,12 +767,74 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
     // Will not be done when in a pvNode search or when
     // already any search extensions has been determined.
     // Also not when in check.
-    if (NT != PV
+    if (NT == NonPV
         && ST != PERFT
         && !position.hasCheck()
         && !extension
       ) {
 
+      const auto materialEval
+        = static_cast<const Value>(position.getMaterial(position.getNextPlayer())
+                                   - position.getMaterial(~position.getNextPlayer()));
+      const Piece targetPiece = position.getPiece(getToSquare(move));
+      const Value moveGain = targetPiece == PIECE_NONE ? VALUE_ZERO : valueOf(typeOf(targetPiece));
+      const Value gainedValue = materialEval + moveGain;
+
+      // ###############################################
+      // Extended Futility Pruning
+      // http://people.csail.mit.edu/heinz/dt/node25.html
+      if (SearchConfig::USE_EFP
+          && depth == DEPTH_PRE_FRONTIER
+        ) {
+        const Value testValue = gainedValue + SearchConfig::EFP_MARGIN;
+        if (testValue <= alpha) {
+          // if all moves fail low (<alpha) and are futile pruned
+          // we do at least have an type_alpha best move for the TT
+          if (testValue > bestNodeValue) bestNodeValue = testValue;
+          searchStats.efpPrunings++;
+          LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}}Search in ply {} for depth {}: EFP CUT", "", ply, ply, depth);
+          continue;
+          //reductions += DEPTH_ONE;
+        }
+      }
+      // ###############################################
+
+      // ###############################################
+      // Futility Pruning
+      // http://people.csail.mit.edu/heinz/dt/node23.html
+      // Predicts stand-pat cat offs in qsearch before
+      // executing the move at frontier node (depth==1)
+      // Futility margin is the margin by that a move can
+      // increase the value of a position by positional
+      // evaluations only (without material difference)
+      if (SearchConfig::USE_FP
+          && depth == DEPTH_FRONTIER
+        ) {
+        Value testValue = gainedValue + SearchConfig::FP_MARGIN;
+        if (testValue <= alpha) {
+          // if all moves fail low (<alpha) and are futile pruned
+          // we do at least have an type_alpha best move for the TT
+          if (testValue > bestNodeValue) bestNodeValue = testValue;
+          searchStats.fpPrunings++;
+          LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}}Search in ply {} for depth {}: FP CUT {} <{}> <{}>", "", ply, ply, depth, printMove(move), printMoveList(currentVariation), printMoveList(pv[PLY_ROOT]));
+          continue;
+        }
+      }
+      // ###############################################
+
+      // ###############################################
+      // Late Move Reduction
+      if (SearchConfig::USE_LMR
+          && NT == NonPV
+          && depth >= SearchConfig::LMR_MIN_DEPTH
+          && movesSearched >= SearchConfig::LMR_MIN_MOVES
+        ) {
+        searchStats.lmrReductions++;
+        LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}}Search in ply {} for depth {}: LMR", "", ply, ply, depth);
+        reductions += SearchConfig::LMR_REDUCTION;
+
+      }
+      // ###############################################
     }
 
     // FORWARD PRUNING ALPHA
@@ -782,14 +864,15 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
     if (checkDrawRepAnd50<ST>(position)) {
       value = VALUE_DRAW;
     }
-    // search next ply
+      // search next ply
     else {
 
       // ROOT is used only at the start - changes directly to NONROOT
       const Search::Search_Type nextST = ST == ROOT ? NONROOT : ST;
 
-      // reduce depth by 1 in the next search and add extension for this move
-      Depth newDepth = depth - DEPTH_ONE + extension;
+      // reduce depth by 1 in the next search and add extension and r
+      // substract reductions for this move
+      Depth newDepth = depth - DEPTH_ONE + extension - reductions;
 
       // in quiescence we do not have depth any more
       if (ST == QUIESCENCE || newDepth < DEPTH_NONE) newDepth = DEPTH_NONE;

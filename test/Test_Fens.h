@@ -39,16 +39,22 @@ namespace Test_Fens {
     fen.emplace_back("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
     fen.emplace_back("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
     fen.emplace_back("8/1P6/6k1/8/8/8/p1K5/8 w - -");
-    fen.emplace_back("1r3rk1/1pnnq1bR/p1pp2B1/P2P1p2/1PP1pP2/2B3P1/5PK1/2Q4R w - -");
     fen.emplace_back("4rk2/p5p1/1p2P2N/7R/nP5P/5PQ1/b6K/q7 w - -");
-    fen.emplace_back("4k2r/1q1p1pp1/p3p3/1pb1P3/2r3P1/P1N1P2p/1PP1Q2P/2R1R1K1 b k -");
     fen.emplace_back("r2r1n2/pp2bk2/2p1p2p/3q4/3PN1QP/2P3R1/P4PP1/5RK1 w - -");
     fen.emplace_back("1kr4r/ppp2bq1/4n3/4P1pp/1NP2p2/2PP2PP/5Q1K/4R2R w - -");
     fen.emplace_back("1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -");
+    fen.emplace_back("rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -");
+    fen.emplace_back("r3k2r/pp2qppp/2n1pn2/bN5b/3P4/P3BN1P/1P2BPP1/R2Q1RK1 w kq -");
+    fen.emplace_back("2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - -");
+    fen.emplace_back("6rk/1p3p1p/2n2q2/1NQ2p2/3p4/PP5P/5PP1/2R3K1 w - -");
+    fen.emplace_back("7k/2R2p1p/3N1q2/3Q4/3p4/PP3pPP/5n1K/4r3 w - -");
     fen.emplace_back("8/5k2/8/8/2N2N2/2B5/2K5/8 w - -");
     fen.emplace_back("8/8/6k1/8/8/8/P1K5/8 w - -");
+
     fen.emplace_back("8/5k2/8/8/8/8/1BK5/1B6 w - -");
     fen.emplace_back("5r1k/4Qpq1/4p3/1p1p2P1/2p2P2/1p2P3/1K1P4/B7 w - -");
+    fen.emplace_back("1r3rk1/1pnnq1bR/p1pp2B1/P2P1p2/1PP1pP2/2B3P1/5PK1/2Q4R w - -");
+    fen.emplace_back("4k2r/1q1p1pp1/p3p3/1pb1P3/2r3P1/P1N1P2p/1PP1Q2P/2R1R1K1 b k -");
     fen.emplace_back("1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -");
     fen.emplace_back("3r1k2/4npp1/1ppr3p/p6P/P2PPPP1/1NR5/5K2/2R5 w - -");
     fen.emplace_back("2q1rr1k/3bbnnp/p2p1pp1/2pPp3/PpP1P1P1/1P2BNNP/2BQ1PRK/7R b - -");

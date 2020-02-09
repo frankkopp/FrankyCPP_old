@@ -38,8 +38,8 @@ using testing::Eq;
 class SearchTreeSizeTest : public ::testing::Test {
 public:
   static constexpr int DEPTH = 6;
-  static constexpr int START_FEN = 20;
-  static constexpr int END_FEN = 30;
+  static constexpr int START_FEN = 0;
+  static constexpr int END_FEN = 15;
 
   /* special is used to collect a dedicated stat */
   const uint64_t* ptrToSpecial = nullptr;
@@ -48,7 +48,7 @@ public:
     std::string name = "";
     uint64_t nodes = 0;
     uint64_t nps = 0;
-    uint64_t time = 0;            
+    uint64_t time = 0;
     uint64_t special = 0;
     Move move = MOVE_NONE;
     Value value = VALUE_NONE;
@@ -99,8 +99,11 @@ TEST_F(SearchTreeSizeTest, size_test) {
   spdlog::set_level(spdlog::level::debug);
 
   results.reserve(fens.size());
-  auto iterStart = START_FEN > fens.size() ? fens.end() : fens.begin() + START_FEN;
-  auto iterEnd = START_FEN + END_FEN > fens.size() ? fens.end() : fens.begin() + START_FEN + END_FEN;
+  auto iterStart = fens.begin() + START_FEN;
+  auto iterEnd = fens.begin() + START_FEN + END_FEN;
+  if (iterEnd > fens.end()) iterEnd = fens.end();
+  if (iterStart > iterEnd) iterStart = iterEnd;
+  
   for (auto fen = iterStart; fen != iterEnd; ++fen) {
     results.push_back(featureMeasurements(DEPTH, *fen));
   }
@@ -167,17 +170,15 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   SearchConfig::USE_NMP = false;
   SearchConfig::USE_EXTENSIONS = false;
 
-
   // not yet implemented
   // vvvvvvvvvvvvvvvvvvv
   SearchConfig::USE_RFP = false;
   SearchConfig::USE_RAZOR_PRUNING = false;
   SearchConfig::USE_FORWARD_PRUNING_CHECK = false;
-  SearchConfig::USE_FUTILITY_PRUNING = false;
-  SearchConfig::USE_EFUTILITY_PRUNING = false;
+  SearchConfig::USE_FP = false;
+  SearchConfig::USE_EFP = false;
   SearchConfig::USE_LMP = false;
   SearchConfig::USE_LMR = false;
-
 
   // ***********************************
   // TESTS
@@ -188,56 +189,53 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
 
   // pure MiniMax
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "MINIMAX-QS"));
-
   // pure MiniMax + quiescence
   SearchConfig::USE_QUIESCENCE = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "MM+QS"));
-
   SearchConfig::USE_TT = true;
   SearchConfig::USE_TT_QSEARCH = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "MM+QS+TT"));
-
   SearchConfig::USE_ALPHABETA = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 AlphaBeta"));
-
   SearchConfig::USE_PVS = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "01 PVS"));
+  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "01 PVS"));
   SearchConfig::USE_PV_MOVE_SORT = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "02 PVSort"));
+  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "02 PVSort"));
   SearchConfig::USE_KILLER_MOVES = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "03 KILL"));
-  //  SearchConfig::USE_MPP = true;
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "04 MPP"));
-  //  SearchConfig::USE_MDP = true;
-  //result.tests.push_back(measureTreeSize(search, position, searchLimits, "10 BASE"));
+  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "03 KILL"));
+  SearchConfig::USE_MPP = true;
+  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "04 MPP"));
+  SearchConfig::USE_MDP = true;
+  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "05 MDP"));
 
-  //  SearchConfig::USE_NMP = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "20 NMP"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "10 BASE"));
+
+  SearchConfig::USE_NMP = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "20 NMP"));
+
+  SearchConfig::USE_EXTENSIONS = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "40 EXT"));
+
+  SearchConfig::USE_FP = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "50 FP"));
+
+  SearchConfig::USE_EFP = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "60 EFP"));
+
+  SearchConfig::USE_LMR = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "70 LMR"));
+
+  SearchConfig::USE_RFP = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "80 RFP"));
+
+  //  SearchConfig::USE_RAZOR_PRUNING = true;
+  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "90 RAZOR"));
 
   //  SearchConfig::USE_IID = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "30 IID"));
 
-  //  SearchConfig::USE_EXTENSIONS = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "40 EXT"));
-
-  //  SearchConfig::USE_RFP = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "20 RFP"));
-
-  //  SearchConfig::USE_RAZOR_PRUNING = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "40 RAZOR"));
-  //
-  //  SearchConfig::USE_AVOID_REDUCTIONS = true;
-  //  SearchConfig::USE_FUTILITY_PRUNING = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "60 FP"));
-  //
-  //  SearchConfig::USE_EFUTILITY_PRUNING = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "70 EFP"));
-  //
   //  SearchConfig::USE_LMP = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "80 LMP"));
-  //
-  //  SearchConfig::USE_LMR = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "90 LMR"));
 
   // ***********************************
 
