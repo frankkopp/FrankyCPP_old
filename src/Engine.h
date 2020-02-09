@@ -91,9 +91,6 @@ public:
   std::string getOption(const std::string &name);
   void newGame();
   void setPosition(const std::string &fen);
-  const std::shared_ptr<Position> &getPositionPtr() const { return pPosition; }
-  const std::shared_ptr<Search> &getSearchPtr() const { return pSearch; }
-  const std::shared_ptr<SearchLimits> &getSearchLimitsPtr() const { return pSearchLimits; }
   void doMove(const std::string &moveStr);
   void startSearch(const UCISearchMode &uciSearchMode);
   void stopSearch();
@@ -117,7 +114,10 @@ public:
   void waitWhileSearching();
 
   // getter
-  std::shared_ptr<SearchLimits> getSearchLimits() { return pSearchLimits; };
+  std::shared_ptr<SearchLimits> getSearchLimitsPtr() { return pSearchLimits; };
+  const std::shared_ptr<Position> &getPositionPtr() const { return pPosition; }
+  const std::shared_ptr<Search> &getSearchPtr() const { return pSearch; }
+  const std::shared_ptr<SearchLimits> &getSearchLimitsPtr() const { return pSearchLimits; }
   static int getHashSize() { return EngineConfig::hash; };
   const Result &getLastResult() const { return lastResult; }
   std::shared_ptr<Search> getSearch() const { return pSearch; }

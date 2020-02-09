@@ -35,9 +35,6 @@ namespace Test_Fens {
     std::vector<std::string> fen{};
 
     fen.emplace_back(START_POSITION_FEN);
-    fen.emplace_back("r3k2r/1ppn3p/2q1q1nb/4P2N/2q1Pp2/B5RP/pbp2PP1/1R4K1 w kq -");
-    fen.emplace_back("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
-    fen.emplace_back("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
     fen.emplace_back("8/1P6/6k1/8/8/8/p1K5/8 w - -");
     fen.emplace_back("4rk2/p5p1/1p2P2N/7R/nP5P/5PQ1/b6K/q7 w - -");
     fen.emplace_back("r2r1n2/pp2bk2/2p1p2p/3q4/3PN1QP/2P3R1/P4PP1/5RK1 w - -");
@@ -50,7 +47,6 @@ namespace Test_Fens {
     fen.emplace_back("7k/2R2p1p/3N1q2/3Q4/3p4/PP3pPP/5n1K/4r3 w - -");
     fen.emplace_back("8/5k2/8/8/2N2N2/2B5/2K5/8 w - -");
     fen.emplace_back("8/8/6k1/8/8/8/P1K5/8 w - -");
-
     fen.emplace_back("8/5k2/8/8/8/8/1BK5/1B6 w - -");
     fen.emplace_back("5r1k/4Qpq1/4p3/1p1p2P1/2p2P2/1p2P3/1K1P4/B7 w - -");
     fen.emplace_back("1r3rk1/1pnnq1bR/p1pp2B1/P2P1p2/1PP1pP2/2B3P1/5PK1/2Q4R w - -");
@@ -58,6 +54,11 @@ namespace Test_Fens {
     fen.emplace_back("1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -");
     fen.emplace_back("3r1k2/4npp1/1ppr3p/p6P/P2PPPP1/1NR5/5K2/2R5 w - -");
     fen.emplace_back("2q1rr1k/3bbnnp/p2p1pp1/2pPp3/PpP1P1P1/1P2BNNP/2BQ1PRK/7R b - -");
+
+    fen.emplace_back("r3k2r/1ppn3p/2q1q1nb/4P2N/2q1Pp2/B5RP/pbp2PP1/1R4K1 w kq -");
+    fen.emplace_back("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
+    fen.emplace_back("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
+    
     fen.emplace_back("rnbqkb1r/p3pppp/1p6/2ppP3/3N4/2P5/PPP1QPPP/R1B1KB1R w KQkq -");
     fen.emplace_back("r1b2rk1/2q1b1pp/p2ppn2/1p6/3QP3/1BN1B3/PPP3PP/R4RK1 w - -");
     fen.emplace_back("2r3k1/pppR1pp1/4p3/4P1P1/5P2/1P4K1/P1P5/8 w - -");
