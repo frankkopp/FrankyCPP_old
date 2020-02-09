@@ -55,22 +55,19 @@ Value Evaluator::evaluate(const Position &position) {
 
   // if not enough material on the board for a win then it is a draw
   if (position.checkInsufficientMaterial()) {
-    LOG__TRACE(Logger::get().EVAL_LOG, "Eval: DRAW for insufficient material on {}",
-               position.printFen());
+    LOG__TRACE(Logger::get().EVAL_LOG, "Eval: DRAW for insufficient material on {}", position.printFen());
     return VALUE_DRAW;
   }
 
   // MATERIAL & POSITION
   int value = (config.USE_MATERIAL
                ? position.getMaterial(WHITE) - position.getMaterial(BLACK)
-               : 0) *
-              config.MATERIAL_WEIGHT;
+               : 0) * config.MATERIAL_WEIGHT;
   LOG__TRACE(Logger::get().EVAL_LOG, "Eval value after material: {}", value);
 
   value += (config.USE_POSITION
             ? position.getPosValue(WHITE) - position.getPosValue(BLACK)
-            : 0) *
-           config.POSITION_WEIGHT;
+            : 0) * config.POSITION_WEIGHT;
   LOG__TRACE(Logger::get().EVAL_LOG, "Eval value after position: {}", value);
 
   // TODO: Early exit if score is very high
@@ -97,11 +94,9 @@ Value Evaluator::evaluate(const Position &position) {
   // moves
   if (config.USE_CHECK_BONUS) {
     value += position.isAttacked(position.getKingSquare(BLACK), WHITE)
-             ? config.CHECK_VALUE
-             : 0;
+             ? config.CHECK_VALUE : 0;
     value -= position.isAttacked(position.getKingSquare(WHITE), BLACK)
-             ? config.CHECK_VALUE
-             : 0;
+             ? config.CHECK_VALUE : 0;
   }
   LOG__TRACE(Logger::get().EVAL_LOG, "Eval value after check bonus: {}", value);
 
@@ -113,7 +108,7 @@ Value Evaluator::evaluate(const Position &position) {
   // TEMPO Bonus for the side to move (helps with evaluation alternation -
   // less difference between side which makes aspiration search faster
   // (not empirically tested)
-  value += config.TEMPO;
+  value += static_cast<int>(config.TEMPO * position.getGamePhaseFactor());
   LOG__TRACE(Logger::get().EVAL_LOG, "Eval value after tempo and player adjust: {}", value);
 
   return static_cast<Value>(value);

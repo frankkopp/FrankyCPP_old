@@ -39,6 +39,8 @@ public:
     NEWLINE;
     INIT::init();
     NEWLINE;
+    Logger::get().TEST_LOG->set_level(spdlog::level::debug);
+    Logger::get().EVAL_LOG->set_level(spdlog::level::debug);
   }
 protected:
   void SetUp() override {}
@@ -267,31 +269,12 @@ TEST_F(EvaluatorTest, fens) {
   fprint("{}", timerTotal.format());
 }
 
-TEST_F(EvaluatorTest, DISABLED_debugging) {
+TEST_F(EvaluatorTest, debugging) {
 
   Evaluator evaluator;
   Value value;
-  Position position;
-
-  //Storing into TT: 16558441573230445409 4352 EXACT 1  a2a1q b1a1 c2c1q
-  //Storing into TT: 16558441573230445409 4365 EXACT 1  a2a1r b1a1 c2c1q -4365
-
-  position = Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/1b3PPP/R1q3K1 w kq - 0 3");
-  value = evaluator.evaluate(position);
-  fmt::print("Value {}\n", value);
-
-  position = Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3 0 1");
-  position.doMove(createMove<PROMOTION>("a2a1q"));
-  position.doMove(createMove("b1a1"));
-  position.doMove(createMove<PROMOTION>("c2c1q"));
-  value = evaluator.evaluate(position);
-  fmt::print("Value {}\n", value);
-
-  position = Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3 0 1");
-  position.doMove(createMove<PROMOTION>("a2a1r"));
-  position.doMove(createMove("b1a1"));
-  position.doMove(createMove<PROMOTION>("c2c1q"));
-  value = evaluator.evaluate(position);
-  fmt::print("Value {}\n", value);
+  Position position("8/5k2/8/8/8/8/1BK5/1B6 w - -");
+  const int v = static_cast<int>(evaluator.config.TEMPO * position.getGamePhaseFactor());
+  fprintln("{} {}", position.getGamePhaseFactor(), v);
 
 }
