@@ -440,7 +440,7 @@ SearchResult Search::iterativeDeepening(Position &position) {
 }
 
 Value Search::aspiration_search(Position &position, Depth depth, Value bestValue) {
-  LOG__DEBUG(Logger::get().SEARCH_LOG, "Aspiration for depth {}: START", depth);
+  LOG__TRACE(Logger::get().SEARCH_LOG, "Aspiration for depth {}: START", depth);
   assert(bestValue != VALUE_NONE);
 
   Value value = VALUE_NONE;
@@ -449,7 +449,7 @@ Value Search::aspiration_search(Position &position, Depth depth, Value bestValue
   // 1st aspiration
   Value alpha = std::max(VALUE_MIN, bestValue - 30);
   Value beta = std::min(VALUE_MAX, bestValue + 30);
-  LOG__DEBUG(Logger::get().SEARCH_LOG, "Aspiration for depth {}: START 1st window {}/{} (bestValue={})", depth, alpha, beta, bestValue);
+  LOG__TRACE(Logger::get().SEARCH_LOG, "Aspiration for depth {}: START 1st window {}/{} (bestValue={})", depth, alpha, beta, bestValue);
   value = search<ROOT, PV>(position, depth, PLY_ROOT, alpha, beta, Do_Null_Move);
   // ##########################################################
 
@@ -462,22 +462,22 @@ Value Search::aspiration_search(Position &position, Depth depth, Value bestValue
   // 2nd aspiration
   // FAIL LOW - decrease lower bound
   if (value <= alpha) {
-    LOG__DEBUG(Logger::get().SEARCH_LOG, "Aspiration for depth {}: FAIL_LOW 1st window {}/{} value={}", depth, alpha, beta, value);
+    LOG__TRACE(Logger::get().SEARCH_LOG, "Aspiration for depth {}: FAIL_LOW 1st window {}/{} value={}", depth, alpha, beta, value);
     sendAspirationResearchInfo("upperbound");
     searchStats.aspirationResearches++;
     // add some extra time because of fail low - we might have found strong opponents move
     addExtraTime(1.3);
     alpha = std::max(VALUE_MIN, bestValue - 200);
-    LOG__DEBUG(Logger::get().SEARCH_LOG, "Aspiration for depth {}: START 2nd window {}/{}", depth, alpha, beta);
+    LOG__TRACE(Logger::get().SEARCH_LOG, "Aspiration for depth {}: START 2nd window {}/{}", depth, alpha, beta);
     value = search<ROOT, PV>(position, depth, PLY_ROOT, alpha, beta, Do_Null_Move);
   }
     // FAIL HIGH - increase upper bound
   else if (value >= beta) {
-    LOG__DEBUG(Logger::get().SEARCH_LOG, "Aspiration for depth {}: FAIL-HIGH: 2nd window {}/{} value={} ", depth, alpha, beta, value);
+    LOG__TRACE(Logger::get().SEARCH_LOG, "Aspiration for depth {}: FAIL-HIGH: 2nd window {}/{} value={} ", depth, alpha, beta, value);
     sendAspirationResearchInfo("lowerbound");
     searchStats.aspirationResearches++;
     beta = std::min(VALUE_MAX, bestValue + 200);
-    LOG__DEBUG(Logger::get().SEARCH_LOG, "Aspiration for depth {}: START 2nd window {}/{}", depth, alpha, beta);
+    LOG__TRACE(Logger::get().SEARCH_LOG, "Aspiration for depth {}: START 2nd window {}/{}", depth, alpha, beta);
     value = search<ROOT, PV>(position, depth, PLY_ROOT, alpha, beta, Do_Null_Move);
   }
   // ##########################################################
@@ -491,20 +491,20 @@ Value Search::aspiration_search(Position &position, Depth depth, Value bestValue
   // 3rd aspiration
   // FAIL - full window search
   if (value <= alpha || value >= beta) {
-    LOG__DEBUG(Logger::get().SEARCH_LOG, "Aspiration for depth {}: %s 2nd window {}/{} value={} ", depth, value <= alpha ? "FAIL-LOW" : "FAIL-HIGH", alpha, beta, value);
-    if (value <= alpha) sendAspirationResearchInfo("lowerbound");
-    else sendAspirationResearchInfo("upperbound");
+    LOG__TRACE(Logger::get().SEARCH_LOG, "Aspiration for depth {}: %s 2nd window {}/{} value={} ", depth, value <= alpha ? "FAIL-LOW" : "FAIL-HIGH", alpha, beta, value);
+    if (value <= alpha) { sendAspirationResearchInfo("lowerbound"); }
+    else { sendAspirationResearchInfo("upperbound"); }
     searchStats.aspirationResearches++;
     // add some extra time because of fail low - we might have found strong opponents move
     if (value <= alpha) addExtraTime(1.3);
     alpha = VALUE_MIN;
     beta = VALUE_MAX;
-    LOG__DEBUG(Logger::get().SEARCH_LOG, "Aspiration for depth {}: START 3rd window {}/{}", depth, alpha, beta);
+    LOG__TRACE(Logger::get().SEARCH_LOG, "Aspiration for depth {}: START 3rd window {}/{}", depth, alpha, beta);
     value = search<ROOT, PV>(position, depth, PLY_ROOT, alpha, beta, Do_Null_Move);
   }
   // ##########################################################
 
-  LOG__DEBUG(Logger::get().SEARCH_LOG, "Aspiration for depth {}: END (Result {} in window {}/{})", depth, value, alpha, beta);
+  LOG__TRACE(Logger::get().SEARCH_LOG, "Aspiration for depth {}: END (Result {} in window {}/{})", depth, value, alpha, beta);
 
   return stopConditions() ? bestValue : value;
 }
@@ -1490,8 +1490,7 @@ void Search::setHashSize(int sizeInMB) {
 void Search::sendIterationEndInfoToEngine() const {
   ASSERT_START
     if (pv[PLY_ROOT].empty()) {
-      LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{} pv[PLY_ROOT] is empty here and it should not be",
-                 __func__, __LINE__);
+      LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{} pv[PLY_ROOT] is empty here and it should not be", __func__, __LINE__);
     }
   ASSERT_END
 
@@ -1518,7 +1517,7 @@ void Search::sendIterationEndInfoToEngine() const {
   }
 }
 
-void Search::sendAspirationResearchInfo(const std::string& bound) const {
+void Search::sendAspirationResearchInfo(const std::string &bound) const {
   if (!pEngine) {
     LOG__INFO(
       Logger::get().SEARCH_LOG, "UCI >> depth {} seldepth {} multipv 1 {} {} nodes {:n} nps {:n} time {:n} pv {}",
