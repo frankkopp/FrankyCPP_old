@@ -35,7 +35,6 @@ namespace Test_Fens {
     std::vector<std::string> fen{};
 
     fen.emplace_back(START_POSITION_FEN);
-
     fen.emplace_back("r3k2r/1ppn3p/2q1q1nb/4P2N/2q1Pp2/B5RP/pbp2PP1/1R4K1 w kq -");
     fen.emplace_back("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
     fen.emplace_back("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");

@@ -614,32 +614,25 @@ TEST_F(SearchTest, debugging) {
 
   // @formatter:off
   SearchConfig::USE_QUIESCENCE        = true;
-  SearchConfig::USE_ALPHABETA         = true;
-  SearchConfig::USE_KILLER_MOVES      = true;
   SearchConfig::USE_TT                = true;
-  SearchConfig::TT_SIZE_MB            = 64;
   SearchConfig::USE_TT_QSEARCH        = true;
-  SearchConfig::USE_MDP               = true;
-  SearchConfig::USE_MPP               = true;
+  SearchConfig::TT_SIZE_MB            = 64;
+  SearchConfig::USE_ALPHABETA         = true;
   SearchConfig::USE_PVS               = true;
   SearchConfig::USE_PV_MOVE_SORT      = true;
-  SearchConfig::USE_NMP               = true;
+  SearchConfig::USE_KILLER_MOVES      = true;
+  SearchConfig::NO_KILLER_MOVES       = 5;
 
-  // not yet implemented
-  // vvvvvvvvvvvvvvvvvvv
-  SearchConfig::USE_RFP               = true;
-  SearchConfig::USE_RAZOR_PRUNING     = true;
-  SearchConfig::USE_FORWARD_PRUNING_CHECK  = true;
-  SearchConfig::USE_FUTILITY_PRUNING  = true;
-  SearchConfig::USE_EFUTILITY_PRUNING = true;
-  SearchConfig::USE_LMP               = true;
-  SearchConfig::USE_LMR               = true;
+  SearchConfig::USE_NMP               = false;
+  SearchConfig::USE_MDP               = false;
+  SearchConfig::USE_MPP               = false;
+  SearchConfig::USE_QS_STANDPAT_CUT   = false;
   // @formatter:on
 
   // should not end up in repetition by giving check with Qh6
-  //position = Position("5r1k/1r6/4p1Q1/5p2/6p1/P3R3/5PPP/6K1 w - - 1 1");
+  position = Position("5r1k/1r6/4p1Q1/5p2/6p1/P3R3/5PPP/6K1 w - - 1 1");
 
-  const int depth = 5;
+  const int depth = 6;
   searchLimits.setDepth(depth);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();

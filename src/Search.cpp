@@ -767,8 +767,8 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
     TT_PREFETCH;
     EVAL_PREFETCH;
 
-    // check if legal move or skip
-    if (!position.isLegalPosition()) {
+    // check if legal move or skip (root moves are always legal)
+    if (ST != ROOT && !position.isLegalPosition()) {
       position.undoMove();
       continue;
     }
@@ -955,7 +955,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
   // if we did not have at least one legal move
   // then we might have a mate or in quiescence
   // only quite moves
-  if (!movesSearched && !stopConditions()) {
+  if (ST != ROOT && !movesSearched && !stopConditions()) {
     searchStats.nonLeafPositionsEvaluated++;
     assert(ttType == TYPE_ALPHA);
     LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}}Depth {} cv {} NO LEGAL MOVES", "", ply, ply, printMoveListUCI(currentVariation));

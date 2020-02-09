@@ -41,49 +41,53 @@ std::string SearchStats::str() const {
   os.imbue(deLocale);
   os
     << "nodesVisited: " << nodesVisited
-    << " nullMovePrunings: " << nullMovePrunings
-    << " nullMoveVerifications: " << nullMoveVerifications
-    << " extensions: " << extensions
-    << " noTTMoveForPVsorting: " << no_moveForPVsorting
-    << " tt_Cuts: " << tt_Cuts
-    << " tt_NoCuts: " << tt_NoCuts
+    << " movesGenerated: " << movesGenerated
     << " leafPositionsEvaluated: " << leafPositionsEvaluated
     << " nonLeafPositionsEvaluated: " << nonLeafPositionsEvaluated
-    << " prunings: " << prunings
-    << " pvs_root_researches: " << pvs_root_researches
-    << " pvs_root_cutoffs: " << pvs_root_cutoffs
-    << " pvs_researches: " << pvs_researches
-    << " pvs_cutoffs: " << pvs_cutoffs
-    << " pv_sortings: " << pv_sortings
+    << " tt_Cuts: " << tt_Cuts
+    << " tt_NoCuts: " << tt_NoCuts
     << " quiescenceStandpatCuts: " << qStandpatCuts
-    << " iid searches: " << iidSearches
-    << " movesGenerated: " << movesGenerated
-    << " currentSearchDepth: " << currentSearchDepth
-    << " currentExtraSearchDepth: " << currentExtraSearchDepth
-    << " lastSearchTime: " << lastSearchTime
+    << " prunings: " << prunings
+    << " pvs_cutoffs: " << pvs_cutoffs
+    << " pvs_researches: " << pvs_researches
+    << " pvs_root_cutoffs: " << pvs_root_cutoffs
+    << " pvs_root_researches: " << pvs_root_researches
+    << " pv_sortings: " << pv_sortings
+    << " noTTMoveForPVsorting: " << no_moveForPVsorting
+    << " nullMovePrunings: " << nullMovePrunings
+    << " nullMoveVerifications: " << nullMoveVerifications
     << " minorPromotionPrunings: " << minorPromotionPrunings
     << " mateDistancePrunings: " << mateDistancePrunings
-    << " currentRootMove: " << currentRootMove
-    << " bestMoveChanges: " << bestMoveChanges
+    << " extensions: " << extensions
+    << "   "
     << " checkCounter: " << checkCounter
     << " checkMateCounter: " << checkMateCounter
     << " captureCounter: " << captureCounter
     << " enPassantCounter: " << enPassantCounter
-    << " aspirationResearches: " << aspirationResearches
     << " positionsNonQuiet: " << positionsNonQuiet
-    << " rfpPrunings: " << rfpPrunings
-
-    << " razorReductions: " << razorReductions
-    << " iidSearches: " << iidSearches
-    << " lrReductions: " << lrReductions
-    << " efpPrunings: " << efpPrunings
-    << " fpPrunings: " << fpPrunings
-    << " qfpPrunings: " << qfpPrunings
-    << " lmpPrunings: " << lmpPrunings
-    << " lmrReductions: " << lmrReductions
-    << " deltaPrunings: " << deltaPrunings
+    << "   "
+    // not used/implemented
+    //    << " aspirationResearches: " << aspirationResearches
+    //    << " razorReductions: " << razorReductions
+    //    << " iidSearches: " << iidSearches
+    //    << " rfpPrunings: " << rfpPrunings
+    //    << " fpPrunings: " << fpPrunings
+    //    << " efpPrunings: " << efpPrunings
+    //    << " qfpPrunings: " << qfpPrunings
+    //    << " lrReductions: " << lrReductions
+    //    << " lmpPrunings: " << lmpPrunings
+    //    << " lmrReductions: " << lmrReductions
+    //    << " deltaPrunings: " << deltaPrunings
+    //    << "   "
+    << " bestMoveChanges: " << bestMoveChanges
+    << " currentRootMove: " << currentRootMove
+    << " lastSearchTime: " << lastSearchTime
+    << " currentSearchDepth: " << currentSearchDepth
+    << " currentExtraSearchDepth: " << currentExtraSearchDepth
+    << "   "
     << " betaCutOffs: " << betaCutOffs
     << " alphaImprovements: " << alphaImprovements;
+
   return os.str();
 }
 

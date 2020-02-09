@@ -185,14 +185,13 @@ void MoveGenerator::resetOnDemand() {
   currentODStage = OD_NEW;
   currentIteratorKey = 0;
   pvMove = MOVE_NONE;
-  killerMoves.clear();
 }
 
-void MoveGenerator::storeKiller(const Move move, const int maxKillers) {
+void MoveGenerator::storeKiller(const Move killerMove, const int maxKillers) {
   maxNumberOfKiller = maxKillers;
   // only store if not already in list
-  if (std::find(killerMoves.begin(), killerMoves.end(), moveOf(move)) == killerMoves.end()) {
-    killerMoves.push_front(moveOf(move));
+  if (std::find(killerMoves.begin(), killerMoves.end(), moveOf(killerMove)) == killerMoves.end()) {
+    killerMoves.push_front(moveOf(killerMove));
     if (killerMoves.size() > maxNumberOfKiller) killerMoves.resize(maxNumberOfKiller);
   }
 }
@@ -200,10 +199,10 @@ void MoveGenerator::storeKiller(const Move move, const int maxKillers) {
 inline void MoveGenerator::pushKiller(MoveList &list) {
   for (auto killerMove : killerMoves) {
     // Find the move in the list. If move not found ignore killer.
-    // Otherwise move element to the front. 
+    // Otherwise move element to the front.
     const auto element = std::find_if(list.begin(), list.end(),
       [&](Move m) { return (moveOf(m) == killerMove); });
-    
+
     if (element != list.end()) {
       const Move tmp = *element;
       list.erase(element);
