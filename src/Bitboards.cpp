@@ -73,6 +73,31 @@ namespace Bitboards {
 
   uint8_t PopCnt16[1 << 16];
 
+  std::string print(Bitboard b) {
+    std::ostringstream os;
+    os << "+---+---+---+---+---+---+---+---+\n";
+    for (Rank r = RANK_8; r >= RANK_1; --r) {
+      for (File f = FILE_A; f <= FILE_H; ++f) {
+        os << (b & getSquare(f, r) ? "| X " : "|   ");
+      }
+      os << "|\n+---+---+---+---+---+---+---+---+\n";
+    }
+    return os.str();
+  }
+
+  std::string printFlat(Bitboard b) {
+    std::ostringstream os;
+    for (uint16_t i = 0; i < 64; i++) {
+      if (i > 0 && i % 8 == 0) {
+        os << ".";
+      }
+      os << (b & (Bitboards::ONE_BB << i) ? "1" : "0");
+    }
+    os << " (" + std::to_string(b) + ")";
+    return os.str();
+  }
+
+
   /**
    * Initializes various pre-computed bitboards
    */

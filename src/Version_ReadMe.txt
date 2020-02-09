@@ -14,6 +14,7 @@ v 0.x (plan)
 v 0.5 (in progress)
 ================================================================================
 - TODO:
+    - Beta Cut Movenumber Counter
     - Aspiration Window Search
     - RAZOR, LFP. LFR, etc.
 

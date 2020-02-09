@@ -66,8 +66,11 @@ constexpr const int GAME_PHASE_MAX = 24;
 /** 64 bit Key for zobrist etc. */
 typedef uint64_t Key;
 
+/** 64 bit Bitboard type for storing boards as bits */
+typedef uint64_t Bitboard;
+
 /** for time keeping */
-typedef uint64_t MilliSec;
+typedef int64_t MilliSec;
 
 ///////////////////////////////////
 //// INITIALIZATION
@@ -79,16 +82,18 @@ namespace INIT {
 
 ///////////////////////////////////
 //// DEPTH
-enum Depth : uint8_t {
+enum Depth : int {
   DEPTH_NONE = 0,
   DEPTH_ONE = 1,
   DEPTH_FRONTIER = 1,
-  DEPTH_MAX = 128
+  DEPTH_PRE_FRONTIER = 2,
+  DEPTH_PREPRE_FRONTIER = 3,
+  DEPTH_MAX = 127
 };
 
 ///////////////////////////////////
 //// PLY
-enum Ply : uint8_t {
+enum Ply : int {
   PLY_ROOT = 0,
   PLY_NONE = 0,
   PLY_MAX = DEPTH_MAX
@@ -96,7 +101,7 @@ enum Ply : uint8_t {
 
 ///////////////////////////////////
 //// COLOR
-enum Color {
+enum Color : int {
   WHITE = 0,
   BLACK = 1,
   NOCOLOR = 2,
@@ -104,10 +109,6 @@ enum Color {
 };
 
 constexpr Color operator~(Color c) { return Color(c ^ BLACK); }
-
-///////////////////////////////////
-//// BITBOARD
-typedef uint64_t Bitboard;
 
 ///////////////////////////////////
 //// SQUARES
@@ -132,7 +133,8 @@ constexpr bool isSquare(Square s) { return s >= SQ_A1 && s <= SQ_H8; }
 ///////////////////////////////////
 //// FILES
 enum File : int {
-  FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H, FILE_NONE,
+  FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H,
+  FILE_NONE,
   FILE_LENGTH = 9
 };
 
@@ -142,7 +144,8 @@ constexpr File fileOf(Square s) { return File(s & 7); }
 ///////////////////////////////////
 //// RANKS
 enum Rank : int {
-  RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_NONE,
+  RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8,
+  RANK_NONE,
   RANK_LENGTH = 9
 };
 
@@ -245,11 +248,14 @@ enum Value : int16_t {
   VALUE_MIN = -10000,
   VALUE_MAX = 10000,
   VALUE_CHECKMATE = VALUE_MAX,
-  VALUE_CHECKMATE_THRESHOLD = VALUE_CHECKMATE - static_cast<Value>(PLY_MAX),
+  VALUE_CHECKMATE_THRESHOLD = VALUE_CHECKMATE - static_cast<Value>(PLY_MAX) - 1,
 };
 
+/** Returns a UCI compatible std::string for the score in cp or in mate in ply */
+std::string printValue(Value value);
+
 inline std::ostream &operator<<(std::ostream &os, const Value v) {
-  os << std::to_string(v);
+  os << printValue(v);
   return os;
 }
 
@@ -272,7 +278,7 @@ constexpr Value valueOf(const Piece p) { return pieceTypeValue[typeOf(p)]; }
 
 /** Returns true if value is considered a checkmate */
 inline bool isCheckMateValue(const Value value) {
-  return abs(value) >= VALUE_CHECKMATE_THRESHOLD && abs(value) <= VALUE_CHECKMATE;
+  return abs(value) > VALUE_CHECKMATE_THRESHOLD && abs(value) <= VALUE_CHECKMATE;
 }
 
 inline Value operator+(Value d1, Ply d2) {
@@ -283,12 +289,9 @@ inline Value operator-(Value d1, Ply d2) {
   return static_cast<Value>(static_cast<int>(d1) - static_cast<int>(d2));
 }
 
-/** Returns a UCI compatible std::string for the score in cp or in mate in ply */
-std::string printValue(Value value);
-
 ///////////////////////////////////
 //// VALUE TYPE
-enum Value_Type : uint8_t {
+enum Value_Type : int {
   TYPE_NONE = 0,
   // the node for the value was fully calculated and is exact
     TYPE_EXACT = 1,
@@ -305,7 +308,7 @@ enum Value_Type : uint8_t {
 //// MOVE
 enum Move : uint32_t {
   /** A move is basically a 32-bit int */
-    MOVE_NONE = 0
+  MOVE_NONE = 0
 };
 
 /* @formatter:off
@@ -417,7 +420,6 @@ inline Value valueOf(Move m) {
 /** returns the move without value */
 inline Move moveOf(Move m) { return Move(m & MoveShifts::MOVE_MASK); }
 
-
 /** sets the value for the move. E.g. used by the move generator for move sorting */
 inline void setValue(Move &m, Value v) {
   assert(v >= VALUE_NONE && v <= -VALUE_NONE);
@@ -463,7 +465,7 @@ enum CastlingSide : int {
 /** CastlingRight */
 enum CastlingRights : unsigned int {
   // @formatter:off
-    NO_CASTLING = 0,                                // 0000
+  NO_CASTLING = 0,                                // 0000
 
   WHITE_OO,                                       // 0001
   WHITE_OOO = WHITE_OO << 1,                      // 0010
@@ -553,7 +555,7 @@ ENABLE_INCR_OPERATORS_ON(CastlingRights)
 #undef ENABLE_BASE_OPERATORS_ON
 
 constexpr const char* boolStr(bool b) { return b ? "true" : "false"; }
-constexpr const char* boolStr(int b) { return b ? "true" : "false"; }
+constexpr const char* boolStr(int b) { return boolStr(bool(b)); }
 
 /** Reads a bool from a string */
 bool to_bool(std::string str);

@@ -24,6 +24,7 @@
  */
 
 #include <algorithm>
+#include <iostream>
 #include "MoveGenerator.h"
 #include "Bitboards.h"
 #include "Values.h"
@@ -47,6 +48,9 @@ const MoveList* MoveGenerator::generatePseudoLegalMoves(const Position &position
   generateMoves<GM>(position, &pseudoLegalMoves);
   generateKingMoves<GM>(position, &pseudoLegalMoves);
   stable_sort(pseudoLegalMoves.begin(), pseudoLegalMoves.end());
+  // remove internal sort value
+  std::transform(pseudoLegalMoves.begin(), pseudoLegalMoves.end(),
+                 pseudoLegalMoves.begin(), [](Move m) { return moveOf(m); });
   return &pseudoLegalMoves;
 }
 
@@ -88,7 +92,7 @@ Move MoveGenerator::getNextPseudoLegalMove(const Position &position) {
          */
         if (pvMove) {
           pvIsCapture = position.isCapturingMove(pvMove);
-          if (GM == GENALL|| (GM == GENCAP && pvIsCapture) || (GM == GENNONCAP && !pvIsCapture)) {
+          if (GM == GENALL || (GM == GENCAP && pvIsCapture) || (GM == GENNONCAP && !pvIsCapture)) {
             onDemandMoves.push_back(pvMove);
           }
         }
@@ -162,7 +166,7 @@ Move MoveGenerator::getNextPseudoLegalMove(const Position &position) {
   else {
     const Move move = onDemandMoves.front();
     onDemandMoves.pop_front();
-    return move;
+    return moveOf(move); // remove internal sort value
   }
 }
 
@@ -181,23 +185,24 @@ void MoveGenerator::resetOnDemand() {
   currentODStage = OD_NEW;
   currentIteratorKey = 0;
   pvMove = MOVE_NONE;
-  killerMoves.clear();
 }
 
-void MoveGenerator::storeKiller(const Move move, const int maxKillers) {
+void MoveGenerator::storeKiller(const Move killerMove, const int maxKillers) {
   maxNumberOfKiller = maxKillers;
   // only store if not already in list
-  if (std::find(killerMoves.begin(), killerMoves.end(), move) == killerMoves.end()) {
-    killerMoves.push_front(move);
+  if (std::find(killerMoves.begin(), killerMoves.end(), moveOf(killerMove)) == killerMoves.end()) {
+    killerMoves.push_front(moveOf(killerMove));
     if (killerMoves.size() > maxNumberOfKiller) killerMoves.resize(maxNumberOfKiller);
   }
 }
 
 inline void MoveGenerator::pushKiller(MoveList &list) {
-  for (auto k : killerMoves) {
+  for (auto killerMove : killerMoves) {
     // Find the move in the list. If move not found ignore killer.
-    // Otherwise move element to the front. 
-    const auto element = std::find(list.begin(), list.end(), k);
+    // Otherwise move element to the front.
+    const auto element = std::find_if(list.begin(), list.end(),
+      [&](Move m) { return (moveOf(m) == killerMove); });
+
     if (element != list.end()) {
       const Move tmp = *element;
       list.erase(element);
@@ -207,9 +212,8 @@ inline void MoveGenerator::pushKiller(MoveList &list) {
 }
 
 inline void MoveGenerator::filterPV(MoveList &moveList) {
-  moveList.erase(std::remove_if(moveList.begin(), moveList.end(), [&](Move m) {
-    return (moveOf(m) == pvMove);
-  }), moveList.end());
+  moveList.erase(std::remove_if(moveList.begin(), moveList.end(), 
+    [&](Move m) { return (moveOf(m) == pvMove); }), moveList.end());
 }
 
 void MoveGenerator::setPV(Move move) {

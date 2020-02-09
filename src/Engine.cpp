@@ -106,7 +106,7 @@ std::string Engine::getOption(const std::string &name) {
 
 void Engine::newGame() {
   LOG__INFO(Logger::get().ENGINE_LOG, "Engine: New Game");
-  stopSearch();
+  if (pSearch->isRunning()) stopSearch();
   pSearch->clearHash();
 }
 

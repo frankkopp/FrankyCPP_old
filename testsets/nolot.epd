@@ -1,3 +1,4 @@
+# https://www.chessprogramming.org/The_Nolot_Suite 
 r3qb1k/1b4p1/p2pr2p/3n4/Pnp1N1N1/6RP/1B3PP1/1B1QR1K1 w - - bm Nxh6; id "Nolot.1, Heap.100662, move.26"; c0 "Kasparov-Karpov, Wch35-KK5 Lyon-New York (20), CBM 21 1990";
 r4rk1/pp1n1p1p/1nqP2p1/2b1P1B1/4NQ2/1B3P2/PP2K2P/2R5 w - - bm Rxc5; id "Nolot.2, Heap.5154, move.22"; c0 "Bronstein,D-Ljubojevic,L, Petropolis izt (11), IZT 1973";
 r2qk2r/ppp1b1pp/2n1p3/3pP1n1/3P2b1/2PB1NN1/PP4PP/R1BQK2R w - - bm Nxg5; id "Nolot.3, Heap.81891, move.12"; c0 "Smagin,S-Sahovic,D, Biel op (10), EXP 19 1990";

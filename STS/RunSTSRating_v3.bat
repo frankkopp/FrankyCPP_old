@@ -7,10 +7,11 @@
 :: the movetime per pos used by the tool is 200ms. The tool will run a short benchmark
 :: to measure your machine speed to get the movetime, before starting the test suite.
 
-STS_Rating_v3 -f "STS1-STS15_LAN.epd" -e "..\Release\bin\FrankyCPP_v0.5.exe" --proto uci -h 512 --getrating
+::STS_Rating_v3 -f "STS1-STS15_LAN.epd" -e "..\Release\bin\FrankyCPP_v0.5.exe" --proto uci -h 1024 --getrating
 
 :: Normal run to get score, movetime is in millisec
-::STS_Rating_v3 -f "STS1-STS15_LAN.epd" -e "Franky-0.11.exe" -t 1 -h 256 --movetime 1000 --log
+STS_Rating_v3 -f "STS1-STS15_LAN.epd" -e "..\Release\bin\FrankyCPP_v0.5.exe" -t 1 -h 1024 --movetime 1000 --log
+
 
 :: WINBOARD engines
 :: ================

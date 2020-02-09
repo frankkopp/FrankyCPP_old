@@ -93,6 +93,7 @@ void TT::clear() {
 void TT::put(const Key key, const Depth depth, const Move move, const Value value,
              const Value_Type type, const bool mateThreat, const bool forced) {
   assert (value > VALUE_NONE);
+  assert (depth >= 0);
 
   // if the size of the TT = 0 we
   // do not store anything
@@ -188,6 +189,16 @@ void TT::ageEntries() {
   auto finish = std::chrono::high_resolution_clock::now();
   auto time = std::chrono::duration_cast<std::chrono::milliseconds>(finish - timePoint).count();
   LOG__DEBUG(Logger::get().TT_LOG, "TT aged {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
+}
+
+std::string TT::str() {
+  return fmt::format(
+    "TT: size {:n} MB max entries {:n} of size {:n} Bytes entries {:n} ({:n}%) puts {:n} "
+    "updates {:n} collisions {:n} overwrites {:n} probes {:n} hits {:n} ({:n}%) misses {:n} ({:n}%)",
+    sizeInByte / MB, maxNumberOfEntries, sizeof(Entry), numberOfEntries, hashFull() / 10,
+    numberOfPuts, numberOfUpdates, numberOfCollisions, numberOfOverwrites, numberOfProbes,
+    numberOfHits, numberOfProbes ? (numberOfHits * 100) / numberOfProbes : 0,
+    numberOfMisses, numberOfProbes ? (numberOfMisses * 100) / numberOfProbes : 0);
 }
 
 std::ostream &operator<<(std::ostream &os, const TT::Entry &entry) {
