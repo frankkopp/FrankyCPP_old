@@ -340,6 +340,7 @@ SearchResult Search::iterativeDeepening(Position &position) {
   // max window search - preparation for aspiration window search
   Value alpha = VALUE_MIN;
   Value beta = VALUE_MAX;
+  Value aspirationValue = VALUE_NONE;
 
   // check search requirements
   assert(!rootMoves.empty() && "No root moves to search");
@@ -367,7 +368,20 @@ SearchResult Search::iterativeDeepening(Position &position) {
       search<PERFT, PV>(position, iterationDepth, PLY_ROOT, alpha, beta, Do_Null_Move);
     }
     else {
-      search<ROOT, PV>(position, iterationDepth, PLY_ROOT, alpha, beta, Do_Null_Move);
+      // ASPIRATION
+      if (SearchConfig::USE_ASPIRATION_WINDOW
+          && iterationDepth >= SearchConfig::ASPIRATION_START_DEPTH
+          && aspirationValue != VALUE_NONE
+        ) {
+        aspirationValue = aspiration_search(position, iterationDepth, aspirationValue);
+      }
+        // ALPHA_BETA
+      else {
+        aspirationValue = search<ROOT, PV>(position, iterationDepth, PLY_ROOT, alpha, beta, Do_Null_Move);
+      }
+      if (pv[PLY_ROOT].empty() || aspirationValue != valueOf(pv[PLY_ROOT][0])) {
+        LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{} Best value is not equal pv[ROOT] value.", __func__, __LINE__);
+      }
     }
     // ###########################################
 
@@ -376,10 +390,10 @@ SearchResult Search::iterativeDeepening(Position &position) {
 
     // check the result  - we should have a result at his point
     if (!_stopSearchFlag && !searchLimitsPtr->isPerft()) {
-      if (pv[PLY_ROOT].empty() || pv[PLY_ROOT].at(0) == MOVE_NONE) {
+      if (pv[PLY_ROOT].empty() || pv[PLY_ROOT][0] == MOVE_NONE) {
         LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{} Best root move missing after iteration: pv[0] size {}", __func__, __LINE__, pv[PLY_ROOT].size());
       }
-      if (!pv[PLY_ROOT].empty() && valueOf(pv[PLY_ROOT].at(0)) == VALUE_NONE) {
+      if (!pv[PLY_ROOT].empty() && valueOf(pv[PLY_ROOT][0]) == VALUE_NONE) {
         LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{} Best root move has no value after iteration (pv size={})", __func__, __LINE__, pv[PLY_ROOT].size());
       }
     }
@@ -409,6 +423,8 @@ SearchResult Search::iterativeDeepening(Position &position) {
     }
   }
 
+  // TODO: if no ponder move try to get one from TT
+
   // update searchResult here
   searchResult.bestMove = pv[PLY_ROOT].empty() ? MOVE_NONE : pv[PLY_ROOT].at(0);
   searchResult.bestMoveValue = pv[PLY_ROOT].empty() ? VALUE_NONE : valueOf(pv[PLY_ROOT].at(0));
@@ -421,6 +437,76 @@ SearchResult Search::iterativeDeepening(Position &position) {
   searchStats.lastSearchTime = elapsedTime(startTime, stopTime);
 
   return searchResult;
+}
+
+Value Search::aspiration_search(Position &position, Depth depth, Value bestValue) {
+  LOG__DEBUG(Logger::get().SEARCH_LOG, "Aspiration for depth {}: START", depth);
+  assert(bestValue != VALUE_NONE);
+
+  Value value = VALUE_NONE;
+
+  // ##########################################################
+  // 1st aspiration
+  Value alpha = std::max(VALUE_MIN, bestValue - 30);
+  Value beta = std::min(VALUE_MAX, bestValue + 30);
+  LOG__DEBUG(Logger::get().SEARCH_LOG, "Aspiration for depth {}: START 1st window {}/{} (bestValue={})", depth, alpha, beta, bestValue);
+  value = search<ROOT, PV>(position, depth, PLY_ROOT, alpha, beta, Do_Null_Move);
+  // ##########################################################
+
+  // if search has been stopped and value has missed window return current best value
+  if (stopConditions() && (value <= alpha || value >= beta)) {
+    return bestValue;
+  }
+
+  // ##########################################################
+  // 2nd aspiration
+  // FAIL LOW - decrease lower bound
+  if (value <= alpha) {
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "Aspiration for depth {}: FAIL_LOW 1st window {}/{} value={}", depth, alpha, beta, value);
+    sendAspirationResearchInfo("upperbound");
+    searchStats.aspirationResearches++;
+    // add some extra time because of fail low - we might have found strong opponents move
+    addExtraTime(1.3);
+    alpha = std::max(VALUE_MIN, bestValue - 200);
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "Aspiration for depth {}: START 2nd window {}/{}", depth, alpha, beta);
+    value = search<ROOT, PV>(position, depth, PLY_ROOT, alpha, beta, Do_Null_Move);
+  }
+    // FAIL HIGH - increase upper bound
+  else if (value >= beta) {
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "Aspiration for depth {}: FAIL-HIGH: 2nd window {}/{} value={} ", depth, alpha, beta, value);
+    sendAspirationResearchInfo("lowerbound");
+    searchStats.aspirationResearches++;
+    beta = std::min(VALUE_MAX, bestValue + 200);
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "Aspiration for depth {}: START 2nd window {}/{}", depth, alpha, beta);
+    value = search<ROOT, PV>(position, depth, PLY_ROOT, alpha, beta, Do_Null_Move);
+  }
+  // ##########################################################
+
+  // if search has been stopped and value has missed window return current best value
+  if (stopConditions() && (value <= alpha || value >= beta)) {
+    return bestValue;
+  }
+
+  // ##########################################################
+  // 3rd aspiration
+  // FAIL - full window search
+  if (value <= alpha || value >= beta) {
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "Aspiration for depth {}: %s 2nd window {}/{} value={} ", depth, value <= alpha ? "FAIL-LOW" : "FAIL-HIGH", alpha, beta, value);
+    if (value <= alpha) sendAspirationResearchInfo("lowerbound");
+    else sendAspirationResearchInfo("upperbound");
+    searchStats.aspirationResearches++;
+    // add some extra time because of fail low - we might have found strong opponents move
+    if (value <= alpha) addExtraTime(1.3);
+    alpha = VALUE_MIN;
+    beta = VALUE_MAX;
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "Aspiration for depth {}: START 3rd window {}/{}", depth, alpha, beta);
+    value = search<ROOT, PV>(position, depth, PLY_ROOT, alpha, beta, Do_Null_Move);
+  }
+  // ##########################################################
+
+  LOG__DEBUG(Logger::get().SEARCH_LOG, "Aspiration for depth {}: END (Result {} in window {}/{})", depth, value, alpha, beta);
+
+  return stopConditions() ? bestValue : value;
 }
 
 /**
@@ -448,7 +534,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
         }
         else {
           Value eval = evaluate(position);
-          LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}} Evaluation: {} {}", " ", ply, printMoveListUCI(currentVariation), eval);
+          LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}} Evaluation: {} {}", "", ply, printMoveListUCI(currentVariation), eval);
           return eval;
         }
       }
@@ -459,7 +545,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
       if (ply > static_cast<Ply>(currentIterationDepth + SearchConfig::MAX_EXTRA_QDEPTH)
           || ply >= PLY_MAX - 1) {
         Value eval = evaluate(position);
-        LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}} Evaluation: {} {}", " ", ply, printMoveListUCI(currentVariation), eval);
+        LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}} Evaluation: {} {}", "", ply, printMoveListUCI(currentVariation), eval);
         return eval;
       }
       if (searchStats.currentExtraSearchDepth < ply) {
@@ -485,7 +571,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
     if (alpha >= beta) {
       assert(isCheckMateValue(alpha));
       searchStats.mateDistancePrunings++;
-      LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}}Search in ply %d for depth %d: MDP CUT", "", ply, ply, depth);
+      LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}}Search in ply {} for depth {}: MDP CUT", "", ply, ply, depth);
       return alpha;
     }
   }
@@ -637,7 +723,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
         && doNull                               // don't do recursive null moves
         && position.getMaterialNonPawn(position.getNextPlayer()) // to avoid Zugzwang
         && ST == NONROOT // NMP will be removed from the compiler for qsearch
-      ) {              
+      ) {
 
       Depth newDepth = depth - SearchConfig::NMP_REDUCTION;
 
@@ -1432,6 +1518,32 @@ void Search::sendIterationEndInfoToEngine() const {
   }
 }
 
+void Search::sendAspirationResearchInfo(const std::string& bound) const {
+  if (!pEngine) {
+    LOG__INFO(
+      Logger::get().SEARCH_LOG, "UCI >> depth {} seldepth {} multipv 1 {} {} nodes {:n} nps {:n} time {:n} pv {}",
+      searchStats.currentSearchDepth,
+      searchStats.currentExtraSearchDepth,
+      (searchLimitsPtr->isPerft()
+       ? VALUE_ZERO
+       : valueOf(pv[PLY_ROOT].empty() ? MOVE_NONE
+                                      : pv[PLY_ROOT].at(0))),
+      bound,
+      searchStats.nodesVisited, getNps(), elapsedTime(startTime),
+      printMoveListUCI(pv[PLY_ROOT]));
+  }
+  else {
+    pEngine->sendAspirationResearchInfo(
+      searchStats.currentSearchDepth, searchStats.currentExtraSearchDepth,
+      searchLimitsPtr->isPerft()
+      ? VALUE_ZERO
+      : valueOf(pv[PLY_ROOT].empty() ? MOVE_NONE : pv[PLY_ROOT].at(0)),
+      bound,
+      searchStats.nodesVisited, getNps(), elapsedTime(startTime),
+      pv[PLY_ROOT]);
+  }
+}
+
 void Search::sendCurrentRootMoveToEngine() const {
   if (!pEngine) {
     LOG__TRACE(Logger::get().SEARCH_LOG, "UCI >> currmove {} currmovenumber {}",
@@ -1497,3 +1609,5 @@ void Search::sendStringToEngine(const std::string &anyString) const {
     pEngine->sendString(anyString);
   }
 }
+
+

@@ -11,7 +11,7 @@ set(testExeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR}
 include(GoogleTest)
 add_executable(${testExeName}
         LoggingTest.cpp
-        GlobalsTest.cpp
+        TypesTest.cpp
         SemaphoreTest.cpp
         ValuesTest.cpp
         BitboardTest.cpp

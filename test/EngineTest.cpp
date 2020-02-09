@@ -39,6 +39,9 @@ public:
     NEWLINE;
     INIT::init();
     NEWLINE;
+    Logger::get().TEST_LOG->set_level(spdlog::level::debug);
+    Logger::get().ENGINE_LOG->set_level(spdlog::level::debug);
+    Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
   }
 protected:
   void SetUp() override {}
@@ -67,7 +70,6 @@ TEST_F(EngineTest, startSearch) {
 }
 
 TEST_F(EngineTest, doMove) {
-  Logger::get().ENGINE_LOG->set_level(spdlog::level::debug);
   Engine engine;
   // position fen 8/P7/8/7k/8/8/1p6/5K2 w - - 1 1 moves a7a8q
   engine.setPosition("8/P7/8/7k/8/8/1p6/5K2 w - - 1 1");

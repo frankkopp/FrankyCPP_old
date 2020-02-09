@@ -458,17 +458,21 @@ TEST_F(SearchTest, null_move) {
 }
 
 TEST_F(SearchTest, extensions) {
-
   Search search;
   SearchLimits searchLimits;
   Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
-
-  SearchConfig::USE_EXTENSIONS = true;
-
   searchLimits.setMoveTime(5'000);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
+}
 
+TEST_F(SearchTest, aspirationWindow) {
+  Search search;
+  SearchLimits searchLimits;
+  Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
+  searchLimits.setDepth(8);
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
 }
 
 TEST_F(SearchTest, perft) {

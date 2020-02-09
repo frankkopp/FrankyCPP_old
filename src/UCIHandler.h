@@ -32,49 +32,50 @@
 
 class Engine;
 
-  class UCI_Handler {
+class UCI_Handler {
 
-    Engine *pEngine;
+  Engine* pEngine;
 
-    std::istream *pInputStream;
-    std::ostream *pOutputStream;
+  std::istream* pInputStream;
+  std::ostream* pOutputStream;
 
-  public:
+public:
 
-    /** Constructor */
-    explicit UCI_Handler(Engine *ptr);
-    /** Constructor */
-    UCI_Handler(Engine *pEng, std::istream *pIstream, std::ostream *pOstream);
+  /** Constructor */
+  explicit UCI_Handler(Engine* ptr);
+  /** Constructor */
+  UCI_Handler(Engine* pEng, std::istream* pIstream, std::ostream* pOstream);
 
-    /** Starts the handler loop with the istream provided when creating the
-     * instance */
-    void loop();
+  /** Starts the handler loop with the istream provided when creating the
+   * instance */
+  void loop();
 
-    /** Starts the handler loop  with the given istream (mainly for testing) */
-    void loop(std::istream *pIstream);
+  /** Starts the handler loop  with the given istream (mainly for testing) */
+  void loop(std::istream* pIstream);
 
-    void uciCommand() const;
-    void isReadyCommand() const;
-    void setOptionCommand(std::istringstream &inStream) const;
-    void uciNewGameCommand() const;
-    void positionCommand(std::istringstream &inStream) const;
-    void goCommand(std::istringstream &inStream);
-    void stopCommand() const;
-    void ponderHitCommand() const;
-    static void registerCommand() ;
-    static void debugCommand() ;
-    void send(const std::string &toSend) const;
+  void uciCommand() const;
+  void isReadyCommand() const;
+  void setOptionCommand(std::istringstream &inStream) const;
+  void uciNewGameCommand() const;
+  void positionCommand(std::istringstream &inStream) const;
+  void goCommand(std::istringstream &inStream);
+  void stopCommand() const;
+  void ponderHitCommand() const;
+  static void registerCommand();
+  static void debugCommand();
+  void send(const std::string &toSend) const;
 
-    ///////////////////
-    //// GETTER
-    void sendIterationEndInfo(int depth, int seldepth, Value value, uint64_t nodes,
-                              uint64_t nps, MilliSec time, const MoveList &pv) const;
-    void sendCurrentRootMove(Move currmove, unsigned long movenumber) const;
-    void sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t nps,
-                          MilliSec time, int hashfull) const;
-    void sendCurrentLine(const MoveList &moveList) const;
-    void sendResult(Move bestMove, Move ponderMove) const;
-    void sendString(const std::string &anyString) const;
-  };
+  void sendIterationEndInfo(int depth, int seldepth, Value value, uint64_t nodes,
+                            uint64_t nps, MilliSec time, const MoveList &pv) const;
+  void sendAspirationResearchInfo(int depth, int seldepth, Value value, const std::string& bound,
+                                  uint64_t nodes, uint64_t nps, MilliSec time,
+                                  const MoveList &pv) const;
+  void sendCurrentRootMove(Move currmove, unsigned long movenumber) const;
+  void sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t nps,
+                        MilliSec time, int hashfull) const;
+  void sendCurrentLine(const MoveList &moveList) const;
+  void sendResult(Move bestMove, Move ponderMove) const;
+  void sendString(const std::string &anyString) const;
+};
 
 #endif //FRANKYCPP_UCIPROTOCOLHANDLER_H

@@ -41,6 +41,9 @@ public:
     NEWLINE;
     INIT::init();
     NEWLINE;
+    Logger::get().TEST_LOG->set_level(spdlog::level::debug);
+    Logger::get().ENGINE_LOG->set_level(spdlog::level::debug);
+    Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
   }
 protected:
   void SetUp() override {}
@@ -877,7 +880,6 @@ TEST_F(UCITest, testingBugs) {
   uciHandler.loop();
 
   command = "go wtime 48330 btime 49040 movestogo 33";
-  command = "go depth 4";
   LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
   is = istringstream(command);
   uciHandler.loop(&is);

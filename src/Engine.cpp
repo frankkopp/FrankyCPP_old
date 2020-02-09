@@ -200,6 +200,27 @@ Engine::sendIterationEndInfo(int depth, int seldepth, Value value, uint64_t node
               printMoveListUCI(pv));
 }
 
+void
+Engine::sendAspirationResearchInfo(int depth, int seldepth, Value value, const std::string& bound,
+                                   uint64_t nodes, uint64_t nps, MilliSec time,
+                                   const MoveList &pv) const {
+  if (pUciHandler) {
+    pUciHandler->sendAspirationResearchInfo(depth, seldepth, value, bound, nodes, nps, time, pv);
+  }
+  else
+    LOG__WARN(Logger::get().ENGINE_LOG,
+              "<no uci handler>: Engine iteration end: depth {} seldepth {} multipv 1 {} {} nodes {} nps {} time {} pv {}",
+              depth,
+              seldepth,
+              value,
+              bound,
+              nodes,
+              nps,
+              time,
+              printMoveListUCI(pv));
+}
+
+
 void Engine::sendCurrentRootMove(Move currmove, MoveList::size_type movenumber) const {
   if (pUciHandler) { pUciHandler->sendCurrentRootMove(currmove, movenumber); }
   else

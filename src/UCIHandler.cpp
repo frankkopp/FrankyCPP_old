@@ -335,7 +335,7 @@ void UCI_Handler::send(const std::string &toSend) const {
   *pOutputStream << toSend << std::endl;
 }
 
-void UCI_Handler::sendString(const std::string& anyString) const {
+void UCI_Handler::sendString(const std::string &anyString) const {
   send(fmt::format("info string {}", anyString));
 }
 
@@ -354,6 +354,16 @@ void UCI_Handler::sendIterationEndInfo(int depth, int seldepth, Value value,
   send(fmt::format("info depth {} seldepth {} multipv 1 score {} nodes {} "
                    "nps {} time {} pv {}",
                    depth, seldepth, printValue(Value(value)), nodes, nps,
+                   time, printMoveListUCI(pv)));
+}
+
+void
+UCI_Handler::sendAspirationResearchInfo(int depth, int seldepth, Value value, const std::string& bound,
+                                        uint64_t nodes, uint64_t nps, MilliSec time,
+                                        const MoveList &pv) const {
+  send(fmt::format("info depth {} seldepth {} multipv 1 score {} {} nodes {} "
+                   "nps {} time {} pv {}",
+                   depth, seldepth, printValue(Value(value)), bound, nodes, nps,
                    time, printMoveListUCI(pv)));
 }
 

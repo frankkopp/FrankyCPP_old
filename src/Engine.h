@@ -103,8 +103,10 @@ public:
   // send to UCI
   void
   sendIterationEndInfo(int depth, int seldepth, Value value, uint64_t nodes, uint64_t nps,
-                       MilliSec time,
-                       const MoveList &pv) const;
+                       MilliSec time, const MoveList &pv) const;
+  void sendAspirationResearchInfo(int depth, int seldepth, Value value, const std::string& bound,
+                                  uint64_t nodes, uint64_t nps, MilliSec time,
+                                  const MoveList &pv) const;
   void sendCurrentRootMove(Move currmove, MoveList::size_type movenumber) const;
   void
   sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t nps, MilliSec time,
@@ -129,7 +131,7 @@ private:
 
   void initOptions();
   void updateConfig();
-  static int getInt(const std::string &value) ;
+  static int getInt(const std::string &value);
 
 };
 

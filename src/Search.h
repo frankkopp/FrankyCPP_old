@@ -224,6 +224,20 @@ private:
   SearchResult iterativeDeepening(Position &refPosition);
 
   /**
+    * Aspiration search works with the assumption that the value from previous
+    * searches will not change too much and therefore the search can be tried
+    * with a narrow window for alpha and beta around the previous value to cause
+    * more cut offs. If the result is at the edge or outside(not possible in
+    * fail-hard) of our window, we try another search with a wider window. If
+    * this also fails we fall back to a full window search.
+    *
+    * @param position
+    * @param depth
+    * @param bestValue
+    */
+  Value aspiration_search(Position &position, Depth depth, Value bestValue);
+
+  /**
    * The main search function. The templating distinguishes between
    * search in the root node, normal non root nodes and quiscence nodes.
    * Also takes care of the special PERFT case.
@@ -353,6 +367,7 @@ private:
 
   /** these are sending information to the UCI protocol */
   void sendIterationEndInfoToEngine() const;
+  void sendAspirationResearchInfo(const std::string& bound) const;
   void sendCurrentRootMoveToEngine() const;
   void sendSearchUpdateToEngine();
   void sendResultToEngine() const;
