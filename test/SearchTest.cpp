@@ -104,7 +104,7 @@ TEST_F(SearchTest, timerTest) {
   search.addExtraTime(2.0); // 2.950 ms
   search.waitWhileSearching();
   EXPECT_GE(search.getSearchStats().lastSearchTime, 2'950);
-  EXPECT_LT(search.getSearchStats().lastSearchTime, 3'200);
+  EXPECT_LT(search.getSearchStats().lastSearchTime, 3'500);
 
   searchLimits.setWhiteTime(60'000);  //  1.475 ms
   searchLimits.setBlackTime(60'000);

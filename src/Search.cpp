@@ -143,15 +143,15 @@ void Search::ponderhit() {
   if (searchLimitsPtr->isPonder()) {
     LOG__DEBUG(Logger::get().SEARCH_LOG, "****** PONDERHIT *******");
     if (isRunning() && !_hasResult) {
-      LOG__INFO(Logger::get().SEARCH_LOG, "Ponderhit when ponder search still running. Continue searching.");
+      LOG__DEBUG(Logger::get().SEARCH_LOG, "Ponderhit when ponder search still running. Continue searching.");
       // if time based game setup the time limits
       if (searchLimitsPtr->isTimeControl()) {
-        LOG__INFO(Logger::get().SEARCH_LOG, "Time Management: {} Time limit: {:n}", (searchLimitsPtr->isTimeControl() ? "ON" : "OFF"), timeLimit);
+        LOG__DEBUG(Logger::get().SEARCH_LOG, "Time Management: {} Time limit: {:n}", (searchLimitsPtr->isTimeControl() ? "ON" : "OFF"), timeLimit);
       }
     }
     else if (isRunning() && _hasResult) {
-      LOG__INFO(Logger::get().SEARCH_LOG, "Ponderhit when ponder search already ended. Sending result.");
-      LOG__INFO(Logger::get().SEARCH_LOG, "Search Result: {}", lastSearchResult.str());
+      LOG__DEBUG(Logger::get().SEARCH_LOG, "Ponderhit when ponder search already ended. Sending result.");
+      LOG__DEBUG(Logger::get().SEARCH_LOG, "Search Result: {}", lastSearchResult.str());
     }
     // continue searching or send result (done in run())
     startTime = now();
@@ -341,6 +341,8 @@ SearchResult Search::iterativeDeepening(Position &position) {
   Value alpha = VALUE_MIN;
   Value beta = VALUE_MAX;
   Value bestValue = VALUE_NONE;
+  bestRootMove = MOVE_NONE;
+  bestRootMoveValue = VALUE_NONE;
 
   // check search requirements
   assert(!rootMoves.empty() && "No root moves to search");
@@ -368,22 +370,14 @@ SearchResult Search::iterativeDeepening(Position &position) {
       search<PERFT, PV>(position, iterationDepth, PLY_ROOT, alpha, beta, Do_Null_Move);
     }
     else {
-      // ASPIRATION
-      if (SearchConfig::USE_ASPIRATION_WINDOW
+      if (SearchConfig::USE_ASPIRATION_WINDOW // ASPIRATION
           && iterationDepth >= SearchConfig::ASPIRATION_START_DEPTH
           && bestValue != VALUE_NONE
         ) {
         bestValue = aspiration_search(position, iterationDepth, bestValue);
       }
-        // ALPHA_BETA
-      else {
+      else { // ALPHA_BETA
         bestValue = search<ROOT, PV>(position, iterationDepth, PLY_ROOT, alpha, beta, Do_Null_Move);
-      }
-
-      // FIXME - set root move values here - remove it from search(); use returned values
-
-      if (pv[PLY_ROOT].empty() || bestValue != valueOf(pv[PLY_ROOT][0])) {
-        LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{} Best value is not equal pv[ROOT] value. {}!={}", __func__, __LINE__, bestValue, valueOf(pv[PLY_ROOT][0]));
       }
     }
     // ###########################################
@@ -391,21 +385,16 @@ SearchResult Search::iterativeDeepening(Position &position) {
     // release lock on TT
     tt_lock.unlock();
 
-    // check the result  - we should have a result at his point
-    if (!_stopSearchFlag && !searchLimitsPtr->isPerft()) {
-      if (pv[PLY_ROOT].empty() || pv[PLY_ROOT][0] == MOVE_NONE) {
-        LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{} Best root move missing after iteration: pv[0] size {}", __func__, __LINE__, pv[PLY_ROOT].size());
-      }
-      if (!pv[PLY_ROOT].empty() && valueOf(pv[PLY_ROOT][0]) == VALUE_NONE) {
-        LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{} Best root move has no value after iteration (pv size={})", __func__, __LINE__, pv[PLY_ROOT].size());
-      }
-    }
-
     // break on stop signal or time
     if (stopConditions()) { break; }
 
     // sort root moves based on value for the next iteration
     std::stable_sort(rootMoves.begin(), rootMoves.end(), rootMovesSort);
+    bestRootMove = rootMoves[0];
+    bestRootMoveValue = valueOf(rootMoves[0]);
+    if (bestValue != bestRootMoveValue) {
+      LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{} Best bestRootMoveValue != bestValue after iteration {} != {}", __func__, __LINE__, bestRootMoveValue, bestValue);
+    }
 
     // update UCI GUI
     sendIterationEndInfoToEngine();
@@ -418,20 +407,18 @@ SearchResult Search::iterativeDeepening(Position &position) {
 
   // check the result  - we should have a result at his point
   if (!searchLimitsPtr->isPerft()) {
-    if (pv[PLY_ROOT].empty() || pv[PLY_ROOT].at(0) == MOVE_NONE) {
-      LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{} Best root move missing after search: pv[0] size {}", __func__, __LINE__, pv[PLY_ROOT].size());
+    if (bestRootMove == MOVE_NONE) {
+      LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{} Best root move missing after search", __func__, __LINE__);
     }
-    if (!pv[PLY_ROOT].empty() && valueOf(pv[PLY_ROOT].at(0)) == VALUE_NONE) {
-      LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{}Best root move has no value!( pv size={}", __func__, __LINE__, pv[PLY_ROOT].size());
+    if (bestRootMoveValue == VALUE_NONE) {
+      LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{}Best root move has no value!", __func__, __LINE__);
     }
   }
 
-  // TODO: if no ponder move try to get one from TT
-  // FIXME - use returned values here not pv move values!
-
   // update searchResult here
-  searchResult.bestMove = pv[PLY_ROOT].empty() ? MOVE_NONE : pv[PLY_ROOT].at(0);
-  searchResult.bestMoveValue = pv[PLY_ROOT].empty() ? VALUE_NONE : valueOf(pv[PLY_ROOT].at(0));
+  searchResult.bestMove = bestRootMove;
+  searchResult.bestMoveValue = bestRootMoveValue;
+  // TODO: if no ponder move try to get one from TT
   searchResult.ponderMove = pv[PLY_ROOT].size() > 1 ? pv[PLY_ROOT].at(1) : MOVE_NONE;
   searchResult.depth = searchStats.currentSearchDepth;
   searchResult.extraDepth = searchStats.currentExtraSearchDepth;
@@ -1043,6 +1030,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
           ttStoreMove = move;
 
           // store PV even in case of fail high (from SF - not sure why)
+          // usually would expect this below where EXACT values are ensured
           setValue(ttStoreMove, bestNodeValue);
           savePV(ttStoreMove, pv[ply + 1], pv[ply]);
 
@@ -1505,19 +1493,14 @@ void Search::sendIterationEndInfoToEngine() const {
       Logger::get().SEARCH_LOG, "UCI >> depth {} seldepth {} multipv 1 {} nodes {:n} nps {:n} time {:n} pv {}",
       searchStats.currentSearchDepth,
       searchStats.currentExtraSearchDepth,
-      (searchLimitsPtr->isPerft()
-       ? VALUE_ZERO
-       : valueOf(pv[PLY_ROOT].empty() ? MOVE_NONE
-                                      : pv[PLY_ROOT].at(0))),
+      searchLimitsPtr->isPerft() ? VALUE_ZERO : bestRootMoveValue,
       searchStats.nodesVisited, getNps(), elapsedTime(startTime),
       printMoveListUCI(pv[PLY_ROOT]));
   }
   else {
     pEngine->sendIterationEndInfo(
       searchStats.currentSearchDepth, searchStats.currentExtraSearchDepth,
-      searchLimitsPtr->isPerft()
-      ? VALUE_ZERO
-      : valueOf(pv[PLY_ROOT].empty() ? MOVE_NONE : pv[PLY_ROOT].at(0)),
+      searchLimitsPtr->isPerft() ? VALUE_ZERO : bestRootMoveValue,
       searchStats.nodesVisited, getNps(), elapsedTime(startTime),
       pv[PLY_ROOT]);
   }
@@ -1529,10 +1512,7 @@ void Search::sendAspirationResearchInfo(const std::string &bound) const {
       Logger::get().SEARCH_LOG, "UCI >> depth {} seldepth {} multipv 1 {} {} nodes {:n} nps {:n} time {:n} pv {}",
       searchStats.currentSearchDepth,
       searchStats.currentExtraSearchDepth,
-      (searchLimitsPtr->isPerft()
-       ? VALUE_ZERO
-       : valueOf(pv[PLY_ROOT].empty() ? MOVE_NONE
-                                      : pv[PLY_ROOT].at(0))),
+      searchLimitsPtr->isPerft() ? VALUE_ZERO : bestRootMoveValue,
       bound,
       searchStats.nodesVisited, getNps(), elapsedTime(startTime),
       printMoveListUCI(pv[PLY_ROOT]));
@@ -1540,9 +1520,7 @@ void Search::sendAspirationResearchInfo(const std::string &bound) const {
   else {
     pEngine->sendAspirationResearchInfo(
       searchStats.currentSearchDepth, searchStats.currentExtraSearchDepth,
-      searchLimitsPtr->isPerft()
-      ? VALUE_ZERO
-      : valueOf(pv[PLY_ROOT].empty() ? MOVE_NONE : pv[PLY_ROOT].at(0)),
+      searchLimitsPtr->isPerft() ? VALUE_ZERO : bestRootMoveValue,
       bound,
       searchStats.nodesVisited, getNps(), elapsedTime(startTime),
       pv[PLY_ROOT]);

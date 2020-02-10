@@ -119,11 +119,14 @@ class Search {
   Color myColor = NOCOLOR;
 
   // list of moves at the root
-  MoveList rootMoves;
+  MoveList rootMoves{};
   MoveList::size_type currentMoveIndex = 0;
 
+  Move bestRootMove = MOVE_NONE;
+  Value bestRootMoveValue = VALUE_NONE;
+
   // store the current variation
-  MoveList currentVariation;
+  MoveList currentVariation{};
 
   // store current iteration depth to limit max quiescence depth
   Depth currentIterationDepth = static_cast<Depth>(0);
