@@ -340,7 +340,7 @@ SearchResult Search::iterativeDeepening(Position &position) {
   // max window search - preparation for aspiration window search
   Value alpha = VALUE_MIN;
   Value beta = VALUE_MAX;
-  Value aspirationValue = VALUE_NONE;
+  Value bestValue = VALUE_NONE;
 
   // check search requirements
   assert(!rootMoves.empty() && "No root moves to search");
@@ -371,16 +371,19 @@ SearchResult Search::iterativeDeepening(Position &position) {
       // ASPIRATION
       if (SearchConfig::USE_ASPIRATION_WINDOW
           && iterationDepth >= SearchConfig::ASPIRATION_START_DEPTH
-          && aspirationValue != VALUE_NONE
+          && bestValue != VALUE_NONE
         ) {
-        aspirationValue = aspiration_search(position, iterationDepth, aspirationValue);
+        bestValue = aspiration_search(position, iterationDepth, bestValue);
       }
         // ALPHA_BETA
       else {
-        aspirationValue = search<ROOT, PV>(position, iterationDepth, PLY_ROOT, alpha, beta, Do_Null_Move);
+        bestValue = search<ROOT, PV>(position, iterationDepth, PLY_ROOT, alpha, beta, Do_Null_Move);
       }
-      if (pv[PLY_ROOT].empty() || aspirationValue != valueOf(pv[PLY_ROOT][0])) {
-        LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{} Best value is not equal pv[ROOT] value.", __func__, __LINE__);
+
+      // FIXME - set root move values here - remove it from search(); use returned values
+
+      if (pv[PLY_ROOT].empty() || bestValue != valueOf(pv[PLY_ROOT][0])) {
+        LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{} Best value is not equal pv[ROOT] value. {}!={}", __func__, __LINE__, bestValue, valueOf(pv[PLY_ROOT][0]));
       }
     }
     // ###########################################
@@ -424,6 +427,7 @@ SearchResult Search::iterativeDeepening(Position &position) {
   }
 
   // TODO: if no ponder move try to get one from TT
+  // FIXME - use returned values here not pv move values!
 
   // update searchResult here
   searchResult.bestMove = pv[PLY_ROOT].empty() ? MOVE_NONE : pv[PLY_ROOT].at(0);
@@ -462,7 +466,7 @@ Value Search::aspiration_search(Position &position, Depth depth, Value bestValue
   // 2nd aspiration
   // FAIL LOW - decrease lower bound
   if (value <= alpha) {
-    LOG__TRACE(Logger::get().SEARCH_LOG, "Aspiration for depth {}: FAIL_LOW 1st window {}/{} value={}", depth, alpha, beta, value);
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "Aspiration for depth {}: FAIL_LOW 1st window {}/{} value={}", depth, alpha, beta, value);
     sendAspirationResearchInfo("upperbound");
     searchStats.aspirationResearches++;
     // add some extra time because of fail low - we might have found strong opponents move
@@ -473,7 +477,7 @@ Value Search::aspiration_search(Position &position, Depth depth, Value bestValue
   }
     // FAIL HIGH - increase upper bound
   else if (value >= beta) {
-    LOG__TRACE(Logger::get().SEARCH_LOG, "Aspiration for depth {}: FAIL-HIGH: 2nd window {}/{} value={} ", depth, alpha, beta, value);
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "Aspiration for depth {}: FAIL-HIGH: 2nd window {}/{} value={} ", depth, alpha, beta, value);
     sendAspirationResearchInfo("lowerbound");
     searchStats.aspirationResearches++;
     beta = std::min(VALUE_MAX, bestValue + 200);
@@ -1038,6 +1042,10 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
         if (value > alpha) {
           ttStoreMove = move;
 
+          // store PV even in case of fail high (from SF - not sure why)
+          setValue(ttStoreMove, bestNodeValue);
+          savePV(ttStoreMove, pv[ply + 1], pv[ply]);
+
           /*
            If we found a move that is better or equal than beta
            this means that the opponent can/will avoid this
@@ -1069,8 +1077,6 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
             searchStats.alphaImprovements[moveNumber]++;
             alpha = value;
             ttType = TYPE_EXACT;
-            setValue(ttStoreMove, bestNodeValue);
-            savePV(ttStoreMove, pv[ply + 1], pv[ply]);
             LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}}Search in ply {} for depth {}: NEW PV {} ({}) (alpha) PV: {}", "", ply, ply, depth, printMove(move), value, printMoveListUCI(pv[ply]));
           }
         }
@@ -1367,7 +1373,7 @@ void Search::configureTimeLimits() {
 }
 
 void Search::addExtraTime(const double d) {
-  if (!searchLimitsPtr->getMoveTime()) {
+  if (searchLimitsPtr->isTimeControl() && !searchLimitsPtr->getMoveTime()) {
     extraTime += static_cast<MilliSec>(timeLimit * (d - 1));
     LOG__DEBUG(Logger::get().SEARCH_LOG, "Time added/reduced {:n} ms to {:n} ms", extraTime, timeLimit + extraTime);
   }
