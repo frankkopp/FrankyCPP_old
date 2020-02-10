@@ -41,9 +41,9 @@ public:
     NEWLINE;
     INIT::init();
     NEWLINE;
-    Logger::get().TEST_LOG->set_level(  spdlog::level::warn);
-    Logger::get().ENGINE_LOG->set_level(spdlog::level::warn);
-    Logger::get().SEARCH_LOG->set_level(spdlog::level::warn);
+    Logger::get().TEST_LOG->set_level(  spdlog::level::debug);
+    Logger::get().ENGINE_LOG->set_level(spdlog::level::debug);
+    Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
   }
 protected:
   void SetUp() override {}
@@ -239,14 +239,14 @@ TEST_F(UCITest, goPonder) {
   UCI_Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
-  engine.stopSearch();
-  engine.waitWhileSearching();
-
   ASSERT_FALSE(engine.getSearchLimitsPtr()->isPerft());
   ASSERT_FALSE(engine.getSearchLimitsPtr()->isInfinite());
   ASSERT_TRUE(engine.getSearchLimitsPtr()->isPonder());
   ASSERT_FALSE(engine.getSearchLimitsPtr()->isTimeControl());
   ASSERT_EQ(PLY_MAX, engine.getSearchLimitsPtr()->getMaxDepth());
+
+  engine.stopSearch();
+  engine.waitWhileSearching();
 }
 
 TEST_F(UCITest, goMate) {

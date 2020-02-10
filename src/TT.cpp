@@ -39,12 +39,8 @@ void TT::resize(const uint64_t newSizeInByte) {
   // number of entries
   sizeInByte = newSizeInByte;
   // find the highest power of 2 smaller than maxPossibleEntries
-  const uint64_t i1 = newSizeInByte; //1'048'576ULL;
-  const uint64_t x = i1 / ENTRY_SIZE; // sizeInByte / ENTRY_SIZE; // 65'536; //
-  const double d = std::log2(x);
-  const double floor1 = std::floor(d);
-  const auto i = static_cast<uint64_t>(floor1);
-  maxNumberOfEntries = (1ULL << i);
+  // 1'048'576ULL; / 16 = 65'536;
+  maxNumberOfEntries = (1ULL << static_cast<uint64_t>(std::floor(std::log2(newSizeInByte / ENTRY_SIZE))));
   hashKeyMask = maxNumberOfEntries - 1;
   // if TT is resized to 0 we cant have any entries.
   if (sizeInByte == 0) maxNumberOfEntries = 0;
