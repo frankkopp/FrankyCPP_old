@@ -58,28 +58,11 @@ void TT::resize(const uint64_t newSizeInBytes) {
 void TT::clear() {
   // This clears the TT by overwriting each entry with 0.
   // It uses multiple threads if noOfThreads is > 1.
-  LOG__TRACE(Logger::get().TT_LOG, "Clearing TT ({} threads)...", noOfThreads);
+  LOG__TRACE(Logger::get().TT_LOG, "Clearing TT ...");
   auto startTime = std::chrono::high_resolution_clock::now();
-  std::vector<std::thread> threads;
-  threads.reserve(noOfThreads);
-  for (unsigned int t = 0; t < noOfThreads; ++t) {
-    threads.emplace_back([&, this, t]() {
-      auto range = maxNumberOfEntries / noOfThreads;
-      auto start = t * range;
-      auto end = start + range;
-      if (t == noOfThreads - 1) end = maxNumberOfEntries;
-      for (std::size_t i = start; i < end; ++i) {
-        _data[i].key = 0;
-        _data[i].move = MOVE_NONE;
-        _data[i].depth = DEPTH_NONE;
-        _data[i].value = VALUE_NONE;
-        _data[i].type = TYPE_NONE;
-        _data[i].age = 1;
-        _data[i].mateThreat = false;
-      }
-    });
-  }
-  for (std::thread &th: threads) th.join();
+  auto tmp = _data.capacity();
+  _data.resize(0);
+  _data.resize(tmp, Entry{});
   numberOfPuts = 0;
   numberOfEntries = 0;
   numberOfHits = 0;
@@ -90,7 +73,7 @@ void TT::clear() {
   numberOfProbes = 0;
   auto finish = std::chrono::high_resolution_clock::now();
   auto time = std::chrono::duration_cast<std::chrono::milliseconds>(finish - startTime).count();
-  LOG__DEBUG(Logger::get().TT_LOG, "TT cleared {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
+  LOG__DEBUG(Logger::get().TT_LOG, "TT cleared {:n} entries in {:n} ms", maxNumberOfEntries, time);
 }
 
 void TT::put(const Key key, const Depth depth, const Move move, const Value value,

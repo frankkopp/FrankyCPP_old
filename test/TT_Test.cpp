@@ -64,6 +64,7 @@ TEST_F(TT_Test, basic10) {
   ASSERT_EQ(0, tt.getNumberOfEntries());
 }
 
+
 TEST_F(TT_Test, basic100) {
   LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:n} MB in size", 100);
   TT tt(100 * TT::MB);
