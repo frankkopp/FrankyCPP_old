@@ -36,6 +36,8 @@ public:
     NEWLINE;
     INIT::init();
     NEWLINE;
+    Logger::get().TEST_LOG->set_level(spdlog::level::debug);
+    Logger::get().TT_LOG->set_level(spdlog::level::debug);
   }
 protected:
   void SetUp() override {}
