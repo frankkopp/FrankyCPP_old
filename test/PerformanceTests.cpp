@@ -216,6 +216,7 @@ TEST_F(PerformanceTests, TT_PPS) {
     auto time = timer.elapsed().user + timer.elapsed().system;
     fprintln("TT Statistics : {:s}", tt.str());
     fprintln("Run time      : {:n} ns ({:n} put/probes per sec)", time, (rounds * 2 * iterations * nanoPerSec) / time);
+    fprintln("Run time      : {} ", timer.format());
     fprintln("");
   }
 }
