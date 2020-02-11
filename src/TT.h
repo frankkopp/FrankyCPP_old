@@ -59,7 +59,8 @@ public:
   static constexpr int CacheLineSize = 64;
   static constexpr uint64_t KB = 1024;
   static constexpr uint64_t MB = KB * KB;
-  static constexpr uint64_t DEFAULT_TT_SIZE = 2 * MB; // byte
+  static constexpr uint64_t DEFAULT_TT_SIZE = 2; // MByte
+  static constexpr uint64_t MAX_SIZE_MB = 32'768;
 
   struct Entry {
     // sorted by size to achieve smallest struct size
@@ -106,9 +107,11 @@ public:
   // TT default size is 2 MB
   TT() : TT(DEFAULT_TT_SIZE) {}
 
-  /** @param newSizeInBytes Size of TT in bytes which will be reduced to the next
-   * lowest power of 2 size */
-  explicit TT(uint64_t newSizeInBytes);
+  /**
+   * @param newSizeInMByte Size of TT in bytes which will be reduced to the next lowest power of 2 size
+   *                        Limited to 32.000MB
+   */
+  explicit TT(uint64_t newSizeInMByte);
 
   ~TT() {
     delete[] _data;
@@ -122,10 +125,10 @@ public:
 
   /**
    * Changes the size of the transposition table and clears all entries.
-   * @param newSizeInBytes in Byte which will be reduced to the next
-   * lowest power of 2 size
+   * @param newSizeInMByte in Byte which will be reduced to the next
+   * lowest power of 2 size. Limited to 32.000 MB.
    */
-  void resize(uint64_t newSizeInBytes);
+  void resize(uint64_t newSizeInMByte);
 
   /** Clears the transposition table be resetting all entries to 0. */
   void clear();

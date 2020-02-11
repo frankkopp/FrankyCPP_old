@@ -38,24 +38,23 @@
 ////////////////////////////////////////////////
 ///// CONSTRUCTORS
 
-Search::Search() : Search(nullptr) {}
+Search::Search() : Search(nullptr, SearchConfig::TT_SIZE_MB) {}
 
-Search::Search(Engine* pEng) {
+Search::Search(int ttSizeInByte) : Search(nullptr, ttSizeInByte) {}
+
+Search::Search(Engine* pEng) : Search(pEng, SearchConfig::TT_SIZE_MB){}
+
+Search::Search(Engine* pEng, int ttSizeInByte) {
   pEngine = pEng;
   pEvaluator = std::make_unique<Evaluator>();
-
-  tt = new TT;
-  if (SearchConfig::USE_TT) {
-    int hashSize = SearchConfig::TT_SIZE_MB;
-    if (pEngine) {
-      int tmp = Engine::getHashSize();
-      if (tmp) { hashSize = tmp; }
+  tt = [&]{
+    if (SearchConfig::USE_TT) {
+      return new TT(ttSizeInByte);
     }
-    tt->resize(hashSize * TT::MB);
-  }
-  else {
-    tt->resize(0);
-  }
+    else {
+      return new TT(0);
+    }
+  }();
 }
 
 Search::~Search() {

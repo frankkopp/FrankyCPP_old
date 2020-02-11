@@ -31,17 +31,22 @@
 #include "Logging.h"
 #include "TT.h"
 
-TT::TT(uint64_t newSizeInBytes) {
+TT::TT(uint64_t newSizeInMByte) {
   noOfThreads = std::thread::hardware_concurrency();
-  resize(newSizeInBytes);
+  resize(newSizeInMByte);
 }
 
-void TT::resize(const uint64_t newSizeInBytes) {
-  LOG__TRACE(Logger::get().TT_LOG, "Resizing TT from {:n} to {:n}", sizeInByte, newSizeInBytes);
-  // number of entries
-  sizeInByte = newSizeInBytes;
+void TT::resize(const uint64_t newSizeInMByte) {
+  if (newSizeInMByte > MAX_SIZE_MB) {
+    LOG__ERROR(Logger::get().TT_LOG, "Requested size for TT of {:n} MB reduced to max of {:n} MB", newSizeInMByte, MAX_SIZE_MB);
+    sizeInByte = MAX_SIZE_MB * MB;
+  }
+  else {
+    LOG__TRACE(Logger::get().TT_LOG, "Resizing TT from {:n} MB to {:n} MB", sizeInByte, newSizeInMByte);
+    sizeInByte = newSizeInMByte * MB;
+  }
   // find the highest power of 2 smaller than maxPossibleEntries
-  maxNumberOfEntries = (1ULL << static_cast<uint64_t>(std::floor(std::log2(newSizeInBytes / ENTRY_SIZE))));
+  maxNumberOfEntries = (1ULL << static_cast<uint64_t>(std::floor(std::log2(sizeInByte / ENTRY_SIZE))));
   hashKeyMask = maxNumberOfEntries - 1;
   // if TT is resized to 0 we cant have any entries.
   if (sizeInByte == 0) maxNumberOfEntries = 0;
@@ -51,8 +56,8 @@ void TT::resize(const uint64_t newSizeInBytes) {
   _data = new Entry[maxNumberOfEntries];
 
   clear();
-  LOG__INFO(Logger::get().TT_LOG, "TT Size {:n} Byte, Capacity {:n} entries (size={}Byte) (Requested were {:n} Bytes)",
-            sizeInByte, maxNumberOfEntries, sizeof(Entry), newSizeInBytes);
+  LOG__INFO(Logger::get().TT_LOG, "TT Size {:n} MByte, Capacity {:n} entries (size={}Byte) (Requested were {:n} MBytes)",
+            sizeInByte / MB, maxNumberOfEntries, sizeof(Entry), newSizeInMByte);
 }
 
 void TT::clear() {

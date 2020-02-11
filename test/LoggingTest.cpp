@@ -63,7 +63,7 @@ TEST_F(LoggingTest, decimal) {
   s = fmt::format("{:n}", 1234567890);
   std::cout << "Direct cout  : " << s << std::endl;
   LOG__INFO(Logger::get().TEST_LOG, "INFO {:n}", 1234567890);
-  ASSERT_EQ("1.234.567.890", s);
+  ASSERT_EQ("1234567890", s);
 
   //s = fmt::format("{:n}", std::numeric_limits<__int128_t>::max());
   //std::cout << "Direct cout  : " << s << std::endl;

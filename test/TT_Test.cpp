@@ -56,7 +56,7 @@ TEST_F(TT_Test, basic) {
 
 TEST_F(TT_Test, basic10) {
   LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:n} MB in size", 10);
-  TT tt(10 * TT::MB);
+  TT tt(10);
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
@@ -66,7 +66,7 @@ TEST_F(TT_Test, basic10) {
 
 TEST_F(TT_Test, basic100) {
   LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:n} MB in size", 100);
-  TT tt(100 * TT::MB);
+  TT tt(100);
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
@@ -76,7 +76,7 @@ TEST_F(TT_Test, basic100) {
 
 TEST_F(TT_Test, basic1000) {
   LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:n} MB in size", 1'000);
-  TT tt(1'000 * TT::MB);
+  TT tt(1'000);
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
@@ -86,7 +86,7 @@ TEST_F(TT_Test, basic1000) {
 
 TEST_F(TT_Test, basic10000) {
   LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:n} MB in size", 10'000);
-  TT tt(10'000 * TT::MB);
+  TT tt(10'000);
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
@@ -96,7 +96,7 @@ TEST_F(TT_Test, basic10000) {
 
 TEST_F(TT_Test, basic32000) {
   LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:n} MB in size", 32'000);
-  TT tt(32'000 * TT::MB);
+  TT tt(32'000);
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
@@ -104,9 +104,19 @@ TEST_F(TT_Test, basic32000) {
   ASSERT_EQ(0, tt.getNumberOfEntries());
 }
 
+TEST_F(TT_Test, basic36000) {
+  LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:n} MB in size", 32'000);
+  TT tt(36'000);
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
+  ASSERT_EQ(2147483648, tt.getMaxNumberOfEntries());
+  ASSERT_EQ(0, tt.getNumberOfEntries());
+}
+
 TEST_F(TT_Test, basic64) {
   LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:n} MB in size", 64);
-  TT tt(64 * TT::MB);
+  TT tt(64);
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
@@ -127,7 +137,7 @@ TEST_F(TT_Test, zero) {
 TEST_F(TT_Test, parallelClear) {
   const int sizeInMB = 4'096;
   LOG__INFO(Logger::get().TEST_LOG, "Trying to create a TT with {:n} MB in size", sizeInMB);
-  TT tt = TT(sizeInMB * TT::MB);
+  TT tt = TT(sizeInMB);
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
@@ -142,7 +152,7 @@ TEST_F(TT_Test, put) {
   std::mt19937_64 rg(rd());
   std::uniform_int_distribution<unsigned long long> randomKey;
 
-  TT tt(10 * TT::MB);
+  TT tt(10);
 
   uint64_t collisionDistance = tt.maxNumberOfEntries;
 
@@ -252,7 +262,7 @@ TEST_F(TT_Test, get) {
   std::mt19937_64 rg(rd());
   std::uniform_int_distribution<unsigned long long> randomKey;
 
-  TT tt(10 * TT::MB);
+  TT tt(10);
 
   uint64_t collisionDistance = tt.maxNumberOfEntries;
 

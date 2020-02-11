@@ -101,7 +101,7 @@ class Search {
   SearchResult lastSearchResult;
 
   // transposition table (singleton)
-  TT *tt;
+  TT *tt = nullptr;
 
   // time check every x nodes
   // As time checks are expensive we only do them every x-th node.
@@ -161,7 +161,9 @@ public:
 
   /** Default constructor creates a board with a back reference to the engine */
   Search();
+  explicit Search(int ttSizeInByte);
   explicit Search(Engine *pEng);
+  Search(Engine *pEng, int ttSizeInByte);
   ~Search();
   // disallow copies and moves
   Search(Search const &) = delete;

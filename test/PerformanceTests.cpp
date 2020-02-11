@@ -269,6 +269,7 @@ TEST_F(PerformanceTests, Evaluator_EPS) {
  * Nodes: 55.967.744 Time: 30.047 ms NPS: 1.862.673
  */
 TEST_F(PerformanceTests, Search_NPS) {
+  Logger::get().TT_LOG->set_level(spdlog::level::debug);
   Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
   Search search;
   SearchLimits searchLimits;
