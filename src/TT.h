@@ -99,7 +99,7 @@ private:
   mutable uint64_t numberOfMisses = 0; // no entry with key found
 
   // this array hold the actual entries for the transposition table
-  Entry* _data{};
+  std::vector<Entry> _data{};
 
 public:
 
@@ -110,9 +110,7 @@ public:
    * lowest power of 2 size */
   explicit TT(uint64_t newSizeInBytes);
 
-  ~TT() {
-    delete[] _data;
-  }
+  ~TT() {}
 
   // disallow copies
   TT(TT const &tt) = delete; // copy
@@ -177,7 +175,7 @@ public:
    * @param key Position key (usually Zobrist key)
    * @return Entry for key or 0 if not found
    */
-  inline const TT::Entry* getMatch(const Key key) const {
+  inline const TT::Entry* getMatch(const Key key) {
     const Entry* const entryPtr = getEntryPtr(key);
     return entryPtr->key == key ? entryPtr : nullptr;
   }
@@ -219,7 +217,7 @@ private:
   }
 
   /* This retrieves a direct pointer to the entry of this node from cache */
-  inline TT::Entry* getEntryPtr(const Key key) const {
+  inline TT::Entry* getEntryPtr(const Key key) {
     return &_data[getHash(key)];
   }
 

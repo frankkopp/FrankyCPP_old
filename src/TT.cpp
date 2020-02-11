@@ -47,10 +47,10 @@ void TT::resize(const uint64_t newSizeInBytes) {
   if (sizeInByte == 0) maxNumberOfEntries = 0;
   sizeInByte = maxNumberOfEntries * ENTRY_SIZE;
 
-  delete[] _data;
-  _data = new Entry[maxNumberOfEntries];
-
+  _data.resize(maxNumberOfEntries, Entry{});
+  _data.shrink_to_fit();
   clear();
+
   LOG__INFO(Logger::get().TT_LOG, "TT Size {:n} Byte, Capacity {:n} entries (size={}Byte) (Requested were {:n} Bytes)",
             sizeInByte, maxNumberOfEntries, sizeof(Entry), newSizeInBytes);
 }
