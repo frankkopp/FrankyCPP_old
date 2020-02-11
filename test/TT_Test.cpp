@@ -64,6 +64,16 @@ TEST_F(TT_Test, basic10) {
   ASSERT_EQ(0, tt.getNumberOfEntries());
 }
 
+TEST_F(TT_Test, basic100) {
+  LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:n} MB in size", 100);
+  TT tt(100 * TT::MB);
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
+  ASSERT_EQ( 4194304, tt.getMaxNumberOfEntries());
+  ASSERT_EQ(0, tt.getNumberOfEntries());
+}
+
 TEST_F(TT_Test, basic1000) {
   LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:n} MB in size", 1'000);
   TT tt(1'000 * TT::MB);
@@ -84,7 +94,7 @@ TEST_F(TT_Test, basic10000) {
   ASSERT_EQ(0, tt.getNumberOfEntries());
 }
 
-TEST_F(TT_Test, DISABLED_basic32000) {
+TEST_F(TT_Test, basic32000) {
   LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:n} MB in size", 32'000);
   TT tt(32'000 * TT::MB);
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
