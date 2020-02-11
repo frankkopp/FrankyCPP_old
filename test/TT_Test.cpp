@@ -97,16 +97,15 @@ TEST_F(TT_Test, zero) {
 }
 
 TEST_F(TT_Test, parallelClear) {
-  const int sizeInMB = 16'000;
+  const int sizeInMB = 4'096;
   LOG__INFO(Logger::get().TEST_LOG, "Trying to create a TT with {:n} MB in size", sizeInMB);
   TT tt = TT(sizeInMB * TT::MB);
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
-  ASSERT_EQ(536870912, tt.getMaxNumberOfEntries());
+  ASSERT_EQ(268'435'456, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
-
-  tt.setThreads(4);
+  tt.setThreads(8);
   tt.clear();
 }
 

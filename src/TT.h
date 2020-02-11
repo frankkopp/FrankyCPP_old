@@ -47,7 +47,7 @@
  * The number of entries are always a power of two fitting into the given size.
  * It is not yet thread safe as it has no synchronization.
  *
- * Tests have shown that an implementation with a struct and bitfields is the
+ * Tests have shown that an implementation with a struct and bitfields is
  * more efficient than using only one 64-bit data field with manual bit shifting
  * and masking (~9% slower)
  * Also using buckets has not shown significant improvements and is much
@@ -76,7 +76,6 @@ public:
 
   // struct Entry has 16 Byte
   static constexpr uint64_t ENTRY_SIZE = sizeof(Entry);
-
   static_assert(CacheLineSize % ENTRY_SIZE == 0, "Cluster size incorrect");
 
 private:
@@ -100,7 +99,7 @@ private:
   mutable uint64_t numberOfMisses = 0; // no entry with key found
 
   // this array hold the actual entries for the transposition table
-  Entry* _data = new Entry[0]; // default initialization
+  Entry* _data{};
 
 public:
 
@@ -123,10 +122,10 @@ public:
 
   /**
    * Changes the size of the transposition table and clears all entries.
-   * @param newSizeInByte in Byte which will be reduced to the next
+   * @param newSizeInBytes in Byte which will be reduced to the next
    * lowest power of 2 size
    */
-  void resize(uint64_t newSizeInByte);
+  void resize(uint64_t newSizeInBytes);
 
   /** Clears the transposition table be resetting all entries to 0. */
   void clear();

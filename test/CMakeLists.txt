@@ -29,7 +29,7 @@ add_executable(${testExeName}
         TestSuiteTests.cpp
         SelfPlayUCITest.cpp
         BOOST_Test.cpp
-        PerformanceTests.cpp TestSuiteTest.cpp)
+        PerformanceTests.cpp TestSuiteTest.cpp ClionGTestBugTest.cpp)
 
 target_link_libraries(
         ${testExeName}

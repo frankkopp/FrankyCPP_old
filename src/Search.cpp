@@ -1427,24 +1427,20 @@ void Search::getPVLine(Position &position, MoveList &pvRoot,
 
 MoveList Search::generateRootMoves(Position &position) {
   moveGenerators[PLY_ROOT].reset();
-  const MoveList* legalMoves =
-    moveGenerators[PLY_ROOT].generateLegalMoves<MoveGenerator::GENALL>(
-      position);
+  const MoveList* pLegalMoves
+    = moveGenerators[PLY_ROOT].generateLegalMoves<MoveGenerator::GENALL>(position);
 
-  // for (Move m : *legalMoves) LOG__TRACE(Logger::get().SEARCH_LOG, "before: {} {}",
-  // printMoveVerbose(m), m);
   MoveList moveList;
-  if (searchLimitsPtr->getMoves().empty()) { // if UCI searchmoves is empty then add all
-    for (auto legalMove : *legalMoves) {
-      setValue(legalMove, VALUE_NONE);
+  // if UCI searchmoves is empty then add all
+  if (searchLimitsPtr->getMoves().empty()) {
+    for (auto legalMove : *pLegalMoves) {
       moveList.push_back(legalMove);
     }
   }
   else { // only add if in the UCI searchmoves list
-    for (auto legalMove : *legalMoves) {
+    for (auto legalMove : *pLegalMoves) {
       for (auto move : searchLimitsPtr->getMoves()) {
-        if (moveOf(move) == moveOf(legalMove)) {
-          setValue(legalMove, VALUE_NONE);
+        if (move == legalMove) {
           moveList.push_back(legalMove);
         }
       }

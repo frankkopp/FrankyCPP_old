@@ -26,6 +26,8 @@
 #include <chrono>
 #include <vector>
 #include <thread>
+#include <iostream>
+#include <new>
 #include "Logging.h"
 #include "TT.h"
 
@@ -34,22 +36,23 @@ TT::TT(uint64_t newSizeInBytes) {
   resize(newSizeInBytes);
 }
 
-void TT::resize(const uint64_t newSizeInByte) {
-  LOG__TRACE(Logger::get().TT_LOG, "Resizing TT from {:n} to {:n}", sizeInByte, newSizeInByte);
+void TT::resize(const uint64_t newSizeInBytes) {
+  LOG__TRACE(Logger::get().TT_LOG, "Resizing TT from {:n} to {:n}", sizeInByte, newSizeInBytes);
   // number of entries
-  sizeInByte = newSizeInByte;
+  sizeInByte = newSizeInBytes;
   // find the highest power of 2 smaller than maxPossibleEntries
-  // 1'048'576ULL; / 16 = 65'536;
-  maxNumberOfEntries = (1ULL << static_cast<uint64_t>(std::floor(std::log2(newSizeInByte / ENTRY_SIZE))));
+  maxNumberOfEntries = (1ULL << static_cast<uint64_t>(std::floor(std::log2(newSizeInBytes / ENTRY_SIZE))));
   hashKeyMask = maxNumberOfEntries - 1;
   // if TT is resized to 0 we cant have any entries.
   if (sizeInByte == 0) maxNumberOfEntries = 0;
+  sizeInByte = maxNumberOfEntries * ENTRY_SIZE;
+
   delete[] _data;
   _data = new Entry[maxNumberOfEntries];
-  sizeInByte = maxNumberOfEntries * ENTRY_SIZE;
+
   clear();
   LOG__INFO(Logger::get().TT_LOG, "TT Size {:n} Byte, Capacity {:n} entries (size={}Byte) (Requested were {:n} Bytes)",
-            sizeInByte, maxNumberOfEntries, sizeof(Entry), newSizeInByte);
+            sizeInByte, maxNumberOfEntries, sizeof(Entry), newSizeInBytes);
 }
 
 void TT::clear() {
