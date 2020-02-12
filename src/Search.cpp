@@ -1142,12 +1142,21 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
        not in check means that there were only quiet
        moves which we ignored on purpose and return
        the StandPat */
+    if (ST == QUIESCENCE && bestNodeValue == VALUE_NONE) {
+      // this is only necessary if we have turned of USE_QS_STANDPAT_CUT option
+      bestNodeValue = evaluate(position);
+    }
   }
 
   LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}}Search {} in ply {} for depth {}: END value={} ({} moves searched) ({})", "", ply, (ST == ROOT ? "ROOT" : ST == NONROOT ? "NONROOT" : "QUIESCENCE"), ply, depth, bestNodeValue, movesSearched, printMoveListUCI(currentVariation));
 
   // best value should in any case not be VALUE_NONE any more
-  assert(ST == PERFT || (bestNodeValue >= VALUE_MIN && bestNodeValue <= VALUE_MAX && "bestNodeValue should not be MIN/MAX here"));
+  //assert(ST == PERFT || (bestNodeValue >= VALUE_MIN && bestNodeValue <= VALUE_MAX && "bestNodeValue should not be MIN/MAX here"));
+  ASSERT_START
+    if (ST != PERFT && !stopConditions() && !(bestNodeValue >= VALUE_MIN && bestNodeValue <= VALUE_MAX) ) {
+      LOG__ERROR(Logger::get().SEARCH_LOG, "bestNodeValue should not be MIN/MAX here");
+    }
+  ASSERT_END
 
   // store TT data
   switch (ST) {
@@ -1468,7 +1477,7 @@ void Search::setHashSize(int sizeInMB) {
   LOG__TRACE(Logger::get().SEARCH_LOG, "Search: Set HashSize to {} MB command received!", sizeInMB);
   std::chrono::milliseconds timeout(2500);
   if (tt_lock.try_lock_for(timeout)) {
-    tt->resize(sizeInMB * TT::MB);
+    tt->resize(sizeInMB);
     tt_lock.unlock();
   }
   else {

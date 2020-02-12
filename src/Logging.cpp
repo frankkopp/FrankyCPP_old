@@ -33,12 +33,13 @@ namespace po = boost::program_options;
 inline po::variables_map programOptions;
 
 void Logger::init() {
-  try {
-    std::locale::global(deLocale);
-  }
-  catch (...) {
-    std::cerr << "failed to set locale" << std::endl;
-  }
+  // this messes up CLion'sGoogletest integration
+  //  try {
+  //    std::locale::global(deLocale);
+  //  }
+  //  catch (...) {
+  //    std::cerr << "failed to set locale" << std::endl;
+  //  }
 
   const auto flushLevel = spdlog::level::trace;
 
@@ -52,7 +53,7 @@ void Logger::init() {
     }
     else if (logLvL == "error") {
       return spdlog::level::err;
-    }    
+    }
     else if (logLvL == "warn") {
       return spdlog::level::warn;
     }

@@ -798,7 +798,7 @@ TEST_F(UCITest, ponderFinishedHit) {
   uciHandler.loop(&is);
 
   sleep(1);
-  ASSERT_FALSE(engine.isSearching());
+  ASSERT_TRUE(engine.isSearching());
   ASSERT_FALSE(engine.getSearchLimitsPtr()->isPonder());
 
   // stop search

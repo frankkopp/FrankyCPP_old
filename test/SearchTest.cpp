@@ -130,6 +130,7 @@ TEST_F(SearchTest, timewhite) {
   Search search;
   SearchLimits searchLimits;
   Position position;
+  SearchConfig::USE_ASPIRATION_WINDOW = false;
   searchLimits.setWhiteTime(60'000);
   searchLimits.setBlackTime(60'000);
   search.startSearch(position, searchLimits);
@@ -142,6 +143,7 @@ TEST_F(SearchTest, timeblack) {
   Search search;
   SearchLimits searchLimits;
   Position position;
+  SearchConfig::USE_ASPIRATION_WINDOW = false;
   position.doMove(createMove("e2e4"));
   searchLimits.setWhiteTime(60'000);
   searchLimits.setBlackTime(60'000);
@@ -633,7 +635,7 @@ TEST_F(SearchTest, debugging) {
   SearchConfig::USE_QS_STANDPAT_CUT   = false;
   // @formatter:on
 
-  // should not end up in repetition by giving check with Qh6
+  // does not have a quiescence move after e3e6
   position = Position("5r1k/1r6/4p1Q1/5p2/6p1/P3R3/5PPP/6K1 w - - 1 1");
 
   const int depth = 6;
@@ -641,5 +643,4 @@ TEST_F(SearchTest, debugging) {
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 
-  EXPECT_NE("g6h6", printMove(search.getLastSearchResult().bestMove));
 }
