@@ -37,7 +37,7 @@ using testing::Eq;
 
 class SearchTreeSizeTest : public ::testing::Test {
 public:
-  static constexpr int DEPTH = 6;
+  static constexpr int DEPTH = 8;
   static constexpr int START_FEN = 0;
   static constexpr int END_FEN = 15;
 
@@ -103,7 +103,7 @@ TEST_F(SearchTreeSizeTest, size_test) {
   auto iterEnd = fens.begin() + START_FEN + END_FEN;
   if (iterEnd > fens.end()) iterEnd = fens.end();
   if (iterStart > iterEnd) iterStart = iterEnd;
-  
+
   for (auto fen = iterStart; fen != iterEnd; ++fen) {
     results.push_back(featureMeasurements(DEPTH, *fen));
   }
@@ -157,6 +157,7 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   Position position(fen);
 
   // turn off all options
+  SearchConfig::USE_ASPIRATION_WINDOW = false;
   SearchConfig::USE_QUIESCENCE = false;
   SearchConfig::USE_ALPHABETA = false;
   SearchConfig::USE_KILLER_MOVES = false;
@@ -167,24 +168,24 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   SearchConfig::USE_MPP = false;
   SearchConfig::USE_PVS = false;
   SearchConfig::USE_PV_MOVE_SORT = false;
+  SearchConfig::USE_RFP = false;
   SearchConfig::USE_NMP = false;
   SearchConfig::USE_EXTENSIONS = false;
+  SearchConfig::USE_FP = false;
+  SearchConfig::USE_EFP = false;
+  SearchConfig::USE_LMR = false;
 
   // not yet implemented
   // vvvvvvvvvvvvvvvvvvv
-  SearchConfig::USE_RFP = false;
   SearchConfig::USE_RAZOR_PRUNING = false;
   SearchConfig::USE_FORWARD_PRUNING_CHECK = false;
-  SearchConfig::USE_FP = false;
-  SearchConfig::USE_EFP = false;
   SearchConfig::USE_LMP = false;
-  SearchConfig::USE_LMR = false;
 
   // ***********************************
   // TESTS
 
   Logger::get().TEST_LOG->set_level(spdlog::level::info);
-  Logger::get().SEARCH_LOG->set_level(spdlog::level::info);
+  Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
   ptrToSpecial = &search.getSearchStats().no_moveForPVsorting;
 
   // pure MiniMax
@@ -211,22 +212,25 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "10 BASE"));
 
   SearchConfig::USE_NMP = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "20 NMP"));
+  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "20 NMP"));
 
   SearchConfig::USE_EXTENSIONS = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "40 EXT"));
+  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "40 EXT"));
 
   SearchConfig::USE_FP = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "50 FP"));
+  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "50 FP"));
 
   SearchConfig::USE_EFP = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "60 EFP"));
+  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "60 EFP"));
 
   SearchConfig::USE_LMR = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "70 LMR"));
+  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "70 LMR"));
 
   SearchConfig::USE_RFP = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "80 RFP"));
+
+  SearchConfig::USE_ASPIRATION_WINDOW = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "90 ASP"));
 
   //  SearchConfig::USE_RAZOR_PRUNING = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "90 RAZOR"));

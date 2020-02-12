@@ -101,7 +101,7 @@ class Search {
   SearchResult lastSearchResult;
 
   // transposition table (singleton)
-  TT *tt;
+  TT *tt = nullptr;
 
   // time check every x nodes
   // As time checks are expensive we only do them every x-th node.
@@ -119,11 +119,14 @@ class Search {
   Color myColor = NOCOLOR;
 
   // list of moves at the root
-  MoveList rootMoves;
+  MoveList rootMoves{};
   MoveList::size_type currentMoveIndex = 0;
 
+  Move bestRootMove = MOVE_NONE;
+  Value bestRootMoveValue = VALUE_NONE;
+
   // store the current variation
-  MoveList currentVariation;
+  MoveList currentVariation{};
 
   // store current iteration depth to limit max quiescence depth
   Depth currentIterationDepth = static_cast<Depth>(0);
@@ -158,7 +161,9 @@ public:
 
   /** Default constructor creates a board with a back reference to the engine */
   Search();
+  explicit Search(int ttSizeInByte);
   explicit Search(Engine *pEng);
+  Search(Engine *pEng, int ttSizeInByte);
   ~Search();
   // disallow copies and moves
   Search(Search const &) = delete;
@@ -222,6 +227,20 @@ private:
    * time is up or some other criteria (number of nodes searched, etc.) is met.
    */
   SearchResult iterativeDeepening(Position &refPosition);
+
+  /**
+    * Aspiration search works with the assumption that the value from previous
+    * searches will not change too much and therefore the search can be tried
+    * with a narrow window for alpha and beta around the previous value to cause
+    * more cut offs. If the result is at the edge or outside(not possible in
+    * fail-hard) of our window, we try another search with a wider window. If
+    * this also fails we fall back to a full window search.
+    *
+    * @param position
+    * @param depth
+    * @param bestValue
+    */
+  Value aspiration_search(Position &position, Depth depth, Value bestValue);
 
   /**
    * The main search function. The templating distinguishes between
@@ -353,6 +372,7 @@ private:
 
   /** these are sending information to the UCI protocol */
   void sendIterationEndInfoToEngine() const;
+  void sendAspirationResearchInfo(const std::string& bound) const;
   void sendCurrentRootMoveToEngine() const;
   void sendSearchUpdateToEngine();
   void sendResultToEngine() const;

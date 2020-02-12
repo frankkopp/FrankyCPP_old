@@ -47,7 +47,7 @@
  * The number of entries are always a power of two fitting into the given size.
  * It is not yet thread safe as it has no synchronization.
  *
- * Tests have shown that an implementation with a struct and bitfields is the
+ * Tests have shown that an implementation with a struct and bitfields is
  * more efficient than using only one 64-bit data field with manual bit shifting
  * and masking (~9% slower)
  * Also using buckets has not shown significant improvements and is much
@@ -59,7 +59,8 @@ public:
   static constexpr int CacheLineSize = 64;
   static constexpr uint64_t KB = 1024;
   static constexpr uint64_t MB = KB * KB;
-  static constexpr uint64_t DEFAULT_TT_SIZE = 2 * MB; // byte
+  static constexpr uint64_t DEFAULT_TT_SIZE = 2; // MByte
+  static constexpr uint64_t MAX_SIZE_MB = 32'768;
 
   struct Entry {
     // sorted by size to achieve smallest struct size
@@ -76,7 +77,6 @@ public:
 
   // struct Entry has 16 Byte
   static constexpr uint64_t ENTRY_SIZE = sizeof(Entry);
-
   static_assert(CacheLineSize % ENTRY_SIZE == 0, "Cluster size incorrect");
 
 private:
@@ -100,16 +100,18 @@ private:
   mutable uint64_t numberOfMisses = 0; // no entry with key found
 
   // this array hold the actual entries for the transposition table
-  Entry* _data = new Entry[0]; // default initialization
+  Entry* _data{};
 
 public:
 
   // TT default size is 2 MB
   TT() : TT(DEFAULT_TT_SIZE) {}
 
-  /** @param newSizeInBytes Size of TT in bytes which will be reduced to the next
-   * lowest power of 2 size */
-  explicit TT(uint64_t newSizeInBytes);
+  /**
+   * @param newSizeInMByte Size of TT in bytes which will be reduced to the next lowest power of 2 size
+   *                        Limited to 32.000MB
+   */
+  explicit TT(uint64_t newSizeInMByte);
 
   ~TT() {
     delete[] _data;
@@ -123,10 +125,10 @@ public:
 
   /**
    * Changes the size of the transposition table and clears all entries.
-   * @param newSizeInByte in Byte which will be reduced to the next
-   * lowest power of 2 size
+   * @param newSizeInMByte in Byte which will be reduced to the next
+   * lowest power of 2 size. Limited to 32.000 MB.
    */
-  void resize(uint64_t newSizeInByte);
+  void resize(uint64_t newSizeInMByte);
 
   /** Clears the transposition table be resetting all entries to 0. */
   void clear();

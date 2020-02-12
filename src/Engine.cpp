@@ -32,6 +32,7 @@
 #include "UCIHandler.h"
 #include "UCIOption.h"
 #include "MoveGenerator.h"
+#include "TT.h"
 
 #define MAP(name, option) optionMap.insert(std::make_pair(name, option))
 
@@ -40,7 +41,7 @@
 
 Engine::Engine() {
   pPosition = std::make_shared<Position>();
-  pSearch = std::make_shared<Search>(this);
+  pSearch = std::make_shared<Search>(this, EngineConfig::hash);
   pSearchLimits = std::make_shared<SearchLimits>();
   initOptions();
 }
@@ -200,6 +201,27 @@ Engine::sendIterationEndInfo(int depth, int seldepth, Value value, uint64_t node
               printMoveListUCI(pv));
 }
 
+void
+Engine::sendAspirationResearchInfo(int depth, int seldepth, Value value, const std::string& bound,
+                                   uint64_t nodes, uint64_t nps, MilliSec time,
+                                   const MoveList &pv) const {
+  if (pUciHandler) {
+    pUciHandler->sendAspirationResearchInfo(depth, seldepth, value, bound, nodes, nps, time, pv);
+  }
+  else
+    LOG__WARN(Logger::get().ENGINE_LOG,
+              "<no uci handler>: Engine iteration end: depth {} seldepth {} multipv 1 {} {} nodes {} nps {} time {} pv {}",
+              depth,
+              seldepth,
+              value,
+              bound,
+              nodes,
+              nps,
+              time,
+              printMoveListUCI(pv));
+}
+
+
 void Engine::sendCurrentRootMove(Move currmove, MoveList::size_type movenumber) const {
   if (pUciHandler) { pUciHandler->sendCurrentRootMove(currmove, movenumber); }
   else
@@ -250,7 +272,7 @@ bool Engine::isSearching() {
 
 void Engine::initOptions() {
   // @formatter:off
-  MAP("Hash", UCI_Option("Hash", EngineConfig::hash, 1, 4096)); // spin
+  MAP("Hash", UCI_Option("Hash", EngineConfig::hash, 0, TT::MAX_SIZE_MB)); // spin
   MAP("Clear Hash", UCI_Option("Clear Hash"));                  // button
   MAP("Ponder", UCI_Option("Ponder", EngineConfig::ponder));    // check
   // @formatter:on

@@ -28,7 +28,7 @@
 
 namespace EngineConfig {
 
-  inline int hash = 64; // in MB
+  inline int hash = 64; // in MByte
   inline bool ponder = true;
 
 }

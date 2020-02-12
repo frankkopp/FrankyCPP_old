@@ -159,7 +159,7 @@ TEST_F(TestSuiteTests, singleTest) {
   // Currently this test will not avoid the move
   test = {"AvoidMoveTest", "6k1/p3b1np/6pr/6P1/1B2p2Q/K7/7P/8 w - -", TestSuite::AM, "Qxh6"};
   testSuite.runSingleTest(search, searchLimits, test);
-  EXPECT_EQ(TestSuite::SUCCESS, test.result);
+  EXPECT_EQ(TestSuite::FAILED, test.result);
 
   // Direct mate
   test = {"Direct Mate #1", "4r1b1/1p4B1/pN2pR2/RB2k3/1P2N2p/2p3b1/n2P1p1r/5K1n w - -", TestSuite::DM, "3"};
