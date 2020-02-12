@@ -49,37 +49,37 @@
 
 #define LOG__LEVEL DEBUG__LVL
 
-#if LOG__LEVEL > 0
+#if LOG__LEVEL > ZERO__LVL
 #define LOG__CRITICAL(logger, ...) logger->critical(__VA_ARGS__)
 #else
 #define LOG__CRITICAL(logger, ...) void(0)
 #endif
 
-#if LOG__LEVEL > 1
+#if LOG__LEVEL > CRITICAL__LVL
 #define LOG__ERROR(logger, ...) logger->error(__VA_ARGS__)
 #else
 #define LOG__ERROR(logger, ...) void(0)
 #endif
 
-#if LOG__LEVEL > 2
+#if LOG__LEVEL > ERROR__LVL
 #define LOG__WARN(logger, ...) logger->warn(__VA_ARGS__)
 #else
 #define LOG__WARN(logger, ...) void(0)
 #endif
 
-#if LOG__LEVEL > 3
+#if LOG__LEVEL > WARN__LVL
 #define LOG__INFO(logger, ...) logger->info(__VA_ARGS__)
 #else
 #define LOG__INFO(logger, ...) void(0)
 #endif
 
-#if LOG__LEVEL > 4
+#if LOG__LEVEL > INFO__LVL
 #define LOG__DEBUG(logger, ...) logger->debug(__VA_ARGS__)
 #else
 #define LOG__DEBUG(logger, ...) void(0)
 #endif
 
-#if LOG__LEVEL > 5
+#if LOG__LEVEL > DEBUG__LVL
 #define LOG__TRACE(logger, ...) logger->trace(__VA_ARGS__)
 #else
 #define LOG__TRACE(logger, ...) void(0)
@@ -87,11 +87,8 @@
 
 /** Singleton class for Logger */
 class Logger {
-  Logger() {
-    init();
-  };
+  Logger() { init(); };
   ~Logger() = default;
-
   void init();
 
 public :
@@ -101,7 +98,6 @@ public :
   Logger(Logger const &&) = delete; // move
   Logger &operator=(const Logger &&) = delete; // move assignment
 
-public:
   static Logger& get() {
     static Logger instance;
     return instance;

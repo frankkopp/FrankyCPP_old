@@ -313,7 +313,7 @@ enum Value_Type : int {
 ///////////////////////////////////
 //// MOVE
 enum Move : uint32_t {
-  /** A move is basically a 32-bit int */
+  /** A move is basically a 32-bit unsigned int */
   MOVE_NONE = 0
 };
 
@@ -430,9 +430,9 @@ inline Move moveOf(Move m) { return Move(m & MoveShifts::MOVE_MASK); }
 inline void setValue(Move &m, Value v) {
   assert(v >= VALUE_NONE && v <= -VALUE_NONE);
   if (moveOf(m) == MOVE_NONE) return; // can't store a value on a MOVE_NONE
-  // when saving a value to a move we shift value to a positive integer (0-VALUE_NONE) and
-  // encode it into the move
-  // for retrieving we then shift the value back to a range from VALUE_NONE to VALUE_INF
+  // when saving a value to a move we shift value to a positive integer
+  // (0-VALUE_NONE) and encode it into the move. For retrieving we then shift
+  // the value back to a range from VALUE_NONE to VALUE_INF
   m = Move((m & MoveShifts::MOVE_MASK) | (Value(v - VALUE_NONE) << MoveShifts::VALUE_SHIFT));
 }
 

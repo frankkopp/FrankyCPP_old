@@ -1,7 +1,6 @@
 v 0.x (plan)
 ================================================================================
 - TODO:
-    - TestSuites
     - IID (with TT - needs to be revisited)
     - Simple Opening Book
     - ATACKS / SEE
@@ -14,6 +13,10 @@ v 0.x (plan)
 v 0.5 (in progress)
 ================================================================================
 - TODO:
+    - Testing
+    - Configure for play strength
+- DONE:
+    - TestSuites
     - Beta Cut Movenumber Counter
     - Aspiration Window Search
     - RAZOR, LFP. LFR, etc.

@@ -41,10 +41,10 @@ namespace SearchConfig {
   // Transposition Table
   inline bool USE_TT                  = true; // use transposition table
   inline bool USE_TT_QSEARCH          = true; // use transposition table also in quiescence search
-  inline int TT_SIZE_MB               = 64; // size of TT in MB
+  inline int TT_SIZE_MB               = 64;   // size of TT in MB
   // Move Sorting Features
   inline bool USE_KILLER_MOVES        = true; // Store refutation moves (>beta) for move ordering
-  inline int NO_KILLER_MOVES          = 2; // number of killers stored
+  inline int NO_KILLER_MOVES          = 2;    // number of killers stored
   inline bool USE_PV_MOVE_SORT        = true; // tell the move gen the current pv to return first
 
   // Pruning features
@@ -74,8 +74,8 @@ namespace SearchConfig {
   inline int   LMR_MIN_MOVES          = 3;
   inline Depth LMR_REDUCTION          = Depth{1};
 
-  // not yet implemented
-  // vvvvvvvvvvvvvvvvvvv
+  // not implemented
+  // vvvvvvvvvvvvvvv
 
   inline bool USE_IID               = true; // Internal Iterative Deepening to find good frist move
   inline Depth IID_REDUCTION        = Depth{2};
@@ -85,7 +85,6 @@ namespace SearchConfig {
   inline Value RAZOR_MARGIN         = Value{600};
 
   // tactical features
-  inline bool USE_FORWARD_PRUNING_CHECK  = true;
   inline bool USE_LMP               = true; // Late Move Pruning
   inline Depth LMP_MIN_DEPTH        = Depth{3};
   inline int   LMP_MIN_MOVES        = 6;

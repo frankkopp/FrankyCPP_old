@@ -53,23 +53,18 @@ struct SearchResult {
   int extraDepth = 0;
 
   std::string str() const {
-    return "Best Move: " + printMove(bestMove) + " (" +
-           std::to_string(bestMoveValue) + ") " +
-           "Ponder Move: " + printMove(ponderMove) +
-           " Depth: " + std::to_string(depth) + "/" +
+    return "Best Move: " + printMove(bestMove) + " (" + std::to_string(bestMoveValue) + ") " +
+           "Ponder Move: " + printMove(ponderMove) + " Depth: " + std::to_string(depth) + "/" +
            std::to_string(extraDepth);
   }
 };
 
-inline std::ostream &operator<<(std::ostream &os,
-                                const SearchResult &searchResult) {
+inline std::ostream &operator<<(std::ostream &os, const SearchResult &searchResult) {
   os << searchResult.str();
   return os;
 }
 
 class Search {
-
-//  std::shared_ptr<spdlog::logger> LOG = spdlog::get("Search_Logger");
 
   // used to protect the transposition table from clearing and resizing during
   // search
@@ -90,7 +85,7 @@ class Search {
 
   // search mode
   SearchLimits* searchLimitsPtr{nullptr};
-  SearchStats searchStats;
+  SearchStats searchStats{};
 
   // search state
   std::atomic_bool _isRunning = false;
@@ -98,18 +93,12 @@ class Search {
   std::atomic_bool _hasResult = false;
 
   // search result
-  SearchResult lastSearchResult;
+  SearchResult lastSearchResult{};
 
   // transposition table (singleton)
-  TT *tt = nullptr;
+  TT *tt{};
 
-  // time check every x nodes
-  // As time checks are expensive we only do them every x-th node.
-  // As we loose precession in time keeping with this this must not be
-  // too high.
-  constexpr static uint64_t TIME_CHECK_FREQ = 0b1111'1111'1111'1111;
-
-  // search start time
+    // search start time
   MilliSec startTime{};
   MilliSec stopTime{};
   MilliSec timeLimit{};
@@ -134,7 +123,8 @@ class Search {
   // store the current principal variation
   MoveList pv[DEPTH_MAX]{};
 
-  // prepared move generator instances for each depth
+  // prepared move generator instances for each depth to be able to store
+  // ply specific information
   MoveGenerator moveGenerators[DEPTH_MAX]{};
 
   // mate threat in ply revealed by null move search
@@ -159,12 +149,12 @@ public:
   ////////////////////////////////////////////////
   ///// CONSTRUCTORS
 
-  /** Default constructor creates a board with a back reference to the engine */
   Search();
   explicit Search(int ttSizeInByte);
   explicit Search(Engine *pEng);
   Search(Engine *pEng, int ttSizeInByte);
   ~Search();
+
   // disallow copies and moves
   Search(Search const &) = delete;
   Search &operator=(const Search &) = delete;
@@ -177,8 +167,7 @@ public:
   /** starts the search in a separate thread with the given search limits */
   void startSearch(const Position &position, SearchLimits &limits);
 
-  /** Stops a running search gracefully - e.g. returns the best move found so
-   * far */
+  /** Stops a running search gracefully - e.g. returns the best move found so far */
   void stopSearch();
 
   /** checks if the search is already running */
@@ -194,14 +183,12 @@ public:
   inline const SearchStats &getSearchStats() const { return searchStats; }
 
   /** return the last search result */
-  inline const SearchResult &getLastSearchResult() const {
-    return lastSearchResult;
-  };
+  inline const SearchResult &getLastSearchResult() const { return lastSearchResult; };
 
   /** to signal the search that pondering was successful */
   void ponderhit();
 
-  /** return current pv */
+  /** return current root pv list */
   const MoveList &getPV() const { return pv[PLY_ROOT]; };
 
   /** clears the hash table */
@@ -217,8 +204,7 @@ private:
   /**
    * Called after starting the search in a new thread. Configures the search
    * and eventually calls iterativeDeepening. After the search it takes the
-   * result to send it to the UCI engine.
-   * @param position
+   * result to sends it to the UCI engine.
    */
   void run(Position position);
 
@@ -235,23 +221,30 @@ private:
     * more cut offs. If the result is at the edge or outside(not possible in
     * fail-hard) of our window, we try another search with a wider window. If
     * this also fails we fall back to a full window search.
-    *
-    * @param position
-    * @param depth
-    * @param bestValue
     */
   Value aspiration_search(Position &position, Depth depth, Value bestValue);
 
   /**
    * The main search function. The templating distinguishes between
-   * search in the root node, normal non root nodes and quiscence nodes.
+   * search in the root node, normal non root nodes and quiescence nodes.
    * Also takes care of the special PERFT case.
    * Template parameter node type will distinguish between PV and NonPV nodes
    * for PVS search.
    */
   template <Search_Type ST, Node_Type NT>
-  Value search(Position &position, Depth depth, Ply ply, Value alpha,
-               Value beta, Do_Null doNull);
+  Value search(Position &position, Depth depth, Ply ply, Value alpha, Value beta, Do_Null doNull);
+
+  /**
+   * Calculates an evaluation value for the given position
+   */
+  Value evaluate(Position &position);
+
+  /**
+   * Returns true if we either have a 3-fold repetition ot have more than 100 reversible moves.
+   * OBS: In quiescence search we only check for a single repetition
+   */
+  template <Search_Type ST>
+  bool checkDrawRepAnd50(Position &position) const;
 
   /**
    * Returns the next move from the move generator depending on the search type.
@@ -263,18 +256,6 @@ private:
   Move getMove(Position &position, int ply);
 
   /**
-   * Returns true if we either have a 3-fold repetition ot have more than 100 reversible moves.
-   * OBS: In quiescence search we only check for a single repetition
-   */
-  template <Search_Type ST>
-  bool checkDrawRepAnd50(Position &position) const;
-
-  /**
-   * Calculates an evaluation value for the given position
-   */
-  Value evaluate(Position &position);
-
-  /**
    * Generates root moves and filters them according to the UCI searchmoves list
    */
   MoveList generateRootMoves(Position &refPosition);
@@ -282,7 +263,7 @@ private:
   /**
    * Sort the root moves according to their numerical value.
    * As root moves have their calculated value stored as the upper 16-bit
-   * of the 32-bit int this will sort them very quickly.
+   * of the 32-bit int this will sort them very efficiently.
    */
   static bool rootMovesSort(Move m1, Move m2);
 
@@ -369,6 +350,12 @@ private:
    * Returns the current nodes per second value
    */
   inline uint64_t getNps() const;
+
+  /**
+   * In perft mode this checks the correctness of the result and prints the
+   * result to the log.
+   */
+  void checkPerftResults() const;
 
   /** these are sending information to the UCI protocol */
   void sendIterationEndInfoToEngine() const;

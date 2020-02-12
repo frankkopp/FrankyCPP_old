@@ -42,27 +42,18 @@ Search::Search() : Search(nullptr, SearchConfig::TT_SIZE_MB) {}
 
 Search::Search(int ttSizeInByte) : Search(nullptr, ttSizeInByte) {}
 
-Search::Search(Engine* pEng) : Search(pEng, SearchConfig::TT_SIZE_MB){}
+Search::Search(Engine* pEng) : Search(pEng, SearchConfig::TT_SIZE_MB) {}
 
 Search::Search(Engine* pEng, int ttSizeInByte) {
   pEngine = pEng;
   pEvaluator = std::make_unique<Evaluator>();
-  tt = [&]{
-    if (SearchConfig::USE_TT) {
-      return new TT(ttSizeInByte);
-    }
-    else {
-      return new TT(0);
-    }
-  }();
+  tt = [&] { return SearchConfig::USE_TT ? new TT(ttSizeInByte) : new TT(0); }();
 }
 
 Search::~Search() {
   // necessary to avoid err message:
   // terminate called without an active exception
-  if (searchThread.joinable()) {
-    searchThread.join();
-  }
+  if (searchThread.joinable()) { searchThread.join(); }
   delete tt;
 }
 
@@ -81,9 +72,7 @@ void Search::startSearch(const Position &position, SearchLimits &limits) {
   searchLimitsPtr = &limits;
 
   // join() previous thread
-  if (searchThread.joinable()) {
-    searchThread.join();
-  }
+  if (searchThread.joinable()) { searchThread.join(); }
   _stopSearchFlag = false;
 
   // start search in a separate thread
@@ -253,32 +242,9 @@ void Search::run(Position position) {
   LOG__INFO(Logger::get().SEARCH_LOG, "Search took {},{:03} sec ({:n} nps)", (searchStats.lastSearchTime % 1'000'000) / 1'000, (searchStats.lastSearchTime % 1'000), (searchStats.nodesVisited * 1'000) / (searchStats.lastSearchTime + 1));
 
   // check perft and print result
-  if (searchLimitsPtr->isPerft()) {
-    uint64_t perftResults[] = {0,
-                               20,              // 1
-                               400,             // 2
-                               8'902,           // 3
-                               197'281,         // 4
-                               4'865'609,       // 5
-                               119'060'324,     // 6
-                               3'195'901'860,   // 7
-                               84'998'978'956}; // 8
+  if (searchLimitsPtr->isPerft()) { checkPerftResults(); }
 
-    if (searchStats.leafPositionsEvaluated == perftResults[searchLimitsPtr->getDepth()]) {
-      LOG__INFO(Logger::get().SEARCH_LOG, "Perft test successful: {:n} leaf nodes at depth {}", searchStats.leafPositionsEvaluated, searchLimitsPtr->getDepth());
-      sendStringToEngine(
-        fmt::format("Perft test successful: {:n} leaf nodes at depth {}",
-                    searchStats.leafPositionsEvaluated, searchLimitsPtr->getDepth()));
-    }
-    else {
-      LOG__ERROR(Logger::get().SEARCH_LOG, "Perft test failed: {:n} leaf nodes at depth {} - should have been {:n}", searchStats.leafPositionsEvaluated, searchLimitsPtr->getDepth(), perftResults[searchLimitsPtr->getDepth()]);
-      sendStringToEngine(
-        fmt::format("Perft test failed: {:n} leaf nodes at depth {} - should have been {:n}",
-                    searchStats.leafPositionsEvaluated, searchLimitsPtr->getDepth(),
-                    perftResults[searchLimitsPtr->getDepth()]));
-    }
-  }
-  // to stop timer if running
+  // to stop timer if still running
   _stopSearchFlag = true;
   if (timerThread.joinable()) { timerThread.join(); }
   _isRunning = false;
@@ -1153,7 +1119,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
   // best value should in any case not be VALUE_NONE any more
   //assert(ST == PERFT || (bestNodeValue >= VALUE_MIN && bestNodeValue <= VALUE_MAX && "bestNodeValue should not be MIN/MAX here"));
   ASSERT_START
-    if (ST != PERFT && !stopConditions() && !(bestNodeValue >= VALUE_MIN && bestNodeValue <= VALUE_MAX) ) {
+    if (ST != PERFT && !stopConditions() && !(bestNodeValue >= VALUE_MIN && bestNodeValue <= VALUE_MAX)) {
       LOG__ERROR(Logger::get().SEARCH_LOG, "bestNodeValue should not be MIN/MAX here");
     }
   ASSERT_END
@@ -1596,5 +1562,32 @@ void Search::sendStringToEngine(const std::string &anyString) const {
     pEngine->sendString(anyString);
   }
 }
+
+void Search::checkPerftResults() const {
+  uint64_t perftResults[] = {0,
+                             20,              // 1
+                             400,             // 2
+                             8'902,           // 3
+                             197'281,         // 4
+                             4'865'609,       // 5
+                             119'060'324,     // 6
+                             3'195'901'860,   // 7
+                             84'998'978'956}; // 8
+
+  if (searchStats.leafPositionsEvaluated == perftResults[searchLimitsPtr->getDepth()]) {
+    LOG__INFO(Logger::get().SEARCH_LOG, "Perft test successful: {:n} leaf nodes at depth {}", searchStats.leafPositionsEvaluated, searchLimitsPtr->getDepth());
+    sendStringToEngine(
+      fmt::format("Perft test successful: {:n} leaf nodes at depth {}",
+                  searchStats.leafPositionsEvaluated, searchLimitsPtr->getDepth()));
+  }
+  else {
+    LOG__ERROR(Logger::get().SEARCH_LOG, "Perft test failed: {:n} leaf nodes at depth {} - should have been {:n}", searchStats.leafPositionsEvaluated, searchLimitsPtr->getDepth(), perftResults[searchLimitsPtr->getDepth()]);
+    sendStringToEngine(
+      fmt::format("Perft test failed: {:n} leaf nodes at depth {} - should have been {:n}",
+                  searchStats.leafPositionsEvaluated, searchLimitsPtr->getDepth(),
+                  perftResults[searchLimitsPtr->getDepth()]));
+  }
+}
+
 
 

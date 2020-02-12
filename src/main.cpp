@@ -28,7 +28,6 @@
 #include <fstream>
 #include "version.h"
 #include "types.h"
-#include "Logging.h"
 #include "Engine.h"
 #include "UCIHandler.h"
 
@@ -47,10 +46,6 @@ int main(int argc, char* argv[]) {
     .append(".")
     .append(std::to_string(FrankyCPP_VERSION_MINOR));
   std::cout << appName << std::endl;
-
-  ASSERT_START
-    std::cout << "DEBUG ASSERTION TESTS ON" << std::endl;
-  ASSERT_END
 
   std::string config_file;
   std::string testsuite_File;
@@ -141,6 +136,7 @@ int main(int argc, char* argv[]) {
       std::cout << "Test of hidden parameter." << "\n";
       std::cout << programOptions["test"].as<std::string>() << "\n";
     }
+
   }
   catch (std::exception &e) {
     std::cerr << "error: " << e.what() << "\n";
@@ -154,7 +150,7 @@ int main(int argc, char* argv[]) {
   // Init all pre calculated data structures
   INIT::init();
 
-  // start engine and UCI loop
+  // Create engine and start UCI loop
   Engine engine;
   UCI_Handler uci(&engine);
   uci.loop();

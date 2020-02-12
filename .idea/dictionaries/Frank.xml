@@ -13,10 +13,12 @@
       <w>kopp</w>
       <w>malus</w>
       <w>midvalue</w>
+      <w>movegen</w>
       <w>movenumber</w>
       <w>multipv</w>
       <w>nomove</w>
       <w>noninfringement</w>
+      <w>nonroot</w>
       <w>passant</w>
       <w>pawneval</w>
       <w>pawnshield</w>
@@ -30,6 +32,8 @@
       <w>spdlog</w>
       <w>templated</w>
       <w>testsets</w>
+      <w>tsuite</w>
+      <w>ucihand</w>
       <w>zobrist</w>
     </words>
   </dictionary>
