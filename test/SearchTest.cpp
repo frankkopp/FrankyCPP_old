@@ -580,7 +580,6 @@ TEST_F(SearchTest, DISABLED_debuggingIID) {
   SearchConfig::USE_RFP             = true;
 //  SearchConfig::USE_RAZOR_PRUNING   = true;
   SearchConfig::USE_NMP             = true;
-  SearchConfig::USE_FORWARD_PRUNING_CHECK      = true;
   // @formatter:on
 
   const int depth = 9;

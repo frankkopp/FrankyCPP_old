@@ -237,9 +237,9 @@ void Search::run(Position position) {
   // print result of the search
   LOG__INFO(Logger::get().SEARCH_LOG, "Search statistics: {}", searchStats.str());
   if (SearchConfig::USE_TT) { LOG__INFO(Logger::get().SEARCH_LOG, tt->str()); }
-  LOG__INFO(Logger::get().SEARCH_LOG, "Search Result was: {} ({})", printMove(lastSearchResult.bestMove), printMove(lastSearchResult.ponderMove));
   LOG__INFO(Logger::get().SEARCH_LOG, "Search Depth was {} ({})", searchStats.currentSearchDepth, searchStats.currentExtraSearchDepth);
   LOG__INFO(Logger::get().SEARCH_LOG, "Search took {},{:03} sec ({:n} nps)", (searchStats.lastSearchTime % 1'000'000) / 1'000, (searchStats.lastSearchTime % 1'000), (searchStats.nodesVisited * 1'000) / (searchStats.lastSearchTime + 1));
+  LOG__INFO(Logger::get().SEARCH_LOG, "Search Result was: {} ({})", printMove(lastSearchResult.bestMove), printMove(lastSearchResult.ponderMove));
 
   // check perft and print result
   if (searchLimitsPtr->isPerft()) { checkPerftResults(); }
@@ -370,21 +370,28 @@ SearchResult Search::iterativeDeepening(Position &position) {
   // ### END OF Iterative Deepening
   // ###########################################
 
-  // check the result  - we should have a result at his point
+   check the result  - we should have a result at his point
   if (!searchLimitsPtr->isPerft()) {
     if (bestRootMove == MOVE_NONE) {
       LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{} Best root move missing after search", __func__, __LINE__);
     }
     if (bestRootMoveValue == VALUE_NONE) {
-      LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{}Best root move has no value!", __func__, __LINE__);
+      LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{} Best root move has no value!", __func__, __LINE__);
     }
   }
 
   // update searchResult here
   searchResult.bestMove = bestRootMove;
   searchResult.bestMoveValue = bestRootMoveValue;
-  // TODO: if no ponder move try to get one from TT
-  searchResult.ponderMove = pv[PLY_ROOT].size() > 1 ? pv[PLY_ROOT].at(1) : MOVE_NONE;
+  if (pv[PLY_ROOT].size() > 1) {
+    searchResult.ponderMove = pv[PLY_ROOT][1];
+  }
+  else { // try to get ponder move from the TT
+    position.doMove(bestRootMove);
+    auto ttEntryPtr = tt->probe(position.getZobristKey());
+    searchResult.ponderMove = ttEntryPtr ? ttEntryPtr->move : MOVE_NONE;
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "Ponder Move from TT {}", printMove(searchResult.ponderMove));
+  }
   searchResult.depth = searchStats.currentSearchDepth;
   searchResult.extraDepth = searchStats.currentExtraSearchDepth;
 

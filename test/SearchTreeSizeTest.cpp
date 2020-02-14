@@ -178,7 +178,6 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   // not yet implemented
   // vvvvvvvvvvvvvvvvvvv
   SearchConfig::USE_RAZOR_PRUNING = false;
-  SearchConfig::USE_FORWARD_PRUNING_CHECK = false;
   SearchConfig::USE_LMP = false;
 
   // ***********************************

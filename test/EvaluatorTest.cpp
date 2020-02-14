@@ -272,7 +272,7 @@ TEST_F(EvaluatorTest, fens) {
 TEST_F(EvaluatorTest, debugging) {
 
   Evaluator evaluator;
-  Value value;
+//  Value value;
   Position position("8/5k2/8/8/8/8/1BK5/1B6 w - -");
   const int v = static_cast<int>(evaluator.config.TEMPO * position.getGamePhaseFactor());
   fprintln("{} {}", position.getGamePhaseFactor(), v);

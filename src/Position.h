@@ -123,7 +123,6 @@ class Position {
     Square enPassantSquare_History = SQ_NONE;
     int halfMoveClockHistory = 0;
     Flag hasCheckFlagHistory = FLAG_TBD;
-    Flag hasMateFlagHistory = FLAG_TBD;
   };
   std::array<HistoryState, MAX_HISTORY> historyState{};
 
@@ -144,7 +143,6 @@ class Position {
   // after a call to hasCheck() and reset to TBD every time a move is made or
   // unmade.
   mutable Flag hasCheckFlag = FLAG_TBD;
-  mutable Flag hasMateFlag = FLAG_TBD;
 
 public:
   /**
