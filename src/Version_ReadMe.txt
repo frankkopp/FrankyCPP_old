@@ -1,14 +1,20 @@
 v 0.x (plan)
 ================================================================================
 - TODO:
-    - IID (with TT - needs to be revisited)
-    - Simple Opening Book
-    - ATACKS / SEE
+    - better prunings
     - IDEA: (credit to Robert Hyatt)
         Instead of testing each move
         for legality we could simply go ahead and recurse into each node and
         if there is a king capture in one of the succeeding nodes we jump back
         and dismiss this move.
+
+v 0.6 (plan)
+================================================================================
+- TODO:
+    - UCI Options
+    - Simple Opening Book
+    - ATACKS / SEE
+- DONE:
 
 v 0.5 (in progress)
 ================================================================================

@@ -282,7 +282,7 @@ namespace Bitboards {
     return __builtin_popcountll(b);
 
 #elif defined(_MSC_VER)
-    return  __popcnt64(b);
+    return static_cast<int>(__popcnt64(b));
     
 #else // Compiler is not GCC
     // pre-computed table of population counter for 16-bit

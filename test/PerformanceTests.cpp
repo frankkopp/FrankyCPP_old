@@ -25,11 +25,11 @@
 
 #include <random>
 #include <chrono>
+#include "types.h"
 #include "Logging.h"
 #include "Position.h"
 #include "TT.h"
 #include "Evaluator.h"
-#include "SearchConfig.h"
 #include "Search.h"
 
 #include <gtest/gtest.h>
@@ -44,6 +44,7 @@ public:
     NEWLINE;
     INIT::init();
     NEWLINE;
+    Logger::get().TEST_LOG->set_level(spdlog::level::debug);
   }
 
 protected:
@@ -57,6 +58,12 @@ WALL Time: 11.494.326.800 ns (11.494327 sec)
 CPU  Time: 11.468.750.000 ns (11.468750 sec)
 Move/Undo per sec: 43.596.730 pps
 Move/undo time:    22 ns
+
+ 15.2. UBUNTU WSL
+ WALL Time: 9.111.689.100 ns (9.111689 sec)
+CPU  Time: 9.110.000.000 ns (9.110000 sec)
+Move/Undo per sec: 54.884.742 pps
+Move/undo time:    18 ns
  */
 TEST_F(PerformanceTests, Position_PPS) {
 
@@ -94,6 +101,10 @@ TEST_F(PerformanceTests, Position_PPS) {
 23:50 24.1.2020 CYGWIN
 Move generated: 86.000.000 in 3.051670 seconds
 Move generated per second: 28.181.293
+
+15.2. UBUNTU WSL
+Move generated: 86.000.000 in 2.241579 seconds
+Move generated per second: 38.365.804
  */
 TEST_F(PerformanceTests, MoveGeneration_MPS) {
   std::string fen;
@@ -143,6 +154,9 @@ TEST_F(PerformanceTests, MoveGeneration_MPS) {
 /*
  * 23:54 24.1.2020 CYGWIN
  * Leaf nodes per sec: 3.989.689
+ * 
+ * 15.2. UBUNTU WSL
+ * Leaf nodes per sec: 8.811.450
  */
 TEST_F(PerformanceTests, Perft_NPS) {
   Logger::get().SEARCH_LOG->set_level(spdlog::level::warn);
@@ -177,6 +191,9 @@ TEST_F(PerformanceTests, Perft_NPS) {
 /**
  * 23:50 24.1.2020 CYGWIN
  * Run time      : 1.765.625.000 ns (56.637.168 put/probes per sec)
+ *
+ * 15.2. UBUNTU WSL
+ * Run time      : 1.660.000.000 ns (60.240.963 put/probes per sec)
  */
 TEST_F(PerformanceTests, TT_PPS) {
   std::random_device rd;
@@ -188,7 +205,7 @@ TEST_F(PerformanceTests, TT_PPS) {
   std::uniform_int_distribution<unsigned int> randomBeta(0, VALUE_MAX);
   std::uniform_int_distribution<unsigned short> randomType(1, 3);
 
-  TT tt(1'024 * TT::MB);
+  TT tt(1'024);
 
   fprintln("Start perft test for TT...");
   fprintln("TT Stats: {:s}", tt.str());
@@ -223,8 +240,12 @@ TEST_F(PerformanceTests, TT_PPS) {
 
 /*
  * 25.1.2020 00:22 CYGWIN
-EPS:       4.812.030 eps
-TPE:       207 ns
+ * EPS:       4.812.030 eps
+ * TPE:       207 ns
+ *
+ * 15.2. UBUNTU WSL
+ * EPS:       5.464.480 eps
+ * TPE:       183 ns
  */
 TEST_F(PerformanceTests, Evaluator_EPS) {
   std::string fen;
@@ -267,10 +288,13 @@ TEST_F(PerformanceTests, Evaluator_EPS) {
 /*
  * 25.1.2020 cygwin
  * Nodes: 55.967.744 Time: 30.047 ms NPS: 1.862.673
+ *
+ * 15.2. UBUNTU WSL
+ * Nodes: 57.690.518 Time: 30.005 ms NPS: 1.922.696
  */
 TEST_F(PerformanceTests, Search_NPS) {
   Logger::get().TT_LOG->set_level(spdlog::level::debug);
-  Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
+  Logger::get().SEARCH_LOG->set_level(spdlog::level::warn);
   Search search;
   SearchLimits searchLimits;
   Position position;

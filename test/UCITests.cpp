@@ -219,14 +219,15 @@ TEST_F(UCITest, goInfinite) {
   UCI_Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
+  
   engine.stopSearch();
   engine.waitWhileSearching();
 
-//  ASSERT_FALSE(engine.getSearchLimitsPtr()->isPerft());
-//  ASSERT_TRUE(engine.getSearchLimitsPtr()->isInfinite());
-//  ASSERT_FALSE(engine.getSearchLimitsPtr()->isPonder());
-//  ASSERT_FALSE(engine.getSearchLimitsPtr()->isTimeControl());
-//  ASSERT_EQ(PLY_MAX, engine.getSearchLimitsPtr()->getMaxDepth());
+  ASSERT_FALSE(engine.getSearchLimitsPtr()->isPerft());
+  ASSERT_TRUE(engine.getSearchLimitsPtr()->isInfinite());
+  ASSERT_FALSE(engine.getSearchLimitsPtr()->isPonder());
+  ASSERT_FALSE(engine.getSearchLimitsPtr()->isTimeControl());
+  ASSERT_EQ(PLY_MAX, engine.getSearchLimitsPtr()->getMaxDepth());
 }
 
 TEST_F(UCITest, goPonder) {
@@ -777,7 +778,7 @@ TEST_F(UCITest, ponderFinishedHit) {
   UCI_Handler uciHandler(&engine, &is, &os);
   uciHandler.loop();
 
-  command = "position fen 8/8/8/8/8/6K1/R7/6k1 w - - 0 8";
+  command = "position startpos";
   LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
   is = istringstream(command);
   uciHandler.loop();

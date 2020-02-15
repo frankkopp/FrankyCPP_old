@@ -36,11 +36,11 @@ class MoveGenerator;
 
 class Perft {
 
-  long   nodes{};
-  long   checkCounter{};
-  long   checkMateCounter{};
-  long   captureCounter{};
-  long   enpassantCounter{};
+  uint64_t nodes{};
+  uint64_t checkCounter{};
+  uint64_t checkMateCounter{};
+  uint64_t captureCounter{};
+  uint64_t enpassantCounter{};
   std::string fen;
 
 public:

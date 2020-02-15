@@ -350,9 +350,6 @@ SearchResult Search::iterativeDeepening(Position &position) {
     // release lock on TT
     tt_lock.unlock();
 
-    // break on stop signal or time
-    if (stopConditions()) { break; }
-
     // sort root moves based on value for the next iteration
     std::stable_sort(rootMoves.begin(), rootMoves.end(), rootMovesSort);
     bestRootMove = rootMoves[0];
@@ -366,11 +363,11 @@ SearchResult Search::iterativeDeepening(Position &position) {
 
     LOG__TRACE(Logger::get().SEARCH_LOG, "Iteration Depth={} END", iterationDepth);
 
-  } while (++iterationDepth <= searchLimitsPtr->getMaxDepth());
+  } while (++iterationDepth <= searchLimitsPtr->getMaxDepth() && !stopConditions());
   // ### END OF Iterative Deepening
   // ###########################################
 
-   check the result  - we should have a result at his point
+  // check the result  - we should have a result at his point
   if (!searchLimitsPtr->isPerft()) {
     if (bestRootMove == MOVE_NONE) {
       LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{} Best root move missing after search", __func__, __LINE__);
@@ -1037,7 +1034,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
             searchStats.alphaImprovements[moveNumber]++;
             alpha = value;
             ttType = TYPE_EXACT;
-            LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}}Search in ply {} for depth {}: NEW PV {} ({}) (alpha) PV: {}", "", ply, ply, depth, printMove(move), value, printMoveListUCI(pv[ply]));
+            LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}}Search in ply {} for depth {}: ALPHA raise {} ({}) (alpha) PV: {}", "", ply, ply, depth, printMove(move), value, printMoveListUCI(pv[ply]));
           }
         }
       } // AlphaBeta
@@ -1045,7 +1042,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
         setValue(move, value);
         savePV(move, pv[ply + 1], pv[ply]);
         ttType = TYPE_EXACT;
-        LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}}Search in ply {} for depth {}: NEW PV {} ({}) PV: {}", "", ply, ply, depth, printMove(move), value, printMoveListUCI(pv[ply]));
+        LOG__TRACE(Logger::get().SEARCH_LOG, "{:>{}}Search in ply {} for depth {}: ALPHA raise {} ({}) PV: {}", "", ply, ply, depth, printMove(move), value, printMoveListUCI(pv[ply]));
       }
     }
 
