@@ -51,6 +51,7 @@ public:
   };
 
 private:
+  std::mutex synchMutex;
   bool isInitialized = false;
   BookFormat bookFormat;
   std::string bookFilePath;
@@ -66,6 +67,7 @@ public:
   void processAllLines(std::ifstream &fileStream);
   void processLine(std::string &line);
   void processSimpleLine(std::string &line);
+  void addToBook(const Move &move, const std::string &lastFen, const std::string &fen);
 
   uint64_t size() { return bookMap.size(); }
 };

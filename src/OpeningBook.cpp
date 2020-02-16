@@ -28,6 +28,8 @@
 #include <fstream>
 #include <chrono>
 #include <regex>
+#include <mutex>
+#include <execution>
 #include "types.h"
 #include "Logging.h"
 #include "misc.h"
@@ -35,7 +37,7 @@
 #include "Position.h"
 #include "MoveGenerator.h"
 
-#include <boost/algorithm/string.hpp>
+#define MULTITHREADED
 
 OpeningBook::OpeningBook(std::string bookPath, BookFormat bFormat)
   : bookFilePath(bookPath), bookFormat(bFormat) {
@@ -80,10 +82,19 @@ void OpeningBook::processAllLines(std::ifstream &ifstream) {
   const auto start = std::chrono::high_resolution_clock::now();
   LOG__DEBUG(Logger::get().BOOK_LOG, "Creating internal book...");
 
-  // TODO: make this parallel
+#ifdef MULTITHREADED
+  std::for_each(
+    std::execution::par_unseq,
+    lines.begin(),
+    lines.end(),
+    [&](auto&& item) {
+      processLine(item);
+    });
+#else
   for (auto line : lines) {
     processLine(line);
   }
+#endif
 
   const auto stop = std::chrono::high_resolution_clock::now();
   const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
@@ -152,33 +163,41 @@ void OpeningBook::processSimpleLine(std::string &line) {
     }
 
     // remember the last position as fen
-    const std::string &&lastFen = currentPosition.printFen();
+    const std::string lastFen = currentPosition.printFen();
 
     // make move on position
     currentPosition.doMove(move);
-    const std::string &&fen = currentPosition.printFen();
+    const std::string fen = currentPosition.printFen();
 
-    // add to book
-    if (bookMap.count(fen)) {
-      // pointer to entry already in book
-      BookEntry* existingEntry = &bookMap.at(fen);
-      existingEntry->counter++;
-      LOG__TRACE(Logger::get().BOOK_LOG, "Position already existed {} times: {}", existingEntry->counter, existingEntry->position);
-    }
-    else {
-      // new position
-      BookEntry newEntry(fen);
-      bookMap.insert(std::make_pair(fen, newEntry));
-      LOG__TRACE(Logger::get().BOOK_LOG, "Position new {} ", newEntry.position);
-    }
+    // adding entry to book
+    addToBook(move, lastFen, fen);
 
-    // add move to the last book entry's move list
-    BookEntry* lastEntry = &bookMap.at(lastFen);
-    if (std::find(lastEntry->moves.begin(), lastEntry->moves.end(), move) == lastEntry->moves.end()) {
-      lastEntry->moves.push_back(move);
-      lastEntry->ptrNextPosition.push_back(&bookMap.at(fen));
-      LOG__TRACE(Logger::get().BOOK_LOG, "Added to last entry.");
-    }
+  }
+}
+void OpeningBook::addToBook(const Move &move, const std::string &lastFen, const std::string &fen) {
+#ifdef MULTITHREADED
+  const std::lock_guard<std::mutex> lock(synchMutex);
+#endif
+  
+  if (bookMap.count(fen)) {
+    // pointer to entry already in book
+    BookEntry* existingEntry = &bookMap.at(fen);
+    existingEntry->counter++;
+    LOG__TRACE(Logger::get().BOOK_LOG, "Position already existed {} times: {}", existingEntry->counter, existingEntry->position);
+  }
+  else {
+    // new position
+    BookEntry newEntry(fen);
+    bookMap.insert(std::make_pair(fen, newEntry));
+    LOG__TRACE(Logger::get().BOOK_LOG, "Position new {} ", newEntry.position);
+  }
+
+  // add move to the last book entry's move list
+  BookEntry* lastEntry = &bookMap.at(lastFen);
+  if (std::find(lastEntry->moves.begin(), lastEntry->moves.end(), move) == lastEntry->moves.end()) {
+    lastEntry->moves.push_back(move);
+    lastEntry->ptrNextPosition.push_back(&bookMap.at(fen));
+    LOG__TRACE(Logger::get().BOOK_LOG, "Added to last entry.");
   }
 }
 
@@ -190,3 +209,5 @@ std::string BookEntry::str() {
   }
   return os.str();
 }
+
+#undef MULTITHREADED

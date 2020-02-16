@@ -51,7 +51,7 @@ TEST_F(OpeningBookTest, initSimpleSmall) {
   filePathStr += +"/books/book_smalltest.txt";
   OpeningBook book(filePathStr, OpeningBook::BookFormat::SIMPLE);
   book.initialize();
-  fprintln("Entries in book: {:n}", book.size());
+  LOG__INFO(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
 }
 
 TEST_F(OpeningBookTest, initSimple) {
@@ -59,7 +59,7 @@ TEST_F(OpeningBookTest, initSimple) {
   filePathStr += +"/books/book.txt";
   OpeningBook book(filePathStr, OpeningBook::BookFormat::SIMPLE);
   book.initialize();
-  fprintln("Entries in book: {:n}", book.size());
+  LOG__INFO(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
 }
 
 //  printEntry(next, 0);
@@ -67,7 +67,7 @@ TEST_F(OpeningBookTest, initSimple) {
 //    fprintln("Entry: {}", b.second.str());
 //  }
 void printEntry(BookEntry* next, int ply){
-  fprintln("{:>{}}{:70s}", "", ply, next->position);
+  LOG__INFO(Logger::get().TEST_LOG, "{:>{}}{:70s}", "", ply, next->position);
   for (auto m : next->ptrNextPosition) {
     printEntry(m, ++ply);
   }
