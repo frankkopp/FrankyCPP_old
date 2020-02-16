@@ -33,8 +33,19 @@ class Position;
 
 namespace Misc {
 
-  /* Creates a move from the given SAN string */
+  /**
+   * Creates a move from the given SAN string.
+   * Returns MOVE_NONE if the notation string can't be converted to
+   * a legal Move on this position.
+   */
   Move getMoveFromSAN(const Position &, const std::string &);
+
+  /**
+   * Creates a Move from the given position and the UCI notation string.
+   * Returns MOVE_NONE if the notation string can't be converted to
+   * a legal Move on this position.
+   */
+  Move getMoveFromUCI(Position &position, std::string moveStr);
 
   /* returns the given string with as lower case string */
   std::string toLowerCase(std::string str);

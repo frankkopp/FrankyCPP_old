@@ -24,12 +24,41 @@
  */
 
 #include <regex>
+#include <string>
 #include "misc.h"
 #include "Logging.h"
 #include "MoveGenerator.h"
 #include "Position.h"
 
 namespace Misc {
+
+  Move getMoveFromUCI(Position &position, std::string moveStr) {
+    // Regex for UCI notation (UCI)
+    std::regex regexPattern("([a-h][1-8][a-h][1-8])([NBRQnbrq])?");
+    std::smatch matcher;
+
+    // Match the target string
+    if (!std::regex_match(moveStr, matcher, regexPattern)) {
+      LOG__TRACE(Logger::get().MAIN_LOG, "No match found");
+      return MOVE_NONE;
+    }
+
+    // pattern is move
+    LOG__TRACE(Logger::get().MAIN_LOG, "Match found");
+    std::string matchedMove = matcher.str(1);
+    std::string promotion = toUpperCase(matcher.str(2));
+    LOG__TRACE(Logger::get().MAIN_LOG, "move: {} promotion: {}", matchedMove, promotion);
+
+    // create all moves on position and compare
+    MoveGenerator mg;
+    const MoveList* legalMovesPtr = mg.generateLegalMoves<MoveGenerator::GENALL>(position);
+    for (auto m : *legalMovesPtr) {
+      if (printMove(m) == matchedMove+promotion) {
+        LOG__TRACE(Logger::get().MAIN_LOG, "Found move {}", printMoveVerbose(m));
+        return m;
+      }
+    }
+  }
 
   Move getMoveFromSAN(const Position &position, const std::string &sanMove) {
 

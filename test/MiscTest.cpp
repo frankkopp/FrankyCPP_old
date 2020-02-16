@@ -38,15 +38,35 @@ public:
     NEWLINE;
     INIT::init();
     NEWLINE;
+    Logger::get().TEST_LOG->set_level(spdlog::level::debug);
+    Logger::get().MAIN_LOG->set_level(spdlog::level::debug);
   }
-
-  std::shared_ptr<spdlog::logger> LOG = spdlog::get("Test_Logger");
-
-
 protected:
   void SetUp() override {}
   void TearDown() override {}
 };
+
+TEST_F(MiscTest, moveFromUCI) {
+  Position position;
+  std::string moveStr;
+  Move expected;
+  Move actual;
+
+  position = Position("r1b1kb1r/1p3ppp/p1nppn2/q7/2BNP3/2N1B3/PPP2PPP/R2QK2R w KQkq -");
+  moveStr = "e1g1";
+  expected = createMove<CASTLING>(moveStr.c_str());
+  actual = Misc::getMoveFromUCI(position, moveStr);
+  LOG__DEBUG(Logger::get().TEST_LOG, "Expected move {} == Actual move {}", printMoveVerbose(expected), printMoveVerbose(actual));
+  EXPECT_EQ(expected, actual);
+
+  // promotion
+  position = Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
+  moveStr = "a2b1q";
+  expected = createMove<PROMOTION>(moveStr.c_str());
+  actual = Misc::getMoveFromUCI(position, moveStr);
+  LOG__DEBUG(Logger::get().TEST_LOG, "Expected move {} == Actual move {}", printMoveVerbose(expected), printMoveVerbose(actual));
+  EXPECT_EQ(expected, actual);
+}
 
 TEST_F(MiscTest, moveFromSAN) {
   Position position;
