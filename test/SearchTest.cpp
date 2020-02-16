@@ -613,6 +613,9 @@ TEST_F(SearchTest, DISABLED_debuggingTTMove) {
 
 TEST_F(SearchTest, debugging) {
 
+  Logger::get().TEST_LOG->set_level(spdlog::level::debug);
+  Logger::get().SEARCH_LOG->set_level(spdlog::level::info);
+
   Search search;
   SearchLimits searchLimits;
   Position position;
@@ -626,19 +629,26 @@ TEST_F(SearchTest, debugging) {
   SearchConfig::USE_PVS               = true;
   SearchConfig::USE_PV_MOVE_SORT      = true;
   SearchConfig::USE_KILLER_MOVES      = true;
-  SearchConfig::NO_KILLER_MOVES       = 5;
+  SearchConfig::NO_KILLER_MOVES       = 2;
+  SearchConfig::USE_PV_MOVE_SORT      = true;
+  SearchConfig::USE_MDP               = true;
+  SearchConfig::USE_MPP               = true;
 
+  SearchConfig::USE_ASPIRATION_WINDOW = false;
+  SearchConfig::USE_RFP               = false;
   SearchConfig::USE_NMP               = false;
-  SearchConfig::USE_MDP               = false;
-  SearchConfig::USE_MPP               = false;
-  SearchConfig::USE_QS_STANDPAT_CUT   = false;
+  SearchConfig::USE_EXTENSIONS        = false;
+  SearchConfig::USE_FP                = false;
+  SearchConfig::USE_EFP               = false;
+  SearchConfig::USE_LMR               = false;
   // @formatter:on
 
   // does not have a quiescence move after e3e6
-  position = Position("5r1k/1r6/4p1Q1/5p2/6p1/P3R3/5PPP/6K1 w - - 1 1");
+  position = Position("r1bqkbnr/ppp1pppp/8/n7/2BPp3/8/PPP1NPPP/RNBQK2R w KQkq -");
 
-  const int depth = 6;
-  searchLimits.setDepth(depth);
+  //const int depth = 6;
+  //searchLimits.setDepth(depth);
+  searchLimits.setMoveTime(12'000);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 

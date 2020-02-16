@@ -351,11 +351,13 @@ SearchResult Search::iterativeDeepening(Position &position) {
     tt_lock.unlock();
 
     // sort root moves based on value for the next iteration
-    std::stable_sort(rootMoves.begin(), rootMoves.end(), rootMovesSort);
-    bestRootMove = rootMoves[0];
-    bestRootMoveValue = valueOf(rootMoves[0]);
-    if (bestValue != bestRootMoveValue) {
-      LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{} Best bestRootMoveValue != bestValue after iteration {} != {}", __func__, __LINE__, bestRootMoveValue, bestValue);
+    if (!stopConditions()) {
+      std::stable_sort(rootMoves.begin(), rootMoves.end(), rootMovesSort);
+      bestRootMove = rootMoves[0];
+      bestRootMoveValue = valueOf(rootMoves[0]);
+      if (bestValue != bestRootMoveValue) {
+        LOG__ERROR(Logger::get().SEARCH_LOG, "{}:{} Best bestRootMoveValue != bestValue after iteration {} != {}", __func__, __LINE__, bestRootMoveValue, bestValue);
+      }
     }
 
     // update UCI GUI
@@ -977,12 +979,6 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
       // not for all of the ply (not yet clear if >alpha)
       bestNodeValue = value;
 
-      // update some stats for root moves
-      if (ST == ROOT) {
-        searchStats.bestMoveChanges++;
-        searchStats.bestMoveDepth = depth;
-      }
-
       // AlphaBeta
       if (SearchConfig::USE_ALPHABETA) {
 
@@ -997,6 +993,12 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
         */
         if (value > alpha) {
           ttStoreMove = move;
+
+          // update some stats for root moves
+          if (ST == ROOT) {
+            searchStats.bestMoveChanges++;
+            searchStats.bestMoveDepth = depth;
+          }
 
           // store PV even in case of fail high (from SF - not sure why)
           // usually would expect this below where EXACT values are ensured
@@ -1293,9 +1295,14 @@ bool Search::checkDrawRepAnd50(Position &position) const {
 }
 
 inline bool Search::stopConditions() {
-  if (pv[PLY_ROOT].empty()) return false; // search at least until we have a best move
-  if (_stopSearchFlag) { return true; }
+  if (pv[PLY_ROOT].empty()) {
+    return false; // search at least until we have a best move
+  }
+  if (_stopSearchFlag) {
+    return true;
+  }
   if (searchLimitsPtr->getNodes() && searchStats.nodesVisited >= searchLimitsPtr->getNodes()) {
+    LOG__INFO(Logger::get().SEARCH_LOG, "Stop Flag - stopping search");
     _stopSearchFlag = true;
   }
   return _stopSearchFlag;
@@ -1347,13 +1354,13 @@ void Search::addExtraTime(const double d) {
 
 void Search::startTimer() {
   this->timerThread = std::thread([&] {
-    Logger::get().SEARCH_LOG->debug("Timer thread started with time limit of {:n} ms", timeLimit);
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "Timer started with time limit of {:n} ms", timeLimit);
     // relaxed busy wait
     while (elapsedTime(startTime) < timeLimit + extraTime && !_stopSearchFlag) {
       std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
     this->_stopSearchFlag = true;
-    Logger::get().SEARCH_LOG->debug("Timer thread stopped search after wall time: {:n} ms (time limit {:n} ms and extra time {:n})", elapsedTime(this->startTime), timeLimit, extraTime);
+    LOG__INFO(Logger::get().SEARCH_LOG, "Stop search by Timer after wall time: {:n} ms (time limit {:n} ms and extra time {:n})", elapsedTime(this->startTime), timeLimit, extraTime);
   });
 }
 
@@ -1516,16 +1523,17 @@ void Search::sendSearchUpdateToEngine() {
   if (elapsedTime(lastUciUpdateTime) > UCI_UPDATE_INTERVAL) {
     lastUciUpdateTime = now();
 
-    LOG__INFO(Logger::get().SEARCH_LOG, "Search statistics: {}", searchStats.str());
-    LOG__INFO(Logger::get().SEARCH_LOG, "Eval   statistics: {}", pEvaluator->pawnTableStats());
-    LOG__INFO(Logger::get().SEARCH_LOG, "TT     statistics: {}", tt->str());
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "Search statistics: {}", searchStats.str());
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "Eval   statistics: {}", pEvaluator->pawnTableStats());
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "TT     statistics: {}", tt->str());
 
     if (!pEngine) {
       LOG__INFO(
-        Logger::get().SEARCH_LOG, "UCI >> depth {} seldepth {} nodes {:n} nps {:n} time {:n} hashfull {}",
+        Logger::get().SEARCH_LOG, "UCI >> depth {} seldepth {} nodes {:n} nps {:n} time {:n} hashfull {} pv {}",
         searchStats.currentSearchDepth,
         searchStats.currentExtraSearchDepth, searchStats.nodesVisited,
-        getNps(), elapsedTime(startTime), tt->hashFull());
+        getNps(), elapsedTime(startTime), tt->hashFull(),
+        printMoveListUCI(pv[PLY_ROOT]));
     }
     else {
       pEngine->sendSearchUpdate(

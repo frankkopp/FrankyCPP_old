@@ -1,5 +1,6 @@
 message("====================================================================")
-message("FrankyCPP Main CMAKE")
+message("FrankyCPP Main")
+message("CMAKE " ${CMAKE_VERSION} " " ${CMAKE_COMMAND})
 message("====================================================================")
 
 cmake_minimum_required(VERSION 3.13)
@@ -11,15 +12,14 @@ project(FrankyCPP VERSION 0.5)
 configure_file(src/version.h.in version.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-# Platform
-message("Recognized CMAKE Version is " ${CMAKE_VERSION} " " ${CMAKE_COMMAND})
-message("Recognized platform is " ${CMAKE_SYSTEM_NAME} " " ${CMAKE_SYSTEM_VERSION})
-
 # C++ settings
 set(CMAKE_CXX_STANDARD 17)
 
 # Unit testing enabled
 enable_testing()
+
+# Platform
+message("Recognized platform is " ${CMAKE_SYSTEM_NAME} " " ${CMAKE_SYSTEM_VERSION})
 
 # Compiler Settings
 message("Compiler is " ${CMAKE_CXX_COMPILER_ID} " " ${CMAKE_CXX_COMPILER_VERSION} " " ${CMAKE_CXX_COMPILER})
@@ -48,7 +48,7 @@ message("EXEC: " ${CMAKE_CXX_LINK_EXECUTABLE})
 
 # For downloading with GIT
 message("Finding GIT...")
-set(GIT_EXECUTABLE)
+set(GIT_EXECUTABLE )
 find_package(Git)
 if (GIT_FOUND)
     message("git found: ${GIT_EXECUTABLE}")
@@ -67,6 +67,7 @@ FetchContent_Declare(
         GIT_TAG             release-1.10.0
 )
 message("Downloading/Update Google Test")
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_GetProperties(googletest)
 if(NOT googletest_POPULATED)
     # Fetch the content using previously declared details
@@ -79,7 +80,6 @@ if(NOT googletest_POPULATED)
 endif()
 
 FetchContent_MakeAvailable(googletest)
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 include_directories(
         ${googletest_SOURCE_DIR}/googletest/include
 )
@@ -121,10 +121,10 @@ if (WIN32)
     set(BOOST_INCLUDEDIR "C:/Boost/boost_1_72_0")
     set(BOOST_LIBRARYDIR "C:/Boost/boost_1_72_0/lib64-msvc-14.2")
 endif ()
-set (Boost_USE_MULTITHREADED ON)
 set (Boost_DEBUG FALSE)
 set (Boost_USE_MULTITHREADED TRUE)
 set (Boost_USE_STATIC_LIBS TRUE)
+set (Boost_USE_STATIC_RUNTIME FALSE)
 find_package(Boost 1.72.0 COMPONENTS program_options timer log log_setup REQUIRED)
 if (Boost_FOUND)
     message("BOOST found: " ${BOOST_ROOT} " " ${Boost_INCLUDE_DIR})

@@ -30,7 +30,6 @@
 #include "Search.h"
 #include "Engine.h"
 #include "Logging.h"
-#include "SearchConfig.h"
 #include <gtest/gtest.h>
 #include <TestSuite.h>
 
@@ -51,6 +50,15 @@ protected:
 
   void TearDown() override {}
 };
+
+TEST_F(TestSuiteTests, BlunderTestSuite) {
+  std::string filePath = FrankyCPP_PROJECT_ROOT;
+  filePath+= + "/testsets/franky_blunders.epd";
+  MilliSec moveTime = 2'000;
+  Depth depth{0};
+  TestSuite testSuite(filePath, moveTime, depth);
+  testSuite.runTestSuite();
+}
 
 TEST_F(TestSuiteTests, MateTestSuite) {
   std::string filePath = FrankyCPP_PROJECT_ROOT;
