@@ -26,7 +26,7 @@
 #ifndef FRANKYCPP_ENGINE_H
 #define FRANKYCPP_ENGINE_H
 
-#include <map>
+#include <vector>
 #include <memory>
 #include <utility>
 #include "UCIOption.h"
@@ -44,7 +44,7 @@ class Engine {
   //  std::shared_ptr<spdlog::logger> LOG = spdlog::get("Engine_Logger");
 
   // a map for the engine's available options
-  std::map<const std::string, UCI_Option> optionMap;
+  std::vector<std::pair<std::string, UCI_Option>> optionVector;
 
   // callback reference for sending responses to the uci ui
   std::shared_ptr<UCI_Handler> pUciHandler{nullptr};
@@ -128,7 +128,6 @@ private:
   ///// PRIVATE
 
   void initOptions();
-  void updateConfig();
   static int getInt(const std::string &value);
 
 };

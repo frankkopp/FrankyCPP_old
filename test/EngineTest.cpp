@@ -91,5 +91,30 @@ TEST_F(EngineTest, doMove) {
 }
 
 
+TEST_F(EngineTest, getSetOption) {
+  Engine engine;
+
+  EXPECT_EQ("true", engine.getOption("Use_Hash"));
+  EXPECT_EQ("64", engine.getOption("Hash"));
+  EXPECT_EQ("3", engine.getOption("NMP_Depth"));
+  EXPECT_EQ("250", engine.getOption("RFP_Margin"));
+  EXPECT_EQ("", engine.getOption("UNKNOWN"));
 
 
+  engine.setOption("Use_Hash", "false");
+  engine.setOption("Hash", "512");
+  engine.setOption("NMP_Depth", "5");
+  engine.setOption("RFP_Margin", "1000");
+  engine.setOption("UNKNOWN", "test");
+
+  EXPECT_EQ("false", engine.getOption("Use_Hash"));
+  EXPECT_EQ("512", engine.getOption("Hash"));
+  EXPECT_EQ("5", engine.getOption("NMP_Depth"));
+  EXPECT_EQ("1000", engine.getOption("RFP_Margin"));
+
+}
+
+TEST_F(EngineTest, listOptions) {
+  Engine engine;
+  fprintln("{}",engine.str());
+}

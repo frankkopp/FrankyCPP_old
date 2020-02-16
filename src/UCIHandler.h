@@ -70,7 +70,7 @@ public:
   void sendAspirationResearchInfo(int depth, int seldepth, Value value, const std::string& bound,
                                   uint64_t nodes, uint64_t nps, MilliSec time,
                                   const MoveList &pv) const;
-  void sendCurrentRootMove(Move currmove, unsigned long movenumber) const;
+  void sendCurrentRootMove(Move currmove, std::size_t movenumber) const;
   void sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t nps,
                         MilliSec time, int hashfull) const;
   void sendCurrentLine(const MoveList &moveList) const;

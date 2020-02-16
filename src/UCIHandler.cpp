@@ -367,7 +367,7 @@ UCI_Handler::sendAspirationResearchInfo(int depth, int seldepth, Value value, co
                    time, printMoveListUCI(pv)));
 }
 
-void UCI_Handler::sendCurrentRootMove(Move currmove, unsigned long movenumber) const {
+void UCI_Handler::sendCurrentRootMove(Move currmove, std::size_t movenumber) const {
   send(fmt::format("info currmove {} currmovenumber {}", printMove(currmove),
                    movenumber));
 }

@@ -1,6 +1,7 @@
 <component name="ProjectDictionaryState">
   <dictionary name="Frank">
     <words>
+      <w>alphabeta</w>
       <w>bitboard</w>
       <w>bitboards</w>
       <w>boni</w>
@@ -31,6 +32,7 @@
       <w>searchmoves</w>
       <w>seldepth</w>
       <w>spdlog</w>
+      <w>standpat</w>
       <w>templated</w>
       <w>testsets</w>
       <w>tsuite</w>
