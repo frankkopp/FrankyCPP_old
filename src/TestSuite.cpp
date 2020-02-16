@@ -256,7 +256,7 @@ void TestSuite::readTestCases(const std::string &filePathStr, std::vector<Test> 
     file.close();
   }
   else {
-    LOG__ERROR(Logger::get().TSUITE_LOG, "Could not open file: {}", filePath);
+    LOG__ERROR(Logger::get().TSUITE_LOG, "Could not open file: {}", filePathStr);
     return;
   }
 }

@@ -38,8 +38,8 @@ public:
     NEWLINE;
     INIT::init();
     NEWLINE;
-    Logger::get().TEST_LOG->set_level(spdlog::level::debug);
-    Logger::get().MAIN_LOG->set_level(spdlog::level::debug);
+    Logger::get().TEST_LOG->set_level(spdlog::level::warn);
+    Logger::get().MAIN_LOG->set_level(spdlog::level::warn);
   }
 protected:
   void SetUp() override {}

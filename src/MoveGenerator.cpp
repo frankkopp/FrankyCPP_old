@@ -626,7 +626,6 @@ void MoveGenerator::generateCastling(const Position &position, MoveList* const p
     }
   }
 }
-
 // @formatter:off
 
 // explicitly instantiate all template definitions so other classes can see them

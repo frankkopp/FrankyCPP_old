@@ -28,7 +28,7 @@ set(FrankyCPPlib_SRCS
         EngineConfig.h Engine.h Engine.cpp
         SearchConfig.h Search.h Search.cpp
         TestSuite.h TestSuite.cpp
-        )
+        OpeningBook.cpp OpeningBook.h)
 add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})
 target_link_libraries(
         FrankyCPPlib

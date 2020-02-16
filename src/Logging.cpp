@@ -33,6 +33,7 @@ namespace po = boost::program_options;
 inline po::variables_map programOptions;
 
 void Logger::init() {
+
   // this messes up CLion'sGoogletest integration
   //  try {
   //    std::locale::global(deLocale);
@@ -150,6 +151,11 @@ void Logger::init() {
   UCIHAND_LOG->set_pattern(defaultPattern);
   UCIHAND_LOG->set_level(logLevel);
   UCIHAND_LOG->flush_on(flushLevel);
+
+  BOOK_LOG->sinks().push_back(sharedFileSink);
+  BOOK_LOG->set_pattern(defaultPattern);
+  BOOK_LOG->set_level(logLevel);
+  BOOK_LOG->flush_on(flushLevel);
 
   UCI_LOG->sinks().push_back(uciOutSink);
   UCI_LOG->set_pattern("[%H:%M:%S:%f] %v");
