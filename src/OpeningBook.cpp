@@ -24,12 +24,12 @@
  */
 
 #include <algorithm>
+#include <chrono>
+#include <execution>
 #include <iostream>
 #include <fstream>
-#include <chrono>
-#include <regex>
 #include <mutex>
-#include <execution>
+#include <regex>
 #include "types.h"
 #include "Logging.h"
 #include "misc.h"
@@ -174,6 +174,7 @@ void OpeningBook::processSimpleLine(std::string &line) {
 
   }
 }
+
 void OpeningBook::addToBook(const Move &move, const std::string &lastFen, const std::string &fen) {
 #ifdef MULTITHREADED
   const std::lock_guard<std::mutex> lock(synchMutex);

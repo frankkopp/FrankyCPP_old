@@ -52,6 +52,7 @@ TEST_F(OpeningBookTest, initSimpleSmall) {
   OpeningBook book(filePathStr, OpeningBook::BookFormat::SIMPLE);
   book.initialize();
   LOG__INFO(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
+  EXPECT_EQ(11'517, book.size());
 }
 
 TEST_F(OpeningBookTest, initSimple) {
@@ -60,6 +61,7 @@ TEST_F(OpeningBookTest, initSimple) {
   OpeningBook book(filePathStr, OpeningBook::BookFormat::SIMPLE);
   book.initialize();
   LOG__INFO(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
+  EXPECT_EQ(292'568, book.size());
 }
 
 //  printEntry(next, 0);
