@@ -144,9 +144,6 @@ void OpeningBook::processSimpleLine(std::string &line) {
     const std::string &moveStr = (*i).str();
     LOG__TRACE(Logger::get().BOOK_LOG, "Moves {}", moveStr);
 
-    Position lastPosition(currentPosition);
-    std::string lastFen = lastPosition.printFen();
-
     // create and validate the move
     Move move = Misc::getMoveFromUCI(currentPosition, moveStr);
     if (!isMove(move)) {
@@ -154,9 +151,12 @@ void OpeningBook::processSimpleLine(std::string &line) {
       return;
     }
 
+    // remember the last position as fen
+    const std::string &&lastFen = currentPosition.printFen();
+
     // make move on position
     currentPosition.doMove(move);
-    const std::string &fen = currentPosition.printFen();
+    const std::string &&fen = currentPosition.printFen();
 
     // add to book
     if (bookMap.count(fen)) {
