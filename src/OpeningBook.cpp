@@ -137,7 +137,7 @@ void OpeningBook::processSANLine(std::string &line) {
   // check if line starts valid
   std::regex startLineRegex(R"(^\d+\. )");
   if (std::regex_match(line, matcher, startLineRegex)) {
-    LOG__DEBUG(Logger::get().BOOK_LOG, "Line ignored: {}", line);
+    LOG__TRACE(Logger::get().BOOK_LOG, "Line ignored: {}", line);
     return;
   }
 
@@ -153,13 +153,13 @@ void OpeningBook::processSANLine(std::string &line) {
   std::regex splitRegex(R"(\s+)");
   std::sregex_token_iterator iter(line.begin(), line.end(), splitRegex, -1);
   std::sregex_token_iterator end;
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Found {} items in line: {}", std::distance(iter, end), line);
+  LOG__TRACE(Logger::get().BOOK_LOG, "Found {} items in line: {}", std::distance(iter, end), line);
   for (auto i = iter; i != end; ++i) {
     const std::string &moveStr = (*i).str();
-    LOG__DEBUG(Logger::get().BOOK_LOG, "Item {}", moveStr);
+    LOG__TRACE(Logger::get().BOOK_LOG, "Item {}", moveStr);
     if (std::regex_match(moveStr, matcher, numberRegex)) { continue; }
     if (std::regex_match(moveStr, matcher, resultRegex)) { continue; }
-    LOG__DEBUG(Logger::get().BOOK_LOG, "SAN Move {}", moveStr);
+    LOG__TRACE(Logger::get().BOOK_LOG, "SAN Move {}", moveStr);
 
     // create and validate the move
     Move move = Misc::getMoveFromSAN(currentPosition, moveStr);
@@ -167,7 +167,7 @@ void OpeningBook::processSANLine(std::string &line) {
       LOG__WARN(Logger::get().BOOK_LOG, "Not a valid move {} on this position {}", moveStr, currentPosition.printFen());
       return;
     }
-    LOG__DEBUG(Logger::get().BOOK_LOG, "Move found {}", printMoveVerbose(move));
+    LOG__TRACE(Logger::get().BOOK_LOG, "Move found {}", printMoveVerbose(move));
 
     // remember the last position as fen
     const std::string lastFen = currentPosition.printFen();

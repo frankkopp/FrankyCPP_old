@@ -35,7 +35,7 @@ target_link_libraries(
         PUBLIC
         fmt 
         spdlog
-        tbb
+        #tbb
         ${Boost_LIBRARIES}        
 )
 

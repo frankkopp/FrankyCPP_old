@@ -71,7 +71,7 @@ TEST_F(OpeningBookTest, initSAN) {
   OpeningBook book(filePathStr, OpeningBook::BookFormat::SAN);
   book.initialize();
   LOG__INFO(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
-//  EXPECT_EQ(292'568, book.size());
+  EXPECT_EQ(1'254, book.size());
 }
 
 TEST_F(OpeningBookTest, initPNG) {
