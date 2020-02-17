@@ -36,6 +36,7 @@ public:
     INIT::init();
     NEWLINE;
     Logger::get().TEST_LOG->set_level(spdlog::level::debug);
+    Logger::get().MAIN_LOG->set_level(spdlog::level::trace);
     Logger::get().BOOK_LOG->set_level(spdlog::level::debug);
   }
 
@@ -64,15 +65,22 @@ TEST_F(OpeningBookTest, initSimple) {
   EXPECT_EQ(292'568, book.size());
 }
 
-//  printEntry(next, 0);
-//  for (auto b : book.bookMap) {
-//    fprintln("Entry: {}", b.second.str());
-//  }
-void printEntry(BookEntry* next, int ply){
-  LOG__INFO(Logger::get().TEST_LOG, "{:>{}}{:70s}", "", ply, next->position);
-  for (auto m : next->ptrNextPosition) {
-    printEntry(m, ++ply);
-  }
-};
+TEST_F(OpeningBookTest, initSAN) {
+  std::string filePathStr = FrankyCPP_PROJECT_ROOT;
+  filePathStr += +"/books/book_graham.txt";
+  OpeningBook book(filePathStr, OpeningBook::BookFormat::SAN);
+  book.initialize();
+  LOG__INFO(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
+//  EXPECT_EQ(292'568, book.size());
+}
+
+TEST_F(OpeningBookTest, initPNG) {
+  std::string filePathStr = FrankyCPP_PROJECT_ROOT;
+  filePathStr += +"/books/png_test.pgn";
+  OpeningBook book(filePathStr, OpeningBook::BookFormat::PNG);
+  book.initialize();
+  LOG__INFO(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
+  //  EXPECT_EQ(292'568, book.size());
+}
 
 

@@ -399,6 +399,7 @@ inline Square getToSquare(Move m) { return Square(m & MoveShifts::SQUARE_MASK); 
 
 /** checks if this a valid move */
 inline bool isMove(Move m) {
+  if (m == MOVE_NONE) return false;
   const Square fromSquare = getFromSquare(m);
   const Square toSquare = getToSquare(m);
   return fromSquare >= SQ_A1

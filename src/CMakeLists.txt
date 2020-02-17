@@ -34,7 +34,8 @@ target_link_libraries(
         FrankyCPPlib
         PUBLIC
         fmt 
-        spdlog 
+        spdlog
+        tbb
         ${Boost_LIBRARIES}        
 )
 

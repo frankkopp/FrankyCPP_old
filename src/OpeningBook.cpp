@@ -37,7 +37,7 @@
 #include "Position.h"
 #include "MoveGenerator.h"
 
-#define MULTITHREADED
+static const bool MULTITHREADED = true;
 
 OpeningBook::OpeningBook(std::string bookPath, BookFormat bFormat)
   : bookFilePath(bookPath), bookFormat(bFormat) {
@@ -82,19 +82,15 @@ void OpeningBook::processAllLines(std::ifstream &ifstream) {
   const auto start = std::chrono::high_resolution_clock::now();
   LOG__DEBUG(Logger::get().BOOK_LOG, "Creating internal book...");
 
-#ifdef MULTITHREADED
-  std::for_each(
-    std::execution::par_unseq,
-    lines.begin(),
-    lines.end(),
-    [&](auto&& item) {
-      processLine(item);
-    });
-#else
+if (MULTITHREADED) {
+  std::for_each(std::execution::par_unseq, lines.begin(), lines.end(),
+                [&](auto &&item) { processLine(item); });
+}
+else {
   for (auto line : lines) {
     processLine(line);
   }
-#endif
+}
 
   const auto stop = std::chrono::high_resolution_clock::now();
   const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
@@ -117,12 +113,17 @@ std::vector<std::string> OpeningBook::getLinesFromFile(std::ifstream &ifstream) 
 
 void OpeningBook::processLine(std::string &line) {
   LOG__TRACE(Logger::get().BOOK_LOG, "Processing line: {}", line);
+
+  // clean up line
+  std::regex whiteSpaceTrim(R"(^\s*(.*)\s*$)");
+  line = std::regex_replace(line, whiteSpaceTrim, "$1");
+
   switch (bookFormat) {
     case BookFormat::SIMPLE:
       processSimpleLine(line);
       break;
     case BookFormat::SAN:
-      LOG__ERROR(Logger::get().BOOK_LOG, "SAN format not yet implemented.");
+      processSANLine(line);
       break;
     case BookFormat::PNG:
       LOG__ERROR(Logger::get().BOOK_LOG, "PNG format not yet implemented.");
@@ -130,11 +131,58 @@ void OpeningBook::processLine(std::string &line) {
   }
 }
 
-void OpeningBook::processSimpleLine(std::string &line) {
-  // clean up line
-  std::regex whiteSpaceTrim(R"(^\s*(.*)\s*$)");
-  line = std::regex_replace(line, whiteSpaceTrim, "$1");
+void OpeningBook::processSANLine(std::string &line) {
+  std::smatch matcher;
 
+  // check if line starts valid
+  std::regex startLineRegex(R"(^\d+\. )");
+  if (std::regex_match(line, matcher, startLineRegex)) {
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Line ignored: {}", line);
+    return;
+  }
+
+  Position currentPosition; // start position
+
+  // ignore patterns
+  std::regex numberRegex(R"(^\d+\.)");
+  std::regex resultRegex(R"((1/2|1|0)-(1/2|1|0))");
+
+  //1. f4 d5 2. Nf3 Nf6 3. e3 g6 4. b3 Bg7 5. Bb2 O-O 6. Be2 c5 7. O-O Nc6 8. Ne5 Qc7 1/2-1/2
+  //1. f4 d5 2. Nf3 Nf6 3. e3 Bg4 4. Be2 e6 5. O-O Bd6 6. b3 O-O 7. Bb2 c5 1/2-1/2
+  // split at every whitespace and iterate through items
+  std::regex splitRegex(R"(\s+)");
+  std::sregex_token_iterator iter(line.begin(), line.end(), splitRegex, -1);
+  std::sregex_token_iterator end;
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Found {} items in line: {}", std::distance(iter, end), line);
+  for (auto i = iter; i != end; ++i) {
+    const std::string &moveStr = (*i).str();
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Item {}", moveStr);
+    if (std::regex_match(moveStr, matcher, numberRegex)) { continue; }
+    if (std::regex_match(moveStr, matcher, resultRegex)) { continue; }
+    LOG__DEBUG(Logger::get().BOOK_LOG, "SAN Move {}", moveStr);
+
+    // create and validate the move
+    Move move = Misc::getMoveFromSAN(currentPosition, moveStr);
+    if (move == MOVE_NONE) {
+      LOG__WARN(Logger::get().BOOK_LOG, "Not a valid move {} on this position {}", moveStr, currentPosition.printFen());
+      return;
+    }
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Move found {}", printMoveVerbose(move));
+
+    // remember the last position as fen
+    const std::string lastFen = currentPosition.printFen();
+
+    // make move on position
+    currentPosition.doMove(move);
+    const std::string fen = currentPosition.printFen();
+
+    // adding entry to book
+    addToBook(move, lastFen, fen);
+    
+  }
+}
+
+void OpeningBook::processSimpleLine(std::string &line) {
   std::smatch matcher;
 
   // check if line starts with move
@@ -151,7 +199,7 @@ void OpeningBook::processSimpleLine(std::string &line) {
   LOG__TRACE(Logger::get().BOOK_LOG, "Found {} moves in line: {}", std::distance(move_begin, move_end), line);
   Position currentPosition; // start position
 
-  for (std::sregex_iterator i = move_begin; i != move_end; ++i) {
+  for (auto i = move_begin; i != move_end; ++i) {
     const std::string &moveStr = (*i).str();
     LOG__TRACE(Logger::get().BOOK_LOG, "Moves {}", moveStr);
 
@@ -176,10 +224,8 @@ void OpeningBook::processSimpleLine(std::string &line) {
 }
 
 void OpeningBook::addToBook(const Move &move, const std::string &lastFen, const std::string &fen) {
-#ifdef MULTITHREADED
   const std::lock_guard<std::mutex> lock(synchMutex);
-#endif
-  
+
   if (bookMap.count(fen)) {
     // pointer to entry already in book
     BookEntry* existingEntry = &bookMap.at(fen);
@@ -211,4 +257,3 @@ std::string BookEntry::str() {
   return os.str();
 }
 
-#undef MULTITHREADED

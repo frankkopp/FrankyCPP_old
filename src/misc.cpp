@@ -62,8 +62,6 @@ namespace Misc {
 
   Move getMoveFromSAN(const Position &position, const std::string &sanMove) {
 
-    //static std::shared_ptr<spdlog::logger> Logger::get().MAIN_LOG = spdlog::get("Main_Logger");
-
     // Regex for short move notation (SAN)
     std::regex regexPattern("([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O-O-O|O-O)(=([NBRQ]))?([+#])?");
     std::smatch matcher;
