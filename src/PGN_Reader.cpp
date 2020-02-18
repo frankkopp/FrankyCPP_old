@@ -36,16 +36,30 @@ using namespace boost;
 
 using namespace std::string_literals;
 
-PGN_Reader::PGN_Reader(std::vector<std::string> lines)
-  : inputLines{lines} {}
+static const boost::regex trailingComments(R"(;.*$)");
+static const boost::regex tagPairs(R"(\[\w+ +".*"\])");
+static const boost::regex doubleWhiteSpace(R"(\s+)");
+static const boost::regex moveSectionStart(R"(^(\d+.)|([KQRBN]?[a-h][1-8]))");
+static const boost::regex moveSectionEnd(R"(.*((1-0)|(0-1)|(1/2-1/2)|\*)$)");
+static const boost::regex nagAnnotation(R"((\$\d{1,3}))"); // no NAG annotation supported
+static const boost::regex bracketComments(R"(\{[^{}]*\})"); // bracket comments
+static const boost::regex reservedSymbols(R"(<[^<>]*>)"); // reserved symbols < >
+static const boost::regex ravVariants(R"(\([^()]*\))"); // RAV variant comments < >
+static const boost::regex resultsRgx(R"(((1-0)|(0-1)|(1/2-1/2)|\*))");
+static const boost::regex moveNumbers(R"(\d{1,3}( )*(\.{1,3}))");
+static const boost::regex moveRgx(R"(([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O-O-O|O-O)(=([NBRQ]))?([!?+#]*)?)");
+
+PGN_Reader::PGN_Reader(std::vector<std::string> &lines) {
+  inputLines = std::make_shared<std::vector<std::string>>(lines);
+}
 
 bool PGN_Reader::process() {
-  LOG__TRACE(Logger::get().BOOK_LOG, "Processing {:n} lines.", inputLines.size());
+  LOG__TRACE(Logger::get().BOOK_LOG, "Processing {:n} lines.", inputLines->size());
   const auto start = std::chrono::high_resolution_clock::now();
   // loop over all input lines
   uint64_t c = 0;
-  VectorIterator linesIter = inputLines.begin();
-  while (linesIter < inputLines.end()) {
+  VectorIterator linesIter = inputLines->begin();
+  while (linesIter < inputLines->end()) {
     LOG__TRACE(Logger::get().BOOK_LOG, "Processing game {:n}", games.size() + 1);
     processOneGame(linesIter);
   }
@@ -58,40 +72,27 @@ bool PGN_Reader::process() {
 void PGN_Reader::processOneGame(VectorIterator &iterator) {
   bool gameEndReached = false;
   PGN_Game game{};
-  boost::regex e1;
   do {
+    LOG__TRACE(Logger::get().BOOK_LOG, "Process line: {}    (length={})", *iterator, iterator->size());
     // clean up line
     trim(*iterator);
-
     // ignore comment lines
     if (starts_with(*iterator, "%")) continue;
-
     // trailing comments
-    e1.assign(R"(;.*$)");
-    erase_regex(*iterator, e1);
-
+    erase_regex(*iterator, trailingComments);
     // ignore meta data tags for now
-    e1.assign(R"(\[\w+ +".*"\])");
-    if (find_regex(*iterator, e1)) continue;
-
-    LOG__TRACE(Logger::get().BOOK_LOG, "Process line: {}    (length={})", *iterator, iterator->size());
-
+    if (find_regex(*iterator, tagPairs)) continue;
     // eliminate double whitespace
-    e1.assign(R"(\s+)");
-    replace_all_regex(*iterator, e1, " "s);
-
+    replace_all_regex(*iterator, doubleWhiteSpace, " "s);
     // process move section
-    e1.assign(R"(^(\d+.)|([KQRBN]?[a-h][1-8]))");
-    if (find_regex(*iterator, e1)) {
+    if (find_regex(*iterator, moveSectionStart)) {
       handleMoveSection(iterator, game);
       gameEndReached = true;
     }
-
-  } while (++iterator < inputLines.end() && !gameEndReached);
-
-  const uint64_t dist = inputLines.size() - std::distance(iterator, inputLines.end());
-  if (games.size() % (inputLines.size() / avgLinesPerGameTimesProgressSteps) == 0) { // 12 is avg game lines and 15 steps
-    LOG__DEBUG(Logger::get().BOOK_LOG, "Progress: {:s}", Misc::printProgress(static_cast<double>(dist) / inputLines.size()));
+  } while (++iterator < inputLines->end() && !gameEndReached);
+  const uint64_t dist = inputLines->size() - std::distance(iterator, inputLines->end());
+  if (games.size() % (inputLines->size() / avgLinesPerGameTimesProgressSteps) == 0) { // 12 is avg game lines and 15 steps
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Progress: {:s}", Misc::printProgress(static_cast<double>(dist) / inputLines->size()));
   }
   games.push_back(game);
 }
@@ -101,65 +102,45 @@ void PGN_Reader::handleMoveSection(VectorIterator &iterator, PGN_Game &game) {
 
   // read and concatenate all lines belonging to the move section of  one game
   std::ostringstream os;
-  boost::regex e1;
   do {
     trim(*iterator);
     // ignore comment lines
     if (starts_with(*iterator, "%")) continue;
     // trailing comments
-    e1.assign(R"(;.*$)");
-    erase_regex(*iterator, e1);
+    erase_regex(*iterator, trailingComments);
     // append line
     os << *iterator << " ";
     // look for end pattern
-    e1.assign(R"(.*((1-0)|(0-1)|(1/2-1/2)|\*)$)");
-    if (find_regex(*iterator, e1)) {
-      break;
-    }
-  } while (++iterator < inputLines.end());
-
+    if (find_regex(*iterator, moveSectionEnd)) break;
+  } while (++iterator < inputLines->end());
   std::string moveSection = os.str();
   LOG__TRACE(Logger::get().BOOK_LOG, "Move section: {} (length={})", moveSection, moveSection.size());
 
   // eliminate unwanted stuff
-  e1.assign(R"((\$\d{1,3}))"); // no NAG annotation supported
-  replace_all_regex(moveSection, e1, " "s);
-  e1.assign(R"(\{[^{}]*\})"); // bracket comments
-  replace_all_regex(moveSection, e1, " "s);
-  e1.assign(R"(<[^<>]*>)"); // reserved symbols < >
-  replace_all_regex(moveSection, e1, " "s);
-
+  replace_all_regex(moveSection, nagAnnotation, " "s);
+  replace_all_regex(moveSection, bracketComments, " "s);
+  replace_all_regex(moveSection, reservedSymbols, " "s);
   // handle nested RAV variation comments
-  e1.assign(R"(\([^()]*\))"); // reserved symbols < >
   do { // no RAV variations supported (could be nested)
-    replace_all_regex(moveSection, e1, " "s);
-  } while (find_regex(moveSection, e1));
-
+    replace_all_regex(moveSection, ravVariants, " "s);
+  } while (find_regex(moveSection, ravVariants));
   // remove result from line
-  e1.assign(R"(((1-0)|(0-1)|(1/2-1/2)|\*))");
-  replace_all_regex(moveSection, e1, ""s);
-
+  replace_all_regex(moveSection, resultsRgx, ""s);
   // remove move numbers
-  e1.assign(R"(\d{1,3}( )*(\.{1,3}))");
-  replace_all_regex(moveSection, e1, " "s);
-
+  replace_all_regex(moveSection, moveNumbers, " "s);
   // eliminate double whitespace
-  e1.assign(R"(\s+)");
-  replace_all_regex(moveSection, e1, " "s);
+  replace_all_regex(moveSection, doubleWhiteSpace, " "s);
   trim(moveSection);
-
   LOG__TRACE(Logger::get().BOOK_LOG, "Move section clean (length={}): {} ", moveSection.size(), moveSection);
 
   // add to game
   std::vector<std::string> moves{};
   //  e1.assign(R"( +)");
   split(moves, moveSection, is_space(), token_compress_on);
-
   LOG__TRACE(Logger::get().BOOK_LOG, "Moves extracted: {} ", moves.size());
-
-  e1.assign(R"(([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O-O-O|O-O)(=([NBRQ]))?([!?+#]*)?)");
+  // move detection
   for (auto m : moves) {
-    if (find_regex(m, e1)) {
+    if (find_regex(m, moveRgx)) {
       LOG__TRACE(Logger::get().BOOK_LOG, "Move: {} ", m);
       game.moves.push_back(m);
     }
