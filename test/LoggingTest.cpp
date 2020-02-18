@@ -55,15 +55,15 @@ TEST_F(LoggingTest, macro) {
 
 
 TEST_F(LoggingTest, decimal) {
-  auto s = fmt::format(deLocale, "{:n}", 1234567890);
-  std::cout << "Direct cout  : " << s << std::endl;
-  fprintln("Macro with ln: {:n}", 1234567890);
-  LOG__INFO(Logger::get().TEST_LOG, "INFO {:n}", 1234567890);
-  ASSERT_EQ("1.234.567.890", s);
-  s = fmt::format("{:n}", 1234567890);
-  std::cout << "Direct cout  : " << s << std::endl;
-  LOG__INFO(Logger::get().TEST_LOG, "INFO {:n}", 1234567890);
-  ASSERT_EQ("1234567890", s);
+  auto s = fmt::format("{:n}", 1234567890);
+  EXPECT_EQ("1234567890", s);
+  std::cout << "Direct cout with fmt::format(\"{:n}\",           1234567890): " << s << std::endl;
+  s = fmt::format(deLocale, "{:n}", 1234567890);
+  EXPECT_EQ("1.234.567.890", s);
+  std::cout << "Direct cout with fmt::format(deLocale, \"{:n}\", 1234567890): " << s << std::endl;
+  Logger::get().TEST_LOG->error("SPDLOG ERROR {:n}", 1234567890);
+  LOG__ERROR(Logger::get().TEST_LOG, "SPDLOG ERROR {:n}", 1234567890);
+
 
   //s = fmt::format("{:n}", std::numeric_limits<__int128_t>::max());
   //std::cout << "Direct cout  : " << s << std::endl;

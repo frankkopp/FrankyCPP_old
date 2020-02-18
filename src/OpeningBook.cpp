@@ -30,6 +30,7 @@
 #include <fstream>
 #include <mutex>
 #include <regex>
+#include <filesystem>
 #include "types.h"
 #include "Logging.h"
 #include "misc.h"
@@ -67,6 +68,8 @@ void OpeningBook::readBookFromFile(const std::string filePath) {
   std::ifstream file(filePath);
   if (file.is_open()) {
     LOG__DEBUG(Logger::get().BOOK_LOG, "Open book '{}' successful.", filePath);
+    std::filesystem::path p{filePath};
+    fileSize = std::filesystem::file_size(std::filesystem::canonical(p));
     processAllLines(file);
     file.close();
   }
@@ -111,6 +114,7 @@ std::vector<std::string> OpeningBook::getLinesFromFile(std::ifstream &ifstream) 
   LOG__DEBUG(Logger::get().BOOK_LOG, "Reading lines from book.");
   const auto start = std::chrono::high_resolution_clock::now();
   std::vector<std::string> lines;
+  lines.reserve(fileSize / 40);
   std::string line;
   while (std::getline(ifstream, line)) {
     if (!line.empty()) lines.push_back(line);
@@ -243,7 +247,8 @@ void OpeningBook::processPGNFile(std::vector<std::string> &lines) {
     return;
   }
   auto games = &pgnReader.getGames();
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Number of games {}", games->size());
+  //LOG__DEBUG(Logger::get().BOOK_LOG, "Number of games {}", games->size());
+  Logger::get().BOOK_LOG->debug("Number of games {:n}", games->size());
 
   // processing games
   if (MULTITHREADED) {

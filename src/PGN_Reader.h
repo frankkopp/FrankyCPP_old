@@ -72,6 +72,8 @@
 
 typedef std::vector<std::string>::iterator VectorIterator;
 
+constexpr const int avgLinesPerGameTimesProgressSteps = 12 * 15;
+
 /**
  * A PGN_Game holds the cleanup tags and moves as strings after reading a PGN file.
  */

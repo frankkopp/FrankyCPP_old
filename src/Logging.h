@@ -50,37 +50,37 @@
 #define LOG__LEVEL DEBUG__LVL
 
 #if LOG__LEVEL > ZERO__LVL
-#define LOG__CRITICAL(logger, ...) logger->critical(__VA_ARGS__)
+#define LOG__CRITICAL(logger, ...) logger->critical("{:s}", fmt::format(deLocale, __VA_ARGS__))
 #else
 #define LOG__CRITICAL(logger, ...) void(0)
 #endif
 
 #if LOG__LEVEL > CRITICAL__LVL
-#define LOG__ERROR(logger, ...) logger->error(__VA_ARGS__)
+#define LOG__ERROR(logger, ...) logger->error("{:s}", fmt::format(deLocale, __VA_ARGS__))
 #else
 #define LOG__ERROR(logger, ...) void(0)
 #endif
 
 #if LOG__LEVEL > ERROR__LVL
-#define LOG__WARN(logger, ...) logger->warn(__VA_ARGS__)
+#define LOG__WARN(logger, ...) logger->warn("{:s}", fmt::format(deLocale, __VA_ARGS__))
 #else
 #define LOG__WARN(logger, ...) void(0)
 #endif
 
 #if LOG__LEVEL > WARN__LVL
-#define LOG__INFO(logger, ...) logger->info(__VA_ARGS__)
+#define LOG__INFO(logger, ...) logger->info("{:s}", fmt::format(deLocale, __VA_ARGS__))
 #else
 #define LOG__INFO(logger, ...) void(0)
 #endif
 
 #if LOG__LEVEL > INFO__LVL
-#define LOG__DEBUG(logger, ...) logger->debug(__VA_ARGS__)
+#define LOG__DEBUG(logger, ...) logger->debug("{:s}", fmt::format(deLocale, __VA_ARGS__))
 #else
 #define LOG__DEBUG(logger, ...) void(0)
 #endif
 
 #if LOG__LEVEL > DEBUG__LVL
-#define LOG__TRACE(logger, ...) logger->trace(__VA_ARGS__)
+#define LOG__TRACE(logger, ...) logger->trace("{:s}", fmt::format(deLocale, __VA_ARGS__))
 #else
 #define LOG__TRACE(logger, ...) void(0)
 #endif

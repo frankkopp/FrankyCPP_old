@@ -40,18 +40,18 @@ PGN_Reader::PGN_Reader(std::vector<std::string> lines)
   : inputLines{lines} {}
 
 bool PGN_Reader::process() {
-  LOG__TRACE(Logger::get().BOOK_LOG, "Processing {} lines.", inputLines.size());
+  LOG__TRACE(Logger::get().BOOK_LOG, "Processing {:n} lines.", inputLines.size());
   const auto start = std::chrono::high_resolution_clock::now();
   // loop over all input lines
   uint64_t c = 0;
   VectorIterator linesIter = inputLines.begin();
   while (linesIter < inputLines.end()) {
-    LOG__TRACE(Logger::get().BOOK_LOG, "Processing game {}", games.size() + 1);
+    LOG__TRACE(Logger::get().BOOK_LOG, "Processing game {:n}", games.size() + 1);
     processOneGame(linesIter);
   }
   const auto stop = std::chrono::high_resolution_clock::now();
   const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-  LOG__TRACE(Logger::get().BOOK_LOG, "Found {} games in {:n} ms", games.size(), elapsed.count());
+  LOG__INFO(Logger::get().BOOK_LOG, "Found {:n} games in {:n} ms", games.size(), elapsed.count());
   return true;
 }
 
@@ -90,7 +90,7 @@ void PGN_Reader::processOneGame(VectorIterator &iterator) {
   } while (++iterator < inputLines.end() && !gameEndReached);
 
   const uint64_t dist = inputLines.size() - std::distance(iterator, inputLines.end());
-  if (games.size() % 10'000 == 0) {
+  if (games.size() % (inputLines.size() / avgLinesPerGameTimesProgressSteps) == 0) { // 12 is avg game lines and 15 steps
     LOG__DEBUG(Logger::get().BOOK_LOG, "Progress: {:s}", Misc::printProgress(static_cast<double>(dist) / inputLines.size()));
   }
   games.push_back(game);

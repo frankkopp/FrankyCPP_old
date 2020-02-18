@@ -54,6 +54,7 @@ public:
 private:
   std::mutex synchMutex;
   bool isInitialized = false;
+  uint64_t fileSize{};
   BookFormat bookFormat;
   std::string bookFilePath;
   std::map<std::string, BookEntry> bookMap{};

@@ -83,6 +83,15 @@ TEST_F(OpeningBookTest, initPGN) {
   EXPECT_EQ(1'162, book.size());
 }
 
+TEST_F(OpeningBookTest, initPGNMedium) {
+  std::string filePathStr = FrankyCPP_PROJECT_ROOT;
+  filePathStr += +"/books/8moves_GM_LB.pgn";
+  OpeningBook book(filePathStr, OpeningBook::BookFormat::PNG);
+  book.initialize();
+  LOG__INFO(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
+  //  EXPECT_EQ(216'070, book.size());
+}
+
 TEST_F(OpeningBookTest, initPGNLarge) {
   std::string filePathStr = FrankyCPP_PROJECT_ROOT;
   filePathStr += +"/books/superbook.pgn";
