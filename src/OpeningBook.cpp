@@ -87,7 +87,7 @@ void OpeningBook::processAllLines(std::ifstream &ifstream) {
   const auto start = std::chrono::high_resolution_clock::now();
   LOG__DEBUG(Logger::get().BOOK_LOG, "Creating internal book...");
 
-  switch(bookFormat) {
+  switch (bookFormat) {
     case BookFormat::SIMPLE:
     case BookFormat::SAN:
       if (MULTITHREADED) {
@@ -192,7 +192,7 @@ void OpeningBook::processSANLine(std::string &line) {
 
     // adding entry to book
     addToBook(move, lastFen, fen);
-    
+
   }
 }
 
@@ -247,8 +247,7 @@ void OpeningBook::processPGNFile(std::vector<std::string> &lines) {
     return;
   }
   auto games = &pgnReader.getGames();
-  //LOG__DEBUG(Logger::get().BOOK_LOG, "Number of games {}", games->size());
-  Logger::get().BOOK_LOG->debug("Number of games {:n}", games->size());
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Number of games {:n}", games->size());
 
   // processing games
   if (MULTITHREADED) {
@@ -263,16 +262,30 @@ void OpeningBook::processPGNFile(std::vector<std::string> &lines) {
 }
 
 void OpeningBook::processGame(PGN_Game &game) {
+  std::smatch matcher;
+  
+  std::regex UCIRegex(R"(([a-h][1-8][a-h][1-8])([NBRQnbrq])?)");
+  std::regex SANRegex(R"(([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O-O-O|O-O)(=([NBRQ]))?([!?+#]*)?)");
+
   Position currentPosition; // start position
   for (auto moveStr : game.moves) {
+
+    Move move = MOVE_NONE;
+    // check the notation format
+    // Per PGN it must be SAN but some files have UCI notation
+    // As UCI is pattern wise a subset of SAN we test for UCI first.  
+    if (std::regex_match(moveStr, matcher, UCIRegex)) {
+//      LOG__DEBUG(Logger::get().BOOK_LOG, "Game move {} is UCI", moveStr);
+      move = Misc::getMoveFromUCI(currentPosition, moveStr);
+    }
+    else if (std::regex_match(moveStr, matcher, SANRegex)) {
+//      LOG__DEBUG(Logger::get().BOOK_LOG, "Game move {} is SAN", moveStr);
+      move = Misc::getMoveFromSAN(currentPosition, moveStr);
+    }
+
     // create and validate the move
-    Move move = Misc::getMoveFromSAN(currentPosition, moveStr);
     if (move == MOVE_NONE) {
       LOG__WARN(Logger::get().BOOK_LOG, "Not a valid move {} on this position {}", moveStr, currentPosition.printFen());
-//      for (auto m : game.moves) {
-//        fprint("{} ", m);
-//      }
-//      fprintln("");
       return;
     }
     LOG__TRACE(Logger::get().BOOK_LOG, "Move found {}", printMoveVerbose(move));

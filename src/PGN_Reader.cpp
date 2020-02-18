@@ -135,7 +135,6 @@ void PGN_Reader::handleMoveSection(VectorIterator &iterator, PGN_Game &game) {
 
   // add to game
   std::vector<std::string> moves{};
-  //  e1.assign(R"( +)");
   split(moves, moveSection, is_space(), token_compress_on);
   LOG__TRACE(Logger::get().BOOK_LOG, "Moves extracted: {} ", moves.size());
   // move detection

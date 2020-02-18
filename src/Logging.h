@@ -47,7 +47,7 @@
 #define DEBUG__LVL 5
 #define TRACE__LVL 6
 
-#define LOG__LEVEL DEBUG__LVL
+#define LOG__LEVEL TRACE__LVL
 
 #if LOG__LEVEL > ZERO__LVL
 #define LOG__CRITICAL(logger, ...) logger->critical("{:s}", fmt::format(deLocale, __VA_ARGS__))
