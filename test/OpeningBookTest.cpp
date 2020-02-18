@@ -76,11 +76,20 @@ TEST_F(OpeningBookTest, initSAN) {
 
 TEST_F(OpeningBookTest, initPNG) {
   std::string filePathStr = FrankyCPP_PROJECT_ROOT;
-  filePathStr += +"/books/png_test.pgn";
+  filePathStr += +"/books/pgn_test.pgn";
   OpeningBook book(filePathStr, OpeningBook::BookFormat::PNG);
   book.initialize();
   LOG__INFO(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
-  //  EXPECT_EQ(292'568, book.size());
+  EXPECT_EQ(1'162, book.size());
+}
+
+TEST_F(OpeningBookTest, initPNGLarge) {
+  std::string filePathStr = FrankyCPP_PROJECT_ROOT;
+  filePathStr += +"/books/superbook.pgn";
+  OpeningBook book(filePathStr, OpeningBook::BookFormat::PNG);
+  book.initialize();
+  LOG__INFO(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
+//  EXPECT_EQ(216'070, book.size());
 }
 
 

@@ -36,6 +36,7 @@
 #include "OpeningBook.h"
 #include "Position.h"
 #include "MoveGenerator.h"
+#include "PGN_Reader.h"
 
 static const bool MULTITHREADED = true;
 
@@ -46,7 +47,7 @@ OpeningBook::OpeningBook(std::string bookPath, BookFormat bFormat)
 
 void OpeningBook::initialize() {
   if (isInitialized) return;
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Opening book initialization.");
+  LOG__INFO(Logger::get().BOOK_LOG, "Opening book initialization.");
 
   const auto start = std::chrono::high_resolution_clock::now();
 
@@ -58,7 +59,7 @@ void OpeningBook::initialize() {
 
   const auto stop = std::chrono::high_resolution_clock::now();
   const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Opening book initialized ({:n} ms)", elapsed.count());
+  LOG__INFO(Logger::get().BOOK_LOG, "Opening book initialized in ({:n} ms). {:n} positions", elapsed.count(), bookMap.size());
   isInitialized = true;
 }
 
@@ -82,15 +83,23 @@ void OpeningBook::processAllLines(std::ifstream &ifstream) {
   const auto start = std::chrono::high_resolution_clock::now();
   LOG__DEBUG(Logger::get().BOOK_LOG, "Creating internal book...");
 
-if (MULTITHREADED) {
-  std::for_each(std::execution::par_unseq, lines.begin(), lines.end(),
-                [&](auto &&item) { processLine(item); });
-}
-else {
-  for (auto line : lines) {
-    processLine(line);
+  switch(bookFormat) {
+    case BookFormat::SIMPLE:
+    case BookFormat::SAN:
+      if (MULTITHREADED) {
+        std::for_each(std::execution::par_unseq, lines.begin(), lines.end(),
+                      [&](auto &&item) { processLine(item); });
+      }
+      else {
+        for (auto line : lines) {
+          processLine(line);
+        }
+      }
+      break;
+    case BookFormat::PNG:
+      processPGNFile(lines);
+      break;
   }
-}
 
   const auto stop = std::chrono::high_resolution_clock::now();
   const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
@@ -126,7 +135,7 @@ void OpeningBook::processLine(std::string &line) {
       processSANLine(line);
       break;
     case BookFormat::PNG:
-      LOG__ERROR(Logger::get().BOOK_LOG, "PNG format not yet implemented.");
+      LOG__ERROR(Logger::get().BOOK_LOG, "PNG format can't be processed by line");
       break;
   }
 }
@@ -223,6 +232,57 @@ void OpeningBook::processSimpleLine(std::string &line) {
   }
 }
 
+void OpeningBook::processPGNFile(std::vector<std::string> &lines) {
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Process lines from PGN file...");
+
+  // reading pgn and get a list of games
+  PGN_Reader pgnReader(lines);
+  if (!pgnReader.process()) {
+    LOG__ERROR(Logger::get().BOOK_LOG, "Could not process lines from PGN file.");
+    return;
+  }
+  auto games = &pgnReader.getGames();
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Number of games {}", games->size());
+
+  // processing games
+  if (MULTITHREADED) {
+    std::for_each(std::execution::par_unseq, games->begin(), games->end(),
+                  [&](auto game) { processGame(game); });
+  }
+  else {
+    for (auto game : *games) {
+      processGame(game);
+    }
+  }
+}
+
+void OpeningBook::processGame(PGN_Game &game) {
+  Position currentPosition; // start position
+  for (auto moveStr : game.moves) {
+    // create and validate the move
+    Move move = Misc::getMoveFromSAN(currentPosition, moveStr);
+    if (move == MOVE_NONE) {
+      LOG__WARN(Logger::get().BOOK_LOG, "Not a valid move {} on this position {}", moveStr, currentPosition.printFen());
+//      for (auto m : game.moves) {
+//        fprint("{} ", m);
+//      }
+//      fprintln("");
+      return;
+    }
+    LOG__TRACE(Logger::get().BOOK_LOG, "Move found {}", printMoveVerbose(move));
+
+    // remember the last position as fen
+    const std::string lastFen = currentPosition.printFen();
+
+    // make move on position
+    currentPosition.doMove(move);
+    const std::string fen = currentPosition.printFen();
+
+    // adding entry to book
+    addToBook(move, lastFen, fen);
+  }
+}
+
 void OpeningBook::addToBook(const Move &move, const std::string &lastFen, const std::string &fen) {
   const std::lock_guard<std::mutex> lock(synchMutex);
 
@@ -247,6 +307,7 @@ void OpeningBook::addToBook(const Move &move, const std::string &lastFen, const 
     LOG__TRACE(Logger::get().BOOK_LOG, "Added to last entry.");
   }
 }
+
 
 std::string BookEntry::str() {
   std::ostringstream os;

@@ -28,6 +28,7 @@
 
 #include <map>
 #include "gtest/gtest_prod.h"
+#include "PGN_Reader.h"
 
 class MoveGenerator;
 
@@ -68,6 +69,8 @@ public:
   void processLine(std::string &line);
   void processSimpleLine(std::string &line);
   void processSANLine(std::string &line);
+  void processPGNFile(std::vector<std::string> &lines);
+  void processGame(PGN_Game &game);
   void addToBook(const Move &move, const std::string &lastFen, const std::string &fen);
 
   uint64_t size() { return bookMap.size(); }

@@ -53,7 +53,7 @@ namespace Misc {
     MoveGenerator mg;
     const MoveList* legalMovesPtr = mg.generateLegalMoves<MoveGenerator::GENALL>(position);
     for (auto m : *legalMovesPtr) {
-      if (printMove(m) == matchedMove+promotion) {
+      if (printMove(m) == matchedMove + promotion) {
         LOG__TRACE(Logger::get().MAIN_LOG, "Found move {}", printMoveVerbose(m));
         return m;
       }
@@ -63,7 +63,7 @@ namespace Misc {
   Move getMoveFromSAN(const Position &position, const std::string &sanMove) {
 
     // Regex for short move notation (SAN)
-    std::regex regexPattern("([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O-O-O|O-O)(=([NBRQ]))?([+#])?");
+    std::regex regexPattern("([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O-O-O|O-O)(=([NBRQ]))?([!?+#]*)?");
     std::smatch matcher;
 
     // Match the target string
@@ -108,7 +108,7 @@ namespace Misc {
             LOG__ERROR(Logger::get().MAIN_LOG, "{}:{}:{} Move type CASTLING but wrong to square", __FILENAME__, __func__, __LINE__);
             continue;
         }
-        if (castlingString == sanMove) {
+        if (castlingString == toSquare) {
           moveFromSAN = m;
           movesFound++;
           continue;
@@ -174,11 +174,11 @@ namespace Misc {
     }
     // we should only have one move here
     if (movesFound > 1) {
-      LOG__ERROR(Logger::get().MAIN_LOG, "SAN move {} is ambiguous on {}!", sanMove, position.printFen());
+      LOG__WARN(Logger::get().MAIN_LOG, "SAN move {} is ambiguous on {}!", sanMove, position.printFen());
     }
     else if (movesFound == 0 || !isMove(moveFromSAN)) {
-      LOG__ERROR(Logger::get().MAIN_LOG, "SAN move not valid! No such move at the current position: {} {}",
-                 sanMove, position.printFen());
+      LOG__WARN(Logger::get().MAIN_LOG, "SAN move not valid! No such move at the current position: {} {}",
+                sanMove, position.printFen());
     }
     else {
       LOG__TRACE(Logger::get().MAIN_LOG, "Found move {}", printMove(moveFromSAN));
@@ -188,13 +188,27 @@ namespace Misc {
   }
 
   std::string toLowerCase(std::string str) {
-    std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return std::tolower(c); });
+    std::transform(str.begin(), str.end(), str.begin(), [](
+      unsigned char c) { return std::tolower(c); });
     return str;
   }
 
   std::string toUpperCase(std::string str) {
-    std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return std::toupper(c); });
+    std::transform(str.begin(), str.end(), str.begin(), [](
+      unsigned char c) { return std::toupper(c); });
     return str;
+  }
+
+  // TODO: C++-fy it
+#define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
+#define PBWIDTH 60
+
+  void printProgress(double percentage) {
+    int val = (int) (percentage * 100);
+    int lpad = (int) (percentage * PBWIDTH);
+    int rpad = PBWIDTH - lpad;
+    printf("\r%3d%% [%.*s%*s]\n", val, lpad, PBSTR, rpad, "");
+    fflush(stdout);
   }
 
 }

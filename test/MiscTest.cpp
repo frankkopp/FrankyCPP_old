@@ -38,8 +38,8 @@ public:
     NEWLINE;
     INIT::init();
     NEWLINE;
-    Logger::get().TEST_LOG->set_level(spdlog::level::warn);
-    Logger::get().MAIN_LOG->set_level(spdlog::level::warn);
+    Logger::get().TEST_LOG->set_level(spdlog::level::debug);
+    Logger::get().MAIN_LOG->set_level(spdlog::level::debug);
   }
 protected:
   void SetUp() override {}
@@ -72,8 +72,6 @@ TEST_F(MiscTest, moveFromSAN) {
   Position position;
   Move expected;
   Move actual;
-
-  Logger::get().MAIN_LOG->set_level(spdlog::level::critical);
 
   expected = createMove("e2e4");
   actual = Misc::getMoveFromSAN(position, "e4");
@@ -164,6 +162,11 @@ TEST_F(MiscTest, moveFromSAN) {
   actual = Misc::getMoveFromSAN(position, "ab1=Q");
   ASSERT_EQ(expected, actual);
 
+  // promotion & check
+  expected = createMove<PROMOTION>("a2b1q");
+  actual = Misc::getMoveFromSAN(position, "ab1=Q+");
+  ASSERT_EQ(expected, actual);
+
   // en passant
   expected = createMove<ENPASSANT>("f4e3");
   actual = Misc::getMoveFromSAN(position, "e3");
@@ -184,6 +187,11 @@ TEST_F(MiscTest, moveFromSAN) {
   position = Position("r2qr1k1/pb2bp1p/1pn1p1pB/8/2BP4/P1P2N2/4QPPP/3R1RK1 w - - 0 1");
   expected = createMove("d4d5");
   actual = Misc::getMoveFromSAN(position, "d5");
+  ASSERT_EQ(expected, actual);
+
+  position = Position("rn1k1b1r/ppp2ppp/4bn2/4p1B1/4P3/2N5/PPP2PPP/R3KBNR w KQ -");
+  expected = createMove<CASTLING>("e1c1");
+  actual = Misc::getMoveFromSAN(position, "O-O-O+");
   ASSERT_EQ(expected, actual);
 }
 
