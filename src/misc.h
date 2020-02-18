@@ -53,7 +53,8 @@ namespace Misc {
   /* returns the given string with as upper case string */
   std::string toUpperCase(std::string str);
 
-  void printProgress(double percentage);
+  void printProgressC(double percentage);
+  std::string printProgress(double percentage);
 }
 
 #endif //FRANKYCPP_MISC_H

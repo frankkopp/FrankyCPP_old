@@ -25,6 +25,7 @@
 
 #include <regex>
 #include <string>
+#include "fmt/printf.h"
 #include "misc.h"
 #include "Logging.h"
 #include "MoveGenerator.h"
@@ -199,16 +200,13 @@ namespace Misc {
     return str;
   }
 
-  // TODO: C++-fy it
-#define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
-#define PBWIDTH 60
-
-  void printProgress(double percentage) {
-    int val = (int) (percentage * 100);
-    int lpad = (int) (percentage * PBWIDTH);
-    int rpad = PBWIDTH - lpad;
-    printf("\r%3d%% [%.*s%*s]\n", val, lpad, PBSTR, rpad, "");
-    fflush(stdout);
+  std::string printProgress(double percentage) {
+    constexpr const int pbarw = 60;
+    constexpr const char* pbar = "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||";
+    int val = static_cast<int>(percentage * 100);
+    int lpad = static_cast<int>(percentage * pbarw);
+    int rpad = pbarw - lpad;
+    return fmt::sprintf("%3d%% [%.*s%*s]", val, lpad, pbar, rpad, "");
   }
 
 }

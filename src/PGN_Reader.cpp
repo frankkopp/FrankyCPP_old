@@ -23,6 +23,7 @@
  *
  */
 
+#include <iostream>
 #include <string>
 #include <sstream>
 #include <execution>
@@ -87,8 +88,11 @@ void PGN_Reader::processOneGame(VectorIterator &iterator) {
     }
 
   } while (++iterator < inputLines.end() && !gameEndReached);
+
   const uint64_t dist = inputLines.size() - std::distance(iterator, inputLines.end());
-  if (games.size() % 10'000 == 0) Misc::printProgress(static_cast<double>(dist) / inputLines.size());
+  if (games.size() % 10'000 == 0) {
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Progress: {:s}", Misc::printProgress(static_cast<double>(dist) / inputLines.size()));
+  }
   games.push_back(game);
 }
 

@@ -78,6 +78,7 @@ void OpeningBook::readBookFromFile(const std::string filePath) {
 
 void OpeningBook::processAllLines(std::ifstream &ifstream) {
   LOG__DEBUG(Logger::get().BOOK_LOG, "Processing file.");
+
   std::vector<std::string> lines = getLinesFromFile(ifstream);
 
   const auto start = std::chrono::high_resolution_clock::now();
