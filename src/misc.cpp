@@ -59,6 +59,7 @@ namespace Misc {
         return m;
       }
     }
+    return MOVE_NONE;
   }
 
   Move getMoveFromSAN(const Position &position, const std::string &sanMove) {

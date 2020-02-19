@@ -30,6 +30,7 @@
 #include <mutex>
 #include <regex>
 #include <filesystem>
+#include <thread>
 #include "types.h"
 #include "Logging.h"
 #include "misc.h"
