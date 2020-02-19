@@ -25,11 +25,8 @@
 
 #include <iostream>
 #include <string>
-#include <sstream>
-#include <execution>
 #include "PGN_Reader.h"
 #include "misc.h"
-
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/regex.hpp>
 using namespace boost;
@@ -57,7 +54,6 @@ bool PGN_Reader::process() {
   LOG__TRACE(Logger::get().BOOK_LOG, "Processing {:n} lines.", inputLines->size());
   const auto start = std::chrono::high_resolution_clock::now();
   // loop over all input lines
-  uint64_t c = 0;
   VectorIterator linesIter = inputLines->begin();
   while (linesIter < inputLines->end()) {
     LOG__TRACE(Logger::get().BOOK_LOG, "Processing game {:n}", games.size() + 1);
