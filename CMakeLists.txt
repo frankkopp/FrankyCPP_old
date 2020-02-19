@@ -24,8 +24,8 @@ message("Recognized platform is " ${CMAKE_SYSTEM_NAME} " " ${CMAKE_SYSTEM_VERSIO
 # Compiler Settings
 message("Compiler is " ${CMAKE_CXX_COMPILER_ID} " " ${CMAKE_CXX_COMPILER_VERSION} " " ${CMAKE_CXX_COMPILER})
 
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    message("Compiler Settings: CLANG")
+if (CMAKE_CXX_COMPILER_ID EQUAL "Clang")
+    message("Compiler Settings: Clang")
     set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra ")
     set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fprofile-instr-generate -fcoverage-mapping -Wpedantic -Wshadow -Wno-conversion -Wunreachable-code -Wuninitialized  -Wold-style-cast -Wunused-variable -Wfloat-equal -Wno-gnu-zero-variadic-macro-arguments")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
@@ -33,6 +33,16 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         message("Using USE_PARALLEL_EXECUTION")
         add_compile_definitions(USE_PARALLEL_EXECUTION)
     endif()
+
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
+    message("Compiler Settings: AppleClang")
+    set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra ")
+    set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fprofile-instr-generate -fcoverage-mapping -Wpedantic -Wshadow -Wno-conversion -Wunreachable-code -Wuninitialized  -Wold-style-cast -Wunused-variable -Wfloat-equal -Wno-gnu-zero-variadic-macro-arguments")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+    #if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "9")
+    #    message("Using USE_PARALLEL_EXECUTION")
+    #    add_compile_definitions(USE_PARALLEL_EXECUTION)
+    #endif()
 
 elseif (CMAKE_COMPILER_IS_GNUCXX)
     message("Compiler Settings: GNU")
