@@ -25,7 +25,6 @@
 
 #include <algorithm>
 #include <chrono>
-#include <execution>
 #include <iostream>
 #include <fstream>
 #include <mutex>
@@ -39,7 +38,9 @@
 #include "MoveGenerator.h"
 #include "PGN_Reader.h"
 
-static const bool MULTITHREADED = true;
+#ifdef USE_PARALLEL_EXECUTION
+#include <execution>
+#endif
 
 OpeningBook::OpeningBook(std::string bookPath, BookFormat bFormat)
   : bookFilePath(bookPath), bookFormat(bFormat) {
@@ -90,15 +91,14 @@ void OpeningBook::processAllLines(std::ifstream &ifstream) {
   switch (bookFormat) {
     case BookFormat::SIMPLE:
     case BookFormat::SAN:
-      if (MULTITHREADED) {
-        std::for_each(std::execution::par_unseq, lines.begin(), lines.end(),
-                      [&](auto &&item) { processLine(item); });
+#ifdef USE_PARALLEL_EXECUTION
+      std::for_each(std::execution::par_unseq, lines.begin(), lines.end(),
+                    [&](auto &&item) { processLine(item); });
+#else
+      for (auto line : lines) {
+        processLine(line);
       }
-      else {
-        for (auto line : lines) {
-          processLine(line);
-        }
-      }
+#endif
       break;
     case BookFormat::PNG:
       processPGNFile(lines);
@@ -250,20 +250,20 @@ void OpeningBook::processPGNFile(std::vector<std::string> &lines) {
   LOG__DEBUG(Logger::get().BOOK_LOG, "Number of games {:n}", games->size());
 
   // processing games
-  if (MULTITHREADED) {
+#ifdef USE_PARALLEL_EXECUTION
     std::for_each(std::execution::par_unseq, games->begin(), games->end(),
                   [&](auto game) { processGame(game); });
-  }
-  else {
+#else
+    // TODO add threading similar to TT-clear()
     for (auto game : *games) {
       processGame(game);
     }
-  }
+#endif
 }
 
 void OpeningBook::processGame(PGN_Game &game) {
   std::smatch matcher;
-  
+
   std::regex UCIRegex(R"(([a-h][1-8][a-h][1-8])([NBRQnbrq])?)");
   std::regex SANRegex(R"(([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O-O-O|O-O)(=([NBRQ]))?([!?+#]*)?)");
 
@@ -275,11 +275,11 @@ void OpeningBook::processGame(PGN_Game &game) {
     // Per PGN it must be SAN but some files have UCI notation
     // As UCI is pattern wise a subset of SAN we test for UCI first.  
     if (std::regex_match(moveStr, matcher, UCIRegex)) {
-//      LOG__DEBUG(Logger::get().BOOK_LOG, "Game move {} is UCI", moveStr);
+      //      LOG__DEBUG(Logger::get().BOOK_LOG, "Game move {} is UCI", moveStr);
       move = Misc::getMoveFromUCI(currentPosition, moveStr);
     }
     else if (std::regex_match(moveStr, matcher, SANRegex)) {
-//      LOG__DEBUG(Logger::get().BOOK_LOG, "Game move {} is SAN", moveStr);
+      //      LOG__DEBUG(Logger::get().BOOK_LOG, "Game move {} is SAN", moveStr);
       move = Misc::getMoveFromSAN(currentPosition, moveStr);
     }
 

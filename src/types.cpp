@@ -30,7 +30,7 @@
 #include <algorithm>
 #include "types.h"
 
-static const std::locale deLocale(std::cout.getloc(), new deLocaleDecimals);
+const std::locale deLocale(std::cout.getloc(), new deLocaleDecimals);
 
 std::string printBitString(uint64_t b) {
   std::ostringstream os;
