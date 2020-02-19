@@ -52,7 +52,7 @@ public:
   };
 
 private:
-  std::mutex synchMutex;
+  std::mutex bookMutex;
   bool isInitialized = false;
   uint64_t fileSize{};
   BookFormat bookFormat;

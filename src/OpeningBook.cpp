@@ -90,16 +90,30 @@ void OpeningBook::processAllLines(std::ifstream &ifstream) {
 
   switch (bookFormat) {
     case BookFormat::SIMPLE:
-    case BookFormat::SAN:
+    case BookFormat::SAN: {
 #ifdef USE_PARALLEL_EXECUTION
       std::for_each(std::execution::par_unseq, lines.begin(), lines.end(),
                     [&](auto &&item) { processLine(item); });
 #else
-      for (auto line : lines) {
-        processLine(line);
+      const unsigned int noOfThreads = std::thread::hardware_concurrency();
+      const unsigned int maxNumberOfEntries = lines.size();
+      std::vector<std::thread> threads;
+      threads.reserve(noOfThreads);
+      for (unsigned int t = 0; t < noOfThreads; ++t) {
+        threads.emplace_back([&, this, t]() {
+          auto range = maxNumberOfEntries / noOfThreads;
+          auto start = t * range;
+          auto end = start + range;
+          if (t == noOfThreads - 1) end = maxNumberOfEntries;
+          for (std::size_t i = start; i < end; ++i) {
+            processLine(lines[i]);
+          }
+        });
       }
+      for (std::thread &th: threads) th.join();
 #endif
       break;
+    }
     case BookFormat::PNG:
       processPGNFile(lines);
       break;
@@ -251,13 +265,26 @@ void OpeningBook::processPGNFile(std::vector<std::string> &lines) {
 
   // processing games
 #ifdef USE_PARALLEL_EXECUTION
-    std::for_each(std::execution::par_unseq, games->begin(), games->end(),
-                  [&](auto game) { processGame(game); });
+  std::for_each(std::execution::par_unseq, games->begin(), games->end(),
+                [&](auto game) { processGame(game); });
 #else
-    // TODO add threading similar to TT-clear()
-    for (auto game : *games) {
-      processGame(game);
-    }
+  const unsigned int noOfThreads = std::thread::hardware_concurrency();
+  const unsigned int maxNumberOfEntries = games->size();
+  std::vector<std::thread> threads;
+  threads.reserve(noOfThreads);
+  for (unsigned int t = 0; t < noOfThreads; ++t) {
+    threads.emplace_back([&, this, t]() {
+      auto range = maxNumberOfEntries / noOfThreads;
+      auto start = t * range;
+      auto end = start + range;
+      if (t == noOfThreads - 1) end = maxNumberOfEntries;
+      for (std::size_t i = start; i < end; ++i) {
+        processGame((*games)[i]);
+
+      }
+    });
+  }
+  for (std::thread &th: threads) th.join();
 #endif
 }
 
@@ -269,8 +296,8 @@ void OpeningBook::processGame(PGN_Game &game) {
 
   Position currentPosition; // start position
   for (auto moveStr : game.moves) {
-
     Move move = MOVE_NONE;
+
     // check the notation format
     // Per PGN it must be SAN but some files have UCI notation
     // As UCI is pattern wise a subset of SAN we test for UCI first.  
@@ -303,7 +330,7 @@ void OpeningBook::processGame(PGN_Game &game) {
 }
 
 void OpeningBook::addToBook(const Move &move, const std::string &lastFen, const std::string &fen) {
-  const std::lock_guard<std::mutex> lock(synchMutex);
+  const std::lock_guard<std::mutex> lock(bookMutex);
 
   if (bookMap.count(fen)) {
     // pointer to entry already in book
@@ -313,16 +340,15 @@ void OpeningBook::addToBook(const Move &move, const std::string &lastFen, const 
   }
   else {
     // new position
-    BookEntry newEntry(fen);
-    bookMap.insert(std::make_pair(fen, newEntry));
-    LOG__TRACE(Logger::get().BOOK_LOG, "Position new {} ", newEntry.position);
+    bookMap.emplace(fen, BookEntry(fen));
+    LOG__TRACE(Logger::get().BOOK_LOG, "Position new", fen);
   }
 
   // add move to the last book entry's move list
   BookEntry* lastEntry = &bookMap.at(lastFen);
   if (std::find(lastEntry->moves.begin(), lastEntry->moves.end(), move) == lastEntry->moves.end()) {
-    lastEntry->moves.push_back(move);
-    lastEntry->ptrNextPosition.push_back(&bookMap.at(fen));
+    lastEntry->moves.emplace_back(move);
+    lastEntry->ptrNextPosition.emplace_back(&bookMap.at(fen));
     LOG__TRACE(Logger::get().BOOK_LOG, "Added to last entry.");
   }
 }
