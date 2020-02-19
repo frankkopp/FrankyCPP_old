@@ -24,14 +24,17 @@ message("Recognized platform is " ${CMAKE_SYSTEM_NAME} " " ${CMAKE_SYSTEM_VERSIO
 # Compiler Settings
 message("Compiler is " ${CMAKE_CXX_COMPILER_ID} " " ${CMAKE_CXX_COMPILER_VERSION} " " ${CMAKE_CXX_COMPILER})
 
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang") # Apple
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     message("Compiler Settings: CLANG")
     set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra ")
     set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fprofile-instr-generate -fcoverage-mapping -Wpedantic -Wshadow -Wno-conversion -Wunreachable-code -Wuninitialized  -Wold-style-cast -Wunused-variable -Wfloat-equal -Wno-gnu-zero-variadic-macro-arguments")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-    # not yet supported on Apple
-    # add_compile_definitions(USE_PARALLEL_EXECUTION=ON)
-elseif (CMAKE_COMPILER_IS_GNUCXX) # CYGWIN
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "9")
+        message("Using USE_PARALLEL_EXECUTION")
+        add_compile_definitions(USE_PARALLEL_EXECUTION)
+    endif()
+
+elseif (CMAKE_COMPILER_IS_GNUCXX)
     message("Compiler Settings: GNU")
     set(CMAKE_CXX_FLAGS "-std=c++17 -m64 -Wall -Wextra -Wpedantic -Wno-error=pedantic -Wshadow -Wno-unknown-pragmas -Wno-variadic-macros")
     set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 --coverage -Wno-unused-parameter -Wno-unused-variable")
@@ -41,7 +44,8 @@ elseif (CMAKE_COMPILER_IS_GNUCXX) # CYGWIN
         message("Using USE_PARALLEL_EXECUTION")
         add_compile_definitions(USE_PARALLEL_EXECUTION)
     endif()
-elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC") # Visual Studio MSVC
+
+elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     message("Compiler Settings: MSVC")
     #set(CMAKE_CXX_FLAGS "/W4")
     #set(CMAKE_CXX_FLAGS_DEBUG "/Od")
