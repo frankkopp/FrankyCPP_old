@@ -94,4 +94,5 @@ TEST_F(ThreadPoolTest, basic) {
     std::cout << "Result: " << producedNumber << std::endl;
   }
 
+  SUCCEED();
 }
