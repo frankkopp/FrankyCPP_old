@@ -44,21 +44,21 @@ class Fifo {
 
 public:
   Fifo() {
-    LOG__DEBUG(Logger::get().MAIN_LOG, "Constructor");
+    LOG__TRACE(Logger::get().MAIN_LOG, "Constructor");
   }
 
   ~Fifo() = default;
 
   // copy
   Fifo(Fifo const &other) {
-    LOG__DEBUG(Logger::get().MAIN_LOG, "Copy constructor");
+    LOG__TRACE(Logger::get().MAIN_LOG, "Copy constructor");
     std::scoped_lock lock{other.fifoLock};
     fifo = other.fifo;
   }
 
   // copy assignment
   Fifo &operator=(const Fifo &other) {
-    LOG__DEBUG(Logger::get().MAIN_LOG, "Copy assignment");
+    LOG__TRACE(Logger::get().MAIN_LOG, "Copy assignment");
     std::scoped_lock lock(fifoLock, other.fifoLock);
     fifo = other.fifo;
     return *this;
@@ -66,14 +66,14 @@ public:
 
   // move
   Fifo(Fifo const &&other) {
-    LOG__DEBUG(Logger::get().MAIN_LOG, "Move constructor");
+    LOG__TRACE(Logger::get().MAIN_LOG, "Move constructor");
     std::scoped_lock lock{other.fifoLock};
     fifo = std::move(other.fifo);
   }
 
   // move assignment
   Fifo &operator=(const Fifo &&other) {
-    LOG__DEBUG(Logger::get().MAIN_LOG, "Move assignment");
+    LOG__TRACE(Logger::get().MAIN_LOG, "Move assignment");
     if (this != &other) {
       std::scoped_lock lock(fifoLock, other.fifoLock);
       fifo = std::move(other.fifo);
@@ -82,7 +82,7 @@ public:
   }
 
   void push(T &t) {
-    LOG__DEBUG(Logger::get().MAIN_LOG, "Reference push");
+    LOG__TRACE(Logger::get().MAIN_LOG, "Reference push");
     {
       std::scoped_lock<std::mutex> lock{fifoLock};
       fifo.push(t);
@@ -91,7 +91,7 @@ public:
   }
 
   void push(T &&t) {
-    LOG__DEBUG(Logger::get().MAIN_LOG, "Move push");
+    LOG__TRACE(Logger::get().MAIN_LOG, "Move push");
     {
       std::scoped_lock<std::mutex> lock{fifoLock};
       fifo.push(std::move(t));
@@ -100,7 +100,7 @@ public:
   }
 
   T pop() {
-    LOG__DEBUG(Logger::get().MAIN_LOG, "Value pop");
+    LOG__TRACE(Logger::get().MAIN_LOG, "Value pop");
     std::scoped_lock<std::mutex> lock{fifoLock};
     auto t = fifo.front();
     fifo.pop();
@@ -108,7 +108,7 @@ public:
   }
 
   T pop(T &t) {
-    LOG__DEBUG(Logger::get().MAIN_LOG, "Reference pop");
+    LOG__TRACE(Logger::get().MAIN_LOG, "Reference pop");
     std::scoped_lock<std::mutex> lock{fifoLock};
     t = fifo.front();
     fifo.pop();
@@ -116,7 +116,7 @@ public:
   }
 
   T pop_wait() {
-    LOG__DEBUG(Logger::get().MAIN_LOG, "Pop wait value");
+    LOG__TRACE(Logger::get().MAIN_LOG, "Pop wait value");
     std::unique_lock<std::mutex> lock{fifoLock};
     cv.wait(lock, [this] { return !fifo.empty(); });
     auto t = fifo.front();
@@ -125,7 +125,7 @@ public:
   }
 
   T pop_wait(T &t) {
-    LOG__DEBUG(Logger::get().MAIN_LOG, "Pop wait reference");
+    LOG__TRACE(Logger::get().MAIN_LOG, "Pop wait reference");
     std::unique_lock<std::mutex> lock{fifoLock};
     cv.wait(lock, [this] { return !fifo.empty(); });
     t = fifo.front();
