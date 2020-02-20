@@ -29,7 +29,7 @@ set(FrankyCPPlib_SRCS
         SearchConfig.h Search.h Search.cpp
         TestSuite.h TestSuite.cpp
         OpeningBook.cpp OpeningBook.h
-        PGN_Reader.cpp PGN_Reader.h)
+        PGN_Reader.cpp PGN_Reader.h ThreadPool.cpp ThreadPool.h Fifo.h)
 add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})
 target_link_libraries(
         FrankyCPPlib
