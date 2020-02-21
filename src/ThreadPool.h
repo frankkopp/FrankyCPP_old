@@ -35,11 +35,17 @@
 #include <queue>
 
 class ThreadPool {
-public:
   using Task = std::function<void()>;
+  
+  std::vector<std::thread> mThreads;
+  std::condition_variable mEventVar;
+  std::mutex mEventMutex;
+  bool mStopping = false;
+  std::queue<Task> mTasks;
+
+public:
 
   explicit ThreadPool(std::size_t numThreads);
-
   ~ThreadPool() { stop(); }
 
   template<class T>
@@ -57,16 +63,10 @@ public:
 
   auto openTasks() { return mTasks.size(); }
 
-private:
-  std::vector<std::thread> mThreads;
-  std::condition_variable mEventVar;
-  std::mutex mEventMutex;
-  bool mStopping = false;
-  std::queue<Task> mTasks;
 
+private:
   void start(std::size_t numThreads);
   void stop() noexcept;
-
 };
 
 #endif //FRANKYCPP_THREADPOOL_H

@@ -30,7 +30,8 @@ ThreadPool::ThreadPool(std::size_t numThreads) {
 }
 
 void ThreadPool::start(std::size_t numThreads) {
-  for (auto i = 0u; i < numThreads; ++i) {
+  mStopping = false;
+  for (auto i = 0; i < numThreads; ++i) {
     mThreads.emplace_back([=] {
       while (true) {
         Task task;
@@ -55,6 +56,10 @@ void ThreadPool::stop() noexcept {
     mStopping = true;
   }
   mEventVar.notify_all();
-  for (auto &thread : mThreads) thread.join();
+  for (auto &thread : mThreads) {
+    thread.join();
+  }
 }
+
+
 

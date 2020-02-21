@@ -27,10 +27,12 @@
 #include <string>
 #include "PGN_Reader.h"
 #include "misc.h"
+#include "Fifo.h"
+
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/regex.hpp>
-using namespace boost;
 
+using namespace boost;
 using namespace std::string_literals;
 
 static const boost::regex trailingComments(R"(;.*$)");
@@ -50,14 +52,17 @@ PGN_Reader::PGN_Reader(std::vector<std::string> &lines) {
   inputLines = std::make_shared<std::vector<std::string>>(lines);
 }
 
-bool PGN_Reader::process() {
-  LOG__TRACE(Logger::get().BOOK_LOG, "Processing {:n} lines.", inputLines->size());
+bool PGN_Reader::process(Fifo<PGN_Game> &gamesFifo) {
+  LOG__TRACE(Logger::get().BOOK_LOG, "Finding games in {:n} lines.", inputLines->size());
   const auto start = std::chrono::high_resolution_clock::now();
   // loop over all input lines
   VectorIterator linesIter = inputLines->begin();
   while (linesIter < inputLines->end()) {
-    LOG__TRACE(Logger::get().BOOK_LOG, "Processing game {:n}", games.size() + 1);
-    processOneGame(linesIter);
+    LOG__TRACE(Logger::get().BOOK_LOG, "Finding game {:n}", games.size() + 1);
+    PGN_Game game = processOneGame(linesIter);
+    games.push_back(game);
+    gamesFifo.push(game);
+    LOG__TRACE(Logger::get().BOOK_LOG, "Game Fifo has {:n} games", gamesFifo.size());
   }
   const auto stop = std::chrono::high_resolution_clock::now();
   const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
@@ -65,7 +70,22 @@ bool PGN_Reader::process() {
   return true;
 }
 
-void PGN_Reader::processOneGame(VectorIterator &iterator) {
+bool PGN_Reader::process() {
+  LOG__TRACE(Logger::get().BOOK_LOG, "Processing {:n} lines.", inputLines->size());
+  const auto start = std::chrono::high_resolution_clock::now();
+  // loop over all input lines
+  VectorIterator linesIter = inputLines->begin();
+  while (linesIter < inputLines->end()) {
+    LOG__TRACE(Logger::get().BOOK_LOG, "Processing game {:n}", games.size() + 1);
+    games.push_back(processOneGame(linesIter));
+  }
+  const auto stop = std::chrono::high_resolution_clock::now();
+  const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+  LOG__INFO(Logger::get().BOOK_LOG, "Found {:n} games in {:n} ms", games.size(), elapsed.count());
+  return true;
+}
+
+PGN_Game PGN_Reader::processOneGame(VectorIterator &iterator) {
   bool gameEndReached = false;
   PGN_Game game{};
   do {
@@ -90,7 +110,7 @@ void PGN_Reader::processOneGame(VectorIterator &iterator) {
   if (games.size() % (inputLines->size() / avgLinesPerGameTimesProgressSteps) == 0) { // 12 is avg game lines and 15 steps
     LOG__DEBUG(Logger::get().BOOK_LOG, "Progress: {:s}", Misc::printProgress(static_cast<double>(dist) / inputLines->size()));
   }
-  games.push_back(game);
+  return game;
 }
 
 void PGN_Reader::handleMoveSection(VectorIterator &iterator, PGN_Game &game) {

@@ -69,6 +69,7 @@
 #include <map>
 #include "types.h"
 #include "Logging.h"
+#include "Fifo.h"
 
 typedef std::vector<std::string>::iterator VectorIterator;
 
@@ -92,9 +93,10 @@ private:
 public:
   PGN_Reader(std::vector<std::string> &lines);
 
+  bool process(Fifo<PGN_Game> &gamesFifo);
   bool process();
   std::vector<PGN_Game> & getGames() { return games; }
-  void processOneGame(VectorIterator &iterator);
+  PGN_Game processOneGame(VectorIterator &iterator);
   void handleMoveSection(VectorIterator &iterator, PGN_Game &game);
 };
 

@@ -38,6 +38,8 @@
 #include "Position.h"
 #include "MoveGenerator.h"
 #include "PGN_Reader.h"
+#include "Fifo.h"
+#include "ThreadPool.h"
 
 #ifdef USE_PARALLEL_EXECUTION
 #include <execution>
@@ -116,7 +118,7 @@ void OpeningBook::processAllLines(std::ifstream &ifstream) {
       break;
     }
     case BookFormat::PNG:
-      processPGNFile(lines);
+      processPGNFileFifo(lines);
       break;
   }
 
@@ -250,6 +252,56 @@ void OpeningBook::processSimpleLine(std::string &line) {
     addToBook(move, lastFen, fen);
 
   }
+}
+
+void OpeningBook::processPGNFileFifo(std::vector<std::string> &lines) {
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Process lines from PGN file...");
+
+  // reading pgn and get a list of games
+  PGN_Reader pgnReader(lines);
+
+  // prepare FIFO for storing the games
+  Fifo<PGN_Game> gamesFifo;
+
+  // prepare thread pool
+  const int numberOfThreads = std::thread::hardware_concurrency();
+  ThreadPool threadPool(numberOfThreads);
+
+  bool finished = false;
+
+  // prepare worker for processing found games
+  std::function gameProcessingLoop = [&] {
+    while (!gamesFifo.isClosed()) {
+
+      LOG__TRACE(Logger::get().BOOK_LOG, "Get game...");
+      auto game = gamesFifo.pop_wait();
+
+      if (game.has_value()) { // no value means pop_wait has been canceled
+        processGame(game.value());
+        LOG__TRACE(Logger::get().BOOK_LOG, "Processed game...Book now at {:n} entries.", bookMap.size());
+      }
+
+    }
+  };
+
+  for (int i = 0; i < numberOfThreads; i++) {
+    threadPool.enqueue(gameProcessingLoop);
+  }
+
+  std::future<bool> future = std::async(std::launch::async, [&] {
+    LOG__TRACE(Logger::get().BOOK_LOG, "Start finding games");
+    finished = pgnReader.process(gamesFifo);
+    LOG__TRACE(Logger::get().BOOK_LOG, "Finished finding games {}", finished);
+    return finished;
+  });
+
+  if (future.get()) {
+    while(!gamesFifo.empty()) {}
+    LOG__TRACE(Logger::get().BOOK_LOG, "Finished processing games.");
+    gamesFifo.close();
+    LOG__TRACE(Logger::get().BOOK_LOG, "Closed down ThreadPool");
+  }
+
 }
 
 void OpeningBook::processPGNFile(std::vector<std::string> &lines) {

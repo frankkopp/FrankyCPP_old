@@ -70,6 +70,7 @@ public:
   void processLine(std::string &line);
   void processSimpleLine(std::string &line);
   void processSANLine(std::string &line);
+  void processPGNFileFifo(std::vector<std::string> &lines);
   void processPGNFile(std::vector<std::string> &lines);
   void processGame(PGN_Game &game);
   void addToBook(const Move &move, const std::string &lastFen, const std::string &fen);
