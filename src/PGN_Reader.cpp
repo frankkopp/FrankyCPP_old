@@ -36,7 +36,7 @@ using namespace boost;
 using namespace std::string_literals;
 
 static const boost::regex trailingComments(R"(;.*$)");
-static const boost::regex tagPairs(R"(\[\w+ +".*"\])");
+static const boost::regex tagPairs(R"(\[\w+ +".*?"\])");
 static const boost::regex doubleWhiteSpace(R"(\s+)");
 static const boost::regex moveSectionStart(R"(^(\d+.)|([KQRBN]?[a-h][1-8]))");
 static const boost::regex moveSectionEnd(R"(.*((1-0)|(0-1)|(1/2-1/2)|\*)$)");
@@ -94,12 +94,14 @@ PGN_Game PGN_Reader::processOneGame(VectorIterator &iterator) {
     trim(*iterator);
     // ignore comment lines
     if (starts_with(*iterator, "%")) continue;
+    // ignore meta data tags for now
+    replace_all_regex(*iterator, tagPairs, " "s);
     // trailing comments
     erase_regex(*iterator, trailingComments);
-    // ignore meta data tags for now
-    if (find_regex(*iterator, tagPairs)) continue;
     // eliminate double whitespace
     replace_all_regex(*iterator, doubleWhiteSpace, " "s);
+    // clean up line
+    trim(*iterator);
     // process move section
     if (find_regex(*iterator, moveSectionStart)) {
       handleMoveSection(iterator, game);
@@ -107,7 +109,10 @@ PGN_Game PGN_Reader::processOneGame(VectorIterator &iterator) {
     }
   } while (++iterator < inputLines->end() && !gameEndReached);
   const uint64_t dist = inputLines->size() - std::distance(iterator, inputLines->end());
-  if (games.size() % (inputLines->size() / avgLinesPerGameTimesProgressSteps) == 0) { // 12 is avg game lines and 15 steps
+  // x % 0 is undefined in c++
+  // avgLinesPerGameTimesProgressSteps = 12*15 as 12 is avg game lines and 15 steps
+  const uint64_t progressInterval = 1 + (inputLines->size() / avgLinesPerGameTimesProgressSteps);
+  if (games.size() % progressInterval == 0) {
     LOG__DEBUG(Logger::get().BOOK_LOG, "Progress: {:s}", Misc::printProgress(static_cast<double>(dist) / inputLines->size()));
   }
   return game;

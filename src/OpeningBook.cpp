@@ -45,7 +45,7 @@
 #include <execution>
 #endif
 
-OpeningBook::OpeningBook(std::string bookPath, BookFormat bFormat)
+OpeningBook::OpeningBook(const std::string &bookPath, const BookFormat &bFormat)
   : bookFilePath(bookPath), bookFormat(bFormat) {
   mg = std::make_shared<MoveGenerator>();
 }
@@ -68,7 +68,7 @@ void OpeningBook::initialize() {
   isInitialized = true;
 }
 
-void OpeningBook::readBookFromFile(const std::string filePath) {
+void OpeningBook::readBookFromFile(const std::string &filePath) {
   std::ifstream file(filePath);
   if (file.is_open()) {
     LOG__DEBUG(Logger::get().BOOK_LOG, "Open book '{}' successful.", filePath);
@@ -118,7 +118,7 @@ void OpeningBook::processAllLines(std::ifstream &ifstream) {
       break;
     }
     case BookFormat::PNG:
-      processPGNFileFifo(lines);
+      processPGNFile(lines);
       break;
   }
 
@@ -366,6 +366,7 @@ void OpeningBook::processGame(PGN_Game &game) {
     // create and validate the move
     if (move == MOVE_NONE) {
       LOG__WARN(Logger::get().BOOK_LOG, "Not a valid move {} on this position {}", moveStr, currentPosition.printFen());
+      move = Misc::getMoveFromUCI(currentPosition, moveStr);
       return;
     }
     LOG__TRACE(Logger::get().BOOK_LOG, "Move found {}", printMoveVerbose(move));

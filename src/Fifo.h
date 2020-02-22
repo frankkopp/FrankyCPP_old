@@ -165,18 +165,18 @@ public:
   }
 
   void close() {
-    std::unique_lock<std::mutex> lock{fifoLock};
+    std::scoped_lock<std::mutex> lock{fifoLock};
     closedFlag = true;
     cv.notify_all();
   }
 
   void open() {
-    std::unique_lock<std::mutex> lock{fifoLock};
+    std::scoped_lock<std::mutex> lock{fifoLock};
     closedFlag = false;
   }
 
   bool isClosed() {
-    std::unique_lock<std::mutex> lock{fifoLock};
+    std::scoped_lock<std::mutex> lock{fifoLock};
     return closedFlag;
   }
 

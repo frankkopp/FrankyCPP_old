@@ -61,10 +61,10 @@ private:
   std::shared_ptr<MoveGenerator> mg{nullptr};
 
 public:
-  explicit OpeningBook(std::string bookPath, BookFormat bookFormat);
+  explicit OpeningBook(const std::string &bookPath, const BookFormat &bFormat);
 
   void initialize();
-  void readBookFromFile(std::string filePath);
+  void readBookFromFile(const std::string &filePath);
   std::vector<std::string> getLinesFromFile(std::ifstream &ifstream);
   void processAllLines(std::ifstream &fileStream);
   void processLine(std::string &line);

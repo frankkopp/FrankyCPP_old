@@ -80,7 +80,7 @@ TEST_F(OpeningBookTest, initPGNSmall) {
   OpeningBook book(filePathStr, OpeningBook::BookFormat::PNG);
   book.initialize();
   LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
-  EXPECT_EQ(1'162, book.size());
+  EXPECT_EQ(732, book.size());
 }
 
 TEST_F(OpeningBookTest, initPGNMedium) {
