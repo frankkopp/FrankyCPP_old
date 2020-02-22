@@ -113,7 +113,7 @@ inline PGN_Game PGN_Reader::processOneGame(VectorIterator &iterator) {
   // avgLinesPerGameTimesProgressSteps = 12*15 as 12 is avg game lines and 15 steps
   const uint64_t progressInterval = 1 + (inputLines->size() / avgLinesPerGameTimesProgressSteps);
   if (games.size() % progressInterval == 0) {
-    LOG__DEBUG(Logger::get().BOOK_LOG, "Finding Games: {:s}", Misc::printProgress(static_cast<double>(dist) / inputLines->size()));
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Finding games: {:s}", Misc::printProgress(static_cast<double>(dist) / inputLines->size()));
   }
   return game;
 }

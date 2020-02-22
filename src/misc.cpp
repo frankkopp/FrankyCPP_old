@@ -25,6 +25,7 @@
 
 #include <regex>
 #include <string>
+#include <iostream>
 #include "fmt/printf.h"
 #include "misc.h"
 #include "Logging.h"

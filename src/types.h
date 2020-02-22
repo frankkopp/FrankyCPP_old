@@ -585,5 +585,6 @@ extern const std::locale deLocale;
 #define println(s) std::cout << (s) << std::endl
 #define fprint(...) std::cout << fmt::format(deLocale, __VA_ARGS__)
 #define fprintln(...) fprint(__VA_ARGS__) << std::endl
+#define DEBUG(...) std::cout << fmt::format(deLocale, "DEBUG {}:{} {}", __FILE__, __LINE__, __VA_ARGS__) << std::endl
 
 #endif //FRANKYCPP_TYPES_H

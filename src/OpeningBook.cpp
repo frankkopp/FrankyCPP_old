@@ -41,8 +41,9 @@
 #include "ThreadPool.h"
 
 #define PARALLEL_LINE_PROCESSING
-//#define PARALLEL_GAME_PROCESSING
-//
+#define PARALLEL_GAME_PROCESSING
+#define FIFO_PROCESSING
+
 #ifdef HAS_EXECUTION_LIB
 #include <execution>
 #endif
@@ -124,7 +125,11 @@ void OpeningBook::processAllLines(std::vector<std::string> &lines) {
       break;
     }
     case BookFormat::PNG:
+#ifdef FIFO_PROCESSING
+      processPGNFileFifo(lines);
+#else
       processPGNFile(lines);
+#endif
       break;
   }
 
@@ -256,56 +261,55 @@ void OpeningBook::processSimpleLine(std::string &line) {
 
     // adding entry to book
     addToBook(move, lastFen, fen);
-
   }
 }
 
 void OpeningBook::processPGNFileFifo(std::vector<std::string> &lines) {
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Process lines from PGN file...");
-
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Process lines from PGN file with FIFO...");
   // reading pgn and get a list of games
   PGN_Reader pgnReader(lines);
-
   // prepare FIFO for storing the games
   Fifo<PGN_Game> gamesFifo;
-
   // prepare thread pool
   const int numberOfThreads = std::thread::hardware_concurrency();
   ThreadPool threadPool(numberOfThreads);
-
   bool finished = false;
 
   // prepare worker for processing found games
-  std::function gameProcessingLoop = [&] {
-    while (!gamesFifo.isClosed()) {
-
-      LOG__TRACE(Logger::get().BOOK_LOG, "Get game...");
-      auto game = gamesFifo.pop_wait();
-
-      if (game.has_value()) { // no value means pop_wait has been canceled
-        processGame(game.value());
-        LOG__TRACE(Logger::get().BOOK_LOG, "Processed game...Book now at {:n} entries.", bookMap.size());
-      }
-
-    }
-  };
-
   for (int i = 0; i < numberOfThreads; i++) {
-    threadPool.enqueue(gameProcessingLoop);
+    threadPool.enqueue([&] {
+      while (!gamesFifo.isClosed()) {
+        LOG__TRACE(Logger::get().BOOK_LOG, "Get game...");
+        auto game = gamesFifo.pop_wait();
+        if (game.has_value()) { // no value means pop_wait has been canceled
+          LOG__TRACE(Logger::get().BOOK_LOG, "Got game...");
+          processGame(game.value());
+          LOG__TRACE(Logger::get().BOOK_LOG, "Processed game...Book now at {:n} entries.", bookMap.size());
+        }
+        else {
+          LOG__TRACE(Logger::get().BOOK_LOG, "Game NULL");
+        }
+      }
+    });
   }
 
+  // start finding games and putting them into the FIFO
   std::future<bool> future = std::async(std::launch::async, [&] {
-    LOG__TRACE(Logger::get().BOOK_LOG, "Start finding games");
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Start finding games");
     finished = pgnReader.process(gamesFifo);
-    LOG__TRACE(Logger::get().BOOK_LOG, "Finished finding games {}", finished);
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Finished finding games {}", finished);
     return finished;
   });
 
+  // wait until all games have been put into the FIFO
   if (future.get()) {
-    while (!gamesFifo.empty()) {}
-    LOG__TRACE(Logger::get().BOOK_LOG, "Finished processing games.");
+    // busy wait until FIFO is empty
+    while (!gamesFifo.empty()) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Finished processing games.");
     gamesFifo.close();
-    LOG__TRACE(Logger::get().BOOK_LOG, "Closed down ThreadPool");
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Closed down ThreadPool");
   }
 
 }
@@ -333,11 +337,7 @@ void OpeningBook::processGames(std::vector<PGN_Game>* ptrGames) {// processing g
 #ifdef PARALLEL_GAME_PROCESSING
 #ifdef HAS_EXECUTION_LIB
   std::for_each(std::execution::par_unseq, ptrGames->begin(), ptrGames->end(),
-                [&](auto game) {
-                  LOG__DEBUG(Logger::get().BOOK_LOG, "Process game #moves={}", game.moves.size());
-                  processGame(game);
-                  LOG__DEBUG(Logger::get().BOOK_LOG, "Process game finished - book={:n}", bookMap.size());
-                });
+                [&](auto game) { processGame(game); });
 #else
   const unsigned int noOfThreads = std::thread::hardware_concurrency();
   const unsigned int maxNumberOfEntries = ptrGames->size();
@@ -410,12 +410,14 @@ void OpeningBook::processGame(PGN_Game &game) {
     addToBook(move, lastFen, fen);
   }
   gamesProcessed++;
+#ifndef FIFO_PROCESSING
   // x % 0 is undefined in c++
   // avgLinesPerGameTimesProgressSteps = 12*15 as 12 is avg game lines and 15 steps
   const uint64_t progressInterval = 1 + (gamesTotal / 15);
   if (gamesProcessed % progressInterval == 0) {
     LOG__DEBUG(Logger::get().BOOK_LOG, "Process games: {:s}", Misc::printProgress(static_cast<double>(gamesProcessed) / gamesTotal));
   }
+#endif
 }
 
 void OpeningBook::addToBook(const Move &move, const std::string &lastFen, const std::string &fen) {
