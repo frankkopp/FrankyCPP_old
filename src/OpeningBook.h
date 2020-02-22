@@ -38,7 +38,7 @@ struct BookEntry {
   std::vector<Move> moves{};
   std::vector<BookEntry*> ptrNextPosition{};
 
-  BookEntry(const std::string &position) : position(position), counter{1} {}
+  BookEntry(const std::string &pos) : position(pos), counter{1} {}
   std::string str();
 };
 
@@ -56,7 +56,7 @@ private:
   bool isInitialized = false;
   uint64_t fileSize{};
   BookFormat bookFormat;
-  std::string bookFilePath;
+  std::string bookFilePath{};
   std::unordered_map<std::string, BookEntry> bookMap{};
 
 public:

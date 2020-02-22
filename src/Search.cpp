@@ -821,7 +821,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
         && !extension
       ) {
 
-      const auto materialEval
+      const Value materialEval
         = static_cast<const Value>(position.getMaterial(position.getNextPlayer())
                                    - position.getMaterial(~position.getNextPlayer()));
       const Piece targetPiece = position.getPiece(getToSquare(move));

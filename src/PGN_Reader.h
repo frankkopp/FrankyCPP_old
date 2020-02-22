@@ -79,7 +79,6 @@ constexpr const int avgLinesPerGameTimesProgressSteps = 12 * 15;
  * A PGN_Game holds the cleanup tags and moves as strings after reading a PGN file.
  */
 struct PGN_Game {
-
   std::string pgnNotation{};
   std::map<std::string, std::string> tags{};
   std::vector<std::string> moves{};

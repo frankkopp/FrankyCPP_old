@@ -425,11 +425,8 @@ int Engine::getInt(const std::string &value) {
   try {
     intValue = stoi(value);
   }
-  catch (std::invalid_argument &e) {
+  catch (...) {
     LOG__WARN(Logger::get().ENGINE_LOG, "depth invalid - expected numeric value. Was {}", value);
-  }
-  catch (std::out_of_range &e) {
-    LOG__WARN(Logger::get().ENGINE_LOG, "depth invalid - numeric value out of range of int. Was {}", value);
   }
   return intValue;
 }

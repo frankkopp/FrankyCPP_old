@@ -40,7 +40,10 @@
 #include "Fifo.h"
 #include "ThreadPool.h"
 
-#ifdef USE_PARALLEL_EXECUTION
+#define PARALLEL_LINE_PROCESSING
+//#define PARALLEL_GAME_PROCESSING
+//
+#ifdef HAS_EXECUTION_LIB
 #include <execution>
 #endif
 
@@ -91,7 +94,8 @@ void OpeningBook::processAllLines(std::vector<std::string> &lines) {
   switch (bookFormat) {
     case BookFormat::SIMPLE:
     case BookFormat::SAN: {
-#ifdef USE_PARALLEL_EXECUTION
+#ifdef PARALLEL_LINE_PROCESSING
+#ifdef HAS_EXECUTION_LIB
       std::for_each(std::execution::par_unseq, lines.begin(), lines.end(),
                     [&](auto &&item) { processLine(item); });
 #else
@@ -111,6 +115,11 @@ void OpeningBook::processAllLines(std::vector<std::string> &lines) {
         });
       }
       for (std::thread &th: threads) th.join();
+#endif
+#else // no parallel execution
+      for (auto l : lines) {
+        processLine(l);
+      }
 #endif
       break;
     }
@@ -310,19 +319,21 @@ void OpeningBook::processPGNFile(std::vector<std::string> &lines) {
     LOG__ERROR(Logger::get().BOOK_LOG, "Could not process lines from PGN file.");
     return;
   }
-  auto ptrGgames = &pgnReader.getGames();
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Number of games {:n}", ptrGgames->size());
+  auto ptrGames = &pgnReader.getGames();
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Number of games {:n}", ptrGames->size());
 
   // processing games
-#ifdef USE_PARALLEL_EXECUTION
-  //  std::for_each(std::execution::par_unseq, ptrGgames->begin(), ptrGgames->end(),
-  //                [&](auto game) { processGame(game); });
-  for (auto g : *ptrGgames) {
-    processGame(g);
-  }
+#ifdef PARALLEL_GAME_PROCESSING
+#ifdef HAS_EXECUTION_LIB
+  std::for_each(std::execution::par_unseq, ptrGames->begin(), ptrGames->end(),
+                [&](auto game) {
+                  LOG__DEBUG(Logger::get().BOOK_LOG, "Process game #moves={}", game.moves.size());
+                  processGame(game);
+                  LOG__DEBUG(Logger::get().BOOK_LOG, "Process game finished - book={:n}", bookMap.size());
+                });
 #else
   const unsigned int noOfThreads = std::thread::hardware_concurrency();
-  const unsigned int maxNumberOfEntries = games->size();
+  const unsigned int maxNumberOfEntries = ptrGames->size();
   std::vector<std::thread> threads;
   threads.reserve(noOfThreads);
   for (unsigned int t = 0; t < noOfThreads; ++t) {
@@ -332,24 +343,43 @@ void OpeningBook::processPGNFile(std::vector<std::string> &lines) {
       auto end = start + range;
       if (t == noOfThreads - 1) end = maxNumberOfEntries;
       for (std::size_t i = start; i < end; ++i) {
-        processGame((*games)[i]);
-
+        processGame((*ptrGames)[i]);
       }
     });
   }
   for (std::thread &th: threads) th.join();
 #endif
+#else
+  std::cout << "DEBUG 1" << std::endl;
+  auto iterEnd = ptrGames->end();
+  auto iter = ptrGames->begin();
+  std::cout << "DEBUG 2" << std::endl;
+  while (true) {
+    //for (auto iter = ptrGames->begin(); iter < iterEnd; iter++) {
+    std::cout << "DEBUG 3" << std::endl;
+    if (iter >= iterEnd) break;
+    std::cout << "DEBUG 4" << std::endl;
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Process game #moves={}", iter->moves.size());
+    processGame(*iter);
+    std::cout << "DEBUG 7" << std::endl;
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Process game finished - book={:n}", bookMap.size());
+    iter++;
+    std::cout << "DEBUG 8" << std::endl;
+  }
+#endif
+  std::cout << "DEBUG 9" << std::endl;
 }
 
 
 void OpeningBook::processGame(PGN_Game &game) {
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Process game #moves={}", game.moves.size());
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Process game2 #moves={}", game.moves.size());
 
   std::smatch matcher;
   const std::regex UCIRegex(R"(([a-h][1-8][a-h][1-8])([NBRQnbrq])?)");
   const std::regex SANRegex(R"(([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O-O-O|O-O)(=?([NBRQ]))?([!?+#]*)?)");
 
   Position currentPosition; // start position
+  std::cout << "DEBUG 5" << std::endl;
   for (auto moveStr : game.moves) {
     Move move = MOVE_NONE;
 
@@ -383,7 +413,7 @@ void OpeningBook::processGame(PGN_Game &game) {
     // adding entry to book
     addToBook(move, lastFen, fen);
   }
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Process game finished - book={:n}", bookMap.size());
+  std::cout << "DEBUG 6" << std::endl;
 }
 
 void OpeningBook::addToBook(const Move &move, const std::string &lastFen, const std::string &fen) {

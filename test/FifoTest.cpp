@@ -26,6 +26,7 @@
 #include <string>
 #include <random>
 #include <chrono>
+#include <thread>
 #include "types.h"
 #include "Logging.h"
 #include "Fifo.h"
