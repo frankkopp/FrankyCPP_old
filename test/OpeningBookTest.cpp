@@ -112,8 +112,7 @@ TEST_F(OpeningBookTest, initPGNLarge) {
   OpeningBook book(filePathStr, OpeningBook::BookFormat::PNG);
   book.initialize();
   LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
-  EXPECT_EQ(216'070, book.size());
-  
+  EXPECT_EQ(4'896'703, book.size());
 }
 
 

@@ -58,7 +58,7 @@ constexpr const char* START_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R
 constexpr const uint64_t nanoPerSec = 1'000'000'000;
 
 /** Max number of moves in a game to be used in arrays etc. */
-constexpr const int MAX_MOVES = 256;
+constexpr const int MAX_MOVES = 512;
 
 /** Game phase is 24 when all officers are present. 0 when no officer is present */
 constexpr const int GAME_PHASE_MAX = 24;

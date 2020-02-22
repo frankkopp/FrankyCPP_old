@@ -90,6 +90,7 @@ void Position::doMove(const Move move) {
   const PieceType promotionPT = promotionType(move);
 
   // save state of board for undo
+  assert((historyCounter < MAX_MOVES-1) && "Can't have more move than MAX_MOVES");
   historyState[historyCounter++] = {
     zobristKey,
     move,

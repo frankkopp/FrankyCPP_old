@@ -59,6 +59,9 @@ private:
   std::string bookFilePath{};
   std::unordered_map<std::string, BookEntry> bookMap{};
 
+  uint64_t gamesTotal = 0;
+  uint64_t gamesProcessed = 0;
+
 public:
   explicit OpeningBook(const std::string &bookPath, const BookFormat &bFormat);
 
@@ -75,6 +78,7 @@ public:
   void addToBook(const Move &move, const std::string &lastFen, const std::string &fen);
 
   uint64_t size() { return bookMap.size(); }
+  void processGames(std::vector<PGN_Game>* ptrGames);
 };
 
 

@@ -320,9 +320,16 @@ void OpeningBook::processPGNFile(std::vector<std::string> &lines) {
     return;
   }
   auto ptrGames = &pgnReader.getGames();
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Number of games {:n}", ptrGames->size());
+  gamesTotal = ptrGames->size();
 
-  // processing games
+  // process all games
+  processGames(ptrGames);
+}
+
+void OpeningBook::processGames(std::vector<PGN_Game>* ptrGames) {// processing games
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Processing {:n} games", ptrGames->size());
+  const auto start = std::chrono::high_resolution_clock::now();
+
 #ifdef PARALLEL_GAME_PROCESSING
 #ifdef HAS_EXECUTION_LIB
   std::for_each(std::execution::par_unseq, ptrGames->begin(), ptrGames->end(),
@@ -350,36 +357,25 @@ void OpeningBook::processPGNFile(std::vector<std::string> &lines) {
   for (std::thread &th: threads) th.join();
 #endif
 #else
-  std::cout << "DEBUG 1" << std::endl;
   auto iterEnd = ptrGames->end();
-  auto iter = ptrGames->begin();
-  std::cout << "DEBUG 2" << std::endl;
-  while (true) {
-    //for (auto iter = ptrGames->begin(); iter < iterEnd; iter++) {
-    std::cout << "DEBUG 3" << std::endl;
-    if (iter >= iterEnd) break;
-    std::cout << "DEBUG 4" << std::endl;
-    LOG__DEBUG(Logger::get().BOOK_LOG, "Process game #moves={}", iter->moves.size());
+  for (auto iter = ptrGames->begin(); iter < iterEnd; iter++) {
     processGame(*iter);
-    std::cout << "DEBUG 7" << std::endl;
-    LOG__DEBUG(Logger::get().BOOK_LOG, "Process game finished - book={:n}", bookMap.size());
-    iter++;
-    std::cout << "DEBUG 8" << std::endl;
+    LOG__TRACE(Logger::get().BOOK_LOG, "Process game finished - games={:n} book={:n}", gamesProcessed, bookMap.size());
   }
 #endif
-  std::cout << "DEBUG 9" << std::endl;
+
+  const auto stop = std::chrono::high_resolution_clock::now();
+  const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+  LOG__INFO(Logger::get().BOOK_LOG, "Processed {:n} games in {:n} ms", gamesTotal, elapsed.count());
 }
 
 
 void OpeningBook::processGame(PGN_Game &game) {
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Process game2 #moves={}", game.moves.size());
-
   std::smatch matcher;
   const std::regex UCIRegex(R"(([a-h][1-8][a-h][1-8])([NBRQnbrq])?)");
   const std::regex SANRegex(R"(([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O-O-O|O-O)(=?([NBRQ]))?([!?+#]*)?)");
 
   Position currentPosition; // start position
-  std::cout << "DEBUG 5" << std::endl;
   for (auto moveStr : game.moves) {
     Move move = MOVE_NONE;
 
@@ -398,7 +394,7 @@ void OpeningBook::processGame(PGN_Game &game) {
     // create and validate the move
     if (move == MOVE_NONE) {
       LOG__WARN(Logger::get().BOOK_LOG, "Not a valid move {} on this position {}", moveStr, currentPosition.printFen());
-      move = Misc::getMoveFromUCIDEBUG(currentPosition, moveStr);
+      //move = Misc::getMoveFromUCIDEBUG(currentPosition, moveStr);
       return;
     }
     LOG__TRACE(Logger::get().BOOK_LOG, "Move found {}", printMoveVerbose(move));
@@ -413,7 +409,13 @@ void OpeningBook::processGame(PGN_Game &game) {
     // adding entry to book
     addToBook(move, lastFen, fen);
   }
-  std::cout << "DEBUG 6" << std::endl;
+  gamesProcessed++;
+  // x % 0 is undefined in c++
+  // avgLinesPerGameTimesProgressSteps = 12*15 as 12 is avg game lines and 15 steps
+  const uint64_t progressInterval = 1 + (gamesTotal / 15);
+  if (gamesProcessed % progressInterval == 0) {
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Process games: {:s}", Misc::printProgress(static_cast<double>(gamesProcessed) / gamesTotal));
+  }
 }
 
 void OpeningBook::addToBook(const Move &move, const std::string &lastFen, const std::string &fen) {
@@ -438,8 +440,8 @@ void OpeningBook::addToBook(const Move &move, const std::string &lastFen, const 
     lastEntry->ptrNextPosition.emplace_back(&bookMap.at(fen));
     LOG__TRACE(Logger::get().BOOK_LOG, "Added to last entry.");
   }
-}
 
+}
 
 std::string BookEntry::str() {
   std::ostringstream os;
