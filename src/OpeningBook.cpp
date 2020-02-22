@@ -36,7 +36,6 @@
 #include "misc.h"
 #include "OpeningBook.h"
 #include "Position.h"
-#include "MoveGenerator.h"
 #include "PGN_Reader.h"
 #include "Fifo.h"
 #include "ThreadPool.h"
@@ -47,7 +46,6 @@
 
 OpeningBook::OpeningBook(const std::string &bookPath, const BookFormat &bFormat)
   : bookFilePath(bookPath), bookFormat(bFormat) {
-  mg = std::make_shared<MoveGenerator>();
 }
 
 void OpeningBook::initialize() {
@@ -57,7 +55,7 @@ void OpeningBook::initialize() {
   const auto start = std::chrono::high_resolution_clock::now();
 
   // set root entry
-  bookMap.insert(std::make_pair(START_POSITION_FEN, BookEntry(START_POSITION_FEN)));
+  bookMap.emplace(START_POSITION_FEN, BookEntry(START_POSITION_FEN));
 
   // read book from file
   readBookFromFile(bookFilePath);
@@ -74,8 +72,9 @@ void OpeningBook::readBookFromFile(const std::string &filePath) {
     LOG__DEBUG(Logger::get().BOOK_LOG, "Open book '{}' successful.", filePath);
     std::filesystem::path p{filePath};
     fileSize = std::filesystem::file_size(std::filesystem::canonical(p));
-    processAllLines(file);
+    std::vector<std::string> lines = getLinesFromFile(file);
     file.close();
+    processAllLines(lines);
   }
   else {
     LOG__ERROR(Logger::get().BOOK_LOG, "Open book '{}' failed.", filePath);
@@ -83,10 +82,8 @@ void OpeningBook::readBookFromFile(const std::string &filePath) {
   }
 }
 
-void OpeningBook::processAllLines(std::ifstream &ifstream) {
+void OpeningBook::processAllLines(std::vector<std::string> &lines) {
   LOG__DEBUG(Logger::get().BOOK_LOG, "Processing file.");
-
-  std::vector<std::string> lines = getLinesFromFile(ifstream);
 
   const auto start = std::chrono::high_resolution_clock::now();
   LOG__DEBUG(Logger::get().BOOK_LOG, "Creating internal book...");
@@ -146,7 +143,7 @@ void OpeningBook::processLine(std::string &line) {
   LOG__TRACE(Logger::get().BOOK_LOG, "Processing line: {}", line);
 
   // clean up line
-  std::regex whiteSpaceTrim(R"(^\s*(.*)\s*$)");
+  const std::regex whiteSpaceTrim(R"(^\s*(.*)\s*$)");
   line = std::regex_replace(line, whiteSpaceTrim, "$1");
 
   switch (bookFormat) {
@@ -166,7 +163,7 @@ void OpeningBook::processSANLine(std::string &line) {
   std::smatch matcher;
 
   // check if line starts valid
-  std::regex startLineRegex(R"(^\d+\. )");
+  const std::regex startLineRegex(R"(^\d+\. )");
   if (std::regex_match(line, matcher, startLineRegex)) {
     LOG__TRACE(Logger::get().BOOK_LOG, "Line ignored: {}", line);
     return;
@@ -175,15 +172,15 @@ void OpeningBook::processSANLine(std::string &line) {
   Position currentPosition; // start position
 
   // ignore patterns
-  std::regex numberRegex(R"(^\d+\.)");
-  std::regex resultRegex(R"((1/2|1|0)-(1/2|1|0))");
+  const std::regex numberRegex(R"(^\d+\.)");
+  const std::regex resultRegex(R"((1/2|1|0)-(1/2|1|0))");
 
   //1. f4 d5 2. Nf3 Nf6 3. e3 g6 4. b3 Bg7 5. Bb2 O-O 6. Be2 c5 7. O-O Nc6 8. Ne5 Qc7 1/2-1/2
   //1. f4 d5 2. Nf3 Nf6 3. e3 Bg4 4. Be2 e6 5. O-O Bd6 6. b3 O-O 7. Bb2 c5 1/2-1/2
   // split at every whitespace and iterate through items
-  std::regex splitRegex(R"(\s+)");
-  std::sregex_token_iterator iter(line.begin(), line.end(), splitRegex, -1);
-  std::sregex_token_iterator end;
+  const std::regex splitRegex(R"(\s+)");
+  const std::sregex_token_iterator iter(line.begin(), line.end(), splitRegex, -1);
+  const std::sregex_token_iterator end;
   LOG__TRACE(Logger::get().BOOK_LOG, "Found {} items in line: {}", std::distance(iter, end), line);
   for (auto i = iter; i != end; ++i) {
     const std::string &moveStr = (*i).str();
@@ -217,14 +214,14 @@ void OpeningBook::processSimpleLine(std::string &line) {
   std::smatch matcher;
 
   // check if line starts with move
-  std::regex startPattern(R"(^[a-h][1-8][a-h][1-8].*$)");
+  const std::regex startPattern(R"(^[a-h][1-8][a-h][1-8].*$)");
   if (!std::regex_match(line, matcher, startPattern)) {
     LOG__TRACE(Logger::get().BOOK_LOG, "Line ignored: {}", line);
     return;
   }
 
   // iterate over all found pattern matches (aka moves)
-  std::regex movePattern(R"([a-h][1-8][a-h][1-8])");
+  const std::regex movePattern(R"([a-h][1-8][a-h][1-8])");
   auto move_begin = std::sregex_iterator(line.begin(), line.end(), movePattern);
   auto move_end = std::sregex_iterator();
   LOG__TRACE(Logger::get().BOOK_LOG, "Found {} moves in line: {}", std::distance(move_begin, move_end), line);
@@ -296,7 +293,7 @@ void OpeningBook::processPGNFileFifo(std::vector<std::string> &lines) {
   });
 
   if (future.get()) {
-    while(!gamesFifo.empty()) {}
+    while (!gamesFifo.empty()) {}
     LOG__TRACE(Logger::get().BOOK_LOG, "Finished processing games.");
     gamesFifo.close();
     LOG__TRACE(Logger::get().BOOK_LOG, "Closed down ThreadPool");
@@ -313,13 +310,16 @@ void OpeningBook::processPGNFile(std::vector<std::string> &lines) {
     LOG__ERROR(Logger::get().BOOK_LOG, "Could not process lines from PGN file.");
     return;
   }
-  auto games = &pgnReader.getGames();
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Number of games {:n}", games->size());
+  auto ptrGgames = &pgnReader.getGames();
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Number of games {:n}", ptrGgames->size());
 
   // processing games
 #ifdef USE_PARALLEL_EXECUTION
-  std::for_each(std::execution::par_unseq, games->begin(), games->end(),
-                [&](auto game) { processGame(game); });
+  //  std::for_each(std::execution::par_unseq, ptrGgames->begin(), ptrGgames->end(),
+  //                [&](auto game) { processGame(game); });
+  for (auto g : *ptrGgames) {
+    processGame(g);
+  }
 #else
   const unsigned int noOfThreads = std::thread::hardware_concurrency();
   const unsigned int maxNumberOfEntries = games->size();
@@ -341,11 +341,13 @@ void OpeningBook::processPGNFile(std::vector<std::string> &lines) {
 #endif
 }
 
-void OpeningBook::processGame(PGN_Game &game) {
-  std::smatch matcher;
 
-  std::regex UCIRegex(R"(([a-h][1-8][a-h][1-8])([NBRQnbrq])?)");
-  std::regex SANRegex(R"(([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O-O-O|O-O)(=([NBRQ]))?([!?+#]*)?)");
+void OpeningBook::processGame(PGN_Game &game) {
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Process game #moves={}", game.moves.size());
+
+  std::smatch matcher;
+  const std::regex UCIRegex(R"(([a-h][1-8][a-h][1-8])([NBRQnbrq])?)");
+  const std::regex SANRegex(R"(([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O-O-O|O-O)(=?([NBRQ]))?([!?+#]*)?)");
 
   Position currentPosition; // start position
   for (auto moveStr : game.moves) {
@@ -366,7 +368,7 @@ void OpeningBook::processGame(PGN_Game &game) {
     // create and validate the move
     if (move == MOVE_NONE) {
       LOG__WARN(Logger::get().BOOK_LOG, "Not a valid move {} on this position {}", moveStr, currentPosition.printFen());
-      move = Misc::getMoveFromUCI(currentPosition, moveStr);
+      move = Misc::getMoveFromUCIDEBUG(currentPosition, moveStr);
       return;
     }
     LOG__TRACE(Logger::get().BOOK_LOG, "Move found {}", printMoveVerbose(move));
@@ -381,10 +383,11 @@ void OpeningBook::processGame(PGN_Game &game) {
     // adding entry to book
     addToBook(move, lastFen, fen);
   }
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Process game finished - book={:n}", bookMap.size());
 }
 
 void OpeningBook::addToBook(const Move &move, const std::string &lastFen, const std::string &fen) {
-  const std::lock_guard<std::mutex> lock(bookMutex);
+  const std::scoped_lock<std::mutex> lock(bookMutex);
 
   if (bookMap.count(fen)) {
     // pointer to entry already in book

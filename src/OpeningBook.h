@@ -57,8 +57,7 @@ private:
   uint64_t fileSize{};
   BookFormat bookFormat;
   std::string bookFilePath;
-  std::map<std::string, BookEntry> bookMap{};
-  std::shared_ptr<MoveGenerator> mg{nullptr};
+  std::unordered_map<std::string, BookEntry> bookMap{};
 
 public:
   explicit OpeningBook(const std::string &bookPath, const BookFormat &bFormat);
@@ -66,7 +65,7 @@ public:
   void initialize();
   void readBookFromFile(const std::string &filePath);
   std::vector<std::string> getLinesFromFile(std::ifstream &ifstream);
-  void processAllLines(std::ifstream &fileStream);
+  void processAllLines(std::vector<std::string> &lines);
   void processLine(std::string &line);
   void processSimpleLine(std::string &line);
   void processSANLine(std::string &line);

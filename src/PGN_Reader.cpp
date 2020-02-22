@@ -85,7 +85,7 @@ bool PGN_Reader::process() {
   return true;
 }
 
-PGN_Game PGN_Reader::processOneGame(VectorIterator &iterator) {
+inline PGN_Game PGN_Reader::processOneGame(VectorIterator &iterator) {
   bool gameEndReached = false;
   PGN_Game game{};
   do {
@@ -118,7 +118,7 @@ PGN_Game PGN_Reader::processOneGame(VectorIterator &iterator) {
   return game;
 }
 
-void PGN_Reader::handleMoveSection(VectorIterator &iterator, PGN_Game &game) {
+inline void PGN_Reader::handleMoveSection(VectorIterator &iterator, PGN_Game &game) {
   LOG__TRACE(Logger::get().BOOK_LOG, "Move section line: {}    (length={})", *iterator, iterator->size());
 
   // read and concatenate all lines belonging to the move section of  one game

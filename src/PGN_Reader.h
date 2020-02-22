@@ -86,16 +86,16 @@ struct PGN_Game {
 };
 
 class PGN_Reader {
-private:
   std::shared_ptr<std::vector<std::string>> inputLines{};
   std::vector<PGN_Game> games{};
 
 public:
   PGN_Reader(std::vector<std::string> &lines);
-
   bool process(Fifo<PGN_Game> &gamesFifo);
   bool process();
   std::vector<PGN_Game> & getGames() { return games; }
+
+private:
   PGN_Game processOneGame(VectorIterator &iterator);
   void handleMoveSection(VectorIterator &iterator, PGN_Game &game);
 };
