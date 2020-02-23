@@ -60,13 +60,13 @@ TEST_F(EngineTest, startSearch) {
 
   LOG__INFO(Logger::get().TEST_LOG, "{}: Start and Stop test...", __FUNCTION__);
   for (int i = 0; i < 3; ++i) {
-    sleep(3);
+    sleepForSec(3);
     engine.stopSearch();
     engine.waitWhileSearching();
 
     engine.startSearch(uciSearchMode);
 
-    sleep(3);
+    sleepForSec(3);
     engine.stopSearch();
     engine.waitWhileSearching();
   }

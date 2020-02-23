@@ -541,7 +541,7 @@ TEST_F(UCITest, moveTest) {
   is = istringstream(command);
   uciHandler.loop(&is);
 
-  sleep(5);
+  sleepForSec(5);
   engine.stopSearch();
   LOG__DEBUG(Logger::get().TEST_LOG, "Waiting until search ends...");
   engine.waitWhileSearching();
@@ -586,7 +586,7 @@ TEST_F(UCITest, ponderRunningStop) {
   is = istringstream(command);
   uciHandler.loop(&is);
 
-  sleep(1);
+  sleepForSec(1);
   ASSERT_TRUE(engine.isSearching());
   ASSERT_TRUE(engine.getSearchLimitsPtr()->isPonder());
 
@@ -595,7 +595,7 @@ TEST_F(UCITest, ponderRunningStop) {
   is = istringstream(command);
   uciHandler.loop(&is);
 
-  sleep(1);
+  sleepForSec(1);
   ASSERT_FALSE(engine.isSearching());
   ASSERT_TRUE(engine.getLastResult().valid);
 
@@ -620,7 +620,7 @@ TEST_F(UCITest, ponderFinishedStop) {
   is = istringstream(command);
   uciHandler.loop(&is);
 
-  sleep(1);
+  sleepForSec(1);
 
   ASSERT_TRUE(engine.isSearching());
   ASSERT_TRUE(engine.getSearchLimitsPtr()->isPonder());
@@ -630,7 +630,7 @@ TEST_F(UCITest, ponderFinishedStop) {
   is = istringstream(command);
   uciHandler.loop(&is);
 
-  sleep(1);
+  sleepForSec(1);
   ASSERT_FALSE(engine.isSearching());
   ASSERT_TRUE(engine.getLastResult().valid);
 
@@ -655,10 +655,10 @@ TEST_F(UCITest, ponderMiss) {
   is = istringstream(command);
   uciHandler.loop(&is);
 
-  sleep(1);
+  sleepForSec(1);
   ASSERT_TRUE(engine.isSearching());
   ASSERT_TRUE(engine.getSearchLimitsPtr()->isPonder());
-  sleep(1);
+  sleepForSec(1);
 
   // user played different move (g1h3) - ponder miss
   command = "stop";
@@ -666,10 +666,10 @@ TEST_F(UCITest, ponderMiss) {
   is = istringstream(command);
   uciHandler.loop(&is);
 
-  sleep(1);
+  sleepForSec(1);
   ASSERT_FALSE(engine.isSearching());
   ASSERT_FALSE(engine.getSearchLimitsPtr()->isPonder());
-  sleep(1);
+  sleepForSec(1);
 
   // black getting new position after ponder miss 
   command = "position startpos moves e2e4 e7e6 g1h3";
@@ -683,7 +683,7 @@ TEST_F(UCITest, ponderMiss) {
   is = istringstream(command);
   uciHandler.loop(&is);
 
-  sleep(1);
+  sleepForSec(1);
   ASSERT_TRUE(engine.isSearching());
   ASSERT_FALSE(engine.getSearchLimitsPtr()->isPonder());
 
@@ -693,7 +693,7 @@ TEST_F(UCITest, ponderMiss) {
   is = istringstream(command);
   uciHandler.loop(&is);
 
-  sleep(1);
+  sleepForSec(1);
   ASSERT_FALSE(engine.isSearching());
   ASSERT_FALSE(engine.getSearchLimitsPtr()->isPonder());
 
@@ -722,10 +722,10 @@ TEST_F(UCITest, ponderFinishedMiss) {
   is = istringstream(command);
   uciHandler.loop(&is);
 
-  sleep(1);
+  sleepForSec(1);
   ASSERT_TRUE(engine.isSearching());
   ASSERT_TRUE(engine.getSearchLimitsPtr()->isPonder());
-  sleep(1);
+  sleepForSec(1);
 
   // user played different move (g1h3) - ponder miss
   command = "stop";
@@ -733,10 +733,10 @@ TEST_F(UCITest, ponderFinishedMiss) {
   is = istringstream(command);
   uciHandler.loop(&is);
 
-  sleep(1);
+  sleepForSec(1);
   ASSERT_FALSE(engine.isSearching());
   ASSERT_FALSE(engine.getSearchLimitsPtr()->isPonder());
-  sleep(1);
+  sleepForSec(1);
 
   // black getting new position after ponder miss
   command = "position startpos moves e2e4 e7e6 g1h3";
@@ -750,7 +750,7 @@ TEST_F(UCITest, ponderFinishedMiss) {
   is = istringstream(command);
   uciHandler.loop(&is);
 
-  sleep(1);
+  sleepForSec(1);
   ASSERT_TRUE(engine.isSearching());
   ASSERT_FALSE(engine.getSearchLimitsPtr()->isPonder());
 
@@ -760,7 +760,7 @@ TEST_F(UCITest, ponderFinishedMiss) {
   is = istringstream(command);
   uciHandler.loop(&is);
 
-  sleep(1);
+  sleepForSec(1);
   ASSERT_FALSE(engine.isSearching());
   ASSERT_FALSE(engine.getSearchLimitsPtr()->isPonder());
 
@@ -792,17 +792,17 @@ TEST_F(UCITest, ponderFinishedHit) {
   is = istringstream(command);
   uciHandler.loop(&is);
 
-  sleep(1);
+  sleepForSec(1);
   ASSERT_TRUE(engine.isSearching());
   ASSERT_TRUE(engine.getSearchLimitsPtr()->isPonder());
-  sleep(1);
+  sleepForSec(1);
 
   command = "ponderhit";
   LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
   is = istringstream(command);
   uciHandler.loop(&is);
 
-  sleep(1);
+  sleepForSec(1);
   ASSERT_TRUE(engine.isSearching());
   ASSERT_FALSE(engine.getSearchLimitsPtr()->isPonder());
 
@@ -812,7 +812,7 @@ TEST_F(UCITest, ponderFinishedHit) {
   is = istringstream(command);
   uciHandler.loop(&is);
 
-  sleep(1);
+  sleepForSec(1);
   ASSERT_FALSE(engine.isSearching());
   ASSERT_FALSE(engine.getSearchLimitsPtr()->isPonder());
 
@@ -845,17 +845,17 @@ TEST_F(UCITest, ponderHit) {
   is = istringstream(command);
   uciHandler.loop(&is);
 
-  sleep(1);
+  sleepForSec(1);
   ASSERT_TRUE(engine.isSearching());
   ASSERT_TRUE(engine.getSearchLimitsPtr()->isPonder());
-  sleep(1);
+  sleepForSec(1);
 
   command = "ponderhit";
   LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
   is = istringstream(command);
   uciHandler.loop(&is);
 
-  sleep(2);
+  sleepForSec(2);
   ASSERT_TRUE(engine.isSearching());
   ASSERT_FALSE(engine.getSearchLimitsPtr()->isPonder());
 
@@ -865,7 +865,7 @@ TEST_F(UCITest, ponderHit) {
   is = istringstream(command);
   uciHandler.loop(&is);
 
-  sleep(1);
+  sleepForSec(1);
   ASSERT_FALSE(engine.isSearching());
   ASSERT_FALSE(engine.getSearchLimitsPtr()->isPonder());
 

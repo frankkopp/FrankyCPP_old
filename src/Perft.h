@@ -51,16 +51,16 @@ public:
   void perft(int maxDepth, bool onDemand);
   void perft_divide(int maxDepth, bool onDemand);
 
-  long getNodes() const { return nodes; }
-  long getCaptureCounter() const { return captureCounter; }
-  long getEnpassantCounter() const { return enpassantCounter; }
-  long getCheckCounter() const { return checkCounter; }
-  long getCheckMateCounter() const { return checkMateCounter; }
+  uint64_t getNodes() const { return nodes; }
+  uint64_t getCaptureCounter() const { return captureCounter; }
+  uint64_t getEnpassantCounter() const { return enpassantCounter; }
+  uint64_t getCheckCounter() const { return checkCounter; }
+  uint64_t getCheckMateCounter() const { return checkMateCounter; }
 
 private:
   void resetCounter();
-  long miniMax(int depth, Position &position, MoveGenerator *moveGeneratorList);
-  long miniMaxOD(int depth, Position &position, MoveGenerator *moveGeneratorList);
+  uint64_t miniMax(int depth, Position &position, MoveGenerator *moveGeneratorList);
+  uint64_t miniMaxOD(int depth, Position &position, MoveGenerator *moveGeneratorList);
 };
 
 

@@ -58,7 +58,7 @@ TEST_F(SearchTest, basic) {
   Position position;
   searchLimits.setInfinite(true);
   search.startSearch(position, searchLimits);
-  sleep(2);
+  sleepForSec(2);
   search.stopSearch();
   search.waitWhileSearching();
   SUCCEED();

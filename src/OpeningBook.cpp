@@ -29,7 +29,6 @@
 #include <fstream>
 #include <mutex>
 #include <regex>
-#include <filesystem>
 #include <thread>
 #include <random>
 #include "OpeningBook.h"
@@ -40,7 +39,8 @@
 #include "ThreadPool.h"
 #include "Position.h"
 #include "PGN_Reader.h"
-#include "Position.h"
+
+#include <boost/thread/thread_functors.hpp>
 
 #define PARALLEL_LINE_PROCESSING
 #define PARALLEL_GAME_PROCESSING
@@ -48,6 +48,10 @@
 
 #ifdef HAS_EXECUTION_LIB
 #include <execution>
+#endif
+
+#ifdef HAS_FILESYSTEM_LIB
+#include <filesystem>
 #endif
 
 OpeningBook::OpeningBook(const std::string &bookPath, const BookFormat &bFormat)
@@ -75,11 +79,19 @@ void OpeningBook::initialize() {
 }
 
 void OpeningBook::readBookFromFile(const std::string &filePath) {
+
+  // get file size
+#ifdef HAS_FILESYSTEM_LIB
+  std::filesystem::path p{filePath};
+    fileSize = std::filesystem::file_size(std::filesystem::canonical(p));
+#else
+  std::ifstream in(filePath, std::ifstream::ate | std::ifstream::binary);
+  fileSize = in.tellg();
+#endif
+
   std::ifstream file(filePath);
   if (file.is_open()) {
-    LOG__DEBUG(Logger::get().BOOK_LOG, "Open book '{}' successful.", filePath);
-    std::filesystem::path p{filePath};
-    fileSize = std::filesystem::file_size(std::filesystem::canonical(p));
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Open book '{}' with {:n} kB successful.", filePath, fileSize / 1024);
     std::vector<std::string> lines = getLinesFromFile(file);
     file.close();
     processAllLines(lines);
@@ -104,8 +116,9 @@ void OpeningBook::processAllLines(std::vector<std::string> &lines) {
       std::for_each(std::execution::par_unseq, lines.begin(), lines.end(),
                     [&](auto &&item) { processLine(item); });
 #else
-      const unsigned int noOfThreads = std::thread::hardware_concurrency();
-      const unsigned int maxNumberOfEntries = lines.size();
+      const auto noOfThreads = std::thread::hardware_concurrency() == 0 ?
+                               4 : std::thread::hardware_concurrency();
+      const auto maxNumberOfEntries = lines.size();
       std::vector<std::thread> threads;
       threads.reserve(noOfThreads);
       for (unsigned int t = 0; t < noOfThreads; ++t) {
@@ -258,12 +271,12 @@ void OpeningBook::processPGNFileFifo(std::vector<std::string> &lines) {
   // prepare FIFO for storing the games
   Fifo<PGN_Game> gamesFifo;
   // prepare thread pool
-  const int numberOfThreads = std::thread::hardware_concurrency();
+  const auto numberOfThreads = std::thread::hardware_concurrency() == 0 ?
+                               4 : std::thread::hardware_concurrency();
   ThreadPool threadPool(numberOfThreads);
   bool finished = false;
-
   // prepare worker for processing found games
-  for (int i = 0; i < numberOfThreads; i++) {
+  for (unsigned int i = 0; i < numberOfThreads; i++) {
     threadPool.enqueue([&] {
       while (!gamesFifo.isClosed()) {
         LOG__TRACE(Logger::get().BOOK_LOG, "Get game...");
@@ -319,14 +332,15 @@ void OpeningBook::processPGNFile(std::vector<std::string> &lines) {
 
 void OpeningBook::processGames(std::vector<PGN_Game>* ptrGames) {// processing games
   LOG__DEBUG(Logger::get().BOOK_LOG, "Processing {:n} games", ptrGames->size());
-  const auto start = std::chrono::high_resolution_clock::now();
+  const auto startTime = std::chrono::high_resolution_clock::now();
 
 #ifdef PARALLEL_GAME_PROCESSING
 #ifdef HAS_EXECUTION_LIB
   std::for_each(std::execution::par_unseq, ptrGames->begin(), ptrGames->end(),
                 [&](auto game) { processGame(game); });
 #else
-  const unsigned int noOfThreads = std::thread::hardware_concurrency();
+  const auto noOfThreads = std::thread::hardware_concurrency() == 0 ?
+                           4 : std::thread::hardware_concurrency();
   const unsigned int maxNumberOfEntries = ptrGames->size();
   std::vector<std::thread> threads;
   threads.reserve(noOfThreads);
@@ -351,8 +365,8 @@ void OpeningBook::processGames(std::vector<PGN_Game>* ptrGames) {// processing g
   }
 #endif
 
-  const auto stop = std::chrono::high_resolution_clock::now();
-  const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+  const auto stopTime = std::chrono::high_resolution_clock::now();
+  const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime);
   LOG__INFO(Logger::get().BOOK_LOG, "Processed {:n} games in {:n} ms", gamesTotal, elapsed.count());
 }
 
@@ -407,6 +421,8 @@ void OpeningBook::addToBook(Position &currentPosition, const Move &move) {
   currentPosition.doMove(move);
   const Key currentKey = currentPosition.getZobristKey();
   const std::string currentFen = currentPosition.printFen();
+
+  fprintln("Add {} ", currentFen);
 
   // get the lock on the data map
   const std::scoped_lock<std::mutex> lock(bookMutex);

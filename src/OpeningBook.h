@@ -40,7 +40,7 @@ struct BookEntry {
   std::vector<Move> moves{};
   std::vector<BookEntry*> ptrNextPosition{};
 
-  BookEntry(const Key &zobrist, const std::string &fen) : key(zobrist), fen(fen), counter{1} {}
+  BookEntry(const Key &zobrist, const std::string &fenString) : key(zobrist), fen(fenString), counter{1} {}
   std::string str();
 };
 

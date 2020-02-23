@@ -59,11 +59,17 @@ CPU  Time: 11.468.750.000 ns (11.468750 sec)
 Move/Undo per sec: 43.596.730 pps
 Move/undo time:    22 ns
 
- 15.2. UBUNTU WSL
- WALL Time: 9.111.689.100 ns (9.111689 sec)
+15.2. UBUNTU WSL
+WALL Time: 9.111.689.100 ns (9.111689 sec)
 CPU  Time: 9.110.000.000 ns (9.110000 sec)
 Move/Undo per sec: 54.884.742 pps
 Move/undo time:    18 ns
+
+23.2. MSVC Compiler
+WALL Time: 10.216.573.000 ns (10.216573 sec)
+CPU  Time: 10.187.500.000 ns (10.187500 sec)
+Move/Undo per sec: 49.079.754 pps
+Move/undo time:    20 ns
  */
 TEST_F(PerformanceTests, Position_PPS) {
 
@@ -101,10 +107,17 @@ TEST_F(PerformanceTests, Position_PPS) {
 23:50 24.1.2020 CYGWIN
 Move generated: 86.000.000 in 3.051670 seconds
 Move generated per second: 28.181.293
+GCC9.2
+Move generated: 86.000.000 in 2.374672 seconds
+Move generated per second: 36.215.520
 
-15.2. UBUNTU WSL
-Move generated: 86.000.000 in 2.241579 seconds
-Move generated per second: 38.365.804
+23.2. UBUNTU WSL
+Move generated: 86.000.000 in 2.088923 seconds
+Move generated per second: 41.169.532
+
+23.2. MSVC
+Move generated: 86.000.000 in 4.054877 seconds
+Move generated per second: 21.209.029
  */
 TEST_F(PerformanceTests, MoveGeneration_MPS) {
   std::string fen;
@@ -125,7 +138,7 @@ TEST_F(PerformanceTests, MoveGeneration_MPS) {
   auto start = std::chrono::high_resolution_clock::now();
   auto finish = std::chrono::high_resolution_clock::now();
 
-  const uint64_t rounds = 5;
+  const uint64_t rounds = 15;
   const int iterations = 1'000'000;
   for (uint64_t round = 0; round < rounds; ++round) {
     fprintln("ROUND: {}", round + 1);
@@ -163,14 +176,14 @@ TEST_F(PerformanceTests, Perft_NPS) {
   
   int DEPTH = 6;
 
-  long perftResults[] = {0,
-                         20,             // 1
-                         400,            // 2
-                         8'902,          // 3
-                         197'281,        // 4
-                         4'865'609,      // 5
-                         119'060'324,    // 6
-                         3'195'901'860}; // 7
+  uint64_t perftResults[] = {0,
+                             20,             // 1
+                             400,            // 2
+                             8'902,          // 3
+                             197'281,        // 4
+                             4'865'609,      // 5
+                             119'060'324,    // 6
+                             3'195'901'860}; // 7
 
   Search search;
   SearchLimits searchLimits;

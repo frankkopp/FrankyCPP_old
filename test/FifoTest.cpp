@@ -143,7 +143,7 @@ TEST_F(FifoTest, popEmpty) {
 TEST_F(FifoTest, popWait) {
   Fifo<std::string> fifo1;
   auto t = std::thread([&]{
-    sleep(2);
+    sleepForSec(2);
     fifo1.push("This it the first item in fifo");
   });
   LOG__DEBUG(Logger::get().TEST_LOG, "Fifo emtpy");
@@ -163,7 +163,7 @@ TEST_F(FifoTest, popWaitCancel) {
   Fifo<std::string> fifo1;
   auto t = std::thread([&]{
     LOG__DEBUG(Logger::get().TEST_LOG, "Fifo closing in 2 sec");
-    sleep(2);
+    sleepForSec(2);
     LOG__DEBUG(Logger::get().TEST_LOG, "Closing Fifo");
     fifo1.close();
   });
@@ -185,7 +185,7 @@ TEST_F(FifoTest, popWaitCancel) {
 
   t = std::thread([&]{
     LOG__DEBUG(Logger::get().TEST_LOG, "Fifo closing in 2 sec");
-    sleep(2);
+    sleepForSec(2);
     LOG__DEBUG(Logger::get().TEST_LOG, "Closing Fifo");
     fifo1.close();
   });
@@ -206,7 +206,7 @@ TEST_F(FifoTest, popWaitCancel) {
 
   t = std::thread([&]{
     LOG__DEBUG(Logger::get().TEST_LOG, "Fifo closing in 2 sec");
-    sleep(2);
+    sleepForSec(2);
     LOG__DEBUG(Logger::get().TEST_LOG, "Closing Fifo");
     fifo1.close();
   });
