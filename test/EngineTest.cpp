@@ -26,6 +26,7 @@
 #include <gtest/gtest.h>
 #include "types.h"
 #include "Logging.h"
+#include "SearchConfig.h"
 #include "Engine.h"
 #include "Position.h"
 
@@ -45,7 +46,9 @@ public:
     Logger::get().TT_LOG->set_level(spdlog::level::debug);
   }
 protected:
-  void SetUp() override {}
+  void SetUp() override {
+    SearchConfig::USE_BOOK = false;
+  }
   void TearDown() override {}
 };
 

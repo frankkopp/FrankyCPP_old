@@ -35,7 +35,7 @@
 
 using testing::Eq;
 
-class TestSuiteTests : public ::testing::Test {
+class TestSuiteTest : public ::testing::Test {
 public:
   static void SetUpTestSuite() {
     NEWLINE;
@@ -51,7 +51,7 @@ protected:
   void TearDown() override {}
 };
 
-TEST_F(TestSuiteTests, BlunderTestSuite) {
+TEST_F(TestSuiteTest, BlunderTestSuite) {
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath+= + "/testsets/franky_blunders.epd";
   MilliSec moveTime = 2'000;
@@ -60,7 +60,7 @@ TEST_F(TestSuiteTests, BlunderTestSuite) {
   testSuite.runTestSuite();
 }
 
-TEST_F(TestSuiteTests, MateTestSuite) {
+TEST_F(TestSuiteTest, MateTestSuite) {
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath+= + "/testsets/mate_test_suite.epd";
   MilliSec moveTime = 1'000;
@@ -69,7 +69,7 @@ TEST_F(TestSuiteTests, MateTestSuite) {
   testSuite.runTestSuite();
 }
 
-TEST_F(TestSuiteTests, CCC1Suite) {
+TEST_F(TestSuiteTest, CCC1Suite) {
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath+= + "/testsets/ccc-1.epd";
   MilliSec moveTime = 5'000;
@@ -78,7 +78,7 @@ TEST_F(TestSuiteTests, CCC1Suite) {
   testSuite.runTestSuite();
 }
 
-TEST_F(TestSuiteTests, NoLotSuite) {
+TEST_F(TestSuiteTest, NoLotSuite) {
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath+= + "/testsets/nolot.epd";
   MilliSec moveTime = 5'000;
@@ -87,7 +87,7 @@ TEST_F(TestSuiteTests, NoLotSuite) {
   testSuite.runTestSuite();
 }
 
-TEST_F(TestSuiteTests, ZugzwangSuite) {
+TEST_F(TestSuiteTest, ZugzwangSuite) {
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath+= + "/testsets/nullMoveZugZwangTest.epd";
   MilliSec moveTime = 5'000;
@@ -96,7 +96,7 @@ TEST_F(TestSuiteTests, ZugzwangSuite) {
   testSuite.runTestSuite();
 }
 
-TEST_F(TestSuiteTests, WAC_Suite) {
+TEST_F(TestSuiteTest, WAC_Suite) {
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath+= + "/testsets/wac.epd";
   MilliSec moveTime = 5'000;
@@ -105,7 +105,7 @@ TEST_F(TestSuiteTests, WAC_Suite) {
   testSuite.runTestSuite();
 }
 
-TEST_F(TestSuiteTests, ecm98) {
+TEST_F(TestSuiteTest, ecm98) {
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath+= + "/testsets/ecm98.epd";
   MilliSec moveTime = 1'000;
@@ -118,7 +118,7 @@ TEST_F(TestSuiteTests, ecm98) {
  * https://sites.google.com/site/strategictestsuite/
  * 10 sec
  */
-TEST_F(TestSuiteTests, STS_Suite) {
+TEST_F(TestSuiteTest, STS_Suite) {
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath+= + "/testsets/STS1-STS15_LAN.EPD";
   MilliSec moveTime = 10'000;

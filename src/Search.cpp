@@ -219,10 +219,14 @@ void Search::run(Position position) {
 
   // initialization done
   initSemaphore.release();
-
+  
   // ########################
   // Opening book
-  if (SearchConfig::USE_BOOK) {
+  if (SearchConfig::USE_BOOK
+      // we only use the opening book in time controlled games
+      && searchLimitsPtr->isTimeControl()
+      // when we got a list of possible moves from UCI we skip the opening book 
+      && searchLimitsPtr->getMoves().empty()) {
     lastSearchResult.bestMove = pOpeningBook->getRandomMove(position.getZobristKey());
     if (lastSearchResult.bestMove != MOVE_NONE) {
       hadBookMove = true;

@@ -77,7 +77,7 @@ public:
 
   // struct Entry has 16 Byte
   static constexpr uint64_t ENTRY_SIZE = sizeof(Entry);
-  static_assert(CacheLineSize % ENTRY_SIZE == 0, "Cluster size incorrect");
+//  static_assert(CacheLineSize % ENTRY_SIZE == 0, "Cluster size incorrect");
 
 private:
 

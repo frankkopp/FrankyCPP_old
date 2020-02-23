@@ -24,6 +24,7 @@
  */
 
 #include <gtest/gtest.h>
+#include <SearchConfig.h>
 
 #include "Logging.h"
 #include "types.h"
@@ -46,7 +47,9 @@ public:
     Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
   }
 protected:
-  void SetUp() override {}
+  void SetUp() override {
+    SearchConfig::USE_BOOK = false;
+  }
   void TearDown() override {}
 };
 
@@ -771,6 +774,7 @@ TEST_F(UCITest, ponderFinishedHit) {
   Engine engine;
 
   EngineConfig::ponder = true;
+  SearchConfig::USE_BOOK = false;
 
   string command = "setoption name Ponder value true";
   LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
@@ -823,6 +827,7 @@ TEST_F(UCITest, ponderHit) {
   Engine engine;
 
   EngineConfig::ponder = true;
+  SearchConfig::USE_BOOK = false;
 
   string command = "setoption name Ponder value true";
   LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);

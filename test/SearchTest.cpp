@@ -46,6 +46,7 @@ protected:
     Logger::get().TEST_LOG->set_level(spdlog::level::debug);
     Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
     Logger::get().BOOK_LOG->set_level(spdlog::level::debug);
+    SearchConfig::USE_BOOK = false;
   }
 
   void TearDown() override {}
@@ -99,6 +100,9 @@ TEST_F(SearchTest, timerTest) {
   Search search;
   SearchLimits searchLimits;
   Position position;
+
+  SearchConfig::USE_BOOK = false;
+
   searchLimits.setWhiteTime(60'000);  //  1.475 ms
   searchLimits.setBlackTime(60'000);
   search.startSearch(position, searchLimits);
@@ -113,13 +117,14 @@ TEST_F(SearchTest, timerTest) {
   search.addExtraTime(0.5); // 0.737
   search.waitWhileSearching();
   EXPECT_GE(search.getSearchStats().lastSearchTime, 737);
-  EXPECT_LT(search.getSearchStats().lastSearchTime, 1'000);
+  EXPECT_LT(search.getSearchStats().lastSearchTime, 1'200);
 }
 
 TEST_F(SearchTest, movetime) {
   Search search;
   SearchLimits searchLimits;
   Position position;
+  SearchConfig::USE_BOOK = false;
   searchLimits.setMoveTime(2'000);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();

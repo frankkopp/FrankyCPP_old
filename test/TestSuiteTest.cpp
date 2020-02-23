@@ -36,7 +36,7 @@
 
 using testing::Eq;
 
-class TestSuiteTests : public ::testing::Test {
+class TestSuiteTest : public ::testing::Test {
 public:
   static void SetUpTestSuite() {
     NEWLINE;
@@ -47,13 +47,14 @@ protected:
   void SetUp() override {
     Logger::get().TSUITE_LOG->set_level(spdlog::level::debug);
     Logger::get().SEARCH_LOG->set_level(spdlog::level::info);
+    SearchConfig::USE_BOOK = false;
   }
 
   void TearDown() override {}
 };
 
 
-TEST_F(TestSuiteTests, runTestSet) {
+TEST_F(TestSuiteTest, runTestSet) {
 
   std::string filePath = "abc";
   MilliSec moveTime = 5'000;
@@ -73,7 +74,7 @@ TEST_F(TestSuiteTests, runTestSet) {
   }
 }
 
-TEST_F(TestSuiteTests, cleanUpLine) {
+TEST_F(TestSuiteTest, cleanUpLine) {
   std::string filePath = "";
   MilliSec moveTime = 5'000;
   Depth depth = static_cast<Depth>(10);
@@ -85,7 +86,7 @@ TEST_F(TestSuiteTests, cleanUpLine) {
   ASSERT_TRUE(line.empty());
 }
 
-TEST_F(TestSuiteTests, readLine) {
+TEST_F(TestSuiteTest, readLine) {
 
   std::string filePath = "";
   MilliSec moveTime = 5'000;
@@ -124,7 +125,7 @@ TEST_F(TestSuiteTests, readLine) {
 
 }
 
-TEST_F(TestSuiteTests, readFile) {
+TEST_F(TestSuiteTest, readFile) {
 
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath += +"/testsets/franky_tests.epd";
@@ -139,7 +140,7 @@ TEST_F(TestSuiteTests, readFile) {
   ASSERT_EQ(13, ts.size());
 }
 
-TEST_F(TestSuiteTests, singleTest) {
+TEST_F(TestSuiteTest, singleTest) {
   std::string filePath{};
   MilliSec moveTime = 2'000;
   Depth depth{0};
@@ -172,7 +173,7 @@ TEST_F(TestSuiteTests, singleTest) {
 }
 
 // 100%
-TEST_F(TestSuiteTests, FrankyTestSuite) {
+TEST_F(TestSuiteTest, FrankyTestSuite) {
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath += +"/testsets/franky_tests.epd";
   MilliSec moveTime = 1'000;

@@ -82,7 +82,7 @@ namespace INIT {
 
 ///////////////////////////////////
 //// DEPTH
-enum Depth : int {
+enum Depth : int8_t {
   DEPTH_NONE = 0,
   DEPTH_ONE = 1,
   DEPTH_TWO = 2,
@@ -297,7 +297,7 @@ inline Value operator-(Value d1, Ply d2) {
 
 ///////////////////////////////////
 //// VALUE TYPE
-enum Value_Type : int {
+enum Value_Type : uint8_t {
   TYPE_NONE = 0,
   // the node for the value was fully calculated and is exact
     TYPE_EXACT = 1,

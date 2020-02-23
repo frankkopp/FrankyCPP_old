@@ -176,7 +176,7 @@ TEST_F(FifoTest, popWaitCancel) {
   auto stop = std::chrono::high_resolution_clock::now();
   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
   LOG__DEBUG(Logger::get().TEST_LOG, "Got item '{}' after {:n} ms", ptrItem ? *ptrItem : "NULL", elapsed.count());
-  EXPECT_GT(elapsed.count(), 2'000);
+  EXPECT_GE(elapsed.count(), 2'000);
   EXPECT_EQ(std::nullopt, ptrItem);
   t.join();
 
