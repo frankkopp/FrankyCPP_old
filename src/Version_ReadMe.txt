@@ -19,9 +19,9 @@ v 0.5 (in progress)
 ================================================================================
 - TODO:
     - Testing
+- DONE:
     - UCI Options
     - Simple Opening Book
-- DONE:
     - TestSuites
     - Beta Cut Movenumber Counter
     - Aspiration Window Search

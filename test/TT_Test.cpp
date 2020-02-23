@@ -44,6 +44,22 @@ protected:
   void TearDown() override {}
 };
 
+TEST_F(TT_Test, entrySize) {
+  struct Entry {
+    // sorted by size to achieve smallest struct size
+    // using bitfield for smallest size
+    Key key = 0; // 64 bit
+    Move move = MOVE_NONE; // 32 bit
+    Value value = VALUE_NONE; // 16 bit signed
+    Depth depth:7; // 0-127
+    uint8_t age:3; // 0-7
+    Value_Type type:2; // 4 values
+    bool mateThreat:1; // 1-bit bool
+  };
+  LOG__INFO(Logger::get().TEST_LOG, "Entry size = {} Byte", sizeof(Entry));
+
+}
+
 TEST_F(TT_Test, basic) {
   TT tt;
   LOG__INFO(Logger::get().TEST_LOG, "Trying to create a TT with {:n} MB in size (default)", TT::DEFAULT_TT_SIZE);
@@ -70,7 +86,7 @@ TEST_F(TT_Test, basic100) {
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
-  ASSERT_EQ( 4194304, tt.getMaxNumberOfEntries());
+  ASSERT_EQ(4194304, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
 }
 

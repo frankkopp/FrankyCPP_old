@@ -57,17 +57,17 @@ protected:
 
   Result process(Product& p) {
     // simulate cpu intense calculation
-    auto f = 1000000000;
+    auto f = 100000000;
     while (f > 1) f /= 1.00000001;
     const Result result = Result{p.producedNumber + 1'000'000 + f};
-    std::cout << "   >>> Processing product...done: " << result.producedNumber << std::endl;;
+//    std::cout << "   >>> Processing product...done: " << result.producedNumber << std::endl;;
     return result;
   }
 
   Product produceProduct() {
-    std::this_thread::sleep_for(std::chrono::milliseconds (100));
+    std::this_thread::sleep_for(std::chrono::milliseconds (10));
     const Product product = Product{randomU64(rd)};
-    std::cout << "<<< Producing product...done: " << product.producedNumber << std::endl;;
+//    std::cout << "<<< Producing product...done: " << product.producedNumber << std::endl;;
     return product;
   }
 

@@ -82,7 +82,7 @@ TEST_F(OpeningBookTest, initPGNSmall) {
   OpeningBook book(filePathStr, OpeningBook::BookFormat::PGN);
   book.initialize();
   LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
-  EXPECT_EQ(726, book.size());
+  EXPECT_EQ(1'435, book.size());
 }
 
 TEST_F(OpeningBookTest, initPGNMedium) {
@@ -108,7 +108,7 @@ TEST_F(OpeningBookTest, initPGNMedium) {
   //  [16:27:22:703637] [t:41824     ] [Test_Logger      ] [debug   ]: Entries in book: 216.070
 }
 
-TEST_F(OpeningBookTest, initPGNLarge) {
+TEST_F(OpeningBookTest, DISABLED_initPGNLarge) {
   std::string filePathStr = FrankyCPP_PROJECT_ROOT;
   filePathStr += +"/books/superbook.pgn";
   OpeningBook book(filePathStr, OpeningBook::BookFormat::PGN);

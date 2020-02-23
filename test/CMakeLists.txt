@@ -32,8 +32,10 @@ add_executable(
         BOOST_Test.cpp
         PerformanceTests.cpp
         TestSuiteTest.cpp
-        ClionGTestBugTest.cpp
-        OpeningBookTest.cpp ThreadPoolTest.cpp FifoTest.cpp PGN_ReaderTest.cpp)
+        OpeningBookTest.cpp
+        ThreadPoolTest.cpp
+        FifoTest.cpp
+        PGN_ReaderTest.cpp)
 
 target_link_libraries(
         ${testExeName}
