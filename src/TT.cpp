@@ -26,30 +26,38 @@
 #include <chrono>
 #include <vector>
 #include <thread>
+#include <iostream>
+#include <new>
 #include "Logging.h"
 #include "TT.h"
 
-TT::TT(uint64_t newSizeInBytes) {
+TT::TT(uint64_t newSizeInMByte) {
   noOfThreads = std::thread::hardware_concurrency();
-  resize(newSizeInBytes);
+  resize(newSizeInMByte);
 }
 
-void TT::resize(const uint64_t newSizeInByte) {
-  LOG__TRACE(Logger::get().TT_LOG, "Resizing TT from {:n} to {:n}", sizeInByte, newSizeInByte);
-  delete[] _data;
-  // number of entries
-  sizeInByte = newSizeInByte;
+void TT::resize(const uint64_t newSizeInMByte) {
+  if (newSizeInMByte > MAX_SIZE_MB) {
+    LOG__ERROR(Logger::get().TT_LOG, "Requested size for TT of {:n} MB reduced to max of {:n} MB", newSizeInMByte, MAX_SIZE_MB);
+    sizeInByte = MAX_SIZE_MB * MB;
+  }
+  else {
+    LOG__TRACE(Logger::get().TT_LOG, "Resizing TT from {:n} MB to {:n} MB", sizeInByte, newSizeInMByte);
+    sizeInByte = newSizeInMByte * MB;
+  }
   // find the highest power of 2 smaller than maxPossibleEntries
-  maxNumberOfEntries = (1ULL
-    << static_cast<uint64_t>(std::floor(std::log2(sizeInByte / ENTRY_SIZE))));
+  maxNumberOfEntries = (1ULL << static_cast<uint64_t>(std::floor(std::log2(sizeInByte / ENTRY_SIZE))));
   hashKeyMask = maxNumberOfEntries - 1;
   // if TT is resized to 0 we cant have any entries.
   if (sizeInByte == 0) maxNumberOfEntries = 0;
-  _data = new Entry[maxNumberOfEntries];
   sizeInByte = maxNumberOfEntries * ENTRY_SIZE;
+
+  delete[] _data;
+  _data = new Entry[maxNumberOfEntries];
+
   clear();
-  LOG__INFO(Logger::get().TT_LOG, "TT Size {:n} Byte, Capacity {:n} entries (size={}Byte) (Requested were {:n} Bytes)",
-            sizeInByte, maxNumberOfEntries, sizeof(Entry), newSizeInByte);
+  LOG__INFO(Logger::get().TT_LOG, "TT Size {:n} MByte, Capacity {:n} entries (size={}Byte) (Requested were {:n} MBytes)",
+            sizeInByte / MB, maxNumberOfEntries, sizeof(Entry), newSizeInMByte);
 }
 
 void TT::clear() {
@@ -87,12 +95,13 @@ void TT::clear() {
   numberOfProbes = 0;
   auto finish = std::chrono::high_resolution_clock::now();
   auto time = std::chrono::duration_cast<std::chrono::milliseconds>(finish - startTime).count();
-  LOG__INFO(Logger::get().TT_LOG, "TT cleared {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
+  LOG__DEBUG(Logger::get().TT_LOG, "TT cleared {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
 }
 
 void TT::put(const Key key, const Depth depth, const Move move, const Value value,
              const Value_Type type, const bool mateThreat, const bool forced) {
   assert (value > VALUE_NONE);
+  assert (depth >= 0);
 
   // if the size of the TT = 0 we
   // do not store anything
@@ -187,7 +196,17 @@ void TT::ageEntries() {
   for (std::thread &th: threads) th.join();
   auto finish = std::chrono::high_resolution_clock::now();
   auto time = std::chrono::duration_cast<std::chrono::milliseconds>(finish - timePoint).count();
-  LOG__INFO(Logger::get().TT_LOG, "TT aged {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
+  LOG__DEBUG(Logger::get().TT_LOG, "TT aged {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
+}
+
+std::string TT::str() {
+  return fmt::format(
+    "TT: size {:n} MB max entries {:n} of size {:n} Bytes entries {:n} ({:n}%) puts {:n} "
+    "updates {:n} collisions {:n} overwrites {:n} probes {:n} hits {:n} ({:n}%) misses {:n} ({:n}%)",
+    sizeInByte / MB, maxNumberOfEntries, sizeof(Entry), numberOfEntries, hashFull() / 10,
+    numberOfPuts, numberOfUpdates, numberOfCollisions, numberOfOverwrites, numberOfProbes,
+    numberOfHits, numberOfProbes ? (numberOfHits * 100) / numberOfProbes : 0,
+    numberOfMisses, numberOfProbes ? (numberOfMisses * 100) / numberOfProbes : 0);
 }
 
 std::ostream &operator<<(std::ostream &os, const TT::Entry &entry) {

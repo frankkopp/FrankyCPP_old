@@ -1,19 +1,16 @@
 message("====================================================================")
-message("FrankyCPP Main CMAKE")
+message("FrankyCPP Main")
+message("CMAKE " ${CMAKE_VERSION} " " ${CMAKE_COMMAND})
 message("====================================================================")
 
 cmake_minimum_required(VERSION 3.13)
 
 # Project name and version
-project(FrankyCPP VERSION 0.4)
+project(FrankyCPP VERSION 0.5)
 
 # updates template file and replaces placeholder variables
 configure_file(src/version.h.in version.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
-# Platform
-message("Recognized CMAKE Version is " ${CMAKE_VERSION} " " ${CMAKE_COMMAND})
-message("Recognized platform is " ${CMAKE_SYSTEM_NAME} " " ${CMAKE_SYSTEM_VERSION})
 
 # C++ settings
 set(CMAKE_CXX_STANDARD 17)
@@ -21,25 +18,60 @@ set(CMAKE_CXX_STANDARD 17)
 # Unit testing enabled
 enable_testing()
 
+# Platform
+message("Recognized platform is " ${CMAKE_SYSTEM_NAME} " " ${CMAKE_SYSTEM_VERSION})
+
 # Compiler Settings
 message("Compiler is " ${CMAKE_CXX_COMPILER_ID} " " ${CMAKE_CXX_COMPILER_VERSION} " " ${CMAKE_CXX_COMPILER})
 
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang") # Apple
-    message("Compiler Settings: CLANG")
+if (CMAKE_CXX_COMPILER_ID EQUAL "Clang")
+    message("Compiler Settings: Clang")
     set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra ")
     set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fprofile-instr-generate -fcoverage-mapping -Wpedantic -Wshadow -Wno-conversion -Wunreachable-code -Wuninitialized  -Wold-style-cast -Wunused-variable -Wfloat-equal -Wno-gnu-zero-variadic-macro-arguments")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-elseif (CMAKE_COMPILER_IS_GNUCXX) # CYGWIN
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "9")
+        message("Using HAS_EXECUTION_LIB")
+        add_compile_definitions(HAS_EXECUTION_LIB)
+        message("Using HAS_FILESYSTEM_LIB")
+        add_compile_definitions(HAS_FILESYSTEM_LIB)
+    endif()
+
+elseif(CMAKE_CXX_COMPILER_ID EQUAL "AppleClang")
+    message("Compiler Settings: AppleClang")
+    set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra ")
+    set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fprofile-instr-generate -fcoverage-mapping -Wpedantic -Wshadow -Wno-conversion -Wunreachable-code -Wuninitialized  -Wold-style-cast -Wunused-variable -Wfloat-equal -Wno-gnu-zero-variadic-macro-arguments")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "11")
+    #    message("Using HAS_EXECUTION_LIB")
+    #    add_compile_definitions(HAS_EXECUTION_LIB)
+        message("Using HAS_FILESYSTEM_LIB")
+        add_compile_definitions(HAS_FILESYSTEM_LIB)
+    endif()
+
+elseif (CMAKE_COMPILER_IS_GNUCXX)
     message("Compiler Settings: GNU")
     set(CMAKE_CXX_FLAGS "-std=c++17 -m64 -Wall -Wextra -Wpedantic -Wno-error=pedantic -Wshadow -Wno-unknown-pragmas -Wno-variadic-macros")
     set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 --coverage -Wno-unused-parameter -Wno-unused-variable")
     # additional: -Wno-unknown-pragmas -Weffc++ -Wimplicit-fallthrough -Wswitch -Wpointer-arith -Wcast-qual -Wconversion -Wno-sign-conversion -Wno-error=padded -Wno-error=inline")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC") # Visual Studio MSVC
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "9.2")
+        #message("Using HAS_EXECUTION_LIB")
+        #add_compile_definitions(HAS_EXECUTION_LIB)
+        message("Using HAS_FILESYSTEM_LIB")
+        add_compile_definitions(HAS_FILESYSTEM_LIB)
+    endif()
+
+elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     message("Compiler Settings: MSVC")
     #set(CMAKE_CXX_FLAGS "/W4")
     #set(CMAKE_CXX_FLAGS_DEBUG "/Od")
     #set(CMAKE_CXX_FLAGS_RELEASE "/O2")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "19")
+        message("Using HAS_EXECUTION_LIB")
+        add_compile_definitions(HAS_EXECUTION_LIB)
+        message("Using HAS_FILESYSTEM_LIB")
+        add_compile_definitions(HAS_FILESYSTEM_LIB)
+    endif()
 endif ()
 
 message("Compiler DEBUG flags: " ${CMAKE_CXX_FLAGS} " " ${CMAKE_CXX_FLAGS_DEBUG})
@@ -48,7 +80,7 @@ message("EXEC: " ${CMAKE_CXX_LINK_EXECUTABLE})
 
 # For downloading with GIT
 message("Finding GIT...")
-set(GIT_EXECUTABLE)
+set(GIT_EXECUTABLE )
 find_package(Git)
 if (GIT_FOUND)
     message("git found: ${GIT_EXECUTABLE}")
@@ -67,6 +99,7 @@ FetchContent_Declare(
         GIT_TAG             release-1.10.0
 )
 message("Downloading/Update Google Test")
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_GetProperties(googletest)
 if(NOT googletest_POPULATED)
     # Fetch the content using previously declared details
@@ -79,7 +112,6 @@ if(NOT googletest_POPULATED)
 endif()
 
 FetchContent_MakeAvailable(googletest)
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 include_directories(
         ${googletest_SOURCE_DIR}/googletest/include
 )
@@ -121,9 +153,10 @@ if (WIN32)
     set(BOOST_INCLUDEDIR "C:/Boost/boost_1_72_0")
     set(BOOST_LIBRARYDIR "C:/Boost/boost_1_72_0/lib64-msvc-14.2")
 endif ()
-set(Boost_USE_MULTITHREADED ON)
-set(Boost_USE_STATIC_LIBS ON)
-set(Boost_USE_STATIC_RUNTIME OFF)
+set (Boost_DEBUG FALSE)
+set (Boost_USE_MULTITHREADED TRUE)
+set (Boost_USE_STATIC_LIBS TRUE)
+set (Boost_USE_STATIC_RUNTIME FALSE)
 find_package(Boost 1.72.0 COMPONENTS program_options timer log log_setup REQUIRED)
 if (Boost_FOUND)
     message("BOOST found: " ${BOOST_ROOT} " " ${Boost_INCLUDE_DIR})

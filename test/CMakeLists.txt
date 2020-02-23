@@ -9,9 +9,10 @@ set(CMAKE_CXX_STANDARD 17)
 set(testExeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR}_Test)
 
 include(GoogleTest)
-add_executable(${testExeName}
+add_executable(
+        ${testExeName}
         LoggingTest.cpp
-        GlobalsTest.cpp
+        TypesTest.cpp
         SemaphoreTest.cpp
         ValuesTest.cpp
         BitboardTest.cpp
@@ -29,7 +30,12 @@ add_executable(${testExeName}
         TestSuiteTests.cpp
         SelfPlayUCITest.cpp
         BOOST_Test.cpp
-        PerformanceTests.cpp)
+        PerformanceTests.cpp
+        TestSuiteTest.cpp
+        OpeningBookTest.cpp
+        ThreadPoolTest.cpp
+        FifoTest.cpp
+        PGN_ReaderTest.cpp)
 
 target_link_libraries(
         ${testExeName}

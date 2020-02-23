@@ -90,20 +90,20 @@ void Position::doMove(const Move move) {
   const PieceType promotionPT = promotionType(move);
 
   // save state of board for undo
-  historyState[historyCounter].moveHistory = move;
-  historyState[historyCounter].fromPieceHistory = fromPC;
-  historyState[historyCounter].capturedPieceHistory = targetPC;
-  historyState[historyCounter].castlingRights_History = castlingRights;
-  historyState[historyCounter].enPassantSquare_History = enPassantSquare;
-  historyState[historyCounter].halfMoveClockHistory = halfMoveClock;
-  historyState[historyCounter].zobristKey_History = zobristKey;
-  historyState[historyCounter].hasCheckFlagHistory = hasCheckFlag;
-  historyState[historyCounter].hasMateFlagHistory = hasMateFlag;
-  historyCounter++;
+  assert((historyCounter < MAX_MOVES-1) && "Can't have more move than MAX_MOVES");
+  historyState[historyCounter++] = {
+    zobristKey,
+    move,
+    fromPC,
+    targetPC,
+    castlingRights,
+    enPassantSquare,
+    halfMoveClock,
+    hasCheckFlag
+  };
 
   // reset check and mate flag
   hasCheckFlag = FLAG_TBD;
-  hasMateFlag = FLAG_TBD;
 
   // do move
   switch (moveType) {
@@ -244,8 +244,7 @@ void Position::undoMove() {
     case NORMAL:
       movePiece(getToSquare(move), getFromSquare(move));
       if (historyState[historyCounter].capturedPieceHistory != PIECE_NONE) {
-        putPiece(historyState[historyCounter].capturedPieceHistory,
-                 getToSquare(move));
+        putPiece(historyState[historyCounter].capturedPieceHistory, getToSquare(move));
       }
       break;
 
@@ -253,16 +252,14 @@ void Position::undoMove() {
       removePiece(getToSquare(move));
       putPiece(makePiece(nextPlayer, PAWN), getFromSquare(move));
       if (historyState[historyCounter].capturedPieceHistory != PIECE_NONE) {
-        putPiece(historyState[historyCounter].capturedPieceHistory,
-                 getToSquare(move));
+        putPiece(historyState[historyCounter].capturedPieceHistory, getToSquare(move));
       }
       break;
 
     case ENPASSANT:
       // ignore Zobrist Key as it will be restored via history
       movePiece(getToSquare(move), getFromSquare(move));
-      putPiece(makePiece(~nextPlayer, PAWN),
-               getToSquare(move) + pawnDir[~nextPlayer]);
+      putPiece(makePiece(~nextPlayer, PAWN), getToSquare(move) + pawnDir[~nextPlayer]);
       break;
 
     case CASTLING:
@@ -297,30 +294,27 @@ void Position::undoMove() {
   halfMoveClock = historyState[historyCounter].halfMoveClockHistory;
   zobristKey = historyState[historyCounter].zobristKey_History;
   hasCheckFlag = historyState[historyCounter].hasCheckFlagHistory;
-  hasMateFlag = historyState[historyCounter].hasMateFlagHistory;
 }
 
 void Position::doNullMove() {
   // save state of board for undo
-  historyState[historyCounter].moveHistory = MOVE_NONE;
-  historyState[historyCounter].fromPieceHistory = PIECE_NONE;
-  historyState[historyCounter].capturedPieceHistory = PIECE_NONE;
-  historyState[historyCounter].castlingRights_History = castlingRights;
-  historyState[historyCounter].enPassantSquare_History = enPassantSquare;
-  historyState[historyCounter].halfMoveClockHistory = halfMoveClock;
-  historyState[historyCounter].zobristKey_History = zobristKey;
-  historyState[historyCounter].hasCheckFlagHistory = hasCheckFlag;
-  historyState[historyCounter].hasMateFlagHistory = hasMateFlag;
-  historyCounter++;
+  historyState[historyCounter++] = {
+    zobristKey,
+    MOVE_NONE,
+    PIECE_NONE,
+    PIECE_NONE,
+    castlingRights,
+    enPassantSquare,
+    halfMoveClock,
+    hasCheckFlag
+  };
 
   // reset check and mate flag
   hasCheckFlag = FLAG_TBD;
-  hasMateFlag = FLAG_TBD;
 
   // clear en passant
   if (enPassantSquare != SQ_NONE) {
-    zobristKey =
-      zobristKey ^ Zobrist::enPassantFile[fileOf(enPassantSquare)]; // out
+    zobristKey = zobristKey ^ Zobrist::enPassantFile[fileOf(enPassantSquare)]; // out
     enPassantSquare = SQ_NONE;
   }
 
@@ -342,7 +336,6 @@ void Position::undoNullMove() {
   halfMoveClock = historyState[historyCounter].halfMoveClockHistory;
   zobristKey = historyState[historyCounter].zobristKey_History;
   hasCheckFlag = historyState[historyCounter].hasCheckFlagHistory;
-  hasMateFlag = historyState[historyCounter].hasMateFlagHistory;
 }
 
 bool Position::isAttacked(const Square sq, const Color byColor) const {
@@ -395,14 +388,12 @@ bool Position::isAttacked(const Square sq, const Color byColor) const {
         && enPassantSquare + SOUTH == sq) {
       // left
       Square square = sq + WEST;
-      if (Bitboards::distance(square, square) == 1 &&
-          getPiece(square) == WHITE_PAWN) {
+      if (getPiece(square) == WHITE_PAWN) {
         return true;
       }
       // right
-      square = square + EAST;
-      return Bitboards::distance(square, square) == 1 &&
-             getPiece(square) == WHITE_PAWN;
+      square = sq + EAST;
+      return getPiece(square) == WHITE_PAWN;
     }
       // black is attacker (assume not noColor)
     else if (byColor == BLACK
@@ -412,14 +403,12 @@ bool Position::isAttacked(const Square sq, const Color byColor) const {
              && enPassantSquare + NORTH == sq) {
       // attack from left
       Square square = sq + WEST;
-      if (Bitboards::distance(square, square) == 1 &&
-          getPiece(square) == BLACK_PAWN) {
+      if (getPiece(square) == BLACK_PAWN) {
         return true;
       }
       // right
-      square = square + EAST;
-      return Bitboards::distance(square, square) == 1 &&
-             getPiece(square) == BLACK_PAWN;
+      square = sq + EAST;
+      return getPiece(square) == BLACK_PAWN;
     }
   }
   return false;
@@ -876,11 +865,6 @@ std::string Position::str() const {
          << (hasCheckFlag == FLAG_TBD
              ? "N/A"
              : hasCheckFlag == FLAG_TRUE ? "Check" : "No check");
-  output << " Check Mate: "
-         << (hasMateFlag == FLAG_TBD
-             ? "N/A"
-             : hasMateFlag == FLAG_TRUE ? "Mate" : "No mate")
-         << std::endl;
   output << "Gamephase: " << gamePhase << std::endl;
   output << "Material: white=" << material[WHITE]
          << " black=" << material[BLACK] << std::endl;
@@ -926,20 +910,19 @@ std::string Position::printFen() const {
     int emptySquares = 0;
     for (File f = FILE_A; f <= FILE_H; ++f) {
       Piece pc = getPiece(getSquare(f, r));
-
       if (pc == PIECE_NONE) {
         emptySquares++;
       }
       else {
         if (emptySquares) {
-          fen << std::to_string(emptySquares);
+          fen << emptySquares;
           emptySquares = 0;
         }
         fen << pieceToChar[pc];
       }
     }
     if (emptySquares) {
-      fen << std::to_string(emptySquares);
+      fen << emptySquares;
     }
     if (r > RANK_1) {
       fen << "/";
@@ -1148,7 +1131,6 @@ void Position::initializeBoard() {
   }
 
   hasCheckFlag = FLAG_TBD;
-  hasMateFlag = FLAG_TBD;
   gamePhase = 0;
 }
 

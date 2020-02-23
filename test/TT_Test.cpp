@@ -36,49 +36,103 @@ public:
     NEWLINE;
     INIT::init();
     NEWLINE;
+    Logger::get().TEST_LOG->set_level(spdlog::level::debug);
+    Logger::get().TT_LOG->set_level(spdlog::level::debug);
   }
 protected:
   void SetUp() override {}
   void TearDown() override {}
 };
 
+TEST_F(TT_Test, entrySize) {
+  struct Entry {
+    // sorted by size to achieve smallest struct size
+    // using bitfield for smallest size
+    Key key = 0; // 64 bit
+    Move move = MOVE_NONE; // 32 bit
+    Value value = VALUE_NONE; // 16 bit signed
+    Depth depth:7; // 0-127
+    uint8_t age:3; // 0-7
+    Value_Type type:2; // 4 values
+    bool mateThreat:1; // 1-bit bool
+  };
+  LOG__INFO(Logger::get().TEST_LOG, "Entry size = {} Byte", sizeof(Entry));
+
+}
+
 TEST_F(TT_Test, basic) {
-  LOG__INFO(Logger::get().TEST_LOG, "Trying to create a TT with {:n} MB in size (default)", TT::DEFAULT_TT_SIZE);
   TT tt;
+  LOG__INFO(Logger::get().TEST_LOG, "Trying to create a TT with {:n} MB in size (default)", TT::DEFAULT_TT_SIZE);
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
+  ASSERT_EQ(131072, tt.getMaxNumberOfEntries());
+  ASSERT_EQ(0, tt.getNumberOfEntries());
+}
 
+TEST_F(TT_Test, basic10) {
   LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:n} MB in size", 10);
-  tt.resize(10 * TT::MB);
+  TT tt(10);
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
   ASSERT_EQ(524288, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
+}
 
+TEST_F(TT_Test, basic100) {
+  LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:n} MB in size", 100);
+  TT tt(100);
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
+  ASSERT_EQ(4194304, tt.getMaxNumberOfEntries());
+  ASSERT_EQ(0, tt.getNumberOfEntries());
+}
+
+TEST_F(TT_Test, basic1000) {
   LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:n} MB in size", 1'000);
-  tt.resize(1'000 * TT::MB);
+  TT tt(1'000);
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
+  ASSERT_EQ(33554432, tt.getMaxNumberOfEntries());
+  ASSERT_EQ(0, tt.getNumberOfEntries());
+}
 
+TEST_F(TT_Test, basic10000) {
   LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:n} MB in size", 10'000);
-  tt.resize(10'000 * TT::MB);
+  TT tt(10'000);
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
+  ASSERT_EQ(536870912, tt.getMaxNumberOfEntries());
+  ASSERT_EQ(0, tt.getNumberOfEntries());
+}
 
-  //LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:n} MB in size", 32'000);
-  //tt.resize(32'000 * TT::MB);
-  //LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
-  //LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
-  //LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
-  //ASSERT_EQ(1073741824, tt.getMaxNumberOfEntries());
-  //ASSERT_EQ(0, tt.getNumberOfEntries());
+TEST_F(TT_Test, basic32000) {
+  LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:n} MB in size", 32'000);
+  TT tt(32'000);
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
+  ASSERT_EQ(1073741824, tt.getMaxNumberOfEntries());
+  ASSERT_EQ(0, tt.getNumberOfEntries());
+}
 
+TEST_F(TT_Test, basic36000) {
+  LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:n} MB in size", 32'000);
+  TT tt(36'000);
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
+  ASSERT_EQ(2147483648, tt.getMaxNumberOfEntries());
+  ASSERT_EQ(0, tt.getNumberOfEntries());
+}
+
+TEST_F(TT_Test, basic64) {
   LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:n} MB in size", 64);
-  tt.resize(64 * TT::MB);
+  TT tt(64);
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
@@ -97,16 +151,15 @@ TEST_F(TT_Test, zero) {
 }
 
 TEST_F(TT_Test, parallelClear) {
-  const int sizeInMB = 16'000;
+  const int sizeInMB = 4'096;
   LOG__INFO(Logger::get().TEST_LOG, "Trying to create a TT with {:n} MB in size", sizeInMB);
-  TT tt = TT(sizeInMB * TT::MB);
+  TT tt = TT(sizeInMB);
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
-  ASSERT_EQ(536870912, tt.getMaxNumberOfEntries());
+  ASSERT_EQ(268'435'456, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
-
-  tt.setThreads(4);
+  tt.setThreads(8);
   tt.clear();
 }
 
@@ -115,7 +168,7 @@ TEST_F(TT_Test, put) {
   std::mt19937_64 rg(rd());
   std::uniform_int_distribution<unsigned long long> randomKey;
 
-  TT tt(10 * TT::MB);
+  TT tt(10);
 
   uint64_t collisionDistance = tt.maxNumberOfEntries;
 
@@ -225,7 +278,7 @@ TEST_F(TT_Test, get) {
   std::mt19937_64 rg(rd());
   std::uniform_int_distribution<unsigned long long> randomKey;
 
-  TT tt(10 * TT::MB);
+  TT tt(10);
 
   uint64_t collisionDistance = tt.maxNumberOfEntries;
 

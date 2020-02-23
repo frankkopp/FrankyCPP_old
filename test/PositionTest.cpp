@@ -754,6 +754,23 @@ TEST_F(PositionTest, isAttacked) {
   ASSERT_TRUE(position.isAttacked(SQ_D7, WHITE));
   ASSERT_FALSE(position.isAttacked(SQ_E8, WHITE));
 
+  // en passant
+  fen = "rnbqkbnr/1pp1pppp/p7/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6";
+  position = Position(fen);
+  ASSERT_TRUE(position.isAttacked(SQ_D5, WHITE));
+
+  fen = "rnbqkbnr/1pp1pppp/p7/2Pp4/8/8/PP1PPPPP/RNBQKBNR w KQkq d6";
+  position = Position(fen);
+  ASSERT_TRUE(position.isAttacked(SQ_D5, WHITE));
+
+  fen = "rnbqkbnr/pppp1ppp/8/8/3Pp3/7P/PPP1PPP1/RNBQKBNR b - d3";
+  position = Position(fen);
+  ASSERT_TRUE(position.isAttacked(SQ_D4, BLACK));
+
+  fen = "rnbqkbnr/pppp1ppp/8/8/2pP4/7P/PPP1PPP1/RNBQKBNR b - d3";
+  position = Position(fen);
+  ASSERT_TRUE(position.isAttacked(SQ_D4, BLACK));
+
   // bug tests
   fen = "r1bqk1nr/pppp1ppp/2nb4/1B2B3/3pP3/8/PPP2PPP/RN1QK1NR b KQkq -";
   position = Position(fen);
@@ -764,6 +781,13 @@ TEST_F(PositionTest, isAttacked) {
   position = Position(fen);
   ASSERT_TRUE(position.isAttacked(SQ_E8, WHITE));
   ASSERT_FALSE(position.isAttacked(SQ_E1, BLACK));
+
+  fen = "8/1pk2p2/2p5/5p2/8/1pp2Q2/5K2/8 w - -";
+  position = Position(fen);
+  ASSERT_FALSE(position.isAttacked(SQ_F7, WHITE));
+  ASSERT_FALSE(position.isAttacked(SQ_B7, WHITE));
+  ASSERT_FALSE(position.isAttacked(SQ_B3, WHITE));
+
 }
 
 TEST_F(PositionTest, giveCheck) {
@@ -903,6 +927,8 @@ TEST_F(PositionTest, giveCheck) {
   position = Position("8/b2r1pk1/p1R2p2/1p5p/r2Pp3/PRP3P1/5K1P/8 b - d3");
   move = createMove<ENPASSANT>("e4d3");
   ASSERT_TRUE(position.givesCheck(move));
+
+  // rnbqk1nr/pp1p1ppp/8/b7/1PpP4/7P/P1P1PPP1/RNBQKBNR b - b3 0 1
 
   // test where we had bugs
   position = Position("2r1r3/pb1n1kpn/1p1qp3/6p1/2PP4/8/P2Q1PPP/3R1RK1 w - -");

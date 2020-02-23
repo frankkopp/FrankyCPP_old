@@ -41,7 +41,8 @@ public:
   enum TestType {
     NONE,
     DM,
-    BM
+    BM,
+    AM
   };
 
   enum ResultType {
@@ -76,6 +77,14 @@ public:
     ResultType result;
   };
 
+  struct TestSuiteResult {
+    int counter = 0;
+    int successCounter = 0;
+    int failedCounter = 0;
+    int skippedCounter = 0;
+    int notTestedCounter = 0;
+  };
+
 private:
 
   //std::shared_ptr<spdlog::logger> LOG = spdlog::get("TSuite_Logger");
@@ -86,6 +95,7 @@ private:
 
   std::vector<Test> testCases;
 
+  TestSuiteResult tr{};
 public:
 
   /** Creates a TestSuite instance with a given path, search time per test and
@@ -110,6 +120,7 @@ public:
   /** reads on EPD file and creates a Test */
   bool readOneEPD(std::string &line, TestSuite::Test &test) const;
 
+  /** removes leading and trailing whitespace and comments */
   static std::string &cleanUpLine(std::string &line) ;
 
   /** runs a single test and stores the result back to given test */
@@ -117,8 +128,18 @@ public:
 
   /** returns the list of tests */
   const std::vector<Test> &getTestCases() const { return testCases; }
+  
   /** string representation of result type */
   static std::string print(TestSuite::ResultType resultType);
+
+  /** Return the results of the last test suite run */
+  const TestSuiteResult &getTestResults() const { return tr; }
+
+private:
+  MoveList getResultMoveList(const Test &t) const;
+
+
+  void printResult() const;
 };
 
 

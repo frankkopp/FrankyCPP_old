@@ -31,50 +31,63 @@ std::ostream &operator<<(std::ostream &os, const SearchStats &stats) {
   return os;
 }
 
+std::ostream &operator<<(std::ostream &os, const std::array<uint64_t, MAX_MOVES> &array) {
+  for (auto n : array) { os << n << " "; };
+  return os;
+}
+
 std::string SearchStats::str() const {
   std::stringstream os;
   os.imbue(deLocale);
   os
     << "nodesVisited: " << nodesVisited
-    << " tt_Cutss: " << tt_Cuts
-    << " tt_NoCuts: " << tt_NoCuts
+    << " movesGenerated: " << movesGenerated
     << " leafPositionsEvaluated: " << leafPositionsEvaluated
     << " nonLeafPositionsEvaluated: " << nonLeafPositionsEvaluated
+    << " tt_Cuts: " << tt_Cuts
+    << " tt_NoCuts: " << tt_NoCuts
+    << " quiescenceStandpatCuts: " << qStandpatCuts
     << " prunings: " << prunings
-    << " pvs_root_researches: " << pvs_root_researches
-    << " pvs_root_cutoffs: " << pvs_root_cutoffs
-    << " pvs_researches: " << pvs_researches
     << " pvs_cutoffs: " << pvs_cutoffs
+    << " pvs_researches: " << pvs_researches
+    << " pvs_root_cutoffs: " << pvs_root_cutoffs
+    << " pvs_root_researches: " << pvs_root_researches
     << " pv_sortings: " << pv_sortings
     << " noTTMoveForPVsorting: " << no_moveForPVsorting
-    << " quiescenceStandpatCuts: " << qStandpatCuts
-    << " iid searches: " << iidSearches
-    << " movesGenerated: " << movesGenerated
-    << " currentSearchDepth: " << currentSearchDepth
-    << " currentExtraSearchDepth: " << currentExtraSearchDepth
-    << " lastSearchTime: " << lastSearchTime
+    << " nullMovePrunings: " << nullMovePrunings
+    << " nullMoveVerifications: " << nullMoveVerifications
     << " minorPromotionPrunings: " << minorPromotionPrunings
     << " mateDistancePrunings: " << mateDistancePrunings
-    << " currentRootMove: " << currentRootMove
-    << " bestMoveChanges: " << bestMoveChanges
+    << " extensions: " << extensions
+    << "   "
     << " checkCounter: " << checkCounter
     << " checkMateCounter: " << checkMateCounter
     << " captureCounter: " << captureCounter
     << " enPassantCounter: " << enPassantCounter
-    << " aspirationResearches: " << aspirationResearches
     << " positionsNonQuiet: " << positionsNonQuiet
-    << " rfpPrunings: " << rfpPrunings
-    << " nullMovePrunings: " << nullMovePrunings
-    << " nullMoveVerifications: " << nullMoveVerifications
-    << " razorReductions: " << razorReductions
-    << " iidSearches: " << iidSearches
-    << " lrReductions: " << lrReductions
-    << " efpPrunings: " << efpPrunings
-    << " fpPrunings: " << fpPrunings
-    << " qfpPrunings: " << qfpPrunings
-    << " lmpPrunings: " << lmpPrunings
-    << " lmrReductions: " << lmrReductions
-    << " deltaPrunings: " << deltaPrunings;
+    << "   "
+    // not used/implemented
+    //    << " aspirationResearches: " << aspirationResearches
+    //    << " razorReductions: " << razorReductions
+    //    << " iidSearches: " << iidSearches
+    //    << " rfpPrunings: " << rfpPrunings
+    //    << " fpPrunings: " << fpPrunings
+    //    << " efpPrunings: " << efpPrunings
+    //    << " qfpPrunings: " << qfpPrunings
+    //    << " lrReductions: " << lrReductions
+    //    << " lmpPrunings: " << lmpPrunings
+    //    << " lmrReductions: " << lmrReductions
+    //    << " deltaPrunings: " << deltaPrunings
+    //    << "   "
+    << " bestMoveChanges: " << bestMoveChanges
+    << " currentRootMove: " << currentRootMove
+    << " lastSearchTime: " << lastSearchTime
+    << " currentSearchDepth: " << currentSearchDepth
+    << " currentExtraSearchDepth: " << currentExtraSearchDepth
+    << "   "
+    << " betaCutOffs: " << betaCutOffs
+    << " alphaImprovements: " << alphaImprovements;
+
   return os.str();
 }
 

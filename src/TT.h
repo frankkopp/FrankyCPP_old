@@ -47,7 +47,7 @@
  * The number of entries are always a power of two fitting into the given size.
  * It is not yet thread safe as it has no synchronization.
  *
- * Tests have shown that an implementation with a struct and bitfields is the
+ * Tests have shown that an implementation with a struct and bitfields is
  * more efficient than using only one 64-bit data field with manual bit shifting
  * and masking (~9% slower)
  * Also using buckets has not shown significant improvements and is much
@@ -59,14 +59,15 @@ public:
   static constexpr int CacheLineSize = 64;
   static constexpr uint64_t KB = 1024;
   static constexpr uint64_t MB = KB * KB;
-  static constexpr uint64_t DEFAULT_TT_SIZE = 2 * MB; // byte
+  static constexpr uint64_t DEFAULT_TT_SIZE = 2; // MByte
+  static constexpr uint64_t MAX_SIZE_MB = 32'768;
 
   struct Entry {
     // sorted by size to achieve smallest struct size
     // using bitfield for smallest size
     Key key = 0; // 64 bit
     Move move = MOVE_NONE; // 32 bit
-    Value value = VALUE_NONE; // 8 bit signed
+    Value value = VALUE_NONE; // 16 bit signed
     Depth depth:7; // 0-127
     uint8_t age:3; // 0-7
     Value_Type type:2; // 4 values
@@ -76,8 +77,7 @@ public:
 
   // struct Entry has 16 Byte
   static constexpr uint64_t ENTRY_SIZE = sizeof(Entry);
-
-  static_assert(CacheLineSize % ENTRY_SIZE == 0, "Cluster size incorrect");
+//  static_assert(CacheLineSize % ENTRY_SIZE == 0, "Cluster size incorrect");
 
 private:
 
@@ -100,16 +100,18 @@ private:
   mutable uint64_t numberOfMisses = 0; // no entry with key found
 
   // this array hold the actual entries for the transposition table
-  Entry* _data = new Entry[0]; // default initialization
+  Entry* _data{};
 
 public:
 
   // TT default size is 2 MB
   TT() : TT(DEFAULT_TT_SIZE) {}
 
-  /** @param newSizeInBytes Size of TT in bytes which will be reduced to the next
-   * lowest power of 2 size */
-  explicit TT(uint64_t newSizeInBytes);
+  /**
+   * @param newSizeInMByte Size of TT in bytes which will be reduced to the next lowest power of 2 size
+   *                        Limited to 32.000MB
+   */
+  explicit TT(uint64_t newSizeInMByte);
 
   ~TT() {
     delete[] _data;
@@ -123,10 +125,10 @@ public:
 
   /**
    * Changes the size of the transposition table and clears all entries.
-   * @param newSizeInByte in Byte which will be reduced to the next
-   * lowest power of 2 size
+   * @param newSizeInMByte in Byte which will be reduced to the next
+   * lowest power of 2 size. Limited to 32.000 MB.
    */
-  void resize(uint64_t newSizeInByte);
+  void resize(uint64_t newSizeInMByte);
 
   /** Clears the transposition table be resetting all entries to 0. */
   void clear();
@@ -184,24 +186,8 @@ public:
   }
 
   /**
-   * Looks up and returns a result using get(Key key).
-   * Result is a logical TT result. HIT means we can cut the search of the node.
-   * MISS means we need to be searching on.
-   * In both cases we might have a ttMove.
-   * A HIT is returned when entry type is either EXACT or ALPHA and value<alpha
-   * or BETA and value>beta. In a PV node only EXACT values are a HIT. 
-   *
-   * May write to ttValue and ttMove.
-   *
-   * @tparam NT true for a PV node, false for NonPV
-   * @param key Position key (usually Zobrist key)
-   * @param depth 1-DEPTH_MAX (127)
-   * @param alpha current alpha when probing
-   * @param beta current beta when probing
-   * @param ttValue TT value will be stored into this
-   * @param ttMove TT move will be stored into this
-   * @param isPVNode current node type when probing
-   * @return A result of the probe with value and move from the TT in case of hit.
+   * Looks up and returns a pointer to an TT Entry. Decreases age of the entry
+   * if an entry was found
    */
   const TT::Entry* probe(const Key &key);
 
@@ -214,22 +200,21 @@ public:
     return static_cast<int>((1000 * numberOfEntries) / maxNumberOfEntries);
   };
 
-  std::string str() {
-    return fmt::format(
-      "TT: size {:n} MB max entries {:n} of size {:n} Bytes entries {:n} ({:n}%) puts {:n} "
-      "updates {:n} collisions {:n} overwrites {:n} probes {:n} hits {:n} ({:n}%) misses {:n} ({:n}%)",
-      sizeInByte / MB, maxNumberOfEntries, sizeof(Entry), numberOfEntries, hashFull() / 10,
-      numberOfPuts, numberOfUpdates, numberOfCollisions, numberOfOverwrites, numberOfProbes,
-      numberOfHits, numberOfProbes ? (numberOfHits * 100) / numberOfProbes : 0,
-      numberOfMisses, numberOfProbes ? (numberOfMisses * 100) / numberOfProbes : 0);
+  // using prefetch improves probe lookup speed significantly
+  inline void prefetch(const Key key) {
+#ifdef TT_ENABLE_PREFETCH
+    _mm_prefetch(&_data[(key & hashKeyMask)], _MM_HINT_T0);
+#endif
   }
+
+  /** return a string representation of the TT instance */
+  std::string str();
 
 private:
 
   static void
   writeEntry(Entry* entryPtr, Key key, Depth depth, Move move,
              Value value, Value_Type type, bool mateThreat, uint8_t age);
-
 
   /* generates the index hash key from the position key  */
   inline std::size_t getHash(const Key key) const {
@@ -311,12 +296,6 @@ public:
   FRIEND_TEST(TT_Test, get);
   FRIEND_TEST(TT_Test, probe);
 
-  // using prefetch improves probe lookup speed significantly
-  inline void prefetch(const Key key) {
-#ifdef TT_ENABLE_PREFETCH
-    _mm_prefetch(&_data[(key & hashKeyMask)], _MM_HINT_T0);
-#endif
-  }
 };
 
 #endif //FRANKYCPP_TT_H
