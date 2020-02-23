@@ -69,6 +69,7 @@
 #include <map>
 #include "types.h"
 #include "Logging.h"
+#include "Fifo.h"
 
 typedef std::vector<std::string>::iterator VectorIterator;
 
@@ -78,23 +79,23 @@ constexpr const int avgLinesPerGameTimesProgressSteps = 12 * 15;
  * A PGN_Game holds the cleanup tags and moves as strings after reading a PGN file.
  */
 struct PGN_Game {
-
   std::string pgnNotation{};
   std::map<std::string, std::string> tags{};
   std::vector<std::string> moves{};
 };
 
 class PGN_Reader {
-private:
   std::shared_ptr<std::vector<std::string>> inputLines{};
   std::vector<PGN_Game> games{};
 
 public:
   PGN_Reader(std::vector<std::string> &lines);
-
+  bool process(Fifo<PGN_Game> &gamesFifo);
   bool process();
   std::vector<PGN_Game> & getGames() { return games; }
-  void processOneGame(VectorIterator &iterator);
+
+private:
+  PGN_Game processOneGame(VectorIterator &iterator);
   void handleMoveSection(VectorIterator &iterator, PGN_Game &game);
 };
 

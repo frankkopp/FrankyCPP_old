@@ -31,21 +31,27 @@
 #include <regex>
 #include <filesystem>
 #include <thread>
+#include <random>
+#include "OpeningBook.h"
 #include "types.h"
 #include "Logging.h"
 #include "misc.h"
-#include "OpeningBook.h"
+#include "Fifo.h"
+#include "ThreadPool.h"
 #include "Position.h"
-#include "MoveGenerator.h"
 #include "PGN_Reader.h"
+#include "Position.h"
 
-#ifdef USE_PARALLEL_EXECUTION
+#define PARALLEL_LINE_PROCESSING
+#define PARALLEL_GAME_PROCESSING
+#define FIFO_PROCESSING
+
+#ifdef HAS_EXECUTION_LIB
 #include <execution>
 #endif
 
-OpeningBook::OpeningBook(std::string bookPath, BookFormat bFormat)
+OpeningBook::OpeningBook(const std::string &bookPath, const BookFormat &bFormat)
   : bookFilePath(bookPath), bookFormat(bFormat) {
-  mg = std::make_shared<MoveGenerator>();
 }
 
 void OpeningBook::initialize() {
@@ -55,7 +61,9 @@ void OpeningBook::initialize() {
   const auto start = std::chrono::high_resolution_clock::now();
 
   // set root entry
-  bookMap.insert(std::make_pair(START_POSITION_FEN, BookEntry(START_POSITION_FEN)));
+  Position position;
+  bookMap.emplace(position.getZobristKey(),
+                  BookEntry(position.getZobristKey(), position.printFen()));
 
   // read book from file
   readBookFromFile(bookFilePath);
@@ -66,14 +74,15 @@ void OpeningBook::initialize() {
   isInitialized = true;
 }
 
-void OpeningBook::readBookFromFile(const std::string filePath) {
+void OpeningBook::readBookFromFile(const std::string &filePath) {
   std::ifstream file(filePath);
   if (file.is_open()) {
     LOG__DEBUG(Logger::get().BOOK_LOG, "Open book '{}' successful.", filePath);
     std::filesystem::path p{filePath};
     fileSize = std::filesystem::file_size(std::filesystem::canonical(p));
-    processAllLines(file);
+    std::vector<std::string> lines = getLinesFromFile(file);
     file.close();
+    processAllLines(lines);
   }
   else {
     LOG__ERROR(Logger::get().BOOK_LOG, "Open book '{}' failed.", filePath);
@@ -81,10 +90,8 @@ void OpeningBook::readBookFromFile(const std::string filePath) {
   }
 }
 
-void OpeningBook::processAllLines(std::ifstream &ifstream) {
+void OpeningBook::processAllLines(std::vector<std::string> &lines) {
   LOG__DEBUG(Logger::get().BOOK_LOG, "Processing file.");
-
-  std::vector<std::string> lines = getLinesFromFile(ifstream);
 
   const auto start = std::chrono::high_resolution_clock::now();
   LOG__DEBUG(Logger::get().BOOK_LOG, "Creating internal book...");
@@ -92,7 +99,8 @@ void OpeningBook::processAllLines(std::ifstream &ifstream) {
   switch (bookFormat) {
     case BookFormat::SIMPLE:
     case BookFormat::SAN: {
-#ifdef USE_PARALLEL_EXECUTION
+#ifdef PARALLEL_LINE_PROCESSING
+#ifdef HAS_EXECUTION_LIB
       std::for_each(std::execution::par_unseq, lines.begin(), lines.end(),
                     [&](auto &&item) { processLine(item); });
 #else
@@ -113,10 +121,19 @@ void OpeningBook::processAllLines(std::ifstream &ifstream) {
       }
       for (std::thread &th: threads) th.join();
 #endif
+#else // no parallel execution
+      for (auto l : lines) {
+        processLine(l);
+      }
+#endif
       break;
     }
-    case BookFormat::PNG:
+    case BookFormat::PGN:
+#ifdef FIFO_PROCESSING
+      processPGNFileFifo(lines);
+#else
       processPGNFile(lines);
+#endif
       break;
   }
 
@@ -144,7 +161,7 @@ void OpeningBook::processLine(std::string &line) {
   LOG__TRACE(Logger::get().BOOK_LOG, "Processing line: {}", line);
 
   // clean up line
-  std::regex whiteSpaceTrim(R"(^\s*(.*)\s*$)");
+  const std::regex whiteSpaceTrim(R"(^\s*(.*)\s*$)");
   line = std::regex_replace(line, whiteSpaceTrim, "$1");
 
   switch (bookFormat) {
@@ -154,9 +171,41 @@ void OpeningBook::processLine(std::string &line) {
     case BookFormat::SAN:
       processSANLine(line);
       break;
-    case BookFormat::PNG:
+    case BookFormat::PGN:
       LOG__ERROR(Logger::get().BOOK_LOG, "PNG format can't be processed by line");
       break;
+  }
+}
+
+void OpeningBook::processSimpleLine(std::string &line) {
+  std::smatch matcher;
+
+  // check if line starts with move
+  const std::regex startPattern(R"(^[a-h][1-8][a-h][1-8].*$)");
+  if (!std::regex_match(line, matcher, startPattern)) {
+    LOG__TRACE(Logger::get().BOOK_LOG, "Line ignored: {}", line);
+    return;
+  }
+
+  // iterate over all found pattern matches (aka moves)
+  const std::regex movePattern(R"([a-h][1-8][a-h][1-8])");
+  auto move_begin = std::sregex_iterator(line.begin(), line.end(), movePattern);
+  auto move_end = std::sregex_iterator();
+  LOG__TRACE(Logger::get().BOOK_LOG, "Found {} moves in line: {}", std::distance(move_begin, move_end), line);
+
+  Position currentPosition; // start position
+  for (auto i = move_begin; i != move_end; ++i) {
+    const std::string &moveStr = (*i).str();
+    LOG__TRACE(Logger::get().BOOK_LOG, "Moves {}", moveStr);
+
+    // create and validate the move
+    Move move = Misc::getMoveFromUCI(currentPosition, moveStr);
+    if (!isMove(move)) {
+      LOG__WARN(Logger::get().BOOK_LOG, "Not a valid move {} on this position {}", moveStr, currentPosition.printFen());
+      return;
+    }
+
+    addToBook(currentPosition, move);
   }
 }
 
@@ -164,24 +213,24 @@ void OpeningBook::processSANLine(std::string &line) {
   std::smatch matcher;
 
   // check if line starts valid
-  std::regex startLineRegex(R"(^\d+\. )");
+  const std::regex startLineRegex(R"(^\d+\. )");
   if (std::regex_match(line, matcher, startLineRegex)) {
     LOG__TRACE(Logger::get().BOOK_LOG, "Line ignored: {}", line);
     return;
   }
 
-  Position currentPosition; // start position
-
   // ignore patterns
-  std::regex numberRegex(R"(^\d+\.)");
-  std::regex resultRegex(R"((1/2|1|0)-(1/2|1|0))");
+  const std::regex numberRegex(R"(^\d+\.)");
+  const std::regex resultRegex(R"((1/2|1|0)-(1/2|1|0))");
 
   //1. f4 d5 2. Nf3 Nf6 3. e3 g6 4. b3 Bg7 5. Bb2 O-O 6. Be2 c5 7. O-O Nc6 8. Ne5 Qc7 1/2-1/2
   //1. f4 d5 2. Nf3 Nf6 3. e3 Bg4 4. Be2 e6 5. O-O Bd6 6. b3 O-O 7. Bb2 c5 1/2-1/2
   // split at every whitespace and iterate through items
-  std::regex splitRegex(R"(\s+)");
-  std::sregex_token_iterator iter(line.begin(), line.end(), splitRegex, -1);
-  std::sregex_token_iterator end;
+  const std::regex splitRegex(R"(\s+)");
+  const std::sregex_token_iterator iter(line.begin(), line.end(), splitRegex, -1);
+  const std::sregex_token_iterator end;
+
+  Position currentPosition; // start position
   LOG__TRACE(Logger::get().BOOK_LOG, "Found {} items in line: {}", std::distance(iter, end), line);
   for (auto i = iter; i != end; ++i) {
     const std::string &moveStr = (*i).str();
@@ -198,58 +247,58 @@ void OpeningBook::processSANLine(std::string &line) {
     }
     LOG__TRACE(Logger::get().BOOK_LOG, "Move found {}", printMoveVerbose(move));
 
-    // remember the last position as fen
-    const std::string lastFen = currentPosition.printFen();
-
-    // make move on position
-    currentPosition.doMove(move);
-    const std::string fen = currentPosition.printFen();
-
-    // adding entry to book
-    addToBook(move, lastFen, fen);
-
+    addToBook(currentPosition, move);
   }
 }
 
-void OpeningBook::processSimpleLine(std::string &line) {
-  std::smatch matcher;
+void OpeningBook::processPGNFileFifo(std::vector<std::string> &lines) {
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Process lines from PGN file with FIFO...");
+  // reading pgn and get a list of games
+  PGN_Reader pgnReader(lines);
+  // prepare FIFO for storing the games
+  Fifo<PGN_Game> gamesFifo;
+  // prepare thread pool
+  const int numberOfThreads = std::thread::hardware_concurrency();
+  ThreadPool threadPool(numberOfThreads);
+  bool finished = false;
 
-  // check if line starts with move
-  std::regex startPattern(R"(^[a-h][1-8][a-h][1-8].*$)");
-  if (!std::regex_match(line, matcher, startPattern)) {
-    LOG__TRACE(Logger::get().BOOK_LOG, "Line ignored: {}", line);
-    return;
+  // prepare worker for processing found games
+  for (int i = 0; i < numberOfThreads; i++) {
+    threadPool.enqueue([&] {
+      while (!gamesFifo.isClosed()) {
+        LOG__TRACE(Logger::get().BOOK_LOG, "Get game...");
+        auto game = gamesFifo.pop_wait();
+        if (game.has_value()) { // no value means pop_wait has been canceled
+          LOG__TRACE(Logger::get().BOOK_LOG, "Got game...");
+          processGame(game.value());
+          LOG__TRACE(Logger::get().BOOK_LOG, "Processed game...Book now at {:n} entries.", bookMap.size());
+        }
+        else {
+          LOG__TRACE(Logger::get().BOOK_LOG, "Game NULL");
+        }
+      }
+    });
   }
 
-  // iterate over all found pattern matches (aka moves)
-  std::regex movePattern(R"([a-h][1-8][a-h][1-8])");
-  auto move_begin = std::sregex_iterator(line.begin(), line.end(), movePattern);
-  auto move_end = std::sregex_iterator();
-  LOG__TRACE(Logger::get().BOOK_LOG, "Found {} moves in line: {}", std::distance(move_begin, move_end), line);
-  Position currentPosition; // start position
+  // start finding games and putting them into the FIFO
+  std::future<bool> future = std::async(std::launch::async, [&] {
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Start finding games");
+    finished = pgnReader.process(gamesFifo);
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Finished finding games {}", finished);
+    return finished;
+  });
 
-  for (auto i = move_begin; i != move_end; ++i) {
-    const std::string &moveStr = (*i).str();
-    LOG__TRACE(Logger::get().BOOK_LOG, "Moves {}", moveStr);
-
-    // create and validate the move
-    Move move = Misc::getMoveFromUCI(currentPosition, moveStr);
-    if (!isMove(move)) {
-      LOG__WARN(Logger::get().BOOK_LOG, "Not a valid move {} on this position {}", moveStr, currentPosition.printFen());
-      return;
+  // wait until all games have been put into the FIFO
+  if (future.get()) {
+    // busy wait until FIFO is empty
+    while (!gamesFifo.empty()) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-
-    // remember the last position as fen
-    const std::string lastFen = currentPosition.printFen();
-
-    // make move on position
-    currentPosition.doMove(move);
-    const std::string fen = currentPosition.printFen();
-
-    // adding entry to book
-    addToBook(move, lastFen, fen);
-
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Finished processing games.");
+    gamesFifo.close();
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Closed down ThreadPool");
   }
+
 }
 
 void OpeningBook::processPGNFile(std::vector<std::string> &lines) {
@@ -261,16 +310,24 @@ void OpeningBook::processPGNFile(std::vector<std::string> &lines) {
     LOG__ERROR(Logger::get().BOOK_LOG, "Could not process lines from PGN file.");
     return;
   }
-  auto games = &pgnReader.getGames();
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Number of games {:n}", games->size());
+  auto ptrGames = &pgnReader.getGames();
+  gamesTotal = ptrGames->size();
 
-  // processing games
-#ifdef USE_PARALLEL_EXECUTION
-  std::for_each(std::execution::par_unseq, games->begin(), games->end(),
+  // process all games
+  processGames(ptrGames);
+}
+
+void OpeningBook::processGames(std::vector<PGN_Game>* ptrGames) {// processing games
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Processing {:n} games", ptrGames->size());
+  const auto start = std::chrono::high_resolution_clock::now();
+
+#ifdef PARALLEL_GAME_PROCESSING
+#ifdef HAS_EXECUTION_LIB
+  std::for_each(std::execution::par_unseq, ptrGames->begin(), ptrGames->end(),
                 [&](auto game) { processGame(game); });
 #else
   const unsigned int noOfThreads = std::thread::hardware_concurrency();
-  const unsigned int maxNumberOfEntries = games->size();
+  const unsigned int maxNumberOfEntries = ptrGames->size();
   std::vector<std::thread> threads;
   threads.reserve(noOfThreads);
   for (unsigned int t = 0; t < noOfThreads; ++t) {
@@ -280,20 +337,30 @@ void OpeningBook::processPGNFile(std::vector<std::string> &lines) {
       auto end = start + range;
       if (t == noOfThreads - 1) end = maxNumberOfEntries;
       for (std::size_t i = start; i < end; ++i) {
-        processGame((*games)[i]);
-
+        processGame((*ptrGames)[i]);
       }
     });
   }
   for (std::thread &th: threads) th.join();
 #endif
+#else
+  auto iterEnd = ptrGames->end();
+  for (auto iter = ptrGames->begin(); iter < iterEnd; iter++) {
+    processGame(*iter);
+    LOG__TRACE(Logger::get().BOOK_LOG, "Process game finished - games={:n} book={:n}", gamesProcessed, bookMap.size());
+  }
+#endif
+
+  const auto stop = std::chrono::high_resolution_clock::now();
+  const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+  LOG__INFO(Logger::get().BOOK_LOG, "Processed {:n} games in {:n} ms", gamesTotal, elapsed.count());
 }
+
 
 void OpeningBook::processGame(PGN_Game &game) {
   std::smatch matcher;
-
-  std::regex UCIRegex(R"(([a-h][1-8][a-h][1-8])([NBRQnbrq])?)");
-  std::regex SANRegex(R"(([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O-O-O|O-O)(=([NBRQ]))?([!?+#]*)?)");
+  const std::regex UCIRegex(R"(([a-h][1-8][a-h][1-8])([NBRQnbrq])?)");
+  const std::regex SANRegex(R"(([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O-O-O|O-O)(=?([NBRQ]))?([!?+#]*)?)");
 
   Position currentPosition; // start position
   for (auto moveStr : game.moves) {
@@ -314,50 +381,78 @@ void OpeningBook::processGame(PGN_Game &game) {
     // create and validate the move
     if (move == MOVE_NONE) {
       LOG__WARN(Logger::get().BOOK_LOG, "Not a valid move {} on this position {}", moveStr, currentPosition.printFen());
+      //move = Misc::getMoveFromUCIDEBUG(currentPosition, moveStr);
       return;
     }
     LOG__TRACE(Logger::get().BOOK_LOG, "Move found {}", printMoveVerbose(move));
 
-    // remember the last position as fen
-    const std::string lastFen = currentPosition.printFen();
+    addToBook(currentPosition, move);
 
-    // make move on position
-    currentPosition.doMove(move);
-    const std::string fen = currentPosition.printFen();
-
-    // adding entry to book
-    addToBook(move, lastFen, fen);
   }
+  gamesProcessed++;
+#ifndef FIFO_PROCESSING
+  // x % 0 is undefined in c++
+  // avgLinesPerGameTimesProgressSteps = 12*15 as 12 is avg game lines and 15 steps
+  const uint64_t progressInterval = 1 + (gamesTotal / 15);
+  if (gamesProcessed % progressInterval == 0) {
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Process games: {:s}", Misc::printProgress(static_cast<double>(gamesProcessed) / gamesTotal));
+  }
+#endif
 }
 
-void OpeningBook::addToBook(const Move &move, const std::string &lastFen, const std::string &fen) {
-  const std::lock_guard<std::mutex> lock(bookMutex);
+void OpeningBook::addToBook(Position &currentPosition, const Move &move) {
+  // remember previous position
+  const Key lastKey = currentPosition.getZobristKey();
+  // make move on position to get new position
+  currentPosition.doMove(move);
+  const Key currentKey = currentPosition.getZobristKey();
+  const std::string currentFen = currentPosition.printFen();
 
-  if (bookMap.count(fen)) {
+  // get the lock on the data map
+  const std::scoped_lock<std::mutex> lock(bookMutex);
+
+  if (bookMap.count(currentKey)) {
     // pointer to entry already in book
-    BookEntry* existingEntry = &bookMap.at(fen);
+    BookEntry* existingEntry = &bookMap.at(currentKey);
     existingEntry->counter++;
-    LOG__TRACE(Logger::get().BOOK_LOG, "Position already existed {} times: {}", existingEntry->counter, existingEntry->position);
+    LOG__TRACE(Logger::get().BOOK_LOG, "Position already existed {} times: {}", existingEntry->counter, existingEntry->fen);
   }
   else {
     // new position
-    bookMap.emplace(fen, BookEntry(fen));
-    LOG__TRACE(Logger::get().BOOK_LOG, "Position new", fen);
+    bookMap.emplace(currentKey, BookEntry(currentKey, currentFen));
+    LOG__TRACE(Logger::get().BOOK_LOG, "Position new", currentKey);
   }
 
   // add move to the last book entry's move list
-  BookEntry* lastEntry = &bookMap.at(lastFen);
+  BookEntry* lastEntry = &bookMap.at(lastKey);
   if (std::find(lastEntry->moves.begin(), lastEntry->moves.end(), move) == lastEntry->moves.end()) {
     lastEntry->moves.emplace_back(move);
-    lastEntry->ptrNextPosition.emplace_back(&bookMap.at(fen));
+    lastEntry->ptrNextPosition.emplace_back(&bookMap.at(currentKey));
     LOG__TRACE(Logger::get().BOOK_LOG, "Added to last entry.");
   }
+
 }
 
+Move OpeningBook::getRandomMove(Key zobrist) {
+  Move bookMove = MOVE_NONE;
+  if (bookMap.find(zobrist) != bookMap.end()) {
+    BookEntry bookEntry = bookMap.at(zobrist);
+    if (!bookEntry.moves.empty()) {
+      std::random_device rd;
+      std::uniform_int_distribution<std::size_t> random(0, bookEntry.moves.size() - 1);
+      bookMove = bookEntry.moves[random(rd)];
+      //    for (int i = 0; i < bookEntry.moves.size(); i++) {
+      //      fprintln("{}. {} ({})", i+1, printMoveVerbose(bookEntry.moves[i]), bookEntry.ptrNextPosition[i]->counter);
+      //    }
+      //    fprintln("Book move: {}", printMoveVerbose(bookMove));
+    }
+  }
+  return bookMove;
+}
 
 std::string BookEntry::str() {
   std::ostringstream os;
-  os << this->position << " (" << this->counter << ") ";
+  os << this->fen << " (" << this->counter << ") ";
   for (int i = 0; i < moves.size(); i++) {
     os << "[" << printMove(this->moves[i]) << " (" << this->ptrNextPosition[i]->counter << ")] ";
   }

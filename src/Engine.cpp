@@ -105,6 +105,9 @@ void Engine::setOption(const std::string &name, const std::string &value) {
       EngineConfig::hash = getInt(optionIterator->second.getCurrentValue());
       pSearch->setHashSize(EngineConfig::hash);
     }
+    else if (name == "OwnBook") {
+      SearchConfig::USE_BOOK = to_bool(optionIterator->second.getCurrentValue());
+    }
     else if (name == "Use_AlphaBeta") {
       SearchConfig::USE_ALPHABETA = to_bool(optionIterator->second.getCurrentValue());
     }
@@ -387,6 +390,7 @@ void Engine::initOptions() {
   MAP("Use_Hash",         UCI_Option("Use_Hash",         SearchConfig::USE_TT));
   MAP("Hash",             UCI_Option("Hash",             EngineConfig::hash, 0, TT::MAX_SIZE_MB));
   MAP("Ponder",           UCI_Option("Ponder",           EngineConfig::ponder));
+  MAP("OwnBook",          UCI_Option("OwnBook",          SearchConfig::USE_BOOK));
   MAP("Use_AlphaBeta",    UCI_Option("Use_AlphaBeta",    SearchConfig::USE_ALPHABETA));
   MAP("Use_PVS",          UCI_Option("Use_PVS",          SearchConfig::USE_PVS));
   MAP("Use_Aspiration",   UCI_Option("Use_Aspiration",   SearchConfig::USE_ASPIRATION_WINDOW));
@@ -425,11 +429,8 @@ int Engine::getInt(const std::string &value) {
   try {
     intValue = stoi(value);
   }
-  catch (std::invalid_argument &e) {
+  catch (...) {
     LOG__WARN(Logger::get().ENGINE_LOG, "depth invalid - expected numeric value. Was {}", value);
-  }
-  catch (std::out_of_range &e) {
-    LOG__WARN(Logger::get().ENGINE_LOG, "depth invalid - numeric value out of range of int. Was {}", value);
   }
   return intValue;
 }
