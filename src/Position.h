@@ -112,7 +112,7 @@ class Position {
   // **********************************************************
 
   // history information for undo and repetition detection
-  constexpr static std::size_t MAX_HISTORY = 256;
+  constexpr static std::size_t MAX_HISTORY = MAX_MOVES;
   int historyCounter = 0;
   struct HistoryState {
     Key zobristKey_History = 0;
@@ -123,7 +123,6 @@ class Position {
     Square enPassantSquare_History = SQ_NONE;
     int halfMoveClockHistory = 0;
     Flag hasCheckFlagHistory = FLAG_TBD;
-    Flag hasMateFlagHistory = FLAG_TBD;
   };
   std::array<HistoryState, MAX_HISTORY> historyState{};
 
@@ -144,7 +143,6 @@ class Position {
   // after a call to hasCheck() and reset to TBD every time a move is made or
   // unmade.
   mutable Flag hasCheckFlag = FLAG_TBD;
-  mutable Flag hasMateFlag = FLAG_TBD;
 
 public:
   /**
@@ -262,19 +260,6 @@ public:
   bool hasCheck() const;
 
   /**
-   * Tests for mate on this position. If true the next player has has no move
-   * and is in check. Expensive test as all legal moves have to be generated.
-   *
-   * TODO: This is violating encapsulation as it's current implementation
-   * needs a move generator to generate all possible moves to see if there are
-   * any legal moves. The MoveGenerator also needs to know Position which
-   * leads to a circle reference.
-   *
-   * @return true if current position is mate for next player
-   */
-//  bool hasCheckMate() const;
-
-  /**
    * Checks if move is giving check to the opponent.
    * This method is faster than making the move and checking for legality and
    * giving check. Needs to be a valid move for the position otherwise will
@@ -322,7 +307,7 @@ public:
 
   /**
    * Repetition of a position:.
-   * To detect a 3-fold repetition the given position most occurr at least 2
+   * To detect a 3-fold repetition the given position must occur at least 2
    * times before:<br/> <code>position.checkRepetitions(2)</code> checks for 3
    * fold-repetition <p> 3-fold repetition: This most commonly occurs when
    * neither side is able to avoid repeating moves without incurring a

@@ -135,7 +135,7 @@ public:
    * as possible when generating moves with the on demand generator. Also tells the move generator
    * how many killer moves to store/use as a maximum.
    */
-  void storeKiller(Move move, int maxKillers);
+  void storeKiller(Move killerMove, int maxKillers);
 
   /**
    * Sets a PV move which should be returned first by the OnDemand MoveGenerator. 
@@ -199,10 +199,17 @@ private:
    */
   template<GenMode GM>
   void generateCastling(const Position &position, MoveList* const pMoves);
-  
+
+  /**
+   * Looks in the given list for a killer move stored earlier and pushes the
+   * killer move(s) to the first position
+   */
   void pushKiller(MoveList &list);
 
-  void filterPV(MoveList &deque);
+  /**
+   * Removes a previously stored PV move from the given list
+   */
+  void filterPV(MoveList &list);
 };
 
 #endif //FRANKYCPP_MOVEGENERATOR_H

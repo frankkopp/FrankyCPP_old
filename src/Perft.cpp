@@ -171,7 +171,7 @@ void Perft::resetCounter() {
   enpassantCounter = 0;
 }
 
-long Perft::miniMax(int depth, Position &position, MoveGenerator* pMg) {
+uint64_t Perft::miniMax(int depth, Position &position, MoveGenerator* pMg) {
   
   // Iterate over moves
   uint64_t totalNodes = 0;
@@ -213,7 +213,7 @@ long Perft::miniMax(int depth, Position &position, MoveGenerator* pMg) {
   return totalNodes;
 }
 
-long Perft::miniMaxOD(int depth, Position &position, MoveGenerator* pMg) {
+uint64_t Perft::miniMaxOD(int depth, Position &position, MoveGenerator* pMg) {
   
   pMg[depth].reset();
   

@@ -27,13 +27,15 @@
 #define FRANKYCPP_SEARCHSTATS_H
 
 #include <ostream>
+#include <array>
 #include "types.h"
 
 /** data structure to cluster all search statistical values */
 struct SearchStats {
 
   // counter for cut off to measure quality of move ordering
-  // long[] betaCutOffs = new long[MAX_MOVES];
+  std::array<uint64_t, MAX_MOVES> betaCutOffs{};
+  std::array<uint64_t, MAX_MOVES> alphaImprovements{};
 
   // Search info values
   Ply currentSearchDepth = PLY_ROOT;
@@ -45,7 +47,7 @@ struct SearchStats {
 
   // performance statistics
   uint64_t movesGenerated = 0;
-  uint64_t nodesVisited = 0;
+  uint64_t nodesVisited = 0; // legal nodes visited
 
   // PERFT Values
   uint64_t leafPositionsEvaluated = 0;
@@ -72,9 +74,10 @@ struct SearchStats {
   uint64_t qStandpatCuts = 0;
   uint64_t minorPromotionPrunings = 0;
   uint64_t mateDistancePrunings = 0;
-  uint64_t rfpPrunings = 0;
   uint64_t nullMovePrunings = 0;
   uint64_t nullMoveVerifications = 0;
+  uint64_t extensions = 0;
+  uint64_t rfpPrunings = 0;
   uint64_t razorReductions = 0;
   uint64_t iidSearches = 0;
   uint64_t lrReductions = 0;
@@ -86,6 +89,7 @@ struct SearchStats {
 
   uint64_t deltaPrunings = 0;
   std::string str() const;
+
 
   friend std::ostream &operator<<(std::ostream &os, const SearchStats &stats);
 };

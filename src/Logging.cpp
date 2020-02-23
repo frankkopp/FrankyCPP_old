@@ -33,21 +33,29 @@ namespace po = boost::program_options;
 inline po::variables_map programOptions;
 
 void Logger::init() {
-  try {
-    std::locale::global(deLocale);
-  }
-  catch (...) {
-    std::cerr << "failed to set locale" << std::endl;
-  }
 
-  const auto flushLevel = spdlog::level::warn;
+  // this messes up CLion'sGoogletest integration
+  //  try {
+  //    std::locale::global(deLocale);
+  //  }
+  //  catch (...) {
+  //    std::cerr << "failed to set locale" << std::endl;
+  //  }
+
+  const auto flushLevel = spdlog::level::trace;
 
   auto logLvL = !programOptions.empty() ? programOptions["log_lvl"].as<std::string>() : "warn";
   auto searchLogLvL = !programOptions.empty() ? programOptions["search_log_lvl"].as<std::string>() : "warn";
 
   // default log level
   const auto logLevel = [&] {
-    if (logLvL == "warn") {
+    if (logLvL == "critical") {
+      return spdlog::level::critical;
+    }
+    else if (logLvL == "error") {
+      return spdlog::level::err;
+    }
+    else if (logLvL == "warn") {
       return spdlog::level::warn;
     }
     else if (logLvL == "info") {
@@ -55,6 +63,9 @@ void Logger::init() {
     }
     else if (logLvL == "debug") {
       return spdlog::level::debug;
+    }
+    else if (logLvL == "trace") {
+      return spdlog::level::trace;
     }
     else {
       std::cerr << "unknown log level '" << logLvL << "' - using default.\n";
@@ -65,7 +76,13 @@ void Logger::init() {
 
   // default log level
   const auto searchLogLevel = [&] {
-    if (searchLogLvL == "warn") {
+    if (searchLogLvL == "critical") {
+      return spdlog::level::critical;
+    }
+    else if (searchLogLvL == "error") {
+      return spdlog::level::err;
+    }
+    else if (searchLogLvL == "warn") {
       return spdlog::level::warn;
     }
     else if (searchLogLvL == "info") {
@@ -73,6 +90,9 @@ void Logger::init() {
     }
     else if (searchLogLvL == "debug") {
       return spdlog::level::debug;
+    }
+    else if (searchLogLvL == "trace") {
+      return spdlog::level::trace;
     }
     else {
       std::cerr << "unknown search log level '" << searchLogLvL << "' - using default.\n";
@@ -132,10 +152,15 @@ void Logger::init() {
   UCIHAND_LOG->set_level(logLevel);
   UCIHAND_LOG->flush_on(flushLevel);
 
+  BOOK_LOG->sinks().push_back(sharedFileSink);
+  BOOK_LOG->set_pattern(defaultPattern);
+  BOOK_LOG->set_level(logLevel);
+  BOOK_LOG->flush_on(flushLevel);
+
   UCI_LOG->sinks().push_back(uciOutSink);
-  UCI_LOG->set_pattern("[%H:%M:%S:%f] %L %v");
-  UCI_LOG->set_level(logLevel);
-  UCI_LOG->flush_on(flushLevel);
+  UCI_LOG->set_pattern("[%H:%M:%S:%f] %v");
+  UCI_LOG->set_level(spdlog::level::trace);
+  UCI_LOG->flush_on(spdlog::level::trace);
 
   // Logger for Unit Tests
   TEST_LOG->set_pattern(defaultPattern);

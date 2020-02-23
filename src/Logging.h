@@ -49,49 +49,46 @@
 
 #define LOG__LEVEL DEBUG__LVL
 
-#if LOG__LEVEL > 0
-#define LOG__CRITICAL(logger, ...) logger->critical(__VA_ARGS__)
+#if LOG__LEVEL > ZERO__LVL
+#define LOG__CRITICAL(logger, ...) logger->critical("{:s}", fmt::format(deLocale, __VA_ARGS__))
 #else
 #define LOG__CRITICAL(logger, ...) void(0)
 #endif
 
-#if LOG__LEVEL > 1
-#define LOG__ERROR(logger, ...) logger->error(__VA_ARGS__)
+#if LOG__LEVEL > CRITICAL__LVL
+#define LOG__ERROR(logger, ...) logger->error("{:s}", fmt::format(deLocale, __VA_ARGS__))
 #else
 #define LOG__ERROR(logger, ...) void(0)
 #endif
 
-#if LOG__LEVEL > 2
-#define LOG__WARN(logger, ...) logger->warn(__VA_ARGS__)
+#if LOG__LEVEL > ERROR__LVL
+#define LOG__WARN(logger, ...) logger->warn("{:s}", fmt::format(deLocale, __VA_ARGS__))
 #else
 #define LOG__WARN(logger, ...) void(0)
 #endif
 
-#if LOG__LEVEL > 3
-#define LOG__INFO(logger, ...) logger->info(__VA_ARGS__)
+#if LOG__LEVEL > WARN__LVL
+#define LOG__INFO(logger, ...) logger->info("{:s}", fmt::format(deLocale, __VA_ARGS__))
 #else
 #define LOG__INFO(logger, ...) void(0)
 #endif
 
-#if LOG__LEVEL > 4
-#define LOG__DEBUG(logger, ...) logger->debug(__VA_ARGS__)
+#if LOG__LEVEL > INFO__LVL
+#define LOG__DEBUG(logger, ...) logger->debug("{:s}", fmt::format(deLocale, __VA_ARGS__))
 #else
 #define LOG__DEBUG(logger, ...) void(0)
 #endif
 
-#if LOG__LEVEL > 5
-#define LOG__TRACE(logger, ...) logger->trace(__VA_ARGS__)
+#if LOG__LEVEL > DEBUG__LVL
+#define LOG__TRACE(logger, ...) logger->trace("{:s}", fmt::format(deLocale, __VA_ARGS__))
 #else
 #define LOG__TRACE(logger, ...) void(0)
 #endif
 
 /** Singleton class for Logger */
 class Logger {
-  Logger() {
-    init();
-  };
+  Logger() { init(); };
   ~Logger() = default;
-
   void init();
 
 public :
@@ -101,7 +98,6 @@ public :
   Logger(Logger const &&) = delete; // move
   Logger &operator=(const Logger &&) = delete; // move assignment
 
-public:
   static Logger& get() {
     static Logger instance;
     return instance;
@@ -122,6 +118,7 @@ public:
   const std::shared_ptr<spdlog::logger> EVAL_LOG    = spdlog::stdout_color_mt("Eval_Logger");
   const std::shared_ptr<spdlog::logger> TT_LOG      = spdlog::stdout_color_mt("TT_Logger");
   const std::shared_ptr<spdlog::logger> UCIHAND_LOG = spdlog::stdout_color_mt("UCIHandler_Logger");
+  const std::shared_ptr<spdlog::logger> BOOK_LOG    = spdlog::stdout_color_mt("Book_Logger");
   const std::shared_ptr<spdlog::logger> UCI_LOG     = spdlog::basic_logger_mt("UCI_Logger", "FrankyCPP_uci.log");
   const std::shared_ptr<spdlog::logger> TEST_LOG    = spdlog::stdout_color_mt("Test_Logger");
   // @formatter:on

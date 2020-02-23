@@ -38,6 +38,5 @@ namespace INIT {
     Position::init();
     INITIALIZED = true;
     Logger::get().MAIN_LOG->info("Data initialization done");
-    Logger::get().MAIN_LOG->debug("BUILD DATE: {} {}", __DATE__, __TIME__);
   }
 }

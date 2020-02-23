@@ -39,7 +39,6 @@ std::string printBitString(uint64_t b) {
 }
 
 std::string printValue(const Value value) {
-  // TODO add full protocol (lowerbound, upperbound, etc.)
   std::string scoreString;
   if (isCheckMateValue(value)) {
     scoreString = "mate ";

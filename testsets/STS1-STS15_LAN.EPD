@@ -1,3 +1,4 @@
+# https://www.chessprogramming.org/Strategic_Test_Suite
 1b1qrr2/1p4pk/1np4p/p3Np1B/Pn1P4/R1N3B1/1Pb2PPP/2Q1R1K1 b - - bm Bxe5; id "STS(v10.0) Simplification.001"; c0 "Bxe5=10, f4=3, Nc4=2"; c8 "10 3 2"; c9 "b8e5 f5f4 b6c4";
 1k1r2r1/1b4p1/p4n1p/1pq1pPn1/2p1P3/P1N2N2/1PB1Q1PP/3R1R1K b - - bm Nxf3; id "STS(v10.0) Simplification.002"; c0 "Nxf3=10, Rge8=7, Rgf8=6, Rh8=7"; c8 "10 7 6 7"; c9 "g5f3 g8e8 g8f8 g8h8";
 1k1r3r/pb1q2p1/B4p2/2p4p/Pp1bPPn1/7P/1P2Q1P1/R1BN1R1K b - - bm Bxa6; id "STS(v10.0) Simplification.003"; c0 "Bxa6=10, Qc6=3, Qe6=3, Rde8=5"; c8 "10 3 3 5"; c9 "b7a6 d7c6 d7e6 d8e8";

@@ -331,8 +331,12 @@ void UCI_Handler::debugCommand() {
 }
 
 void UCI_Handler::send(const std::string &toSend) const {
-  LOG__DEBUG(Logger::get().UCI_LOG, ">> {}", toSend);
+  LOG__INFO(Logger::get().UCI_LOG, ">> {}", toSend);
   *pOutputStream << toSend << std::endl;
+}
+
+void UCI_Handler::sendString(const std::string &anyString) const {
+  send(fmt::format("info string {}", anyString));
 }
 
 void UCI_Handler::sendResult(Move bestMove, Move ponderMove) const {
@@ -353,7 +357,17 @@ void UCI_Handler::sendIterationEndInfo(int depth, int seldepth, Value value,
                    time, printMoveListUCI(pv)));
 }
 
-void UCI_Handler::sendCurrentRootMove(Move currmove, unsigned long movenumber) const {
+void
+UCI_Handler::sendAspirationResearchInfo(int depth, int seldepth, Value value, const std::string& bound,
+                                        uint64_t nodes, uint64_t nps, MilliSec time,
+                                        const MoveList &pv) const {
+  send(fmt::format("info depth {} seldepth {} multipv 1 score {} {} nodes {} "
+                   "nps {} time {} pv {}",
+                   depth, seldepth, printValue(Value(value)), bound, nodes, nps,
+                   time, printMoveListUCI(pv)));
+}
+
+void UCI_Handler::sendCurrentRootMove(Move currmove, std::size_t movenumber) const {
   send(fmt::format("info currmove {} currmovenumber {}", printMove(currmove),
                    movenumber));
 }

@@ -32,7 +32,30 @@
 class Position;
 
 namespace Misc {
+
+  /**
+   * Creates a move from the given SAN string.
+   * Returns MOVE_NONE if the notation string can't be converted to
+   * a legal Move on this position.
+   */
   Move getMoveFromSAN(const Position &, const std::string &);
+
+  /**
+   * Creates a Move from the given position and the UCI notation string.
+   * Returns MOVE_NONE if the notation string can't be converted to
+   * a legal Move on this position.
+   */
+  Move getMoveFromUCI(Position &position, std::string moveStr);
+  Move getMoveFromUCIDEBUG(Position &position, std::string moveStr);
+
+  /* returns the given string with as lower case string */
+  std::string toLowerCase(std::string str);
+
+  /* returns the given string with as upper case string */
+  std::string toUpperCase(std::string str);
+
+  void printProgressC(double percentage);
+  std::string printProgress(double percentage);
 }
 
 #endif //FRANKYCPP_MISC_H

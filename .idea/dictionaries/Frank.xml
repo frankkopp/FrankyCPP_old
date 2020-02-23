@@ -1,22 +1,46 @@
 <component name="ProjectDictionaryState">
   <dictionary name="Frank">
     <words>
+      <w>alphabeta</w>
       <w>bitboard</w>
       <w>bitboards</w>
+      <w>boni</w>
       <w>currmove</w>
       <w>endvalue</w>
       <w>enpassant</w>
       <w>frankycpp</w>
       <w>gamephase</w>
+      <w>hashfull</w>
+      <w>ifstream</w>
       <w>implmentation</w>
       <w>kopp</w>
+      <w>malus</w>
       <w>midvalue</w>
+      <w>movegen</w>
       <w>movenumber</w>
+      <w>multipv</w>
+      <w>multithreaded</w>
+      <w>nomove</w>
       <w>noninfringement</w>
+      <w>nonroot</w>
       <w>passant</w>
+      <w>pawneval</w>
+      <w>pawnshield</w>
       <w>perft</w>
+      <w>ponderhit</w>
+      <w>popcount</w>
+      <w>prefrontier</w>
+      <w>prunings</w>
+      <w>qsearch</w>
+      <w>searchmoves</w>
       <w>seldepth</w>
       <w>spdlog</w>
+      <w>standpat</w>
+      <w>templated</w>
+      <w>testsets</w>
+      <w>tsuite</w>
+      <w>ucihand</w>
+      <w>upperbound</w>
       <w>zobrist</w>
     </words>
   </dictionary>

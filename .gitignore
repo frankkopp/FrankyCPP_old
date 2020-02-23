@@ -11,3 +11,5 @@ out/
 spdlog/_builds/
 *.~vsdx
 .vscode/
+build/
+CMakeSettings.json
