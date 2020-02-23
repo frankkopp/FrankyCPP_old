@@ -422,8 +422,6 @@ void OpeningBook::addToBook(Position &currentPosition, const Move &move) {
   const Key currentKey = currentPosition.getZobristKey();
   const std::string currentFen = currentPosition.printFen();
 
-  fprintln("Add {} ", currentFen);
-
   // get the lock on the data map
   const std::scoped_lock<std::mutex> lock(bookMutex);
 
