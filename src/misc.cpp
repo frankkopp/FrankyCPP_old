@@ -34,38 +34,6 @@
 
 namespace Misc {
 
-  Move getMoveFromUCIDEBUG(Position &position, std::string moveStr) {
-    // Regex for UCI notation (UCI)
-    std::regex regexPattern("([a-h][1-8][a-h][1-8])([NBRQnbrq])?");
-    std::smatch matcher;
-
-    // Match the target string
-    if (!std::regex_match(moveStr, matcher, regexPattern)) {
-      LOG__DEBUG(Logger::get().MAIN_LOG, "Move pattern NOT OK");
-      return MOVE_NONE;
-    }
-
-    // pattern is move
-    LOG__DEBUG(Logger::get().MAIN_LOG, "Move pattern OK");
-    std::string matchedMove = matcher.str(1);
-    std::string promotion = toUpperCase(matcher.str(2));
-    LOG__DEBUG(Logger::get().MAIN_LOG, "move: '{}' promotion: '{}'", matchedMove, promotion);
-
-    // create all moves on position and compare
-    MoveGenerator mg;
-    const MoveList* legalMovesPtr = mg.generateLegalMoves<MoveGenerator::GENALL>(position);
-    for (auto m : *legalMovesPtr) {
-      LOG__DEBUG(Logger::get().MAIN_LOG, "Compare '{}' == '{}'", printMove(m), matchedMove + promotion);
-      if (printMove(m) == matchedMove + promotion) {
-        LOG__DEBUG(Logger::get().MAIN_LOG, "Match move {}", printMoveVerbose(m));
-        return m;
-      }
-      LOG__DEBUG(Logger::get().MAIN_LOG, "Found NO match for '{}'", matchedMove + promotion);
-    }
-    LOG__DEBUG(Logger::get().MAIN_LOG, "Found NO move for '{}'", matchedMove + promotion);
-    return MOVE_NONE;
-  }
-
   Move getMoveFromUCI(Position &position, std::string moveStr) {
     // Regex for UCI notation (UCI)
     std::regex regexPattern("([a-h][1-8][a-h][1-8])([NBRQnbrq])?");

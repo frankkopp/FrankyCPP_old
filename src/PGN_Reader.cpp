@@ -106,6 +106,7 @@ inline PGN_Game PGN_Reader::processOneGame(VectorIterator &iterator) {
     if (find_regex(*iterator, moveSectionStart)) {
       handleMoveSection(iterator, game);
       gameEndReached = true;
+      if (iterator >= inputLines->end()) break;
     }
   } while (++iterator < inputLines->end() && !gameEndReached);
   const uint64_t dist = inputLines->size() - std::distance(iterator, inputLines->end());

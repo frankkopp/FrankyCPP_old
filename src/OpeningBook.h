@@ -29,16 +29,18 @@
 #include <map>
 #include "gtest/gtest_prod.h"
 #include "PGN_Reader.h"
+#include "Position.h"
 
 class MoveGenerator;
 
 struct BookEntry {
-  std::string position{};
+  Key key{};
+  std::string fen{};
   int counter{0};
   std::vector<Move> moves{};
   std::vector<BookEntry*> ptrNextPosition{};
 
-  BookEntry(const std::string &pos) : position(pos), counter{1} {}
+  BookEntry(const Key &zobrist, const std::string &fen) : key(zobrist), fen(fen), counter{1} {}
   std::string str();
 };
 
@@ -48,7 +50,7 @@ public:
   enum class BookFormat {
     SIMPLE,
     SAN,
-    PNG
+    PGN
   };
 
 private:
@@ -57,7 +59,7 @@ private:
   uint64_t fileSize{};
   BookFormat bookFormat;
   std::string bookFilePath{};
-  std::unordered_map<std::string, BookEntry> bookMap{};
+  std::unordered_map<Key, BookEntry> bookMap{};
 
   uint64_t gamesTotal = 0;
   uint64_t gamesProcessed = 0;
@@ -66,6 +68,10 @@ public:
   explicit OpeningBook(const std::string &bookPath, const BookFormat &bFormat);
 
   void initialize();
+  uint64_t size() { return bookMap.size(); }
+  Move getRandomMove(Key zobrist);
+
+private:
   void readBookFromFile(const std::string &filePath);
   std::vector<std::string> getLinesFromFile(std::ifstream &ifstream);
   void processAllLines(std::vector<std::string> &lines);
@@ -74,11 +80,9 @@ public:
   void processSANLine(std::string &line);
   void processPGNFileFifo(std::vector<std::string> &lines);
   void processPGNFile(std::vector<std::string> &lines);
-  void processGame(PGN_Game &game);
-  void addToBook(const Move &move, const std::string &lastFen, const std::string &fen);
-
-  uint64_t size() { return bookMap.size(); }
   void processGames(std::vector<PGN_Game>* ptrGames);
+  void processGame(PGN_Game &game);
+  void addToBook(Position &currentPosition, const Move &move);
 };
 
 

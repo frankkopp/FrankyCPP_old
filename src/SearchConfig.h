@@ -27,10 +27,17 @@
 #define FRANKYCPP_SEARCHCONFIG_H
 
 #include "types.h"
+#include "OpeningBook.h"
 
 namespace SearchConfig {
 
   // @formatter:off
+
+  // opening book
+  inline bool                    USE_BOOK  = true;
+  inline std::string             BOOK_PATH = "/books/book_smalltest.txt";
+  inline OpeningBook::BookFormat BOOK_TYPE = OpeningBook::BookFormat::SIMPLE;
+
   // basic search strategies and features
   inline bool USE_ASPIRATION_WINDOW   = true;
   inline Depth ASPIRATION_START_DEPTH = Depth{4};

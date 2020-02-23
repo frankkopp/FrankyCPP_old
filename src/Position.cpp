@@ -910,20 +910,19 @@ std::string Position::printFen() const {
     int emptySquares = 0;
     for (File f = FILE_A; f <= FILE_H; ++f) {
       Piece pc = getPiece(getSquare(f, r));
-
       if (pc == PIECE_NONE) {
         emptySquares++;
       }
       else {
         if (emptySquares) {
-          fen << std::to_string(emptySquares);
+          fen << emptySquares;
           emptySquares = 0;
         }
         fen << pieceToChar[pc];
       }
     }
     if (emptySquares) {
-      fen << std::to_string(emptySquares);
+      fen << emptySquares;
     }
     if (r > RANK_1) {
       fen << "/";

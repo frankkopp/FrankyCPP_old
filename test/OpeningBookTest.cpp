@@ -27,6 +27,8 @@
 #include "Logging.h"
 #include <gtest/gtest.h>
 #include <OpeningBook.h>
+#include <Position.h>
+#include <MoveGenerator.h>
 using testing::Eq;
 
 class OpeningBookTest : public ::testing::Test {
@@ -53,7 +55,7 @@ TEST_F(OpeningBookTest, initSimpleSmall) {
   OpeningBook book(filePathStr, OpeningBook::BookFormat::SIMPLE);
   book.initialize();
   LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
-  EXPECT_EQ(11'517, book.size());
+  EXPECT_EQ(11'196, book.size());
 }
 
 TEST_F(OpeningBookTest, initSimple) {
@@ -62,7 +64,7 @@ TEST_F(OpeningBookTest, initSimple) {
   OpeningBook book(filePathStr, OpeningBook::BookFormat::SIMPLE);
   book.initialize();
   LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
-  EXPECT_EQ(292'568, book.size());
+  EXPECT_EQ(273'578, book.size());
 }
 
 TEST_F(OpeningBookTest, initSAN) {
@@ -71,25 +73,25 @@ TEST_F(OpeningBookTest, initSAN) {
   OpeningBook book(filePathStr, OpeningBook::BookFormat::SAN);
   book.initialize();
   LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
-  EXPECT_EQ(1'262, book.size());
+  EXPECT_EQ(1'256, book.size());
 }
 
 TEST_F(OpeningBookTest, initPGNSmall) {
   std::string filePathStr = FrankyCPP_PROJECT_ROOT;
   filePathStr += +"/books/pgn_test.pgn";
-  OpeningBook book(filePathStr, OpeningBook::BookFormat::PNG);
+  OpeningBook book(filePathStr, OpeningBook::BookFormat::PGN);
   book.initialize();
   LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
-  EXPECT_EQ(732, book.size());
+  EXPECT_EQ(726, book.size());
 }
 
 TEST_F(OpeningBookTest, initPGNMedium) {
   std::string filePathStr = FrankyCPP_PROJECT_ROOT;
   filePathStr += +"/books/8moves_GM_LB.pgn";
-  OpeningBook book(filePathStr, OpeningBook::BookFormat::PNG);
+  OpeningBook book(filePathStr, OpeningBook::BookFormat::PGN);
   book.initialize();
   LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
-  EXPECT_EQ(216'070, book.size());
+  EXPECT_EQ(204'513, book.size());
   //  [16:24:12:523075] [t:42948     ] [Book_Logger      ] [info    ]: Found 44.624 games in 2.232 ms
   //  [16:24:12:523087] [t:42948     ] [Book_Logger      ] [debug   ]: Number of games 44.624
   //  [16:24:18:586585] [t:42948     ] [Book_Logger      ] [debug   ]: Internal book created 216.070 positions in 8.309 ms.
@@ -109,10 +111,46 @@ TEST_F(OpeningBookTest, initPGNMedium) {
 TEST_F(OpeningBookTest, initPGNLarge) {
   std::string filePathStr = FrankyCPP_PROJECT_ROOT;
   filePathStr += +"/books/superbook.pgn";
-  OpeningBook book(filePathStr, OpeningBook::BookFormat::PNG);
+  OpeningBook book(filePathStr, OpeningBook::BookFormat::PGN);
   book.initialize();
   LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
-  EXPECT_EQ(4'896'703, book.size());
+  EXPECT_EQ(4'821'485, book.size());
+  // NON FIFO
+  //[16:42:28:673870] [t:2688      ] [Book_Logger      ] [info    ]: Found 190.783 games in 19.856 ms
+  //[16:42:28:673892] [t:2688      ] [Book_Logger      ] [debug   ]: Processing 190.783 games
+  //[16:43:19:058945] [t:2688      ] [Book_Logger      ] [info    ]: Processed 190.783 games in 50.385 ms
+  //[16:43:19:149450] [t:2688      ] [Book_Logger      ] [debug   ]: Internal book created 4.896.703 positions in 70.440 ms.
+  //[16:43:19:225767] [t:2688      ] [Book_Logger      ] [info    ]: Opening book initialized in (71.525 ms). 4.896.703 positions
+  //[16:43:19:225780] [t:2688      ] [Test_Logger      ] [debug   ]: Entries in book: 4.896.703
+  //FIFO
+  //[17:39:35:811577] [t:40784     ] [Book_Logger      ] [info    ]: Found 190.783 games in 53.892 ms
+  //[17:39:35:811593] [t:40784     ] [Book_Logger      ] [debug   ]: Finished finding games true
+  //[17:39:42:165441] [t:5988      ] [Book_Logger      ] [debug   ]: Internal book created 4.896.703 positions in 60.373 ms.
+  //[17:39:42:245032] [t:5988      ] [Book_Logger      ] [info    ]: Opening book initialized in (61.519 ms). 4.896.703 positions
+  //[17:39:42:245043] [t:5988      ] [Test_Logger      ] [debug   ]: Entries in book: 4.896.703
 }
+
+TEST_F(OpeningBookTest, getMove) {
+  std::string filePathStr = FrankyCPP_PROJECT_ROOT;
+  filePathStr += +"/books/book_smalltest.txt";
+  OpeningBook book(filePathStr, OpeningBook::BookFormat::SIMPLE);
+  book.initialize();
+  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
+  EXPECT_EQ(11'196, book.size());
+
+  Position position;
+  MoveGenerator mg;
+  Move bookMove = book.getRandomMove(position.getZobristKey());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Book returned move: {}", printMoveVerbose(bookMove));
+  EXPECT_TRUE(isMove(bookMove));
+  EXPECT_TRUE(mg.validateMove(position, bookMove));
+
+  position = Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
+  bookMove = book.getRandomMove(position.getZobristKey());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Book returned move: {}", printMoveVerbose(bookMove));
+  EXPECT_FALSE(isMove(bookMove));
+}
+
+
 
 
