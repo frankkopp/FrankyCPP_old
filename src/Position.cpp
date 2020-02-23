@@ -1139,7 +1139,7 @@ void Position::setupBoard(const char* fen) {
   initializeBoard();
 
   unsigned char token;
-  unsigned long idx;
+  std::size_t idx;
   Square currentSquare = SQ_A8;
 
   std::istringstream iss(fen);
@@ -1153,8 +1153,7 @@ void Position::setupBoard(const char* fen) {
     else if (token == '/') {
       currentSquare += 2 * SOUTH;
     }
-    else if ((idx = std::string(pieceToChar).find(token)) !=
-             std::string::npos) {
+    else if ((idx = std::string(pieceToChar).find(token)) != std::string::npos) {
       putPiece(Piece(idx), currentSquare);
       ++currentSquare;
     }

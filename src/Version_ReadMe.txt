@@ -8,14 +8,14 @@ v 0.x (plan)
         if there is a king capture in one of the succeeding nodes we jump back
         and dismiss this move.
 
-v 0.6 (plan)
+v 0.6 (in progress)
 ================================================================================
 - TODO:
     - ATACKS / SEE
     - Configure for play strength
 - DONE:
 
-v 0.5 (in progress)
+v 0.5 (done)
 ================================================================================
 - DONE:
     - Testing
