@@ -230,7 +230,6 @@ void Search::run(Position position) {
   }
   // #######################
 
-
   // ###########################################################################
   // start iterative deepening
   if (!SearchConfig::USE_BOOK || lastSearchResult.bestMove == MOVE_NONE) {
