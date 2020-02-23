@@ -24,11 +24,11 @@
  */
 
 #include <sstream>
+#include "Logging.h"
 #include "Position.h"
+#include "SearchConfig.h"
 #include "Search.h"
 #include "Engine.h"
-#include "Logging.h"
-#include "SearchConfig.h"
 #include <gtest/gtest.h>
 
 using testing::Eq;
@@ -45,6 +45,7 @@ protected:
   void SetUp() override {
     Logger::get().TEST_LOG->set_level(spdlog::level::debug);
     Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
+    Logger::get().BOOK_LOG->set_level(spdlog::level::debug);
   }
 
   void TearDown() override {}
@@ -272,10 +273,10 @@ TEST_F(SearchTest, goodCapture) {
   //     A   B   C   D   E   F   G   H
 
   position =
-      Position("2q1r1k1/rppb4/3p1Pp1/p4n1p/2P1n1PN/7P/PP3Q1K/2BRRB2 w - -");
+    Position("2q1r1k1/rppb4/3p1Pp1/p4n1p/2P1n1PN/7P/PP3Q1K/2BRRB2 w - -");
   ASSERT_TRUE(search.goodCapture(position, createMove("g4f5"))); // pawn capture
   ASSERT_FALSE(
-      search.goodCapture(position, createMove("g4h5")));         // pawn capture
+    search.goodCapture(position, createMove("g4h5")));         // pawn capture
   ASSERT_TRUE(search.goodCapture(position, createMove("f2a7"))); // not defended
   ASSERT_TRUE(search.goodCapture(position, createMove("h4g6"))); // not defended
   ASSERT_FALSE(search.goodCapture(position, createMove("h4f5"))); // Nxn
@@ -284,7 +285,7 @@ TEST_F(SearchTest, goodCapture) {
   ASSERT_FALSE(search.goodCapture(position, createMove("d1d6"))); // Rxp
 
   position =
-      Position("2q1r1k1/rpp5/3p1Pp1/p4n1p/b1P1n1PN/5Q1P/PP5K/2BRRB2 w - -");
+    Position("2q1r1k1/rpp5/3p1Pp1/p4n1p/b1P1n1PN/5Q1P/PP5K/2BRRB2 w - -");
   position.doMove(createMove("e1e4"));
   ASSERT_TRUE(search.goodCapture(position, createMove("e8e4"))); // recapture
   ASSERT_TRUE(search.goodCapture(position, createMove("a4d1"))); // bxR
@@ -352,6 +353,26 @@ TEST_F(SearchTest, alphaBetaTest) {
   ASSERT_GT(nodesVisited1, nodesVisited2);
 }
 
+TEST_F(SearchTest, Book) {
+
+  SearchConfig::USE_BOOK = true;
+  SearchConfig::BOOK_PATH = "/books/book_smalltest.txt";
+  SearchConfig::BOOK_TYPE = OpeningBook::BookFormat::SIMPLE;
+
+  Search search;
+  SearchLimits searchLimits;
+  Position position;
+  searchLimits.setMoveTime(2'000);
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+
+  LOG__INFO(Logger::get().TEST_LOG, "Book move has no value: move={} value={}",
+    printMoveVerbose(search.getLastSearchResult().bestMove),
+    search.getLastSearchResult().bestMoveValue);
+  EXPECT_EQ(VALUE_NONE, search.getLastSearchResult().bestMoveValue);
+
+}
+
 TEST_F(SearchTest, MDPMPP) {
 
   SearchConfig::USE_QUIESCENCE = true;
@@ -414,12 +435,12 @@ TEST_F(SearchTest, TT) {
             search.getSearchStats().nodesVisited,
             search.getSearchStats().lastSearchTime,
             (search.getSearchStats().nodesVisited * 1'000) /
-                search.getSearchStats().lastSearchTime);
+            search.getSearchStats().lastSearchTime);
   LOG__INFO(
-      Logger::get().TEST_LOG, "TT Hits: {:n} TT Misses: {:n} TT Hit rate: {}%",
-      search.getSearchStats().tt_Cuts, search.getSearchStats().tt_NoCuts,
-      (static_cast<double>(search.getSearchStats().tt_Cuts * 100) /
-       (search.getSearchStats().tt_Cuts + search.getSearchStats().tt_NoCuts)));
+    Logger::get().TEST_LOG, "TT Hits: {:n} TT Misses: {:n} TT Hit rate: {}%",
+    search.getSearchStats().tt_Cuts, search.getSearchStats().tt_NoCuts,
+    (static_cast<double>(search.getSearchStats().tt_Cuts * 100) /
+     (search.getSearchStats().tt_Cuts + search.getSearchStats().tt_NoCuts)));
 
   searchLimits.setDepth(6);
   search.startSearch(position, searchLimits);
@@ -429,12 +450,12 @@ TEST_F(SearchTest, TT) {
             search.getSearchStats().nodesVisited,
             search.getSearchStats().lastSearchTime,
             (search.getSearchStats().nodesVisited * 1'000) /
-                search.getSearchStats().lastSearchTime);
+            search.getSearchStats().lastSearchTime);
   LOG__INFO(
-      Logger::get().TEST_LOG, "TT Hits: {:n} TT Misses: {:n} TT Hit rate: {}%",
-      search.getSearchStats().tt_Cuts, search.getSearchStats().tt_NoCuts,
-      (static_cast<double>(search.getSearchStats().tt_Cuts * 100) /
-       (search.getSearchStats().tt_Cuts + search.getSearchStats().tt_NoCuts)));
+    Logger::get().TEST_LOG, "TT Hits: {:n} TT Misses: {:n} TT Hit rate: {}%",
+    search.getSearchStats().tt_Cuts, search.getSearchStats().tt_NoCuts,
+    (static_cast<double>(search.getSearchStats().tt_Cuts * 100) /
+     (search.getSearchStats().tt_Cuts + search.getSearchStats().tt_NoCuts)));
 }
 
 TEST_F(SearchTest, null_move) {
@@ -452,7 +473,7 @@ TEST_F(SearchTest, null_move) {
             search.getSearchStats().nodesVisited,
             search.getSearchStats().lastSearchTime,
             (search.getSearchStats().nodesVisited * 1'000) /
-                search.getSearchStats().lastSearchTime);
+            search.getSearchStats().lastSearchTime);
 
   LOG__INFO(Logger::get().TEST_LOG, "Number of Null Moves Prunings: {:n} Verifications {:n}",
             search.getSearchStats().nullMovePrunings,
@@ -479,7 +500,7 @@ TEST_F(SearchTest, aspirationWindow) {
 
 TEST_F(SearchTest, perft) {
   int DEPTH = 6;
-  
+
   uint64_t perftResults[] = {0,
                              20,             // 1
                              400,            // 2
@@ -498,7 +519,7 @@ TEST_F(SearchTest, perft) {
   search.waitWhileSearching();
   LOG__INFO(Logger::get().TEST_LOG, "Leaf nodes per sec: {:n}",
             (search.getSearchStats().leafPositionsEvaluated * 1'000) /
-                search.getSearchStats().lastSearchTime);
+            search.getSearchStats().lastSearchTime);
   LOG__INFO(Logger::get().TEST_LOG, "Leaf nodes:         {:n}",
             search.getSearchStats().leafPositionsEvaluated);
   ASSERT_EQ(perftResults[DEPTH],
@@ -601,7 +622,7 @@ TEST_F(SearchTest, DISABLED_debuggingTTMove) {
   SearchConfig::USE_TT_QSEARCH = true;
   SearchConfig::USE_RFP = true;
   SearchConfig::USE_NMP = true;
-//  SearchConfig::USE_IID = true;
+  //  SearchConfig::USE_IID = true;
 
   const int depth = 3;
   position = Position("rnb1kbnr/ppp2ppp/8/3PN1q1/3Pp3/8/PPP2PPP/RNBQKB1R b KQkq d3 0 5");

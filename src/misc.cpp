@@ -25,6 +25,7 @@
 
 #include <regex>
 #include <string>
+#include <iostream>
 #include "fmt/printf.h"
 #include "misc.h"
 #include "Logging.h"
@@ -66,7 +67,7 @@ namespace Misc {
     LOG__TRACE(Logger::get().MAIN_LOG, "Checking SAN move {} in position {}", sanMove, position.printFen());
 
     // Regex for short move notation (SAN)
-    std::regex regexPattern("([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O-O-O|O-O)(=([NBRQ]))?([!?+#]*)?");
+    std::regex regexPattern("([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O-O-O|O-O)(=?([NBRQ]))?([!?+#]*)?");
     std::smatch matcher;
 
     // Match the target string

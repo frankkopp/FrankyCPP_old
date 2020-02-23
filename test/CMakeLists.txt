@@ -33,7 +33,7 @@ add_executable(
         PerformanceTests.cpp
         TestSuiteTest.cpp
         ClionGTestBugTest.cpp
-        OpeningBookTest.cpp)
+        OpeningBookTest.cpp ThreadPoolTest.cpp FifoTest.cpp PGN_ReaderTest.cpp)
 
 target_link_libraries(
         ${testExeName}

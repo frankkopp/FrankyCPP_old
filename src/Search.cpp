@@ -47,6 +47,10 @@ Search::Search(Engine* pEng) : Search(pEng, SearchConfig::TT_SIZE_MB) {}
 Search::Search(Engine* pEng, int ttSizeInByte) {
   pEngine = pEng;
   pEvaluator = std::make_unique<Evaluator>();
+  pOpeningBook = std::make_unique<OpeningBook>(
+    FrankyCPP_PROJECT_ROOT + SearchConfig::BOOK_PATH,
+    SearchConfig::BOOK_TYPE);
+  pOpeningBook->initialize();
   tt = [&] { return SearchConfig::USE_TT ? new TT(ttSizeInByte) : new TT(0); }();
 }
 
@@ -216,9 +220,25 @@ void Search::run(Position position) {
   // initialization done
   initSemaphore.release();
 
+  // ########################
+  // Opening book
+  if (SearchConfig::USE_BOOK) {
+    lastSearchResult.bestMove = pOpeningBook->getRandomMove(position.getZobristKey());
+    if (lastSearchResult.bestMove != MOVE_NONE) {
+      hadBookMove = true;
+    }
+  }
+  // #######################
+
+
   // ###########################################################################
   // start iterative deepening
-  lastSearchResult = iterativeDeepening(position);
+  if (!SearchConfig::USE_BOOK || lastSearchResult.bestMove == MOVE_NONE) {
+    lastSearchResult = iterativeDeepening(position);
+  }
+  else {
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "Book Move: {}", printMoveVerbose(lastSearchResult.bestMove));
+  }
   // ###########################################################################
 
   _hasResult = true;
@@ -292,6 +312,15 @@ SearchResult Search::iterativeDeepening(Position &position) {
 
   // generate all legal root moves
   rootMoves = generateRootMoves(position);
+
+  // add some extra time for the move after the last book move
+  if (hadBookMove && searchLimitsPtr->isTimeControl()) {
+    double extraTimeFactor = 2.0;
+    LOG__INFO(Logger::get().SEARCH_LOG, "Last book move detected. Adding some extra time. Before: {:n} ms After: {:n} ms",
+              timeLimit, (long) (extraTimeFactor * timeLimit));
+    hadBookMove = false;
+    addExtraTime(extraTimeFactor);
+  }
 
   // print search setup for debugging
   LOG__INFO(Logger::get().SEARCH_LOG, "Searching in position: {}", position.printFen());
@@ -821,7 +850,7 @@ Value Search::search(Position &position, Depth depth, Ply ply, Value alpha,
         && !extension
       ) {
 
-      const auto materialEval
+      const Value materialEval
         = static_cast<const Value>(position.getMaterial(position.getNextPlayer())
                                    - position.getMaterial(~position.getNextPlayer()));
       const Piece targetPiece = position.getPiece(getToSquare(move));

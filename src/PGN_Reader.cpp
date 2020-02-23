@@ -27,14 +27,16 @@
 #include <string>
 #include "PGN_Reader.h"
 #include "misc.h"
+#include "Fifo.h"
+
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/regex.hpp>
-using namespace boost;
 
+using namespace boost;
 using namespace std::string_literals;
 
 static const boost::regex trailingComments(R"(;.*$)");
-static const boost::regex tagPairs(R"(\[\w+ +".*"\])");
+static const boost::regex tagPairs(R"(\[\w+ +".*?"\])");
 static const boost::regex doubleWhiteSpace(R"(\s+)");
 static const boost::regex moveSectionStart(R"(^(\d+.)|([KQRBN]?[a-h][1-8]))");
 static const boost::regex moveSectionEnd(R"(.*((1-0)|(0-1)|(1/2-1/2)|\*)$)");
@@ -50,14 +52,17 @@ PGN_Reader::PGN_Reader(std::vector<std::string> &lines) {
   inputLines = std::make_shared<std::vector<std::string>>(lines);
 }
 
-bool PGN_Reader::process() {
-  LOG__TRACE(Logger::get().BOOK_LOG, "Processing {:n} lines.", inputLines->size());
+bool PGN_Reader::process(Fifo<PGN_Game> &gamesFifo) {
+  LOG__TRACE(Logger::get().BOOK_LOG, "Finding games in {:n} lines.", inputLines->size());
   const auto start = std::chrono::high_resolution_clock::now();
   // loop over all input lines
   VectorIterator linesIter = inputLines->begin();
   while (linesIter < inputLines->end()) {
-    LOG__TRACE(Logger::get().BOOK_LOG, "Processing game {:n}", games.size() + 1);
-    processOneGame(linesIter);
+    LOG__TRACE(Logger::get().BOOK_LOG, "Finding game {:n}", games.size() + 1);
+    PGN_Game game = processOneGame(linesIter);
+    games.push_back(game);
+    gamesFifo.push(game);
+    LOG__TRACE(Logger::get().BOOK_LOG, "Game Fifo has {:n} games", gamesFifo.size());
   }
   const auto stop = std::chrono::high_resolution_clock::now();
   const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
@@ -65,7 +70,22 @@ bool PGN_Reader::process() {
   return true;
 }
 
-void PGN_Reader::processOneGame(VectorIterator &iterator) {
+bool PGN_Reader::process() {
+  LOG__TRACE(Logger::get().BOOK_LOG, "Processing {:n} lines.", inputLines->size());
+  const auto start = std::chrono::high_resolution_clock::now();
+  // loop over all input lines
+  VectorIterator linesIter = inputLines->begin();
+  while (linesIter < inputLines->end()) {
+    LOG__TRACE(Logger::get().BOOK_LOG, "Processing game {:n}", games.size() + 1);
+    games.push_back(processOneGame(linesIter));
+  }
+  const auto stop = std::chrono::high_resolution_clock::now();
+  const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+  LOG__INFO(Logger::get().BOOK_LOG, "Found {:n} games in {:n} ms", games.size(), elapsed.count());
+  return true;
+}
+
+inline PGN_Game PGN_Reader::processOneGame(VectorIterator &iterator) {
   bool gameEndReached = false;
   PGN_Game game{};
   do {
@@ -74,26 +94,32 @@ void PGN_Reader::processOneGame(VectorIterator &iterator) {
     trim(*iterator);
     // ignore comment lines
     if (starts_with(*iterator, "%")) continue;
+    // ignore meta data tags for now
+    replace_all_regex(*iterator, tagPairs, " "s);
     // trailing comments
     erase_regex(*iterator, trailingComments);
-    // ignore meta data tags for now
-    if (find_regex(*iterator, tagPairs)) continue;
     // eliminate double whitespace
     replace_all_regex(*iterator, doubleWhiteSpace, " "s);
+    // clean up line
+    trim(*iterator);
     // process move section
     if (find_regex(*iterator, moveSectionStart)) {
       handleMoveSection(iterator, game);
       gameEndReached = true;
+      if (iterator >= inputLines->end()) break;
     }
   } while (++iterator < inputLines->end() && !gameEndReached);
   const uint64_t dist = inputLines->size() - std::distance(iterator, inputLines->end());
-  if (games.size() % (inputLines->size() / avgLinesPerGameTimesProgressSteps) == 0) { // 12 is avg game lines and 15 steps
-    LOG__DEBUG(Logger::get().BOOK_LOG, "Progress: {:s}", Misc::printProgress(static_cast<double>(dist) / inputLines->size()));
+  // x % 0 is undefined in c++
+  // avgLinesPerGameTimesProgressSteps = 12*15 as 12 is avg game lines and 15 steps
+  const uint64_t progressInterval = 1 + (inputLines->size() / avgLinesPerGameTimesProgressSteps);
+  if (games.size() % progressInterval == 0) {
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Finding games: {:s}", Misc::printProgress(static_cast<double>(dist) / inputLines->size()));
   }
-  games.push_back(game);
+  return game;
 }
 
-void PGN_Reader::handleMoveSection(VectorIterator &iterator, PGN_Game &game) {
+inline void PGN_Reader::handleMoveSection(VectorIterator &iterator, PGN_Game &game) {
   LOG__TRACE(Logger::get().BOOK_LOG, "Move section line: {}    (length={})", *iterator, iterator->size());
 
   // read and concatenate all lines belonging to the move section of  one game

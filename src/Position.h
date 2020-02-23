@@ -112,7 +112,7 @@ class Position {
   // **********************************************************
 
   // history information for undo and repetition detection
-  constexpr static std::size_t MAX_HISTORY = 256;
+  constexpr static std::size_t MAX_HISTORY = MAX_MOVES;
   int historyCounter = 0;
   struct HistoryState {
     Key zobristKey_History = 0;

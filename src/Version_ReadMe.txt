@@ -11,16 +11,16 @@ v 0.x (plan)
 v 0.6 (plan)
 ================================================================================
 - TODO:
-    - UCI Options
-    - Simple Opening Book
     - ATACKS / SEE
+    - Configure for play strength
 - DONE:
 
 v 0.5 (in progress)
 ================================================================================
 - TODO:
     - Testing
-    - Configure for play strength
+    - UCI Options
+    - Simple Opening Book
 - DONE:
     - TestSuites
     - Beta Cut Movenumber Counter

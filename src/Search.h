@@ -37,6 +37,7 @@
 #include "SearchLimits.h"
 #include "MoveGenerator.h"
 #include "gtest/gtest_prod.h"
+#include "OpeningBook.h"
 
 // forward declared dependencies
 class Engine;
@@ -132,6 +133,10 @@ class Search {
 
   // Evaluator
   std::unique_ptr<Evaluator> pEvaluator;
+
+  // opening book
+  std::unique_ptr<OpeningBook> pOpeningBook;
+  bool hadBookMove = false;
 
 public:
   // for code re-using through templating we use search types when calling
@@ -367,7 +372,6 @@ private:
 
   FRIEND_TEST(SearchTest, goodCapture);
   FRIEND_TEST(SearchTest, timerTest);
-
 };
 
 #endif // FRANKYCPP_SEARCH_H

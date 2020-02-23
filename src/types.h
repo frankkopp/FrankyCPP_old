@@ -58,7 +58,7 @@ constexpr const char* START_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R
 constexpr const uint64_t nanoPerSec = 1'000'000'000;
 
 /** Max number of moves in a game to be used in arrays etc. */
-constexpr const int MAX_MOVES = 256;
+constexpr const int MAX_MOVES = 512;
 
 /** Game phase is 24 when all officers are present. 0 when no officer is present */
 constexpr const int GAME_PHASE_MAX = 24;
@@ -585,5 +585,6 @@ extern const std::locale deLocale;
 #define println(s) std::cout << (s) << std::endl
 #define fprint(...) std::cout << fmt::format(deLocale, __VA_ARGS__)
 #define fprintln(...) fprint(__VA_ARGS__) << std::endl
+#define DEBUG(...) std::cout << fmt::format(deLocale, "DEBUG {}:{} {}", __FILE__, __LINE__, __VA_ARGS__) << std::endl
 
 #endif //FRANKYCPP_TYPES_H

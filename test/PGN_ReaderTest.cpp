@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018-2020 Frank Kopp
+ * Copyright (c) 2018 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,39 +23,46 @@
  *
  */
 
-#ifndef FRANKYCPP_MISC_H
-#define FRANKYCPP_MISC_H
-
 #include "types.h"
+#include "Logging.h"
+#include "PGN_Reader.h"
+#include <gtest/gtest.h>
+using testing::Eq;
 
-// forward declaration
-class Position;
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/regex.hpp>
 
-namespace Misc {
+using namespace boost;
+using namespace std::string_literals;
 
-  /**
-   * Creates a move from the given SAN string.
-   * Returns MOVE_NONE if the notation string can't be converted to
-   * a legal Move on this position.
-   */
-  Move getMoveFromSAN(const Position &, const std::string &);
+class PGN_ReaderTest : public ::testing::Test {
+public:
+  static void SetUpTestSuite() {
+    NEWLINE;
+    INIT::init();
+    NEWLINE;
+    Logger::get().TEST_LOG->set_level(spdlog::level::debug);
+    Logger::get().MAIN_LOG->set_level(spdlog::level::debug);
+    Logger::get().BOOK_LOG->set_level(spdlog::level::debug);
+  }
 
-  /**
-   * Creates a Move from the given position and the UCI notation string.
-   * Returns MOVE_NONE if the notation string can't be converted to
-   * a legal Move on this position.
-   */
-  Move getMoveFromUCI(Position &position, std::string moveStr);
-  Move getMoveFromUCIDEBUG(Position &position, std::string moveStr);
+protected:
+  void SetUp() override {}
+  void TearDown() override {}
+};
 
-  /* returns the given string with as lower case string */
-  std::string toLowerCase(std::string str);
+TEST_F(PGN_ReaderTest, regex) {
+  std::string input{};
 
-  /* returns the given string with as upper case string */
-  std::string toUpperCase(std::string str);
+  const boost::regex tagPairs(R"(\[\w+ +".*"\])");
+  input ="[Event \"?\"]";
+  EXPECT_TRUE(find_regex(input, tagPairs));
+  input = "[Event \"?\"";
+  EXPECT_FALSE(find_regex(input, tagPairs));
+  input = "Event \"?\"]";
+  EXPECT_FALSE(find_regex(input, tagPairs));
 
-  void printProgressC(double percentage);
-  std::string printProgress(double percentage);
+  input ="[Site \"01, URS-ch38 Riga ;URS-ch\"]";
+  EXPECT_TRUE(find_regex(input, tagPairs));
+
 }
-
-#endif //FRANKYCPP_MISC_H
