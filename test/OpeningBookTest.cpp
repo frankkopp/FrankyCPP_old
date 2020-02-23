@@ -151,6 +151,14 @@ TEST_F(OpeningBookTest, getMove) {
   EXPECT_FALSE(isMove(bookMove));
 }
 
+TEST_F(OpeningBookTest, pgnECOE) {
+  std::string filePathStr = FrankyCPP_PROJECT_ROOT;
+  filePathStr += +"/books/ecoe.pgn";
+  OpeningBook book(filePathStr, OpeningBook::BookFormat::PGN);
+  book.initialize();
+  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
+  EXPECT_EQ(4'039, book.size());
+}
 
 
 

@@ -17,9 +17,8 @@ v 0.6 (plan)
 
 v 0.5 (in progress)
 ================================================================================
-- TODO:
-    - Testing
 - DONE:
+    - Testing
     - UCI Options
     - Simple Opening Book
     - TestSuites
