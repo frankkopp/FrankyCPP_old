@@ -170,21 +170,21 @@ void OpeningBook::processAllLines(std::vector<std::string> &lines) {
     case BookFormat::SIMPLE:
     case BookFormat::SAN: {
 #ifdef PARALLEL_LINE_PROCESSING
+      LOG__DEBUG(Logger::get().BOOK_LOG, "Using {} threads", numberOfThreads);
+
 #ifdef HAS_EXECUTION_LIB // use parallel lambda 
       std::for_each(std::execution::par_unseq, lines.begin(), lines.end(),
                     [&](auto &&item) { processLine(item); });
 #else // no <execution> library (< C++17)
-      const auto noOfThreads = std::thread::hardware_concurrency() == 0 ?
-                               4 : std::thread::hardware_concurrency();
       const auto maxNumberOfEntries = lines.size();
       std::vector<std::thread> threads;
-      threads.reserve(noOfThreads);
-      for (unsigned int t = 0; t < noOfThreads; ++t) {
+      threads.reserve(numberOfThreads);
+      for (unsigned int t = 0; t < numberOfThreads; ++t) {
         threads.emplace_back([&, this, t]() {
-          auto range = maxNumberOfEntries / noOfThreads;
+          auto range = maxNumberOfEntries / numberOfThreads;
           auto start = t * range;
           auto end = start + range;
-          if (t == noOfThreads - 1) end = maxNumberOfEntries;
+          if (t == numberOfThreads - 1) end = maxNumberOfEntries;
           for (std::size_t i = start; i < end; ++i) {
             processLine(lines[i]);
           }
@@ -307,7 +307,7 @@ void OpeningBook::processSANLine(std::string &line) {
 }
 
 void OpeningBook::processPGNFileFifo(std::vector<std::string> &lines) {
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Process lines from PGN file with FIFO...");
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Process lines from PGN file with FIFO ({} Threads)...", numberOfThreads);
   // reading pgn and get a list of games
   PGN_Reader pgnReader(lines);
   // prepare FIFO for storing the games
@@ -373,6 +373,7 @@ void OpeningBook::processGames(std::vector<PGN_Game>* ptrGames) {// processing g
   const auto startTime = std::chrono::high_resolution_clock::now();
 
 #ifdef PARALLEL_GAME_PROCESSING
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Using {} threads", numberOfThreads);
 #ifdef HAS_EXECUTION_LIB // parallel lambda
   std::for_each(std::execution::par_unseq, ptrGames->begin(), ptrGames->end(),
                 [&](auto game) { processGame(game); });
