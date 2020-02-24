@@ -29,7 +29,13 @@ using testing::Eq;
 #include <iostream>
 #include <chrono>
 #include "types.h"
+
+// BOOST timer
 #include <boost/timer/timer.hpp>
+
+// BOOST filesystem
+#include <boost/filesystem.hpp>
+namespace bfs = boost::filesystem;
 
 TEST(BOOST, cpu_timer) {
 
@@ -71,6 +77,20 @@ TEST(BOOST, cpu_timer) {
   std::cout << timer.format();
   std::cout << " " << std::setprecision(7) << static_cast<double>(sum) / 1e9 << std::endl;
   SUCCEED();
+}
+
+TEST(BOOST, boostFS) {
+  // CYGWIN issue with path
+  std::string filePathStr = FrankyCPP_PROJECT_ROOT;
+  filePathStr += "/books/superbook.pgn";
+  //filePathStr = bfs::current_path().string() + "\\FrankyCPP.log";
+  fprintln("{}", filePathStr);
+  bfs::path p{filePathStr};
+  fprintln("{}", p.string());
+  const boost::filesystem::path &canonical1 = bfs::canonical(p);
+  fprintln("{}", canonical1.string());
+  uint64_t fsize = bfs::file_size(canonical1);
+  fprintln("{}", fsize);
 }
 
 //#include <boost/log/core.hpp>

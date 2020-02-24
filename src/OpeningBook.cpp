@@ -40,22 +40,57 @@
 #include "Position.h"
 #include "PGN_Reader.h"
 
+// BOOST filesystem
+#include <boost/filesystem.hpp>
+namespace bfs = boost::filesystem;
+
+// BOOST threads helper
 #include <boost/thread/thread_functors.hpp>
 
+// BOOST Serialization
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+//#include <boost/archive/xml_oarchive.hpp>
+//#include <boost/archive/xml_iarchive.hpp>
+//#include <boost/archive/text_oarchive.hpp>
+//#include <boost/archive/text_iarchive.hpp>
+
+// enable for parallel processing of input lines
 #define PARALLEL_LINE_PROCESSING
+// enable for parallel processing of games from pgn files
 #define PARALLEL_GAME_PROCESSING
+// enable for using fifo when reading pgn files and processing pgn games
+// this allows to start processing games in parallel while still reading
 #define FIFO_PROCESSING
 
+// not all C++17 compilers have this std library for parallelization
 #ifdef HAS_EXECUTION_LIB
 #include <execution>
 #endif
 
-#ifdef HAS_FILESYSTEM_LIB
-#include <filesystem>
-#endif
+static const char* const cacheExt = ".cache.bin";
 
 OpeningBook::OpeningBook(const std::string &bookPath, const BookFormat &bFormat)
   : bookFilePath(bookPath), bookFormat(bFormat) {
+  // std::thread::hardware_concurrency() is not reliable - on some platforms
+  // it returns 0 - in this case we chose a default of 4
+  numberOfThreads = std::thread::hardware_concurrency() == 0 ?
+                               4 : std::thread::hardware_concurrency();
+}
+
+Move OpeningBook::getRandomMove(Key zobrist) const {
+  Move bookMove = MOVE_NONE;
+  // Find the entry for this key (zobrist key of position) in the map and
+  // choose a random move from the listof moves in the entry
+  if (bookMap.find(zobrist) != bookMap.end()) {
+    BookEntry bookEntry = bookMap.at(zobrist);
+    if (!bookEntry.moves.empty()) {
+      std::random_device rd;
+      std::uniform_int_distribution<std::size_t> random(0, bookEntry.moves.size() - 1);
+      bookMove = bookEntry.moves[random(rd)];
+    }
+  }
+  return bookMove;
 }
 
 void OpeningBook::initialize() {
@@ -63,6 +98,11 @@ void OpeningBook::initialize() {
   LOG__INFO(Logger::get().BOOK_LOG, "Opening book initialization.");
 
   const auto start = std::chrono::high_resolution_clock::now();
+
+  // if cache enabled check if we have a cache file and load from cache
+  if (_useCache && !_recreateCache && hasCache()) {
+    if (loadFromCache()) return;
+  }
 
   // set root entry
   Position position;
@@ -72,6 +112,11 @@ void OpeningBook::initialize() {
   // read book from file
   readBookFromFile(bookFilePath);
 
+  // safe the book to a cache
+  if (_useCache && bookMap.size() > 1) {
+    saveToCache();
+  }
+
   const auto stop = std::chrono::high_resolution_clock::now();
   const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
   LOG__INFO(Logger::get().BOOK_LOG, "Opening book initialized in ({:n} ms). {:n} positions", elapsed.count(), bookMap.size());
@@ -79,16 +124,12 @@ void OpeningBook::initialize() {
 }
 
 void OpeningBook::readBookFromFile(const std::string &filePath) {
-
-  // get file size
-#ifdef HAS_FILESYSTEM_LIB
-  std::filesystem::path p{filePath};
-    fileSize = std::filesystem::file_size(std::filesystem::canonical(p));
-#else
-  std::ifstream in(filePath, std::ifstream::ate | std::ifstream::binary);
-  fileSize = in.tellg();
-#endif
-
+  if (!fileExists(filePath)) {
+    LOG__ERROR(Logger::get().BOOK_LOG, "Open book '{}' not found.", filePath);
+    return;
+  }
+  // open the file a read all lines into a vector and process all lines
+  fileSize = getFileSize(filePath);
   std::ifstream file(filePath);
   if (file.is_open()) {
     LOG__DEBUG(Logger::get().BOOK_LOG, "Open book '{}' with {:n} kB successful.", filePath, fileSize / 1024);
@@ -102,31 +143,52 @@ void OpeningBook::readBookFromFile(const std::string &filePath) {
   }
 }
 
-void OpeningBook::processAllLines(std::vector<std::string> &lines) {
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Processing file.");
-
+std::vector<std::string> OpeningBook::getLinesFromFile(std::ifstream &ifstream) {
+  // reads all lines from a file stream into a vector and returns them
+  // skips empty lines
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Reading lines from book.");
   const auto start = std::chrono::high_resolution_clock::now();
+  std::vector<std::string> lines;
+  lines.reserve(fileSize / 40);
+  std::string line;
+  while (std::getline(ifstream, line)) {
+    if (!line.empty()) lines.push_back(line);
+  }
+  const auto stop = std::chrono::high_resolution_clock::now();
+  const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Read {:n} lines in {:n} ms.", lines.size(), elapsed.count());
+  return lines;
+}
+
+void OpeningBook::processAllLines(std::vector<std::string> &lines) {
   LOG__DEBUG(Logger::get().BOOK_LOG, "Creating internal book...");
 
+  // processes the lines depending on file format.
+  // SIMPLE and SAN have all moves of a game in one single line.
+  // PGN has additional metadata and SA moves spread over several lines.
+
+  const auto start = std::chrono::high_resolution_clock::now();
+
+  // process all lines from the opening book file depending on format
   switch (bookFormat) {
     case BookFormat::SIMPLE:
     case BookFormat::SAN: {
 #ifdef PARALLEL_LINE_PROCESSING
-#ifdef HAS_EXECUTION_LIB
+      LOG__DEBUG(Logger::get().BOOK_LOG, "Using {} threads", numberOfThreads);
+
+#ifdef HAS_EXECUTION_LIB // use parallel lambda 
       std::for_each(std::execution::par_unseq, lines.begin(), lines.end(),
                     [&](auto &&item) { processLine(item); });
-#else
-      const auto noOfThreads = std::thread::hardware_concurrency() == 0 ?
-                               4 : std::thread::hardware_concurrency();
+#else // no <execution> library (< C++17)
       const auto maxNumberOfEntries = lines.size();
       std::vector<std::thread> threads;
-      threads.reserve(noOfThreads);
-      for (unsigned int t = 0; t < noOfThreads; ++t) {
+      threads.reserve(numberOfThreads);
+      for (unsigned int t = 0; t < numberOfThreads; ++t) {
         threads.emplace_back([&, this, t]() {
-          auto range = maxNumberOfEntries / noOfThreads;
+          auto range = maxNumberOfEntries / numberOfThreads;
           auto start = t * range;
           auto end = start + range;
-          if (t == noOfThreads - 1) end = maxNumberOfEntries;
+          if (t == numberOfThreads - 1) end = maxNumberOfEntries;
           for (std::size_t i = start; i < end; ++i) {
             processLine(lines[i]);
           }
@@ -155,28 +217,12 @@ void OpeningBook::processAllLines(std::vector<std::string> &lines) {
   LOG__DEBUG(Logger::get().BOOK_LOG, "Internal book created {:n} positions in {:n} ms.", bookMap.size(), elapsed.count());
 }
 
-std::vector<std::string> OpeningBook::getLinesFromFile(std::ifstream &ifstream) {
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Reading lines from book.");
-  const auto start = std::chrono::high_resolution_clock::now();
-  std::vector<std::string> lines;
-  lines.reserve(fileSize / 40);
-  std::string line;
-  while (std::getline(ifstream, line)) {
-    if (!line.empty()) lines.push_back(line);
-  }
-  const auto stop = std::chrono::high_resolution_clock::now();
-  const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Read {:n} lines in {:n} ms.", lines.size(), elapsed.count());
-  return lines;
-}
-
 void OpeningBook::processLine(std::string &line) {
   LOG__TRACE(Logger::get().BOOK_LOG, "Processing line: {}", line);
-
   // clean up line
   const std::regex whiteSpaceTrim(R"(^\s*(.*)\s*$)");
   line = std::regex_replace(line, whiteSpaceTrim, "$1");
-
+  // process each line depending on format
   switch (bookFormat) {
     case BookFormat::SIMPLE:
       processSimpleLine(line);
@@ -184,8 +230,8 @@ void OpeningBook::processLine(std::string &line) {
     case BookFormat::SAN:
       processSANLine(line);
       break;
-    case BookFormat::PGN:
-      LOG__ERROR(Logger::get().BOOK_LOG, "PNG format can't be processed by line");
+    default:
+      LOG__ERROR(Logger::get().BOOK_LOG, "Line processing only for SIMPLE or SAN file format");
       break;
   }
 }
@@ -265,15 +311,14 @@ void OpeningBook::processSANLine(std::string &line) {
 }
 
 void OpeningBook::processPGNFileFifo(std::vector<std::string> &lines) {
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Process lines from PGN file with FIFO...");
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Process lines from PGN file with FIFO ({} Threads)...", numberOfThreads);
   // reading pgn and get a list of games
   PGN_Reader pgnReader(lines);
   // prepare FIFO for storing the games
   Fifo<PGN_Game> gamesFifo;
   // prepare thread pool
-  const auto numberOfThreads = std::thread::hardware_concurrency() == 0 ?
-                               4 : std::thread::hardware_concurrency();
   ThreadPool threadPool(numberOfThreads);
+  // flag to signal if all pgn lines have been processed
   bool finished = false;
   // prepare worker for processing found games
   for (unsigned int i = 0; i < numberOfThreads; i++) {
@@ -293,7 +338,7 @@ void OpeningBook::processPGNFileFifo(std::vector<std::string> &lines) {
     });
   }
 
-  // start finding games and putting them into the FIFO
+  // start finding games asynchronously and put games into the FIFO
   std::future<bool> future = std::async(std::launch::async, [&] {
     LOG__DEBUG(Logger::get().BOOK_LOG, "Start finding games");
     finished = pgnReader.process(gamesFifo);
@@ -311,12 +356,10 @@ void OpeningBook::processPGNFileFifo(std::vector<std::string> &lines) {
     gamesFifo.close();
     LOG__DEBUG(Logger::get().BOOK_LOG, "Closed down ThreadPool");
   }
-
 }
 
 void OpeningBook::processPGNFile(std::vector<std::string> &lines) {
   LOG__DEBUG(Logger::get().BOOK_LOG, "Process lines from PGN file...");
-
   // reading pgn and get a list of games
   PGN_Reader pgnReader(lines);
   if (!pgnReader.process()) {
@@ -325,7 +368,6 @@ void OpeningBook::processPGNFile(std::vector<std::string> &lines) {
   }
   auto ptrGames = &pgnReader.getGames();
   gamesTotal = ptrGames->size();
-
   // process all games
   processGames(ptrGames);
 }
@@ -335,10 +377,11 @@ void OpeningBook::processGames(std::vector<PGN_Game>* ptrGames) {// processing g
   const auto startTime = std::chrono::high_resolution_clock::now();
 
 #ifdef PARALLEL_GAME_PROCESSING
-#ifdef HAS_EXECUTION_LIB
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Using {} threads", numberOfThreads);
+#ifdef HAS_EXECUTION_LIB // parallel lambda
   std::for_each(std::execution::par_unseq, ptrGames->begin(), ptrGames->end(),
                 [&](auto game) { processGame(game); });
-#else
+#else // no <execution> library (< C++17)
   const auto noOfThreads = std::thread::hardware_concurrency() == 0 ?
                            4 : std::thread::hardware_concurrency();
   const unsigned int maxNumberOfEntries = ptrGames->size();
@@ -357,7 +400,7 @@ void OpeningBook::processGames(std::vector<PGN_Game>* ptrGames) {// processing g
   }
   for (std::thread &th: threads) th.join();
 #endif
-#else
+#else // no parallel processing
   auto iterEnd = ptrGames->end();
   for (auto iter = ptrGames->begin(); iter < iterEnd; iter++) {
     processGame(*iter);
@@ -369,7 +412,6 @@ void OpeningBook::processGames(std::vector<PGN_Game>* ptrGames) {// processing g
   const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime);
   LOG__INFO(Logger::get().BOOK_LOG, "Processed {:n} games in {:n} ms", gamesTotal, elapsed.count());
 }
-
 
 void OpeningBook::processGame(PGN_Game &game) {
   std::smatch matcher;
@@ -384,11 +426,11 @@ void OpeningBook::processGame(PGN_Game &game) {
     // Per PGN it must be SAN but some files have UCI notation
     // As UCI is pattern wise a subset of SAN we test for UCI first.  
     if (std::regex_match(moveStr, matcher, UCIRegex)) {
-      //      LOG__DEBUG(Logger::get().BOOK_LOG, "Game move {} is UCI", moveStr);
+      LOG__TRACE(Logger::get().BOOK_LOG, "Game move {} is UCI", moveStr);
       move = Misc::getMoveFromUCI(currentPosition, moveStr);
     }
     else if (std::regex_match(moveStr, matcher, SANRegex)) {
-      //      LOG__DEBUG(Logger::get().BOOK_LOG, "Game move {} is SAN", moveStr);
+      LOG__TRACE(Logger::get().BOOK_LOG, "Game move {} is SAN", moveStr);
       move = Misc::getMoveFromSAN(currentPosition, moveStr);
     }
 
@@ -425,6 +467,7 @@ void OpeningBook::addToBook(Position &currentPosition, const Move &move) {
   // get the lock on the data map
   const std::scoped_lock<std::mutex> lock(bookMutex);
 
+  // create or update book entry
   if (bookMap.count(currentKey)) {
     // pointer to entry already in book
     BookEntry* existingEntry = &bookMap.at(currentKey);
@@ -441,27 +484,173 @@ void OpeningBook::addToBook(Position &currentPosition, const Move &move) {
   BookEntry* lastEntry = &bookMap.at(lastKey);
   if (std::find(lastEntry->moves.begin(), lastEntry->moves.end(), move) == lastEntry->moves.end()) {
     lastEntry->moves.emplace_back(move);
-    lastEntry->ptrNextPosition.emplace_back(&bookMap.at(currentKey));
-    LOG__TRACE(Logger::get().BOOK_LOG, "Added to last entry.");
+    lastEntry->ptrNextPosition.emplace_back(std::make_shared<BookEntry>(bookMap.at(currentKey)));
+    LOG__TRACE(Logger::get().BOOK_LOG, "Added move and pointer to last entry.");
   }
-
 }
 
-Move OpeningBook::getRandomMove(Key zobrist) {
-  Move bookMove = MOVE_NONE;
-  if (bookMap.find(zobrist) != bookMap.end()) {
-    BookEntry bookEntry = bookMap.at(zobrist);
-    if (!bookEntry.moves.empty()) {
-      std::random_device rd;
-      std::uniform_int_distribution<std::size_t> random(0, bookEntry.moves.size() - 1);
-      bookMove = bookEntry.moves[random(rd)];
-      //    for (int i = 0; i < bookEntry.moves.size(); i++) {
-      //      fprintln("{}. {} ({})", i+1, printMoveVerbose(bookEntry.moves[i]), bookEntry.ptrNextPosition[i]->counter);
-      //    }
-      //    fprintln("Book move: {}", printMoveVerbose(bookMove));
+void OpeningBook::reset() {
+  const std::scoped_lock<std::mutex> lock(bookMutex);
+  bookMap.clear();
+  gamesTotal = 0;
+  gamesProcessed = 0;
+  isInitialized = false;
+  LOG__DEBUG(Logger::get().TEST_LOG, "Opening book reset: {:n}", bookMap.size());
+}
+
+void OpeningBook::saveToCache() {
+  const std::scoped_lock<std::mutex> lock(bookMutex);
+  { // save data to archive
+    const auto start = std::chrono::high_resolution_clock::now();
+    const std::string serCacheFile = bookFilePath + cacheExt;
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Saving book to cache file {}", serCacheFile);
+    // create and open a binary archive for output
+    std::ofstream ofsBin(serCacheFile, std::fstream::binary | std::fstream::out);
+    boost::archive::binary_oarchive oa(ofsBin);
+    // write class instance to archive
+    oa << BOOST_SERIALIZATION_NVP(bookMap);
+    const auto stop = std::chrono::high_resolution_clock::now();
+    const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Book saved to binary cache in ({:n} ms) ({})", elapsed.count(), serCacheFile);
+  } // archive and stream closed when destructors are called
+  // reset recreation flag
+  _recreateCache=false;
+  // this is redundant for testing purposes
+  /*  { // save data to archive
+      const auto start = std::chrono::high_resolution_clock::now();
+
+      const std::basic_string<char> &txtCacheFile = bookFilePath + ".cache.txt";
+      LOG__DEBUG(Logger::get().BOOK_LOG, "Saving to cache file {}", txtCacheFile);
+
+      // create and open a character archive for output
+      std::ofstream ofsTXT(txtCacheFile);
+      boost::archive::text_oarchive oa(ofsTXT);
+      // write class instance to archive
+      oa << BOOST_SERIALIZATION_NVP(bookMap);
+
+      const auto stop = std::chrono::high_resolution_clock::now();
+      const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+      LOG__INFO(Logger::get().BOOK_LOG, "Opening book save to txt cache in ({:n} ms) ({})", elapsed.count(), txtCacheFile);
+    } // archive and stream closed when destructors are called
+
+    // this is redundant for testing purposes
+    { // save data to archive
+      const auto start = std::chrono::high_resolution_clock::now();
+
+      const std::basic_string<char> &xmlCacheFile = bookFilePath + ".cache.xml";
+      LOG__DEBUG(Logger::get().BOOK_LOG, "Saving to cache file {}", xmlCacheFile);
+
+      // create and open a character archive for output
+      std::ofstream ofsXML(xmlCacheFile);
+      boost::archive::xml_oarchive oa(ofsXML);
+      // write class instance to archive
+      oa << BOOST_SERIALIZATION_NVP(bookMap);
+
+      const auto stop = std::chrono::high_resolution_clock::now();
+      const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+      LOG__INFO(Logger::get().BOOK_LOG, "Opening book saved to xml cache in ({:n} ms) ({})", elapsed.count(), xmlCacheFile);
+    } // archive and stream closed when destructors are called*/
+}
+
+bool OpeningBook::loadFromCache() {
+  const std::scoped_lock<std::mutex> lock(bookMutex);
+  std::unordered_map<Key, BookEntry> binMap;
+  { // load data from archive
+    const auto start = std::chrono::high_resolution_clock::now();
+    const std::string serCacheFile = bookFilePath + cacheExt;
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Loading from cache file {} ({:n} kB)", serCacheFile, getFileSize(serCacheFile)/1'024);
+    // create and open a binary archive for input
+    std::ifstream ifsBin(serCacheFile, std::fstream::binary | std::fstream::in);
+    if (!ifsBin.is_open() || !ifsBin.good()) {
+      LOG__ERROR(Logger::get().BOOK_LOG, "Loading from cache file {} failed", serCacheFile);
+      return false;
     }
+    boost::archive::binary_iarchive ia(ifsBin);
+    // write archive to class instance
+    ia >> BOOST_SERIALIZATION_NVP(binMap);
+    const auto stop = std::chrono::high_resolution_clock::now();
+    const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+    LOG__INFO(Logger::get().BOOK_LOG,
+              "Book loaded from cache with {:n} entries in ({:n} ms) ({})",
+              binMap.size(), elapsed.count(), serCacheFile);
   }
-  return bookMove;
+
+  /*std::unordered_map<Key, BookEntry> txtMap;
+  {
+    const auto start = std::chrono::high_resolution_clock::now();
+
+    // create and open a txt archive for input
+    const std::basic_string<char> &txtCacheFile = bookFilePath + ".cache.txt";
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Loading from cache file {}", txtCacheFile);
+    std::ifstream ifsTXT(txtCacheFile);
+    if (!ifsTXT.good()) {
+      LOG__ERROR(Logger::get().BOOK_LOG, "Loading from cache file {} failed", txtCacheFile);
+      return;
+    }
+    boost::archive::text_iarchive ia(ifsTXT);
+    // write archive to class instance
+    ia >> BOOST_SERIALIZATION_NVP(txtMap);
+
+    const auto stop = std::chrono::high_resolution_clock::now();
+    const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+    LOG__INFO(Logger::get().BOOK_LOG,
+              "Opening book loaded from txt cache with {:n} entries in ({:n} ms) ({})",
+              txtMap.size(), elapsed.count(), txtCacheFile);
+  }
+
+  std::unordered_map<Key, BookEntry> xmlMap;
+  {
+    const auto start = std::chrono::high_resolution_clock::now();
+
+    // create and open a xml archive for input
+    const std::basic_string<char> &xmlCacheFile = bookFilePath + ".cache.xml";
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Loading from cache file {}", xmlCacheFile);
+    std::ifstream ifsXML(xmlCacheFile);
+    if (!ifsXML.good()) {
+      LOG__ERROR(Logger::get().BOOK_LOG, "Loading from cache file {} failed", xmlCacheFile);
+      return;
+    }
+    boost::archive::xml_iarchive ia(ifsXML);
+    // write archive to class instance
+    ia >> BOOST_SERIALIZATION_NVP(xmlMap);
+
+    const auto stop = std::chrono::high_resolution_clock::now();
+    const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+    LOG__INFO(Logger::get().BOOK_LOG,
+              "Opening book loaded from xml cache with {:n} entries in ({:n} ms) ({})",
+              xmlMap.size(), elapsed.count(), xmlCacheFile);
+  }*/
+
+  bookMap = std::move(binMap);
+  return true;
+} // archive and stream closed when destructors are called
+
+bool OpeningBook::hasCache() const {
+  const std::basic_string<char> serCacheFile = bookFilePath + cacheExt;
+  if (!fileExists(serCacheFile)) {
+    LOG__DEBUG(Logger::get().BOOK_LOG, "No cache file {} available", serCacheFile);
+    return false;
+  }
+  uint64_t fsize = getFileSize(serCacheFile);
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Cache file {} ({:n} kB) available", serCacheFile, fsize / 1'024);
+  return true;
+}
+
+/** Checks of file exists and encapsulates platform differences for
+ * filesystem operations */
+bool OpeningBook::fileExists(const std::string &filePath) {
+  bfs::path p{filePath};
+  return bfs::exists(filePath);
+}
+
+/** Returns files size in bytes and encapsulates platform differences for
+ * filesystem operations */
+uint64_t OpeningBook::getFileSize(const std::string &filePath) {// get file size
+  bfs::path p{filePath};
+  uint64_t fsize = bfs::file_size(bfs::canonical(p));
+  // std::ifstream in(filePath, std::ifstream::ate | std::ifstream::binary);
+  // fileSize = in.tellg();
+  return fsize;
 }
 
 std::string BookEntry::str() {

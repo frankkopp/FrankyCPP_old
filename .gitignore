@@ -13,3 +13,4 @@ spdlog/_builds/
 .vscode/
 build/
 CMakeSettings.json
+*.cache.*

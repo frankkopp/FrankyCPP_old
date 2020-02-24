@@ -47,9 +47,8 @@ Search::Search(Engine* pEng) : Search(pEng, SearchConfig::TT_SIZE_MB) {}
 Search::Search(Engine* pEng, int ttSizeInByte) {
   pEngine = pEng;
   pEvaluator = std::make_unique<Evaluator>();
-  pOpeningBook = std::make_unique<OpeningBook>(
-    FrankyCPP_PROJECT_ROOT + SearchConfig::BOOK_PATH,
-    SearchConfig::BOOK_TYPE);
+  pOpeningBook = std::make_unique<OpeningBook>(SearchConfig::BOOK_PATH,
+                                               SearchConfig::BOOK_TYPE);
   pOpeningBook->initialize();
   tt = [&] { return SearchConfig::USE_TT ? new TT(ttSizeInByte) : new TT(0); }();
 }
@@ -219,7 +218,7 @@ void Search::run(Position position) {
 
   // initialization done
   initSemaphore.release();
-  
+
   // ########################
   // Opening book
   if (SearchConfig::USE_BOOK

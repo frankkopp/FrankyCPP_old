@@ -35,19 +35,9 @@
 #include "version.h"
 #include "fmt/locale.h"
 
-
-// define platform specific things
-#if defined(__GNUC__) // GCC, Clang, ICC
-
-#elif defined(_MSC_VER) // Windows MSC
-// windows does not have "sleep(sec)"
 #include <thread>
 #include <chrono>
 #define sleepForSec(x) std::this_thread::sleep_for(std::chrono::seconds(x));
-
-#else // Compiler is not GCC
-#error "Compiler not yet supported."
-#endif
 
 // convenience macros
 #define NEWLINE std::cout << std::endl

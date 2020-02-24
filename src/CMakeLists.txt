@@ -55,9 +55,23 @@ target_link_libraries(
         FrankyCPPlib          
 )
 
-install(
-        TARGETS ${exeName}
+add_custom_command(
+        TARGET ${exeName} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/config $<TARGET_FILE_DIR:${exeName}>/config
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/books $<TARGET_FILE_DIR:${exeName}>/books
+)
+
+install(TARGETS ${exeName}
         CONFIGURATIONS Release
         RUNTIME DESTINATION ${PROJECT_SOURCE_DIR}/Release/bin
+)
+
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/config
+        DESTINATION ${PROJECT_SOURCE_DIR}/Release/bin
+)
+
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/books
+        DESTINATION ${PROJECT_SOURCE_DIR}/Release/bin
+        PATTERN "*.cache.*" EXCLUDE
 )
 

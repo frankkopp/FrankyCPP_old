@@ -26,27 +26,69 @@
 #ifndef FRANKYCPP_OPENINGBOOK_H
 #define FRANKYCPP_OPENINGBOOK_H
 
-#include <map>
+#include <boost/serialization/unordered_map.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/shared_ptr.hpp>
+
+//#include <map>
 #include "gtest/gtest_prod.h"
 #include "PGN_Reader.h"
 #include "Position.h"
 
 class MoveGenerator;
 
+/**
+ * An entry in the opening book data structure. Stores the zobrist key for the
+ * position, the current fen, a count of how often a position is in the book
+ * and two vectors storing the moves from the position and pointers to the
+ * book entry for the corresponding move.
+ */
 struct BookEntry {
   Key key{};
   std::string fen{};
   int counter{0};
   std::vector<Move> moves{};
-  std::vector<BookEntry*> ptrNextPosition{};
+  std::vector<std::shared_ptr<BookEntry>> ptrNextPosition{};
 
+  BookEntry() {}
   BookEntry(const Key &zobrist, const std::string &fenString) : key(zobrist), fen(fenString), counter{1} {}
   std::string str();
+
+  // BOOST Serialization
+  friend class boost::serialization::access;
+  template<class Archive>
+  void serialize(Archive & ar, const unsigned int version) {
+    ar & BOOST_SERIALIZATION_NVP (key);
+    ar & BOOST_SERIALIZATION_NVP (fen);
+    ar & BOOST_SERIALIZATION_NVP (counter);
+    ar & BOOST_SERIALIZATION_NVP (moves);
+    ar & BOOST_SERIALIZATION_NVP (ptrNextPosition);
+  }
 };
 
+/**
+ * The OpeningBook reads game databases of different formats into an internal
+ * data structure. It can then be queried for a book move on a certain position.
+ * <p/>
+ * Supported formats are currently:<br/>
+ * BookFormat::SIMPLE for files storing a game per line with from-square and
+ * to-square notation<br/>
+ * BookFormat::SAN for files with lines of moves in SAN notation<br/>
+ * BookFormat::PGN for PGN formatted games<br/>
+ * <p/>
+ * As reading these formats can be slow the OpeningBook keeps a cache file where
+ * it stores the serialized data of the internal book.   
+ */
 class OpeningBook {
 public:
 
+  /**
+   * Supported formats are currently:<br/>
+   * BookFormat::SIMPLE for files storing a game per line with from-square and
+   * to-square notation<br/>
+   * BookFormat::SAN for files with lines of moves in SAN notation<br/>
+   * BookFormat::PGN for PGN formatted games<br/>
+   */
   enum class BookFormat {
     SIMPLE,
     SAN,
@@ -54,22 +96,57 @@ public:
   };
 
 private:
+  // the book data structure
+  std::unordered_map<Key, BookEntry> bookMap{};
+
   std::mutex bookMutex;
-  bool isInitialized = false;
+  unsigned int numberOfThreads = 1;
+  
   uint64_t fileSize{};
   BookFormat bookFormat;
   std::string bookFilePath{};
-  std::unordered_map<Key, BookEntry> bookMap{};
 
   uint64_t gamesTotal = 0;
   uint64_t gamesProcessed = 0;
 
+  bool _useCache = true;
+  bool _recreateCache = false;
+
+  bool isInitialized = false;
 public:
+
+  /**
+   * Creates an instance of an OpeningBook. Will not initialize (read book data).
+   * Call initialize() to read book data from file or cache.<br/>
+   * Supported formats are currently:<br/>
+   * BookFormat::SIMPLE for files storing a game per line with from-square and
+   * to-square notation<br/>
+   * BookFormat::SAN for files with lines of moves in SAN notation<br/>
+   * BookFormat::PGN for PGN formatted games<br/>
+   */
   explicit OpeningBook(const std::string &bookPath, const BookFormat &bFormat);
 
+  /**
+   * Initializes this OpeningBook instance by reading moves data from the file
+   * given to the constructor or from cache.
+   */
   void initialize();
+
+  /**
+   * Resets the OpeningBook to an un-initialized state. All data will be removed.
+   */
+  void reset();
+
+  /**
+   * Returns the number of positions in the book
+   */
   uint64_t size() { return bookMap.size(); }
-  Move getRandomMove(Key zobrist);
+
+  /**
+   * Returns a random move for the given position.
+   * @param zobrist key of the position
+   */
+  Move getRandomMove(Key zobrist) const;
 
 private:
   void readBookFromFile(const std::string &filePath);
@@ -83,7 +160,19 @@ private:
   void processGames(std::vector<PGN_Game>* ptrGames);
   void processGame(PGN_Game &game);
   void addToBook(Position &currentPosition, const Move &move);
-};
 
+  bool hasCache() const;
+  void saveToCache();
+  bool loadFromCache();
+
+public:
+  bool useCache() const { return _useCache; }
+  void setUseCache(bool aBool) { _useCache = aBool; }
+  bool recreateCache() const { return _recreateCache; }
+  void setRecreateCache(bool recreateCache) { _recreateCache = recreateCache; }
+
+  static uint64_t getFileSize(const std::string &filePath);
+  static bool fileExists(const std::string &filePath);
+};
 
 #endif //FRANKYCPP_OPENINGBOOK_H

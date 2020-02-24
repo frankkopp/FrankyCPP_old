@@ -413,7 +413,7 @@ void TimingTests::testTiming(ostringstream &os, int rounds, int iterations,
                     cpuTime.system / iterations};
 
       const nanosecond_type avgCpu = avgTimes.user + avgTimes.system;
-      int percentFromLast = last ? (avgCpu * 10'000) / last : 10'000;
+      uint64_t percentFromLast = last ? (avgCpu * 10'000) / last : 10'000;
 
       os << "Round " << std::setfill(' ') << setw(2) << round << " Test "
          << setw(2) << testNr++ << ": " << std::setfill(' ') << setw(12)
