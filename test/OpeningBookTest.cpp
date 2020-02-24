@@ -51,8 +51,7 @@ protected:
 void printEntry(BookEntry* next, int ply);
 
 TEST_F(OpeningBookTest, initSimpleSmall) {
-  std::string filePathStr = FrankyCPP_PROJECT_ROOT;
-  filePathStr += +"/books/book_smalltest.txt";
+  std::string filePathStr = "./books/book_smalltest.txt";
   OpeningBook book(filePathStr, OpeningBook::BookFormat::SIMPLE);
   book.setUseCache(false);
   book.initialize();
@@ -61,8 +60,7 @@ TEST_F(OpeningBookTest, initSimpleSmall) {
 }
 
 TEST_F(OpeningBookTest, initSimple) {
-  std::string filePathStr = FrankyCPP_PROJECT_ROOT;
-  filePathStr += +"/books/book.txt";
+  std::string filePathStr = "./books/book.txt";
   OpeningBook book(filePathStr, OpeningBook::BookFormat::SIMPLE);
   book.setUseCache(false);
   book.initialize();
@@ -71,8 +69,7 @@ TEST_F(OpeningBookTest, initSimple) {
 }
 
 TEST_F(OpeningBookTest, initSAN) {
-  std::string filePathStr = FrankyCPP_PROJECT_ROOT;
-  filePathStr += +"/books/book_graham.txt";
+  std::string filePathStr = "./books/book_graham.txt";
   OpeningBook book(filePathStr, OpeningBook::BookFormat::SAN);
   book.setUseCache(false);
   book.initialize();
@@ -81,8 +78,7 @@ TEST_F(OpeningBookTest, initSAN) {
 }
 
 TEST_F(OpeningBookTest, pgnECOE) {
-  std::string filePathStr = FrankyCPP_PROJECT_ROOT;
-  filePathStr += +"/books/ecoe.pgn";
+  std::string filePathStr = "./books/ecoe.pgn";
   OpeningBook book(filePathStr, OpeningBook::BookFormat::PGN);
   book.setUseCache(false);
   book.initialize();
@@ -91,8 +87,7 @@ TEST_F(OpeningBookTest, pgnECOE) {
 }
 
 TEST_F(OpeningBookTest, initPGNSmall) {
-  std::string filePathStr = FrankyCPP_PROJECT_ROOT;
-  filePathStr += +"/books/pgn_test.pgn";
+  std::string filePathStr = "./books/pgn_test.pgn";
   OpeningBook book(filePathStr, OpeningBook::BookFormat::PGN);
   book.setUseCache(false);
   book.initialize();
@@ -101,8 +96,7 @@ TEST_F(OpeningBookTest, initPGNSmall) {
 }
 
 TEST_F(OpeningBookTest, initPGNMedium) {
-  std::string filePathStr = FrankyCPP_PROJECT_ROOT;
-  filePathStr += +"/books/8moves_GM_LB.pgn";
+  std::string filePathStr = "./books/8moves_GM_LB.pgn";
   OpeningBook book(filePathStr, OpeningBook::BookFormat::PGN);
   book.setUseCache(false);
   book.initialize();
@@ -125,8 +119,7 @@ TEST_F(OpeningBookTest, initPGNMedium) {
 }
 
 TEST_F(OpeningBookTest, initPGNLarge) {
-  std::string filePathStr = FrankyCPP_PROJECT_ROOT;
-  filePathStr += +"/books/superbook.pgn";
+  std::string filePathStr = "./books/superbook.pgn";
   OpeningBook book(filePathStr, OpeningBook::BookFormat::PGN);
   book.setUseCache(false);
   book.initialize();
@@ -148,8 +141,7 @@ TEST_F(OpeningBookTest, initPGNLarge) {
 }
 
 TEST_F(OpeningBookTest, getMove) {
-  std::string filePathStr = FrankyCPP_PROJECT_ROOT;
-  filePathStr += +"/books/book_smalltest.txt";
+  std::string filePathStr = "./books/book_smalltest.txt";
   OpeningBook book(filePathStr, OpeningBook::BookFormat::SIMPLE);
   book.setUseCache(false);
   book.initialize();
@@ -200,22 +192,19 @@ void testCache(OpeningBook &book) {
 }
 
 TEST_F(OpeningBookTest, serializationSmall) {
-  std::string filePathStr = FrankyCPP_PROJECT_ROOT;
-  filePathStr += +"/books/book_smalltest.txt";
+  std::string filePathStr = "./books/book_smalltest.txt";
   OpeningBook book(filePathStr, OpeningBook::BookFormat::SIMPLE);
   testCache(book);
 }
 
 TEST_F(OpeningBookTest, serializationMedium) {
-  std::string filePathStr = FrankyCPP_PROJECT_ROOT;
-  filePathStr += +"/books/8moves_GM_LB.pgn";
+  std::string filePathStr = "./books/8moves_GM_LB.pgn";
   OpeningBook book(filePathStr, OpeningBook::BookFormat::PGN);
   testCache(book);
 }
 
 TEST_F(OpeningBookTest, serializationLarge) {
-  std::string filePathStr = FrankyCPP_PROJECT_ROOT;
-  filePathStr += +"/books/superbook.pgn";
+  std::string filePathStr = "./books/superbook.pgn";
   OpeningBook book(filePathStr, OpeningBook::BookFormat::PGN);
   testCache(book);
 }

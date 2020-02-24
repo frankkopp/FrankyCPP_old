@@ -71,6 +71,7 @@ int main(int argc, char* argv[]) {
     config.add_options()
             ("log_lvl,l", po::value<std::string>()->default_value("warn"), "set general log level <critical|error|warn|info|debug|trace>")
             ("search_log_lvl,s", po::value<std::string>()->default_value("warn"), "set search log level <critical|error|warn|info|debug|trace>")
+            ("nobook", "do not use opening book")
             ("book,b", po::value<std::string>(&book_file), "opening book to use")
             ("booktype,t", po::value<std::string>(&book_type), "type of opening book <simple|san|pgn>")
             ("testsuite", po::value<std::string>(&testsuite_file), "run testsuite in given file")
@@ -117,7 +118,11 @@ int main(int argc, char* argv[]) {
       notify(programOptions);
     }
 
-    if (programOptions.count("book")) {
+    if (programOptions.count("nobook")) {
+      SearchConfig::USE_BOOK = false;
+      LOG__INFO(Logger::get().BOOK_LOG, "Not using opening book.");
+    }
+    else if (programOptions.count("book")) {
       if (!programOptions.count("booktype")) {
         LOG__ERROR(Logger::get().BOOK_LOG, "Opening book type is missing (use --help for details). Using default book.");
       }
