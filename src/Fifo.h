@@ -69,14 +69,14 @@ public:
   }
 
   // move
-  Fifo(Fifo const &&other) {
+  Fifo(Fifo const &&other) noexcept {
     LOG__TRACE(Logger::get().MAIN_LOG, "Move constructor");
     std::scoped_lock lock{other.fifoLock};
     fifo = std::move(other.fifo);
   }
 
   // move assignment
-  Fifo &operator=(const Fifo &&other) {
+  Fifo &operator=(const Fifo &&other) noexcept {
     LOG__TRACE(Logger::get().MAIN_LOG, "Move assignment");
     if (this != &other) {
       std::scoped_lock lock(fifoLock, other.fifoLock);

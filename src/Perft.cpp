@@ -107,7 +107,7 @@ void Perft::perft_divide(int maxDepth, bool onDemand) {
   for (Move move : moves) {
     //  Move move = createMove<PROMOTION>("c7c8n");
     // Iterate over moves
-    long totalNodes = 0L;
+    uint64_t totalNodes = 0L;
     
     if (maxDepth > 1) {
       position.doMove(move);
