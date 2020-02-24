@@ -55,14 +55,20 @@ namespace bfs = boost::filesystem;
 //#include <boost/archive/text_oarchive.hpp>
 //#include <boost/archive/text_iarchive.hpp>
 
+// enable for parallel processing of input lines
 #define PARALLEL_LINE_PROCESSING
+// enable for parallel processing of games from pgn files
 #define PARALLEL_GAME_PROCESSING
+// enable for using fifo when reading pgn files and processing pgn games
+// this allows to start processing games in parallel while still reading
 #define FIFO_PROCESSING
 
+// not all C++17 compilers have this std library for parallelization
 #ifdef HAS_EXECUTION_LIB
 #include <execution>
 #endif
 
+// not all compilers have this std library for filesystems
 #ifdef HAS_FILESYSTEM_LIB
 #include <filesystem>
 namespace fs = std::filesystem;
@@ -72,6 +78,10 @@ static const char* const cacheExt = ".cache.bin";
 
 OpeningBook::OpeningBook(const std::string &bookPath, const BookFormat &bFormat)
   : bookFilePath(bookPath), bookFormat(bFormat) {
+  // std::thread::hardware_concurrency() is not reliable - on some platforms
+  // it returns 0 - in this case we chose a default of 4
+  numberOfThreads = std::thread::hardware_concurrency() == 0 ?
+                               4 : std::thread::hardware_concurrency();
 }
 
 void OpeningBook::initialize() {
@@ -106,6 +116,8 @@ void OpeningBook::initialize() {
 
 Move OpeningBook::getRandomMove(Key zobrist) const {
   Move bookMove = MOVE_NONE;
+  // Find the entry for this key (zobrist key of position) in the map and
+  // choose a random move from the listof moves in the entry
   if (bookMap.find(zobrist) != bookMap.end()) {
     BookEntry bookEntry = bookMap.at(zobrist);
     if (!bookEntry.moves.empty()) {
@@ -118,6 +130,7 @@ Move OpeningBook::getRandomMove(Key zobrist) const {
 }
 
 void OpeningBook::readBookFromFile(const std::string &filePath) {
+  // open the file a read all lines into a vector and process all lines
   fileSize = getFileSize(filePath);
   std::ifstream file(filePath);
   if (file.is_open()) {
@@ -133,6 +146,8 @@ void OpeningBook::readBookFromFile(const std::string &filePath) {
 }
 
 std::vector<std::string> OpeningBook::getLinesFromFile(std::ifstream &ifstream) {
+  // reads all lines from a file stream into a vector and returns them
+  // skips empty lines
   LOG__DEBUG(Logger::get().BOOK_LOG, "Reading lines from book.");
   const auto start = std::chrono::high_resolution_clock::now();
   std::vector<std::string> lines;
@@ -148,17 +163,20 @@ std::vector<std::string> OpeningBook::getLinesFromFile(std::ifstream &ifstream) 
 }
 
 void OpeningBook::processAllLines(std::vector<std::string> &lines) {
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Processing file.");
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Creating internal book...");
+
+  // processes the lines depending on file format.
+  // SIMPLE and SAN have all moves of a game in one single line.
+  // PGN has additional metadata and SA moves spread over several lines.
 
   const auto start = std::chrono::high_resolution_clock::now();
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Creating internal book...");
 
   // process all lines from the opening book file depending on format
   switch (bookFormat) {
     case BookFormat::SIMPLE:
     case BookFormat::SAN: {
 #ifdef PARALLEL_LINE_PROCESSING
-#ifdef HAS_EXECUTION_LIB
+#ifdef HAS_EXECUTION_LIB // use parallel lambda 
       std::for_each(std::execution::par_unseq, lines.begin(), lines.end(),
                     [&](auto &&item) { processLine(item); });
 #else // no <execution> library (< C++17)
@@ -301,10 +319,6 @@ void OpeningBook::processPGNFileFifo(std::vector<std::string> &lines) {
   // prepare FIFO for storing the games
   Fifo<PGN_Game> gamesFifo;
   // prepare thread pool
-  // std::thread::hardware_concurrency() is not reliable - on some platforms
-  // it returns 0 - in this case we chose a default of 4
-  const auto numberOfThreads = std::thread::hardware_concurrency() == 0 ?
-                               4 : std::thread::hardware_concurrency();
   ThreadPool threadPool(numberOfThreads);
   // flag to signal if all pgn lines have been processed
   bool finished = false;
@@ -365,10 +379,10 @@ void OpeningBook::processGames(std::vector<PGN_Game>* ptrGames) {// processing g
   const auto startTime = std::chrono::high_resolution_clock::now();
 
 #ifdef PARALLEL_GAME_PROCESSING
-#ifdef HAS_EXECUTION_LIB
+#ifdef HAS_EXECUTION_LIB // parallel lambda
   std::for_each(std::execution::par_unseq, ptrGames->begin(), ptrGames->end(),
                 [&](auto game) { processGame(game); });
-#else
+#else // no <execution> library (< C++17)
   const auto noOfThreads = std::thread::hardware_concurrency() == 0 ?
                            4 : std::thread::hardware_concurrency();
   const unsigned int maxNumberOfEntries = ptrGames->size();
@@ -387,7 +401,7 @@ void OpeningBook::processGames(std::vector<PGN_Game>* ptrGames) {// processing g
   }
   for (std::thread &th: threads) th.join();
 #endif
-#else
+#else // no parallel processing
   auto iterEnd = ptrGames->end();
   for (auto iter = ptrGames->begin(); iter < iterEnd; iter++) {
     processGame(*iter);
@@ -413,11 +427,11 @@ void OpeningBook::processGame(PGN_Game &game) {
     // Per PGN it must be SAN but some files have UCI notation
     // As UCI is pattern wise a subset of SAN we test for UCI first.  
     if (std::regex_match(moveStr, matcher, UCIRegex)) {
-      //      LOG__DEBUG(Logger::get().BOOK_LOG, "Game move {} is UCI", moveStr);
+      LOG__TRACE(Logger::get().BOOK_LOG, "Game move {} is UCI", moveStr);
       move = Misc::getMoveFromUCI(currentPosition, moveStr);
     }
     else if (std::regex_match(moveStr, matcher, SANRegex)) {
-      //      LOG__DEBUG(Logger::get().BOOK_LOG, "Game move {} is SAN", moveStr);
+      LOG__TRACE(Logger::get().BOOK_LOG, "Game move {} is SAN", moveStr);
       move = Misc::getMoveFromSAN(currentPosition, moveStr);
     }
 
@@ -454,6 +468,7 @@ void OpeningBook::addToBook(Position &currentPosition, const Move &move) {
   // get the lock on the data map
   const std::scoped_lock<std::mutex> lock(bookMutex);
 
+  // create or update book entry
   if (bookMap.count(currentKey)) {
     // pointer to entry already in book
     BookEntry* existingEntry = &bookMap.at(currentKey);
@@ -471,7 +486,7 @@ void OpeningBook::addToBook(Position &currentPosition, const Move &move) {
   if (std::find(lastEntry->moves.begin(), lastEntry->moves.end(), move) == lastEntry->moves.end()) {
     lastEntry->moves.emplace_back(move);
     lastEntry->ptrNextPosition.emplace_back(std::make_shared<BookEntry>(bookMap.at(currentKey)));
-    LOG__TRACE(Logger::get().BOOK_LOG, "Added to last entry.");
+    LOG__TRACE(Logger::get().BOOK_LOG, "Added move and pointer to last entry.");
   }
 }
 
@@ -622,11 +637,15 @@ bool OpeningBook::hasCache() const {
   return true;
 }
 
+/** Checks of file exists and encapsulates platform differences for
+ * filesystem operations */
 bool OpeningBook::fileExists(const std::string &filePath) const {
   bfs::path p{filePath};
   return bfs::exists(filePath);
 }
 
+/** Returns files size in bytes and encapsulates platform differences for
+ * filesystem operations */
 uint64_t OpeningBook::getFileSize(const std::string &filePath) const {// get file size
   bfs::path p{filePath};
   uint64_t fsize = bfs::file_size(bfs::canonical(p));
