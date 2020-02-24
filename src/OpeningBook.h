@@ -81,6 +81,9 @@ private:
   uint64_t gamesTotal = 0;
   uint64_t gamesProcessed = 0;
 
+  bool _useCache = true;
+  bool _recreateCache = false;
+
 public:
   explicit OpeningBook(const std::string &bookPath, const BookFormat &bFormat);
 
@@ -88,10 +91,11 @@ public:
   void reset();
 
   uint64_t size() { return bookMap.size(); }
-  Move getRandomMove(Key zobrist);
+  Move getRandomMove(Key zobrist) const;
 
+  bool hasCache() const;
   void saveToCache();
-  void loadFromCache();
+  bool loadFromCache();
 
 private:
   void readBookFromFile(const std::string &filePath);
@@ -106,7 +110,14 @@ private:
   void processGame(PGN_Game &game);
   void addToBook(Position &currentPosition, const Move &move);
 
-};
+  uint64_t getFileSize(const std::string &filePath) const;
+  bool fileExists(const std::string &filePath) const;
 
+public:
+  bool useCache() const { return _useCache; }
+  void setUseCache(bool aBool) { _useCache = aBool; }
+  bool recreateCache() const { return _recreateCache; }
+  void setRecreateCache(bool recreateCache) { _recreateCache = recreateCache; }
+};
 
 #endif //FRANKYCPP_OPENINGBOOK_H
