@@ -54,6 +54,7 @@ TEST_F(OpeningBookTest, initSimpleSmall) {
   std::string filePathStr = FrankyCPP_PROJECT_ROOT;
   filePathStr += +"/books/book_smalltest.txt";
   OpeningBook book(filePathStr, OpeningBook::BookFormat::SIMPLE);
+  book.setUseCache(false);
   book.initialize();
   LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
   EXPECT_EQ(11'196, book.size());
@@ -63,6 +64,7 @@ TEST_F(OpeningBookTest, initSimple) {
   std::string filePathStr = FrankyCPP_PROJECT_ROOT;
   filePathStr += +"/books/book.txt";
   OpeningBook book(filePathStr, OpeningBook::BookFormat::SIMPLE);
+  book.setUseCache(false);
   book.initialize();
   LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
   EXPECT_EQ(273'578, book.size());
@@ -72,6 +74,7 @@ TEST_F(OpeningBookTest, initSAN) {
   std::string filePathStr = FrankyCPP_PROJECT_ROOT;
   filePathStr += +"/books/book_graham.txt";
   OpeningBook book(filePathStr, OpeningBook::BookFormat::SAN);
+  book.setUseCache(false);
   book.initialize();
   LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
   EXPECT_EQ(1'256, book.size());
@@ -81,6 +84,7 @@ TEST_F(OpeningBookTest, pgnECOE) {
   std::string filePathStr = FrankyCPP_PROJECT_ROOT;
   filePathStr += +"/books/ecoe.pgn";
   OpeningBook book(filePathStr, OpeningBook::BookFormat::PGN);
+  book.setUseCache(false);
   book.initialize();
   LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
   EXPECT_EQ(4'039, book.size());
@@ -90,6 +94,7 @@ TEST_F(OpeningBookTest, initPGNSmall) {
   std::string filePathStr = FrankyCPP_PROJECT_ROOT;
   filePathStr += +"/books/pgn_test.pgn";
   OpeningBook book(filePathStr, OpeningBook::BookFormat::PGN);
+  book.setUseCache(false);
   book.initialize();
   LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
   EXPECT_EQ(1'435, book.size());
@@ -99,6 +104,7 @@ TEST_F(OpeningBookTest, initPGNMedium) {
   std::string filePathStr = FrankyCPP_PROJECT_ROOT;
   filePathStr += +"/books/8moves_GM_LB.pgn";
   OpeningBook book(filePathStr, OpeningBook::BookFormat::PGN);
+  book.setUseCache(false);
   book.initialize();
   LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
   EXPECT_EQ(204'513, book.size());
@@ -122,6 +128,7 @@ TEST_F(OpeningBookTest, initPGNLarge) {
   std::string filePathStr = FrankyCPP_PROJECT_ROOT;
   filePathStr += +"/books/superbook.pgn";
   OpeningBook book(filePathStr, OpeningBook::BookFormat::PGN);
+  book.setUseCache(false);
   book.initialize();
   LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
   EXPECT_EQ(4'821'485, book.size());
@@ -144,6 +151,7 @@ TEST_F(OpeningBookTest, getMove) {
   std::string filePathStr = FrankyCPP_PROJECT_ROOT;
   filePathStr += +"/books/book_smalltest.txt";
   OpeningBook book(filePathStr, OpeningBook::BookFormat::SIMPLE);
+  book.setUseCache(false);
   book.initialize();
   LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
   EXPECT_EQ(11'196, book.size());

@@ -68,12 +68,6 @@ namespace bfs = boost::filesystem;
 #include <execution>
 #endif
 
-// not all compilers have this std library for filesystems
-#ifdef HAS_FILESYSTEM_LIB
-#include <filesystem>
-namespace fs = std::filesystem;
-#endif
-
 static const char* const cacheExt = ".cache.bin";
 
 OpeningBook::OpeningBook(const std::string &bookPath, const BookFormat &bFormat)
