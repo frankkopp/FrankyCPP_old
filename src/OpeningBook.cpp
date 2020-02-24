@@ -42,6 +42,14 @@
 
 #include <boost/thread/thread_functors.hpp>
 
+// BOOST Serialization
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+
 #define PARALLEL_LINE_PROCESSING
 #define PARALLEL_GAME_PROCESSING
 #define FIFO_PROCESSING
@@ -83,7 +91,7 @@ void OpeningBook::readBookFromFile(const std::string &filePath) {
   // get file size
 #ifdef HAS_FILESYSTEM_LIB
   std::filesystem::path p{filePath};
-    fileSize = std::filesystem::file_size(std::filesystem::canonical(p));
+  fileSize = std::filesystem::file_size(std::filesystem::canonical(p));
 #else
   std::ifstream in(filePath, std::ifstream::ate | std::ifstream::binary);
   fileSize = in.tellg();
@@ -441,7 +449,7 @@ void OpeningBook::addToBook(Position &currentPosition, const Move &move) {
   BookEntry* lastEntry = &bookMap.at(lastKey);
   if (std::find(lastEntry->moves.begin(), lastEntry->moves.end(), move) == lastEntry->moves.end()) {
     lastEntry->moves.emplace_back(move);
-    lastEntry->ptrNextPosition.emplace_back(&bookMap.at(currentKey));
+    lastEntry->ptrNextPosition.emplace_back(std::make_shared<BookEntry>(bookMap.at(currentKey)));
     LOG__TRACE(Logger::get().BOOK_LOG, "Added to last entry.");
   }
 
@@ -462,6 +470,154 @@ Move OpeningBook::getRandomMove(Key zobrist) {
     }
   }
   return bookMove;
+}
+
+void OpeningBook::saveToCache() {
+  const std::scoped_lock<std::mutex> lock(bookMutex);
+
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Saving book to cache.");
+
+  { // save data to archive
+    const auto start = std::chrono::high_resolution_clock::now();
+
+    const std::basic_string<char> &serCacheFile = bookFilePath + ".cache.bin";
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Saving to cache file {}", serCacheFile);
+
+    // create and open a binary archive for output
+    std::ofstream ofsBin(serCacheFile, std::fstream::binary | std::fstream::out);
+    boost::archive::binary_oarchive oa(ofsBin);
+    // write class instance to archive
+    oa << BOOST_SERIALIZATION_NVP(bookMap);
+
+    const auto stop = std::chrono::high_resolution_clock::now();
+    const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+    LOG__INFO(Logger::get().BOOK_LOG, "Opening book save to bin cache in ({:n} ms) ({})", elapsed.count(), serCacheFile);
+  } // archive and stream closed when destructors are called
+
+  // this is redundant for testing purposes
+//  { // save data to archive
+//    const auto start = std::chrono::high_resolution_clock::now();
+//
+//    const std::basic_string<char> &txtCacheFile = bookFilePath + ".cache.txt";
+//    LOG__DEBUG(Logger::get().BOOK_LOG, "Saving to cache file {}", txtCacheFile);
+//
+//    // create and open a character archive for output
+//    std::ofstream ofsTXT(txtCacheFile);
+//    boost::archive::text_oarchive oa(ofsTXT);
+//    // write class instance to archive
+//    oa << BOOST_SERIALIZATION_NVP(bookMap);
+//
+//    const auto stop = std::chrono::high_resolution_clock::now();
+//    const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+//    LOG__INFO(Logger::get().BOOK_LOG, "Opening book save to txt cache in ({:n} ms) ({})", elapsed.count(), txtCacheFile);
+//  } // archive and stream closed when destructors are called
+//
+//  // this is redundant for testing purposes
+//  { // save data to archive
+//    const auto start = std::chrono::high_resolution_clock::now();
+//
+//    const std::basic_string<char> &xmlCacheFile = bookFilePath + ".cache.xml";
+//    LOG__DEBUG(Logger::get().BOOK_LOG, "Saving to cache file {}", xmlCacheFile);
+//
+//    // create and open a character archive for output
+//    std::ofstream ofsXML(xmlCacheFile);
+//    boost::archive::xml_oarchive oa(ofsXML);
+//    // write class instance to archive
+//    oa << BOOST_SERIALIZATION_NVP(bookMap);
+//
+//    const auto stop = std::chrono::high_resolution_clock::now();
+//    const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+//    LOG__INFO(Logger::get().BOOK_LOG, "Opening book saved to xml cache in ({:n} ms) ({})", elapsed.count(), xmlCacheFile);
+//  } // archive and stream closed when destructors are called
+}
+
+void OpeningBook::loadFromCache() {
+  const std::scoped_lock<std::mutex> lock(bookMutex);
+
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Loading book from cache.");
+
+  std::unordered_map<Key, BookEntry> binMap;
+
+  { // load data from archive
+    const auto start = std::chrono::high_resolution_clock::now();
+
+    const std::basic_string<char> &serCacheFile = bookFilePath + ".cache.bin";
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Loading from cache file {}", serCacheFile);
+    // create and open a binary archive for input
+    std::ifstream ifsBin(serCacheFile, std::fstream::binary | std::fstream::in);
+    if (!ifsBin.is_open() || !ifsBin.good()) {
+      LOG__ERROR(Logger::get().BOOK_LOG, "Loading from cache file {} failed", serCacheFile);
+      return;
+    }
+    boost::archive::binary_iarchive ia(ifsBin);
+    // write archive to class instance
+    ia >> BOOST_SERIALIZATION_NVP(binMap);
+
+    const auto stop = std::chrono::high_resolution_clock::now();
+    const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+    LOG__INFO(Logger::get().BOOK_LOG,
+              "Opening book loaded from bin cache with {:n} entries in ({:n} ms) ({})",
+              binMap.size(), elapsed.count(), serCacheFile);
+  }
+
+//  std::unordered_map<Key, BookEntry> txtMap;
+//  {
+//    const auto start = std::chrono::high_resolution_clock::now();
+//
+//    // create and open a txt archive for input
+//    const std::basic_string<char> &txtCacheFile = bookFilePath + ".cache.txt";
+//    LOG__DEBUG(Logger::get().BOOK_LOG, "Loading from cache file {}", txtCacheFile);
+//    std::ifstream ifsTXT(txtCacheFile);
+//    if (!ifsTXT.good()) {
+//      LOG__ERROR(Logger::get().BOOK_LOG, "Loading from cache file {} failed", txtCacheFile);
+//      return;
+//    }
+//    boost::archive::text_iarchive ia(ifsTXT);
+//    // write archive to class instance
+//    ia >> BOOST_SERIALIZATION_NVP(txtMap);
+//
+//    const auto stop = std::chrono::high_resolution_clock::now();
+//    const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+//    LOG__INFO(Logger::get().BOOK_LOG,
+//              "Opening book loaded from txt cache with {:n} entries in ({:n} ms) ({})",
+//              txtMap.size(), elapsed.count(), txtCacheFile);
+//  }
+//
+//  std::unordered_map<Key, BookEntry> xmlMap;
+//  {
+//    const auto start = std::chrono::high_resolution_clock::now();
+//
+//    // create and open a xml archive for input
+//    const std::basic_string<char> &xmlCacheFile = bookFilePath + ".cache.xml";
+//    LOG__DEBUG(Logger::get().BOOK_LOG, "Loading from cache file {}", xmlCacheFile);
+//    std::ifstream ifsXML(xmlCacheFile);
+//    if (!ifsXML.good()) {
+//      LOG__ERROR(Logger::get().BOOK_LOG, "Loading from cache file {} failed", xmlCacheFile);
+//      return;
+//    }
+//    boost::archive::xml_iarchive ia(ifsXML);
+//    // write archive to class instance
+//    ia >> BOOST_SERIALIZATION_NVP(xmlMap);
+//
+//    const auto stop = std::chrono::high_resolution_clock::now();
+//    const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+//    LOG__INFO(Logger::get().BOOK_LOG,
+//              "Opening book loaded from xml cache with {:n} entries in ({:n} ms) ({})",
+//              xmlMap.size(), elapsed.count(), xmlCacheFile);
+//  }
+
+  bookMap = std::move(binMap);
+
+} // archive and stream closed when destructors are called
+
+void OpeningBook::reset() {
+  const std::scoped_lock<std::mutex> lock(bookMutex);
+  bookMap.clear();
+  gamesTotal = 0;
+  gamesProcessed = 0;
+  isInitialized = false;
+  LOG__DEBUG(Logger::get().TEST_LOG, "Opening book reset: {:n}", bookMap.size());
+
 }
 
 std::string BookEntry::str() {

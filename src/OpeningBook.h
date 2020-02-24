@@ -26,7 +26,11 @@
 #ifndef FRANKYCPP_OPENINGBOOK_H
 #define FRANKYCPP_OPENINGBOOK_H
 
-#include <map>
+#include <boost/serialization/unordered_map.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/shared_ptr.hpp>
+
+//#include <map>
 #include "gtest/gtest_prod.h"
 #include "PGN_Reader.h"
 #include "Position.h"
@@ -34,12 +38,24 @@
 class MoveGenerator;
 
 struct BookEntry {
+  // BOOST Serialization
+  friend class boost::serialization::access;
+  template<class Archive>
+  void serialize(Archive & ar, const unsigned int version) {
+    ar & BOOST_SERIALIZATION_NVP (key);
+    ar & BOOST_SERIALIZATION_NVP (fen);
+    ar & BOOST_SERIALIZATION_NVP (counter);
+    ar & BOOST_SERIALIZATION_NVP (moves);
+    ar & BOOST_SERIALIZATION_NVP (ptrNextPosition);
+  }
+
   Key key{};
   std::string fen{};
   int counter{0};
   std::vector<Move> moves{};
-  std::vector<BookEntry*> ptrNextPosition{};
+  std::vector<std::shared_ptr<BookEntry>> ptrNextPosition{};
 
+  BookEntry() {}
   BookEntry(const Key &zobrist, const std::string &fenString) : key(zobrist), fen(fenString), counter{1} {}
   std::string str();
 };
@@ -59,6 +75,7 @@ private:
   uint64_t fileSize{};
   BookFormat bookFormat;
   std::string bookFilePath{};
+
   std::unordered_map<Key, BookEntry> bookMap{};
 
   uint64_t gamesTotal = 0;
@@ -68,8 +85,13 @@ public:
   explicit OpeningBook(const std::string &bookPath, const BookFormat &bFormat);
 
   void initialize();
+  void reset();
+
   uint64_t size() { return bookMap.size(); }
   Move getRandomMove(Key zobrist);
+
+  void saveToCache();
+  void loadFromCache();
 
 private:
   void readBookFromFile(const std::string &filePath);
@@ -83,6 +105,7 @@ private:
   void processGames(std::vector<PGN_Game>* ptrGames);
   void processGame(PGN_Game &game);
   void addToBook(Position &currentPosition, const Move &move);
+
 };
 
 

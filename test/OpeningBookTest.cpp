@@ -29,6 +29,7 @@
 #include <OpeningBook.h>
 #include <Position.h>
 #include <MoveGenerator.h>
+#include <misc.h>
 using testing::Eq;
 
 class OpeningBookTest : public ::testing::Test {
@@ -76,6 +77,15 @@ TEST_F(OpeningBookTest, initSAN) {
   EXPECT_EQ(1'256, book.size());
 }
 
+TEST_F(OpeningBookTest, pgnECOE) {
+  std::string filePathStr = FrankyCPP_PROJECT_ROOT;
+  filePathStr += +"/books/ecoe.pgn";
+  OpeningBook book(filePathStr, OpeningBook::BookFormat::PGN);
+  book.initialize();
+  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
+  EXPECT_EQ(4'039, book.size());
+}
+
 TEST_F(OpeningBookTest, initPGNSmall) {
   std::string filePathStr = FrankyCPP_PROJECT_ROOT;
   filePathStr += +"/books/pgn_test.pgn";
@@ -108,7 +118,7 @@ TEST_F(OpeningBookTest, initPGNMedium) {
   //  [16:27:22:703637] [t:41824     ] [Test_Logger      ] [debug   ]: Entries in book: 216.070
 }
 
-TEST_F(OpeningBookTest, DISABLED_initPGNLarge) {
+TEST_F(OpeningBookTest, initPGNLarge) {
   std::string filePathStr = FrankyCPP_PROJECT_ROOT;
   filePathStr += +"/books/superbook.pgn";
   OpeningBook book(filePathStr, OpeningBook::BookFormat::PGN);
@@ -151,13 +161,75 @@ TEST_F(OpeningBookTest, getMove) {
   EXPECT_FALSE(isMove(bookMove));
 }
 
-TEST_F(OpeningBookTest, pgnECOE) {
+TEST_F(OpeningBookTest, serializationSmall) {
   std::string filePathStr = FrankyCPP_PROJECT_ROOT;
-  filePathStr += +"/books/ecoe.pgn";
+  filePathStr += +"/books/book_smalltest.txt";
+  OpeningBook book(filePathStr, OpeningBook::BookFormat::SIMPLE);
+  book.initialize();
+  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
+  book.saveToCache();
+  NEWLINE;
+  book.reset();
+  NEWLINE;
+  book.loadFromCache();
+  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
+}
+
+TEST_F(OpeningBookTest, serializationMedium) {
+  std::string filePathStr = FrankyCPP_PROJECT_ROOT;
+  filePathStr += +"/books/8moves_GM_LB.pgn";
   OpeningBook book(filePathStr, OpeningBook::BookFormat::PGN);
   book.initialize();
   LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
-  EXPECT_EQ(4'039, book.size());
+  book.saveToCache();
+  NEWLINE;
+  book.reset();
+  NEWLINE;
+  book.loadFromCache();
+  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
+
+  NEWLINE;
+  MoveGenerator mg;
+  Position position;
+  Move bookMove = book.getRandomMove(position.getZobristKey());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Book returned move: {}", printMoveVerbose(bookMove));
+  EXPECT_TRUE(isMove(bookMove));
+  EXPECT_TRUE(mg.validateMove(position, bookMove));
+
+  position.doMove(Misc::getMoveFromUCI(position, "e2e4"));
+  bookMove = book.getRandomMove(position.getZobristKey());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Book returned move: {}", printMoveVerbose(bookMove));
+  EXPECT_TRUE(isMove(bookMove));
+  EXPECT_TRUE(mg.validateMove(position, bookMove));
+}
+
+TEST_F(OpeningBookTest, serializationLarge) {
+  std::string filePathStr = FrankyCPP_PROJECT_ROOT;
+  filePathStr += +"/books/superbook.pgn";
+  OpeningBook book(filePathStr, OpeningBook::BookFormat::PGN);
+  book.initialize();
+  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
+  book.saveToCache();
+  NEWLINE;
+  book.reset();
+  NEWLINE;
+  book.loadFromCache();
+  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
+
+  NEWLINE;
+  MoveGenerator mg;
+  Position position;
+  Move bookMove = book.getRandomMove(position.getZobristKey());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Book returned move: {}", printMoveVerbose(bookMove));
+  EXPECT_TRUE(isMove(bookMove));
+  EXPECT_TRUE(mg.validateMove(position, bookMove));
+
+  position.doMove(Misc::getMoveFromUCI(position, "e2e4"));
+  bookMove = book.getRandomMove(position.getZobristKey());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Book returned move: {}", printMoveVerbose(bookMove));
+  EXPECT_TRUE(isMove(bookMove));
+  EXPECT_TRUE(mg.validateMove(position, bookMove));
+
 }
 
 

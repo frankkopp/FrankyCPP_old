@@ -159,7 +159,7 @@ TEST_F(PerformanceTests, MoveGeneration_MPS) {
       ASSERT_EQ(86, j);
     }
     const double sec = double(sum) / nanoPerSec;
-    uint64_t mps = generatedMoves / sec;
+    uint64_t mps = static_cast<uint64_t>(generatedMoves / sec);
     fprintln("Move generated: {:n} in {:f} seconds", generatedMoves, sec);
     fprintln("Move generated per second: {:n}", mps);
     NEWLINE;
