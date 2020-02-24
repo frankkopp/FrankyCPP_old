@@ -78,36 +78,6 @@ OpeningBook::OpeningBook(const std::string &bookPath, const BookFormat &bFormat)
                                4 : std::thread::hardware_concurrency();
 }
 
-void OpeningBook::initialize() {
-  if (isInitialized) return;
-  LOG__INFO(Logger::get().BOOK_LOG, "Opening book initialization.");
-
-  const auto start = std::chrono::high_resolution_clock::now();
-
-  // set root entry
-  Position position;
-  bookMap.emplace(position.getZobristKey(),
-                  BookEntry(position.getZobristKey(), position.printFen()));
-
-  // if cache enabled check if we have a cache file and load from cache
-  if (_useCache && !_recreateCache && hasCache()) {
-    if (loadFromCache()) return;
-  }
-
-  // read book from file
-  readBookFromFile(bookFilePath);
-
-  // safe the book to a cache
-  if (_useCache) {
-    saveToCache();
-  }
-
-  const auto stop = std::chrono::high_resolution_clock::now();
-  const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-  LOG__INFO(Logger::get().BOOK_LOG, "Opening book initialized in ({:n} ms). {:n} positions", elapsed.count(), bookMap.size());
-  isInitialized = true;
-}
-
 Move OpeningBook::getRandomMove(Key zobrist) const {
   Move bookMove = MOVE_NONE;
   // Find the entry for this key (zobrist key of position) in the map and
@@ -123,7 +93,41 @@ Move OpeningBook::getRandomMove(Key zobrist) const {
   return bookMove;
 }
 
+void OpeningBook::initialize() {
+  if (isInitialized) return;
+  LOG__INFO(Logger::get().BOOK_LOG, "Opening book initialization.");
+
+  const auto start = std::chrono::high_resolution_clock::now();
+
+  // if cache enabled check if we have a cache file and load from cache
+  if (_useCache && !_recreateCache && hasCache()) {
+    if (loadFromCache()) return;
+  }
+
+  // set root entry
+  Position position;
+  bookMap.emplace(position.getZobristKey(),
+                  BookEntry(position.getZobristKey(), position.printFen()));
+
+  // read book from file
+  readBookFromFile(bookFilePath);
+
+  // safe the book to a cache
+  if (_useCache && bookMap.size() > 1) {
+    saveToCache();
+  }
+
+  const auto stop = std::chrono::high_resolution_clock::now();
+  const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+  LOG__INFO(Logger::get().BOOK_LOG, "Opening book initialized in ({:n} ms). {:n} positions", elapsed.count(), bookMap.size());
+  isInitialized = true;
+}
+
 void OpeningBook::readBookFromFile(const std::string &filePath) {
+  if (!fileExists(filePath)) {
+    LOG__ERROR(Logger::get().BOOK_LOG, "Open book '{}' not found.", filePath);
+    return;
+  }
   // open the file a read all lines into a vector and process all lines
   fileSize = getFileSize(filePath);
   std::ifstream file(filePath);
@@ -634,14 +638,14 @@ bool OpeningBook::hasCache() const {
 
 /** Checks of file exists and encapsulates platform differences for
  * filesystem operations */
-bool OpeningBook::fileExists(const std::string &filePath) const {
+bool OpeningBook::fileExists(const std::string &filePath) {
   bfs::path p{filePath};
   return bfs::exists(filePath);
 }
 
 /** Returns files size in bytes and encapsulates platform differences for
  * filesystem operations */
-uint64_t OpeningBook::getFileSize(const std::string &filePath) const {// get file size
+uint64_t OpeningBook::getFileSize(const std::string &filePath) {// get file size
   bfs::path p{filePath};
   uint64_t fsize = bfs::file_size(bfs::canonical(p));
   // std::ifstream in(filePath, std::ifstream::ate | std::ifstream::binary);

@@ -165,14 +165,14 @@ private:
   void saveToCache();
   bool loadFromCache();
 
-  uint64_t getFileSize(const std::string &filePath) const;
-  bool fileExists(const std::string &filePath) const;
-
 public:
   bool useCache() const { return _useCache; }
   void setUseCache(bool aBool) { _useCache = aBool; }
   bool recreateCache() const { return _recreateCache; }
   void setRecreateCache(bool recreateCache) { _recreateCache = recreateCache; }
+
+  static uint64_t getFileSize(const std::string &filePath);
+  static bool fileExists(const std::string &filePath);
 };
 
 #endif //FRANKYCPP_OPENINGBOOK_H

@@ -35,7 +35,7 @@ namespace SearchConfig {
 
   // opening book
   inline bool                    USE_BOOK  = true;
-  inline std::string             BOOK_PATH = "/books/book_smalltest.txt";
+  inline std::string             BOOK_PATH = "./books/book.txt";
   inline OpeningBook::BookFormat BOOK_TYPE = OpeningBook::BookFormat::SIMPLE;
 
   // basic search strategies and features

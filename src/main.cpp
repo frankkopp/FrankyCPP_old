@@ -28,8 +28,10 @@
 #include <fstream>
 #include "version.h"
 #include "types.h"
+#include "SearchConfig.h"
 #include "Engine.h"
 #include "UCIHandler.h"
+#include "OpeningBook.h"
 
 #include "boost/program_options.hpp"
 #include "TestSuite.h"
@@ -48,9 +50,11 @@ int main(int argc, char* argv[]) {
   std::cout << appName << std::endl;
 
   std::string config_file;
-  std::string testsuite_File;
-  int testsuite_Time;
-  int testsuite_Depth;
+  std::string book_file;
+  std::string book_type;
+  std::string testsuite_file;
+  int testsuite_time;
+  int testsuite_depth;
 
   // Command line options
   try {
@@ -59,7 +63,7 @@ int main(int argc, char* argv[]) {
     generic.add_options()
              ("help,?", "produce help message")
              ("version,v", "print version string")
-             ("config,c", po::value<std::string>(&config_file)->default_value("FrankyCPP.cfg"), "name of a file of a configuration.");
+             ("config,c", po::value<std::string>(&config_file)->default_value("./config/FrankyCPP.cfg"), "name of a file of a configuration.");
 
     // Declare a group of options that will be  allowed both on command line
     // and in config file
@@ -67,9 +71,11 @@ int main(int argc, char* argv[]) {
     config.add_options()
             ("log_lvl,l", po::value<std::string>()->default_value("warn"), "set general log level <critical|error|warn|info|debug|trace>")
             ("search_log_lvl,s", po::value<std::string>()->default_value("warn"), "set search log level <critical|error|warn|info|debug|trace>")
-            ("testsuite", po::value<std::string>(&testsuite_File), "run testsuite in given file")
-            ("tsTime", po::value<int>(&testsuite_Time)->default_value(1'000), "time in ms per test in testsuite")
-            ("tsDepth", po::value<int>(&testsuite_Depth)->default_value(0), "max search depth per test in testsuite");
+            ("book,b", po::value<std::string>(&book_file), "opening book to use")
+            ("booktype,t", po::value<std::string>(&book_type), "type of opening book <simple|san|pgn>")
+            ("testsuite", po::value<std::string>(&testsuite_file), "run testsuite in given file")
+            ("tsTime", po::value<int>(&testsuite_time)->default_value(1'000), "time in ms per test in testsuite")
+            ("tsDepth", po::value<int>(&testsuite_depth)->default_value(0), "max search depth per test in testsuite");
 
     // Hidden options, will be allowed both on command line and in config file,
     // but will not be shown to the user.
@@ -111,23 +117,48 @@ int main(int argc, char* argv[]) {
       notify(programOptions);
     }
 
+    if (programOptions.count("book")) {
+      if (!programOptions.count("booktype")) {
+        LOG__ERROR(Logger::get().BOOK_LOG, "Opening book type is missing (use --help for details). Using default book.");
+      }
+      else {
+        const std::string &bookPath = programOptions["book"].as<std::string>();
+        if (!OpeningBook::fileExists(bookPath)) {
+          LOG__ERROR(Logger::get().BOOK_LOG, "Open book '{}' not found. Using default {}", bookPath, SearchConfig::BOOK_PATH);
+        }
+        else {
+          SearchConfig::BOOK_PATH = bookPath;
+        }
+        const std::string &bookType = programOptions["booktype"].as<std::string>();
+        if (bookType == "simple" || bookType == "SIMPLE") {
+          SearchConfig::BOOK_TYPE = OpeningBook::BookFormat::SIMPLE;
+        }
+        else if (bookType == "san" || bookType == "SAN") {
+          SearchConfig::BOOK_TYPE = OpeningBook::BookFormat::SAN;
+        }
+        else if (bookType == "pgn" || bookType == "PGN") {
+          SearchConfig::BOOK_TYPE = OpeningBook::BookFormat::PGN;
+        }
+      }
+    }
+
     if (programOptions.count("testsuite")) {
       INIT::init();
       std::cout << "RUNNING TEST SUITE\n";
       std::cout << "########################################################\n";
       std::cout << "Version: " << appName << "\n";
-      std::ifstream file(testsuite_File);
+      std::ifstream file(testsuite_file);
       if (file.is_open()) {
-        std::cout << "Running Testsuite:  " << testsuite_File << "\n";
+        std::cout << "Running Testsuite:  " << testsuite_file << "\n";
         file.close();
       }
       else {
-        std::cerr << "Could not read file: " << testsuite_File << "\n";
+        std::cerr << "Could not read file: " << testsuite_file << "\n";
         return 1;
       }
-      std::cout << "Time per Test:      " << fmt::format("{:n}", testsuite_Time) << "\n";
-      std::cout << "Max depth per Test: " << fmt::format("{:n}", testsuite_Depth) << "\n";
-      TestSuite testSuite(testsuite_File, testsuite_Time, Depth{testsuite_Depth});
+      std::cout << "Time per Test:      " << fmt::format("{:n}", testsuite_time) << "\n";
+      std::cout << "Max depth per Test: " << fmt::format("{:n}", testsuite_depth) << "\n";
+      TestSuite testSuite(testsuite_file, testsuite_time, Depth(testsuite_depth));
       testSuite.runTestSuite();
       return 0;
     }
