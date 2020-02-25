@@ -32,15 +32,18 @@
 #include "Engine.h"
 #include "UCIHandler.h"
 #include "OpeningBook.h"
-
-#include "boost/program_options.hpp"
 #include "TestSuite.h"
+
+// BOOST program options
+#include "boost/program_options.hpp"
 namespace po = boost::program_options;
 
+// global variable for program options
 inline po::variables_map programOptions;
 
 int main(int argc, char* argv[]) {
 
+  // Version comes from CMAKE template version.h.in
   std::string appName = "FrankCPP";
   appName
     .append(" v")
@@ -65,7 +68,7 @@ int main(int argc, char* argv[]) {
              ("version,v", "print version string")
              ("config,c", po::value<std::string>(&config_file)->default_value("./config/FrankyCPP.cfg"), "name of a file of a configuration.");
 
-    // Declare a group of options that will be  allowed both on command line
+    // Declare a group of options that will be allowed both on command line
     // and in config file
     po::options_description config("Configuration");
     config.add_options()
@@ -79,23 +82,20 @@ int main(int argc, char* argv[]) {
             ("tsDepth", po::value<int>(&testsuite_depth)->default_value(0), "max search depth per test in testsuite");
 
     // Hidden options, will be allowed both on command line and in config file,
-    // but will not be shown to the user.
+    // but will not be shown to the user when printing help.
     po::options_description hidden("Hidden options");
     hidden.add_options()
             ("test,t", po::value<std::string>(), "test_hidden");
 
+    // Consolidate
     po::options_description cmdline_options;
     cmdline_options.add(generic).add(config).add(hidden);
-
     po::options_description config_file_options;
     config_file_options.add(config).add(hidden);
-
     po::options_description visible("Allowed options");
     visible.add(generic).add(config);
-
     po::positional_options_description p;
     p.add("input-file", -1);
-
     store(po::command_line_parser(argc, argv).options(cmdline_options).positional(p).run(), programOptions);
     notify(programOptions);
 
@@ -109,6 +109,7 @@ int main(int argc, char* argv[]) {
       return 0;
     }
 
+    // read config file
     std::ifstream ifs(config_file.c_str());
     if (!ifs) {
       std::cerr << "could not open config file: " << config_file << "\n";
@@ -118,6 +119,7 @@ int main(int argc, char* argv[]) {
       notify(programOptions);
     }
 
+    // opening book
     if (programOptions.count("nobook")) {
       SearchConfig::USE_BOOK = false;
       LOG__INFO(Logger::get().BOOK_LOG, "Not using opening book.");
@@ -147,6 +149,7 @@ int main(int argc, char* argv[]) {
       }
     }
 
+    // Testsuite run from cmd line
     if (programOptions.count("testsuite")) {
       INIT::init();
       std::cout << "RUNNING TEST SUITE\n";
@@ -168,6 +171,7 @@ int main(int argc, char* argv[]) {
       return 0;
     }
 
+    // just a test - does nothing
     if (programOptions.count("test")) {
       std::cout << "Test of hidden parameter." << "\n";
       std::cout << programOptions["test"].as<std::string>() << "\n";

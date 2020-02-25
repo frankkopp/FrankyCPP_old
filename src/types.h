@@ -32,16 +32,10 @@
 #include <sstream>
 #include <deque>
 #include <bitset>
-#include "version.h"
-#include "fmt/locale.h"
-
 #include <thread>
 #include <chrono>
-#define sleepForSec(x) std::this_thread::sleep_for(std::chrono::seconds(x));
-
-// convenience macros
-#define NEWLINE std::cout << std::endl
-#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#include "version.h"
+#include "fmt/locale.h"
 
 // Global constants
 constexpr const char* START_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -564,14 +558,18 @@ bool to_bool(std::string str);
   */
 std::string printBitString(uint64_t b);
 
+// defines a locale for European style numbers
 struct deLocaleDecimals : std::numpunct<char> {
   char do_decimal_point() const override { return ','; }
   char do_thousands_sep() const override { return '.'; }
   std::string do_grouping() const override { return "\03"; }
 };
-
 extern const std::locale deLocale;
 
+// convenience macros
+#define sleepForSec(x) std::this_thread::sleep_for(std::chrono::seconds(x));
+#define NEWLINE std::cout << std::endl
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #define println(s) std::cout << (s) << std::endl
 #define fprint(...) std::cout << fmt::format(deLocale, __VA_ARGS__)
 #define fprintln(...) fprint(__VA_ARGS__) << std::endl

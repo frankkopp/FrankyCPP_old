@@ -50,10 +50,6 @@ namespace bfs = boost::filesystem;
 // BOOST Serialization
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
-//#include <boost/archive/xml_oarchive.hpp>
-//#include <boost/archive/xml_iarchive.hpp>
-//#include <boost/archive/text_oarchive.hpp>
-//#include <boost/archive/text_iarchive.hpp>
 
 // enable for parallel processing of input lines
 #define PARALLEL_LINE_PROCESSING
@@ -68,14 +64,18 @@ namespace bfs = boost::filesystem;
 #include <execution>
 #endif
 
+// the extension cache files use after the given opening book filename
 static const char* const cacheExt = ".cache.bin";
+
+// //////////////////////////////////////////////
+// /// PUBLIC
 
 OpeningBook::OpeningBook(const std::string &bookPath, const BookFormat &bFormat)
   : bookFilePath(bookPath), bookFormat(bFormat) {
   // std::thread::hardware_concurrency() is not reliable - on some platforms
   // it returns 0 - in this case we chose a default of 4
   numberOfThreads = std::thread::hardware_concurrency() == 0 ?
-                               4 : std::thread::hardware_concurrency();
+                    4 : std::thread::hardware_concurrency();
 }
 
 Move OpeningBook::getRandomMove(Key zobrist) const {
@@ -123,12 +123,24 @@ void OpeningBook::initialize() {
   isInitialized = true;
 }
 
+void OpeningBook::reset() {
+  const std::scoped_lock<std::mutex> lock(bookMutex);
+  bookMap.clear();
+  gamesTotal = 0;
+  gamesProcessed = 0;
+  isInitialized = false;
+  LOG__DEBUG(Logger::get().TEST_LOG, "Opening book reset: {:n}", bookMap.size());
+}
+
+// //////////////////////////////////////////////
+// /// PRIVATE
+
+/* open the file a read all lines into a vector and process all lines */
 void OpeningBook::readBookFromFile(const std::string &filePath) {
   if (!fileExists(filePath)) {
     LOG__ERROR(Logger::get().BOOK_LOG, "Open book '{}' not found.", filePath);
     return;
   }
-  // open the file a read all lines into a vector and process all lines
   fileSize = getFileSize(filePath);
   std::ifstream file(filePath);
   if (file.is_open()) {
@@ -143,9 +155,9 @@ void OpeningBook::readBookFromFile(const std::string &filePath) {
   }
 }
 
+/* reads all lines from a file stream into a vector and returns them
+   skips empty lines */
 std::vector<std::string> OpeningBook::getLinesFromFile(std::ifstream &ifstream) {
-  // reads all lines from a file stream into a vector and returns them
-  // skips empty lines
   LOG__DEBUG(Logger::get().BOOK_LOG, "Reading lines from book.");
   const auto start = std::chrono::high_resolution_clock::now();
   std::vector<std::string> lines;
@@ -160,12 +172,12 @@ std::vector<std::string> OpeningBook::getLinesFromFile(std::ifstream &ifstream) 
   return lines;
 }
 
+
+/* processes the lines depending on file format.
+   SIMPLE and SAN have all moves of a game in one single line.
+   PGN has additional metadata and SA moves spread over several lines. */
 void OpeningBook::processAllLines(std::vector<std::string> &lines) {
   LOG__DEBUG(Logger::get().BOOK_LOG, "Creating internal book...");
-
-  // processes the lines depending on file format.
-  // SIMPLE and SAN have all moves of a game in one single line.
-  // PGN has additional metadata and SA moves spread over several lines.
 
   const auto start = std::chrono::high_resolution_clock::now();
 
@@ -217,12 +229,11 @@ void OpeningBook::processAllLines(std::vector<std::string> &lines) {
   LOG__DEBUG(Logger::get().BOOK_LOG, "Internal book created {:n} positions in {:n} ms.", bookMap.size(), elapsed.count());
 }
 
+/* process each line depending on format */
 void OpeningBook::processLine(std::string &line) {
   LOG__TRACE(Logger::get().BOOK_LOG, "Processing line: {}", line);
-  // clean up line
-  const std::regex whiteSpaceTrim(R"(^\s*(.*)\s*$)");
+  const std::regex whiteSpaceTrim(R"(^\s*(.*)\s*$)"); // clean up line
   line = std::regex_replace(line, whiteSpaceTrim, "$1");
-  // process each line depending on format
   switch (bookFormat) {
     case BookFormat::SIMPLE:
       processSimpleLine(line);
@@ -236,6 +247,7 @@ void OpeningBook::processLine(std::string &line) {
   }
 }
 
+/* process a line from SIMPLE format and build internal book data structure */
 void OpeningBook::processSimpleLine(std::string &line) {
   std::smatch matcher;
 
@@ -268,6 +280,7 @@ void OpeningBook::processSimpleLine(std::string &line) {
   }
 }
 
+/* process a line from SAN format and build internal book data structure */
 void OpeningBook::processSANLine(std::string &line) {
   std::smatch matcher;
 
@@ -278,12 +291,17 @@ void OpeningBook::processSANLine(std::string &line) {
     return;
   }
 
+  /*
+  Iterate over all tokens, ignore move numbers and results
+  Example:
+  1. f4 d5 2. Nf3 Nf6 3. e3 g6 4. b3 Bg7 5. Bb2 O-O 6. Be2 c5 7. O-O Nc6 8. Ne5 Qc7 1/2-1/2
+  1. f4 d5 2. Nf3 Nf6 3. e3 Bg4 4. Be2 e6 5. O-O Bd6 6. b3 O-O 7. Bb2 c5 1/2-1/2
+  */
+
   // ignore patterns
   const std::regex numberRegex(R"(^\d+\.)");
   const std::regex resultRegex(R"((1/2|1|0)-(1/2|1|0))");
 
-  //1. f4 d5 2. Nf3 Nf6 3. e3 g6 4. b3 Bg7 5. Bb2 O-O 6. Be2 c5 7. O-O Nc6 8. Ne5 Qc7 1/2-1/2
-  //1. f4 d5 2. Nf3 Nf6 3. e3 Bg4 4. Be2 e6 5. O-O Bd6 6. b3 O-O 7. Bb2 c5 1/2-1/2
   // split at every whitespace and iterate through items
   const std::regex splitRegex(R"(\s+)");
   const std::sregex_token_iterator iter(line.begin(), line.end(), splitRegex, -1);
@@ -310,6 +328,10 @@ void OpeningBook::processSANLine(std::string &line) {
   }
 }
 
+/* Reads lines to find multiline PGN games (metadata and moves)
+   Every game found will be put into a fifo queue and a parallel thread pool
+   of workers take the games to process them to build up internal book
+   data structure. */
 void OpeningBook::processPGNFileFifo(std::vector<std::string> &lines) {
   LOG__DEBUG(Logger::get().BOOK_LOG, "Process lines from PGN file with FIFO ({} Threads)...", numberOfThreads);
   // reading pgn and get a list of games
@@ -358,6 +380,10 @@ void OpeningBook::processPGNFileFifo(std::vector<std::string> &lines) {
   }
 }
 
+/* Reads lines to find multiline PGN games (metadata and moves)
+   Every game found will be put into a vector. After reading all games a
+   parallel thread pool of workers take the games to process them to build
+   up internal book data structure. */
 void OpeningBook::processPGNFile(std::vector<std::string> &lines) {
   LOG__DEBUG(Logger::get().BOOK_LOG, "Process lines from PGN file...");
   // reading pgn and get a list of games
@@ -372,6 +398,8 @@ void OpeningBook::processPGNFile(std::vector<std::string> &lines) {
   processGames(ptrGames);
 }
 
+/* After reading all games (non fifo) a parallel thread pool of workers take the games
+ * to process them to build up internal book data structure. */
 void OpeningBook::processGames(std::vector<PGN_Game>* ptrGames) {// processing games
   LOG__DEBUG(Logger::get().BOOK_LOG, "Processing {:n} games", ptrGames->size());
   const auto startTime = std::chrono::high_resolution_clock::now();
@@ -413,6 +441,7 @@ void OpeningBook::processGames(std::vector<PGN_Game>* ptrGames) {// processing g
   LOG__INFO(Logger::get().BOOK_LOG, "Processed {:n} games in {:n} ms", gamesTotal, elapsed.count());
 }
 
+/* process a game from PGN SAN format and build internal book data structure */
 void OpeningBook::processGame(PGN_Game &game) {
   std::smatch matcher;
   const std::regex UCIRegex(R"(([a-h][1-8][a-h][1-8])([NBRQnbrq])?)");
@@ -456,6 +485,9 @@ void OpeningBook::processGame(PGN_Game &game) {
 #endif
 }
 
+/* adds a position and adds the move and a pointer to the new position
+   to the previous position's book entry. This is synchronized to be thread
+   safe */
 void OpeningBook::addToBook(Position &currentPosition, const Move &move) {
   // remember previous position
   const Key lastKey = currentPosition.getZobristKey();
@@ -489,15 +521,8 @@ void OpeningBook::addToBook(Position &currentPosition, const Move &move) {
   }
 }
 
-void OpeningBook::reset() {
-  const std::scoped_lock<std::mutex> lock(bookMutex);
-  bookMap.clear();
-  gamesTotal = 0;
-  gamesProcessed = 0;
-  isInitialized = false;
-  LOG__DEBUG(Logger::get().TEST_LOG, "Opening book reset: {:n}", bookMap.size());
-}
-
+/* Saves the bookMap data to a binary cache file for faster reading.
+   Uses BOOST serialization to serialize the data to a binary file */
 void OpeningBook::saveToCache() {
   const std::scoped_lock<std::mutex> lock(bookMutex);
   { // save data to archive
@@ -514,7 +539,7 @@ void OpeningBook::saveToCache() {
     LOG__DEBUG(Logger::get().BOOK_LOG, "Book saved to binary cache in ({:n} ms) ({})", elapsed.count(), serCacheFile);
   } // archive and stream closed when destructors are called
   // reset recreation flag
-  _recreateCache=false;
+  _recreateCache = false;
   // this is redundant for testing purposes
   /*  { // save data to archive
       const auto start = std::chrono::high_resolution_clock::now();
@@ -552,13 +577,15 @@ void OpeningBook::saveToCache() {
     } // archive and stream closed when destructors are called*/
 }
 
+/* Loads the bookMap data from a binary data cache file. This is considerably
+   faster than reading the text based game files again */
 bool OpeningBook::loadFromCache() {
   const std::scoped_lock<std::mutex> lock(bookMutex);
   std::unordered_map<Key, BookEntry> binMap;
   { // load data from archive
     const auto start = std::chrono::high_resolution_clock::now();
     const std::string serCacheFile = bookFilePath + cacheExt;
-    LOG__DEBUG(Logger::get().BOOK_LOG, "Loading from cache file {} ({:n} kB)", serCacheFile, getFileSize(serCacheFile)/1'024);
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Loading from cache file {} ({:n} kB)", serCacheFile, getFileSize(serCacheFile) / 1'024);
     // create and open a binary archive for input
     std::ifstream ifsBin(serCacheFile, std::fstream::binary | std::fstream::in);
     if (!ifsBin.is_open() || !ifsBin.good()) {
@@ -574,7 +601,6 @@ bool OpeningBook::loadFromCache() {
               "Book loaded from cache with {:n} entries in ({:n} ms) ({})",
               binMap.size(), elapsed.count(), serCacheFile);
   }
-
   /*std::unordered_map<Key, BookEntry> txtMap;
   {
     const auto start = std::chrono::high_resolution_clock::now();
@@ -620,11 +646,11 @@ bool OpeningBook::loadFromCache() {
               "Opening book loaded from xml cache with {:n} entries in ({:n} ms) ({})",
               xmlMap.size(), elapsed.count(), xmlCacheFile);
   }*/
-
   bookMap = std::move(binMap);
   return true;
 } // archive and stream closed when destructors are called
 
+/* checks if a cache file exists */
 bool OpeningBook::hasCache() const {
   const std::basic_string<char> serCacheFile = bookFilePath + cacheExt;
   if (!fileExists(serCacheFile)) {
@@ -653,6 +679,7 @@ uint64_t OpeningBook::getFileSize(const std::string &filePath) {// get file size
   return fsize;
 }
 
+/* String representation of a book entry */
 std::string BookEntry::str() {
   std::ostringstream os;
   os << this->fen << " (" << this->counter << ") ";

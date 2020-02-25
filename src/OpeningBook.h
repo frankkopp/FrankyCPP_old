@@ -38,9 +38,9 @@
 class MoveGenerator;
 
 /**
- * An entry in the opening book data structure. Stores the zobrist key for the
- * position, the current fen, a count of how often a position is in the book
- * and two vectors storing the moves from the position and pointers to the
+ * An entry in the opening book data structure. Stores a key (e.g. zobrist key)
+ * for the position, the current fen, a count of how often a position is in the
+ * book and two vectors storing the moves from the position and pointers to the
  * book entry for the corresponding move.
  */
 struct BookEntry {
@@ -88,6 +88,7 @@ public:
    * to-square notation<br/>
    * BookFormat::SAN for files with lines of moves in SAN notation<br/>
    * BookFormat::PGN for PGN formatted games<br/>
+   * TODO: ABK format
    */
   enum class BookFormat {
     SIMPLE,
@@ -99,20 +100,26 @@ private:
   // the book data structure
   std::unordered_map<Key, BookEntry> bookMap{};
 
+  // multi threading handling
   std::mutex bookMutex;
   unsigned int numberOfThreads = 1;
-  
-  uint64_t fileSize{};
+
+  // book information
   BookFormat bookFormat;
   std::string bookFilePath{};
+  uint64_t fileSize{};
 
+  // progress information
   uint64_t gamesTotal = 0;
   uint64_t gamesProcessed = 0;
 
+  // cache control
   bool _useCache = true;
   bool _recreateCache = false;
 
+  // avoid multiple initializations
   bool isInitialized = false;
+
 public:
 
   /**
@@ -128,7 +135,8 @@ public:
 
   /**
    * Initializes this OpeningBook instance by reading moves data from the file
-   * given to the constructor or from cache.
+   * given to the constructor or from cache. Also creates a cache file after
+   * building the internal data structure when no cache was available. 
    */
   void initialize();
 

@@ -45,6 +45,7 @@ target_link_libraries(
         gtest_main
 )
 
+# copy config files and opening books to the build directories
 add_custom_command(
         TARGET ${testExeName} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/config $<TARGET_FILE_DIR:${testExeName}>/config
@@ -52,9 +53,4 @@ add_custom_command(
 )
 
 gtest_discover_tests(${testExeName})
-
-#add_test(
-#  NAME ${testExeName}
-#  COMMAND ${testExeName}
-#)
 

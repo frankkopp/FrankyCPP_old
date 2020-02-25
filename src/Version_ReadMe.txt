@@ -11,11 +11,11 @@ v 0.x (plan)
 v 0.6 (in progress)
 ================================================================================
 - TODO:
-    - Opening Book Cache
     - make prunings work
     - ATACKS / SEE
     - Configure for play strength
 - DONE:
+    - Opening Book Cache
 
 v 0.5 (done)
 ================================================================================
