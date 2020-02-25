@@ -361,7 +361,7 @@ TEST_F(SearchTest, alphaBetaTest) {
 TEST_F(SearchTest, Book) {
 
   SearchConfig::USE_BOOK = true;
-  SearchConfig::BOOK_PATH = "/books/book_smalltest.txt";
+  SearchConfig::BOOK_PATH = "./books/book_smalltest.txt";
   SearchConfig::BOOK_TYPE = OpeningBook::BookFormat::SIMPLE;
 
   Search search;

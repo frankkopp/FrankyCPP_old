@@ -97,7 +97,6 @@ namespace Bitboards {
     return os.str();
   }
 
-
   /**
    * Initializes various pre-computed bitboards
    */

@@ -1631,6 +1631,3 @@ void Search::checkPerftResults() const {
                   perftResults[searchLimitsPtr->getDepth()]));
   }
 }
-
-
-
