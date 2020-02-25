@@ -29,9 +29,9 @@
 #include "misc.h"
 #include "Fifo.h"
 
+// BOOST regex
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/regex.hpp>
-
 using namespace boost;
 using namespace std::string_literals;
 
@@ -47,6 +47,9 @@ static const boost::regex ravVariants(R"(\([^()]*\))"); // RAV variant comments 
 static const boost::regex resultsRgx(R"(((1-0)|(0-1)|(1/2-1/2)|\*))");
 static const boost::regex moveNumbers(R"(\d{1,3}( )*(\.{1,3}))");
 static const boost::regex moveRgx(R"(([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O-O-O|O-O)(=([NBRQ]))?([!?+#]*)?)");
+
+// ///////////////////////
+// PUBLIC
 
 PGN_Reader::PGN_Reader(std::vector<std::string> &lines) {
   inputLines = std::make_shared<std::vector<std::string>>(lines);
@@ -84,6 +87,9 @@ bool PGN_Reader::process() {
   LOG__INFO(Logger::get().BOOK_LOG, "Found {:n} games in {:n} ms", games.size(), elapsed.count());
   return true;
 }
+
+// ///////////////////////
+// PRIVATE
 
 inline PGN_Game PGN_Reader::processOneGame(VectorIterator &iterator) {
   bool gameEndReached = false;

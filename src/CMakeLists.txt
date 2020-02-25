@@ -23,7 +23,7 @@ set(FrankyCPPlib_SRCS
         EvaluatorConfig.h Evaluator.h Evaluator.cpp
         misc.h misc.cpp
         Perft.h Perft.cpp
-        UCISearchMode.h UCISearchMode.cpp
+        UCISearchMode.h
         UCIHandler.h UCIHandler.cpp
         EngineConfig.h Engine.h Engine.cpp
         SearchConfig.h Search.h Search.cpp

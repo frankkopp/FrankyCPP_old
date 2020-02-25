@@ -37,8 +37,8 @@
 
 #define MAP(name, option) optionVector.push_back(std::make_pair(name, option))
 
-////////////////////////////////////////////////
-///// CONSTRUCTORS
+// //////////////////////////////////////////////
+// /// CONSTRUCTORS
 
 Engine::Engine() {
   pPosition = std::make_shared<Position>();
@@ -47,8 +47,8 @@ Engine::Engine() {
   initOptions();
 }
 
-////////////////////////////////////////////////
-///// PUBLIC
+// //////////////////////////////////////////////
+// /// PUBLIC
 
 std::ostream &operator<<(std::ostream &os, const Engine &engine) {
   os << engine.str();
@@ -72,7 +72,6 @@ std::string Engine::str() const {
   }
   return os.str();
 }
-
 
 void Engine::setOption(const std::string &name, const std::string &value) {
   LOG__INFO(Logger::get().ENGINE_LOG, "Engine: Set option {} = {}", name, value);
@@ -295,7 +294,6 @@ void Engine::clearHash() {
   pSearch->clearHash();
 }
 
-
 void
 Engine::sendIterationEndInfo(int depth, int seldepth, Value value, uint64_t nodes, uint64_t nps,
                              MilliSec time, const MoveList &pv) const {
@@ -333,7 +331,6 @@ Engine::sendAspirationResearchInfo(int depth, int seldepth, Value value, const s
               time,
               printMoveListUCI(pv));
 }
-
 
 void Engine::sendCurrentRootMove(Move currmove, MoveList::size_type movenumber) const {
   if (pUciHandler) { pUciHandler->sendCurrentRootMove(currmove, movenumber); }
@@ -380,8 +377,8 @@ bool Engine::isSearching() {
   return pSearch->isRunning();
 }
 
-////////////////////////////////////////////////
-///// PRIVATE
+// //////////////////////////////////////////////
+// /// PRIVATE
 
 void Engine::initOptions() {
   // @formatter:off
@@ -419,7 +416,6 @@ void Engine::initOptions() {
   MAP("LMR_Min_Depth",    UCI_Option("LMR_Min_Depth",    SearchConfig::LMR_MIN_DEPTH, 0, DEPTH_MAX));
   MAP("LMR_Min_Moves",    UCI_Option("LMR_Min_Moves",    SearchConfig::LMR_MIN_MOVES, 0, DEPTH_MAX));
   MAP("LMR_Reduction",    UCI_Option("LMR_Reduction",    SearchConfig::LMR_REDUCTION, 0, DEPTH_MAX));
-
 
   // @formatter:on
 }

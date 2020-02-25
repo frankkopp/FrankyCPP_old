@@ -50,15 +50,13 @@
  * Tests have shown that an implementation with a struct and bitfields is
  * more efficient than using only one 64-bit data field with manual bit shifting
  * and masking (~9% slower)
- * Also using buckets has not shown significant improvements and is much
- * slower (~20% slower).
+ * Also using buckets has not shown significant strength improvements and is
+ * much slower (~20% slower).
  */
 class TT {
 public:
 
   static constexpr int CacheLineSize = 64;
-  static constexpr uint64_t KB = 1024;
-  static constexpr uint64_t MB = KB * KB;
   static constexpr uint64_t DEFAULT_TT_SIZE = 2; // MByte
   static constexpr uint64_t MAX_SIZE_MB = 32'768;
 

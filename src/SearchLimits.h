@@ -30,6 +30,10 @@
 #include <ostream>
 #include "types.h"
 
+/**
+ * Data class for search limits for a search run. Manages dependencies
+ * automatically. E.g. sets timeControl() to true if times have been provided.
+ */
 class SearchLimits {
 
 //  std::shared_ptr<spdlog::logger> LOG = spdlog::get("Search_Logger");

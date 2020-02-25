@@ -73,25 +73,51 @@
 
 typedef std::vector<std::string>::iterator VectorIterator;
 
-constexpr const int avgLinesPerGameTimesProgressSteps = 12 * 15;
-
 /**
- * A PGN_Game holds the cleanup tags and moves as strings after reading a PGN file.
+ * A PGN_Game holds moves as strings after reading a PGN file.
+ * Tags reading not yet implemented. 
  */
 struct PGN_Game {
-  std::string pgnNotation{};
-  std::map<std::string, std::string> tags{};
+  //  std::string pgnNotation{};
+  //  std::map<std::string, std::string> tags{};
   std::vector<std::string> moves{};
 };
 
+/**
+ * Reads pgn games from a vector of lines usually read from a file.
+ * Games found can be retrieved by getGames()
+ */
 class PGN_Reader {
+
+  static const int avgLinesPerGameTimesProgressSteps = 12 * 15;
+
   std::shared_ptr<std::vector<std::string>> inputLines{};
   std::vector<PGN_Game> games{};
 
 public:
+  /**
+   * Creates an instance which reads pgn games from a vector of lines usually
+   * read from a file.
+   */
   PGN_Reader(std::vector<std::string> &lines);
+
+  /**
+   * Reads the input lines given in the constructor and stores found games
+   * in the given fifo queue.
+   * Returns true if successful.
+   */
   bool process(Fifo<PGN_Game> &gamesFifo);
+
+  /**
+   * Reads the input lines given in the constructor and stores found games
+   * in an internal vector which can be retrieved with getGames().
+   * Returns true if successful.
+   */
   bool process();
+
+  /**
+   * Returns the vector of games found after calling process()
+   */
   std::vector<PGN_Game> & getGames() { return games; }
 
 private:

@@ -31,7 +31,7 @@
 #include "types.h"
 #include "gtest/gtest_prod.h"
 
-// circle reference between Position and MoveGenerator - this make it possible
+// forward declaration
 class MoveGenerator;
 
 namespace Zobrist {

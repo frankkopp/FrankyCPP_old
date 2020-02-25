@@ -31,7 +31,7 @@
 static const char* optionTypeStrings[] = {"check", "spin", "combo", "button", "std::string"};
 
 /**
- * UCI Option class
+ * UCI Option data class to store te available UCI options.
  */
 class UCI_Option {
 

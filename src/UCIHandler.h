@@ -32,6 +32,11 @@
 
 class Engine;
 
+/**
+ * Main UCI protocol handler. Communicates through pipe streams with UCI user
+ * interfaces or cmd line users. Starts a "listening" loop until command "quit"
+ * is received. 
+ */
 class UCI_Handler {
 
   Engine* pEngine;
@@ -53,18 +58,8 @@ public:
   /** Starts the handler loop  with the given istream (mainly for testing) */
   void loop(std::istream* pIstream);
 
-  void uciCommand() const;
-  void isReadyCommand() const;
-  void setOptionCommand(std::istringstream &inStream) const;
-  void uciNewGameCommand() const;
-  void positionCommand(std::istringstream &inStream) const;
-  void goCommand(std::istringstream &inStream);
-  void stopCommand() const;
-  void ponderHitCommand() const;
-  static void registerCommand();
-  static void debugCommand();
+  /* send information to the UCI user interface through pipe streams */
   void send(const std::string &toSend) const;
-
   void sendIterationEndInfo(int depth, int seldepth, Value value, uint64_t nodes,
                             uint64_t nps, MilliSec time, const MoveList &pv) const;
   void sendAspirationResearchInfo(int depth, int seldepth, Value value, const std::string& bound,
@@ -76,6 +71,20 @@ public:
   void sendCurrentLine(const MoveList &moveList) const;
   void sendResult(Move bestMove, Move ponderMove) const;
   void sendString(const std::string &anyString) const;
+
+private:
+
+  void uciCommand() const;
+  void isReadyCommand() const;
+  void setOptionCommand(std::istringstream &inStream) const;
+  void uciNewGameCommand() const;
+  void positionCommand(std::istringstream &inStream) const;
+  void goCommand(std::istringstream &inStream);
+  void stopCommand() const;
+  void ponderHitCommand() const;
+  static void registerCommand();
+  static void debugCommand();
+
 };
 
 #endif //FRANKYCPP_UCIPROTOCOLHANDLER_H

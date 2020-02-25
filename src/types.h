@@ -56,6 +56,10 @@ typedef uint64_t Bitboard;
 /** for time keeping */
 typedef int64_t MilliSec;
 
+constexpr const uint64_t KB = 1024;
+constexpr const uint64_t MB = KB * KB;
+constexpr const uint64_t GB = KB * MB;
+
 ///////////////////////////////////
 //// INITIALIZATION
 

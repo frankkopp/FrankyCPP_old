@@ -183,7 +183,7 @@ void UCI_Handler::goCommand(std::istringstream &inStream) {
       try {
         searchMode.whiteTime = stoi(token);
       } catch (...) {
-        Logger::get().UCIHAND_LOG->error(
+        LOG__ERROR(Logger::get().UCIHAND_LOG, 
           "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
       }
       if (searchMode.whiteTime <= 0) {
@@ -196,7 +196,7 @@ void UCI_Handler::goCommand(std::istringstream &inStream) {
       try {
         searchMode.blackTime = stoi(token);
       } catch (...) {
-        Logger::get().UCIHAND_LOG->error(
+        LOG__ERROR(Logger::get().UCIHAND_LOG, 
           "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
       }
       if (searchMode.blackTime <= 0) {
@@ -209,7 +209,7 @@ void UCI_Handler::goCommand(std::istringstream &inStream) {
       try {
         searchMode.whiteInc = std::stoi(token);
       } catch (...) {
-        Logger::get().UCIHAND_LOG->error(
+        LOG__ERROR(Logger::get().UCIHAND_LOG, 
           "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
       }
       if (searchMode.whiteInc < 0) {
@@ -222,7 +222,7 @@ void UCI_Handler::goCommand(std::istringstream &inStream) {
       try {
         searchMode.blackInc = std::stoi(token);
       } catch (...) {
-        Logger::get().UCIHAND_LOG->error(
+        LOG__ERROR(Logger::get().UCIHAND_LOG, 
           "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
       }
       if (searchMode.blackInc < 0) {
@@ -235,7 +235,7 @@ void UCI_Handler::goCommand(std::istringstream &inStream) {
       try {
         searchMode.movesToGo = std::stoi(token);
       } catch (...) {
-        Logger::get().UCIHAND_LOG->error(
+        LOG__ERROR(Logger::get().UCIHAND_LOG, 
           "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
       }
       if (searchMode.movesToGo <= 0) {
@@ -248,7 +248,7 @@ void UCI_Handler::goCommand(std::istringstream &inStream) {
       try {
         searchMode.depth = std::stoi(token);
       } catch (...) {
-        Logger::get().UCIHAND_LOG->error(
+        LOG__ERROR(Logger::get().UCIHAND_LOG, 
           "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
       }
       if (searchMode.depth <= 0 || searchMode.depth > PLY_MAX) {
@@ -261,7 +261,7 @@ void UCI_Handler::goCommand(std::istringstream &inStream) {
       try {
         searchMode.nodes = std::stoi(token);
       } catch (...) {
-        Logger::get().UCIHAND_LOG->error(
+        LOG__ERROR(Logger::get().UCIHAND_LOG, 
           "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
       }
       if (searchMode.nodes <= 0) {
@@ -274,7 +274,7 @@ void UCI_Handler::goCommand(std::istringstream &inStream) {
       try {
         searchMode.mate = stoi(token);
       } catch (...) {
-        Logger::get().UCIHAND_LOG->error(
+        LOG__ERROR(Logger::get().UCIHAND_LOG, 
           "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
       }
       if (searchMode.mate <= 0 || searchMode.mate > PLY_MAX) {
@@ -287,7 +287,7 @@ void UCI_Handler::goCommand(std::istringstream &inStream) {
       try {
         searchMode.movetime = stoi(token);
       } catch (...) {
-        Logger::get().UCIHAND_LOG->error(
+        LOG__ERROR(Logger::get().UCIHAND_LOG, 
           "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
       }
       if (searchMode.movetime <= 0) {
@@ -304,7 +304,7 @@ void UCI_Handler::goCommand(std::istringstream &inStream) {
       try {
         searchMode.depth = stoi(token);
       } catch (...) {
-        Logger::get().UCIHAND_LOG->error(
+        LOG__ERROR(Logger::get().UCIHAND_LOG, 
           "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
       }
       if (searchMode.depth <= 0 || searchMode.depth > PLY_MAX) {

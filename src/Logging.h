@@ -98,6 +98,7 @@ public :
   Logger(Logger const &&) = delete; // move
   Logger &operator=(const Logger &&) = delete; // move assignment
 
+  /** get the singleton instance of Logger */
   static Logger& get() {
     static Logger instance;
     return instance;

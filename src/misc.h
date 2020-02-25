@@ -46,7 +46,6 @@ namespace Misc {
    * a legal Move on this position.
    */
   Move getMoveFromUCI(Position &position, std::string moveStr);
-  Move getMoveFromUCIDEBUG(Position &position, std::string moveStr);
 
   /* returns the given string with as lower case string */
   std::string toLowerCase(std::string str);

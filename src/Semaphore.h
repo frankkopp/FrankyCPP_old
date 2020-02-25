@@ -1,6 +1,27 @@
-//
-// Created by Frank Kopp on 2019-03-04.
-//
+/*
+ * MIT License
+ *
+ * Copyright (c) 2018-2020 Frank Kopp
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
 
 #ifndef FRANKYCPP_BASIC_SEMAPHORE_H
 #define FRANKYCPP_BASIC_SEMAPHORE_H
@@ -11,9 +32,6 @@
 /**
  * A simple Semaphore implementation.
  * https://stackoverflow.com/users/369872/david
- *
- * @tparam Mutex
- * @tparam CondVar
  */
 template <typename Mutex, typename CondVar>
 class basic_semaphore {
@@ -117,8 +135,7 @@ void basic_semaphore<Mutex, CondVar>::getOrWait() {
 }
 
 /**
- * Waits and retrieves for a semophore for a certain amount of time.
- *
+ * Waits for and retrieves  a semaphore for a certain amount of time.
  *
  * @tparam Mutex
  * @tparam CondVar
@@ -139,7 +156,7 @@ bool basic_semaphore<Mutex, CondVar>::getOrWaitFor(const std::chrono::duration<R
 }
 
 /**
- * Waits and retrieves for a semophore until a certain point in time.
+ * Waits and retrieves for a semaphore until a certain point in time.
  *
  * @tparam Mutex
  * @tparam CondVar

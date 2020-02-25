@@ -47,6 +47,11 @@
 // forward declared dependencies
 class Position;
 
+/**
+ * Evaluates chess positions. Uses configuration defined in EvaluatorConfig.h
+ * which is accessible via the config member. 
+ * Contains a pawn structure eval cache.
+ */
 class Evaluator {
 
 //  std::shared_ptr<spdlog::logger> LOG = spdlog::get("Eval_Logger");
@@ -93,12 +98,17 @@ public:
   Evaluator &operator=(const Evaluator &) = delete; // assignment constructor
   Evaluator &operator=(const Evaluator &&) = delete; // assignment constructor
 
+  /** Evaluation configuration - public for convenient configuration during run
+      time */
   EvaluatorConfig config{};
 
+  /** resize the pawn structure cache */
   void resizePawnTable(size_t size);
 
+  /** Returns a value calculated from the given position */
   Value evaluate(const Position &position);
 
+  /** Returns a string with the current statistics of the pawn cache. */
   std::string pawnTableStats() const {
     return fmt::format("Cache stats: capacity {:n} entries {:n} hits {:n} "
                        "misses {:n} replace {:n}",
@@ -106,6 +116,7 @@ public:
                        cacheMisses, cacheReplace);
   }
 
+  /** if available on the platform tell the CPU to pre-cache data */
   inline void prefetch(const Bitboard &pawnBitboard) const {
 #ifdef EVAL_ENABLE_PREFETCH
     _mm_prefetch(&pawnTable[getTableIndex(pawnBitboard)], _MM_HINT_T0);

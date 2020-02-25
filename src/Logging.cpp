@@ -27,20 +27,13 @@
 #include "types.h"
 #include "Logging.h"
 
+// BOOST program options
 #include "boost/program_options.hpp"
 namespace po = boost::program_options;
 
 inline po::variables_map programOptions;
 
 void Logger::init() {
-
-  // this messes up CLion'sGoogletest integration
-  //  try {
-  //    std::locale::global(deLocale);
-  //  }
-  //  catch (...) {
-  //    std::cerr << "failed to set locale" << std::endl;
-  //  }
 
   const auto flushLevel = spdlog::level::trace;
 

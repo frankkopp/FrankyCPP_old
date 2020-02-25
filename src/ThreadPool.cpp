@@ -29,6 +29,12 @@ ThreadPool::ThreadPool(std::size_t numThreads) {
   start(numThreads);
 }
 
+// //////////////////////
+// PRIVATE
+
+/* Start the given number of threads. Each threads enters a loop waiting for
+ * for a condition variable to signal that tasks have been be enqueued into
+ * the mTask vector. */
 void ThreadPool::start(std::size_t numThreads) {
   mStopping = false;
   for (std::size_t i = 0; i < numThreads; ++i) {
@@ -50,7 +56,8 @@ void ThreadPool::start(std::size_t numThreads) {
   }
 }
 
-void ThreadPool::stop() noexcept {
+/* Stops all running threads and waits for them to end before returning */
+void ThreadPool::stop() {
   { // lock block
     std::unique_lock<std::mutex> lock{mEventMutex};
     mStopping = true;

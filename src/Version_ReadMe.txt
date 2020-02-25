@@ -26,7 +26,7 @@ v 0.5 (done)
     - TestSuites
     - Beta Cut Movenumber Counter
     - Aspiration Window Search
-    - RAZOR, LFP. LFR, etc.
+    - RAZOR, LFR, etc.
 
 v 0.4 (done)
 ================================================================================

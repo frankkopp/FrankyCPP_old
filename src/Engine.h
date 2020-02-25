@@ -39,6 +39,10 @@ class Position;
 class Search;
 class SearchLimits;
 
+/**
+ * The engine class represents an abstraction of an UCI engine to control the
+ * dialog between a UCI user interface and a chess engine.<br/>
+ */
 class Engine {
 
   //  std::shared_ptr<spdlog::logger> LOG = spdlog::get("Engine_Logger");
@@ -68,15 +72,15 @@ class Engine {
 
 public:
 
-  ////////////////////////////////////////////////
-  ///// CONSTRUCTORS
+  // //////////////////////////////////////////////
+  // /// CONSTRUCTORS
 
   Engine();
 
-  ////////////////////////////////////////////////
-  ///// PUBLIC
+  // //////////////////////////////////////////////
+  // /// PUBLIC
 
-  // callback reference for sending responses to the uci ui
+  /** callback reference for sending responses to the uci ui */
   void registerUCIHandler(std::shared_ptr<UCI_Handler> handler) {
     pUciHandler = std::move(handler);
   };

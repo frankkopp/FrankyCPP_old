@@ -30,6 +30,9 @@
 
 #include "types.h"
 
+/**
+ * Simple data struct for the search mode definition 
+ */
 struct UCISearchMode {
   // defaults
   int whiteTime = 0;
@@ -38,7 +41,7 @@ struct UCISearchMode {
   int blackInc = 0;
   int movesToGo = 0;
   int depth = 0;
-  long nodes = 0;
+  uint64_t nodes = 0;
   int mate = 0;
   int movetime = 0;
   MoveList moves{};

@@ -34,23 +34,18 @@
 
 /**
  * Synchronized FIFO queue based on std::queue and std::deque
- * @tparam T
  */
 template<class T>
 class Fifo {
 
   mutable std::mutex fifoLock;
   mutable std::condition_variable cv;
-
   std::queue<T, std::deque<T>> fifo;
-
   bool closedFlag = false;
 
 public:
-  Fifo() {
-    LOG__TRACE(Logger::get().MAIN_LOG, "Constructor");
-  }
 
+  Fifo() = default;
   ~Fifo() = default;
 
   // copy
@@ -85,6 +80,9 @@ public:
     return *this;
   }
 
+  /**
+   * Pushes an item onto the fifo queue
+   */
   void push(T &t) {
     {
       std::scoped_lock<std::mutex> lock{fifoLock};
@@ -94,6 +92,9 @@ public:
     cv.notify_one();
   }
 
+  /**
+   * Pushes an item onto the fifo queue using a move reference
+   */
   void push(T &&t) {
     {
       std::scoped_lock<std::mutex> lock{fifoLock};
@@ -164,33 +165,51 @@ public:
     return t;
   }
 
+  /**
+   * Wakes up waiting threads and does not wait when calling pop_wait() any
+   * longer.
+   */
   void close() {
     std::scoped_lock<std::mutex> lock{fifoLock};
     closedFlag = true;
     cv.notify_all();
   }
 
+  /**
+   * Allows pop_wait() to wait for new entries into the fifo. This is allowed by
+   * default but can be disabled by a call to close().
+   */
   void open() {
     std::scoped_lock<std::mutex> lock{fifoLock};
     closedFlag = false;
   }
 
+  /**
+   * Checks if a call to pop_wait() will actually wait for new entries.
+   * If returning true the call to pop_wait() will not wait but return
+   * immediately wither with an item if available or with an empty std::optional
+   */
   bool isClosed() {
     std::scoped_lock<std::mutex> lock{fifoLock};
     return closedFlag;
   }
 
+  /**
+   * Checks if fif queue is empty.
+   */
   bool empty() const {
     std::scoped_lock<std::mutex> lock{fifoLock};
     return fifo.empty();
   }
 
+  /**
+   * Number of items in the fifo queue.
+   */
   std::size_t size() const {
     std::scoped_lock<std::mutex> lock{fifoLock};
     return fifo.size();
   }
 
 };
-
 
 #endif //FRANKYCPP_FIFO_H
