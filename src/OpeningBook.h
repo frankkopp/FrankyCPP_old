@@ -105,8 +105,8 @@ private:
   unsigned int numberOfThreads = 1;
 
   // book information
+  std::string bookFilePath;
   BookFormat bookFormat;
-  std::string bookFilePath{};
   uint64_t fileSize{};
 
   // progress information

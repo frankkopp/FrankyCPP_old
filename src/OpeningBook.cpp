@@ -198,10 +198,10 @@ void OpeningBook::processAllLines(std::vector<std::string> &lines) {
       for (unsigned int t = 0; t < numberOfThreads; ++t) {
         threads.emplace_back([&, this, t]() {
           auto range = maxNumberOfEntries / numberOfThreads;
-          auto start = t * range;
-          auto end = start + range;
+          auto startRange = t * range;
+          auto end = startRange + range;
           if (t == numberOfThreads - 1) end = maxNumberOfEntries;
-          for (std::size_t i = start; i < end; ++i) {
+          for (std::size_t i = startRange; i < end; ++i) {
             processLine(lines[i]);
           }
         });
@@ -683,7 +683,7 @@ uint64_t OpeningBook::getFileSize(const std::string &filePath) {// get file size
 std::string BookEntry::str() {
   std::ostringstream os;
   os << this->fen << " (" << this->counter << ") ";
-  for (int i = 0; i < moves.size(); i++) {
+  for (std::size_t i = 0; i < moves.size(); i++) {
     os << "[" << printMove(this->moves[i]) << " (" << this->ptrNextPosition[i]->counter << ")] ";
   }
   return os.str();
