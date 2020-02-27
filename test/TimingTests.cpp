@@ -138,6 +138,28 @@ TEST_F(TimingTests, DISABLED_rotation) {
   cout << os.str();
 }
 
+std::array<Value, 32> gain1{};
+
+TEST_F(TimingTests, DISABLED_gain_array) {
+  ostringstream os;
+
+  //// TESTS START
+  std::function<void()> f1 = [&]() {
+    gain1.fill(Value{0});
+  };
+  std::function<void()> f2 = [&]() {
+    std::array<Value, 32> gain2{};
+  };
+  vector<std::function<void()>> tests;
+  tests.push_back(f1);
+  tests.push_back(f2);
+  //// TESTS END
+
+  testTiming(os, 10, 100, 10'000'000, tests);
+
+  cout << os.str();
+}
+
 TEST_F(TimingTests, DISABLED_TThash) {
   ostringstream os;
 

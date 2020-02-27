@@ -35,7 +35,7 @@ add_executable(
         OpeningBookTest.cpp
         ThreadPoolTest.cpp
         FifoTest.cpp
-        PGN_ReaderTest.cpp)
+        PGN_ReaderTest.cpp AttacksTest.cpp)
 
 target_link_libraries(
         ${testExeName}

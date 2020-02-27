@@ -24,6 +24,7 @@
  */
 
 #include "Search.h"
+#include "Attacks.h"
 #include "Bitboards.h"
 #include "Engine.h"
 #include "Evaluator.h"
@@ -49,7 +50,7 @@ Search::Search (Engine* pEng, int ttSizeInByte) {
   pEvaluator   = std::make_unique<Evaluator> ();
   pOpeningBook = std::make_unique<OpeningBook> (SearchConfig::BOOK_PATH,
                                                 SearchConfig::BOOK_TYPE);
-  pOpeningBook->initialize ();
+  if (SearchConfig::USE_BOOK) pOpeningBook->initialize ();
   tt = [&] { return SearchConfig::USE_TT ? new TT (ttSizeInByte) : new TT (0); }();
 }
 
@@ -179,8 +180,9 @@ void Search::run (Position position) {
   // Initialize for new search
   myColor          = position.getNextPlayer ();
   lastSearchResult = SearchResult ();
-  timeLimit = extraTime = 0;
-  searchStats           = SearchStats ();
+  searchStats      = SearchStats ();
+  timeLimit        = 0;
+  extraTime        = 0;
 
   // store the start time of the search
   startTime = lastUciUpdateTime = now ();
@@ -215,6 +217,9 @@ void Search::run (Position position) {
   if (searchLimitsPtr->getMate ()) {
     LOG__INFO (Logger::get ().SEARCH_LOG, "Search Mode: MATE SEARCH ({})", searchLimitsPtr->getMate ());
   }
+
+  // initialize opening book in case condig has change since last search
+  if (SearchConfig::USE_BOOK) pOpeningBook->initialize ();
 
   // initialization done
   initSemaphore.release ();
@@ -749,8 +754,7 @@ Value Search::search (Position& position, Depth depth, Ply ply, Value alpha, Val
       }
 
       // Check for mate threat and do not return an unproven mate value
-      if ((mateThreat[ply] = isCheckMateValue (nullValue))) nullValue = VALUE_CHECKMATE_THRESHOLD;
-      ;
+      if (mateThreat[ply] == isCheckMateValue (nullValue)) nullValue = VALUE_CHECKMATE_THRESHOLD;
 
       if (nullValue >= beta) { // cut off node
         searchStats.nullMovePrunings++;
@@ -1273,9 +1277,7 @@ Move Search::getMove (Position& position, int ply) {
 
 /**
  * Simple "good capture" determination
- *
  * OBS: move must be a capture otherwise too many false positives
- * TODO: Improve, add SEE
  */
 bool Search::goodCapture (Position& position, Move move) {
   ASSERT_START
@@ -1283,23 +1285,31 @@ bool Search::goodCapture (Position& position, Move move) {
     LOG__ERROR (Logger::get ().SEARCH_LOG, "move send to goodCapture should be capturing {:<30s} {}", printMoveVerbose (move), position.printFen ());
   }
   ASSERT_END
-  return
 
+  return
       // all pawn captures - they never loose material
       // typeOf(position.getPiece(getFromSquare(move))) == PAWN
 
       // Lower value piece captures higher value piece
       // With a margin to also look at Bishop x Knight
-      (valueOf (position.getPiece (getFromSquare (move))) + 50) < valueOf (position.getPiece (getToSquare (move)))
+      (valueOf (position.getPiece (getFromSquare (move))) + 50)
+          < valueOf (position.getPiece (getToSquare (move)))
 
       // all recaptures should be looked at
-      || (position.getLastMove () != MOVE_NONE && getToSquare (position.getLastMove ()) == getToSquare (move) && position.getLastCapturedPiece () != PIECE_NONE)
+      || (position.getLastMove () != MOVE_NONE
+          && getToSquare (position.getLastMove ()) == getToSquare (move)
+          && position.getLastCapturedPiece () != PIECE_NONE)
 
       // undefended pieces captures are good
       // If the defender is "behind" the attacker this will not be recognized
       // here This is not too bad as it only adds a move to qsearch which we
       // could otherwise ignore
-      || !position.isAttacked (getToSquare (move), ~position.getNextPlayer ());
+      || !position.isAttacked (getToSquare (move), ~position.getNextPlayer ())
+
+      // Check see score of higher value pieces to low value pieces
+      || Attacks::see(position, move) > 0
+
+      ;
 }
 
 inline void Search::storeTT (Position& position, Value value, Value_Type ttType, Depth depth, Ply ply, Move move, bool _mateThreat) {

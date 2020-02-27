@@ -31,7 +31,7 @@ set(FrankyCPPlib_SRCS
         OpeningBook.cpp OpeningBook.h
         PGN_Reader.cpp PGN_Reader.h
         ThreadPool.cpp ThreadPool.h
-        Fifo.h)
+        Fifo.h Attacks.cpp Attacks.h)
 add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})
 target_link_libraries(
         FrankyCPPlib

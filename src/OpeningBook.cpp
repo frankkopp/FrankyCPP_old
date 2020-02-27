@@ -76,6 +76,11 @@ OpeningBook::OpeningBook(const std::string &bookPath, const BookFormat &bFormat)
   // it returns 0 - in this case we chose a default of 4
   numberOfThreads = std::thread::hardware_concurrency() == 0 ?
                     4 : std::thread::hardware_concurrency();
+
+  // set root entry
+  Position position;
+  bookMap.emplace(position.getZobristKey(),
+                  BookEntry(position.getZobristKey(), position.printFen()));
 }
 
 Move OpeningBook::getRandomMove(Key zobrist) const {
@@ -104,12 +109,6 @@ void OpeningBook::initialize() {
     if (loadFromCache()) return;
   }
 
-  // set root entry
-  Position position;
-  bookMap.emplace(position.getZobristKey(),
-                  BookEntry(position.getZobristKey(), position.printFen()));
-
-  // read book from file
   readBookFromFile(bookFilePath);
 
   // safe the book to a cache

@@ -199,11 +199,11 @@ public:
   };
 
   // using prefetch improves probe lookup speed significantly
-  inline void prefetch(const Key key) {
 #ifdef TT_ENABLE_PREFETCH
+  inline void prefetch(const Key key) {
     _mm_prefetch(&_data[(key & hashKeyMask)], _MM_HINT_T0);
-#endif
   }
+#endif
 
   /** return a string representation of the TT instance */
   std::string str();

@@ -23,8 +23,8 @@
  *
  */
 
-#include "Logging.h"
 #include "SearchLimits.h"
+#include "Logging.h"
 
 SearchLimits::SearchLimits() = default;
 
@@ -35,17 +35,17 @@ SearchLimits::SearchLimits(MilliSec _whiteTime,
                            MilliSec _moveTime,
                            int      _movesToGo,
                            int      _depth,
-                           long     _nodes,
+                           uint64_t _nodes,
                            MoveList _moves,
                            int      _mate,
                            bool     _ponder,
                            bool     _infinite,
                            bool     _perft)
-  : whiteTime(_whiteTime), blackTime(_blackTime),
-    whiteInc(_whiteInc), blackInc(_blackInc), moveTime(_moveTime),
-    movesToGo(_movesToGo), depth(static_cast<Depth>(_depth)), nodes(_nodes),
-    moves(std::move(_moves)), mate(_mate), ponder(_ponder),
-    infinite(_infinite), perft(_perft) {
+: whiteTime(_whiteTime), blackTime(_blackTime),
+  whiteInc(_whiteInc), blackInc(_blackInc), moveTime(_moveTime),
+  movesToGo(_movesToGo), depth(static_cast<Depth>(_depth)), nodes(_nodes),
+  moves(std::move(_moves)), mate(_mate), ponder(_ponder),
+  infinite(_infinite), perft(_perft) {
 
   setupLimits();
 }
@@ -53,76 +53,77 @@ SearchLimits::SearchLimits(MilliSec _whiteTime,
 void SearchLimits::setupLimits() {
 
   // the order of these statement also exclude contradictions
-  // e.g. if perft is set nothing else will checked. 
+  // e.g. if perft is set nothing else will checked.
   if (perft) {
     timeControl = false;
-    startDepth = depth ? depth : DEPTH_ONE;;
+    startDepth  = depth ? depth : DEPTH_ONE;
+    ;
     maxDepth = depth ? depth : DEPTH_ONE;
   }
   else if (infinite) {
     timeControl = false;
-    startDepth = DEPTH_ONE;
-    maxDepth = DEPTH_MAX;
+    startDepth  = DEPTH_ONE;
+    maxDepth    = DEPTH_MAX;
   }
   else if (ponder) {
     timeControl = false;
-    startDepth = DEPTH_ONE;
-    maxDepth = DEPTH_MAX;
+    startDepth  = DEPTH_ONE;
+    maxDepth    = DEPTH_MAX;
   }
   else if (mate) {
     // limits per mate depth and move time
     timeControl = moveTime != 0;
-    startDepth = DEPTH_ONE;
+    startDepth  = DEPTH_ONE;
     // might be limited by depth as well
     maxDepth = depth ? depth : DEPTH_MAX;
   }
   else if (whiteTime && blackTime) {
     // normal game with time for each player
     timeControl = true;
-    startDepth = DEPTH_ONE;
+    startDepth  = DEPTH_ONE;
     // might be limited by depth as well
     maxDepth = depth ? depth : DEPTH_MAX;
   }
   else if (moveTime) {
     // normal game with time for each move
     timeControl = true;
-    startDepth = DEPTH_ONE;
+    startDepth  = DEPTH_ONE;
     // might be limited by depth as well
     maxDepth = depth ? depth : DEPTH_MAX;
   }
   else if (depth && !nodes) {
     // limited only by depth but still iterating
     timeControl = false;
-    startDepth = DEPTH_ONE;
-    maxDepth = depth;
+    startDepth  = DEPTH_ONE;
+    maxDepth    = depth;
   }
   else if (nodes) {
     // limited only by the number of nodes visited
     timeControl = false;
-    startDepth = DEPTH_ONE;
+    startDepth  = DEPTH_ONE;
     // might be limited by depth as well
     maxDepth = depth ? depth : DEPTH_MAX;
   }
   else { // invalid search mode - use default
     LOG__WARN(Logger::get().SEARCH_LOG, "SearchMode is invalid as no mode could be deducted from settings.");
     timeControl = false;
-    startDepth = DEPTH_ONE;
-    maxDepth = DEPTH_ONE;
+    startDepth  = DEPTH_ONE;
+    maxDepth    = DEPTH_ONE;
     LOG__WARN(Logger::get().SEARCH_LOG, "SearchMode set to depth {}", maxDepth);
   }
 }
 
 void SearchLimits::ponderHit() {
-  ponder=false;
+  ponder = false;
   setupLimits();
 }
 
 void SearchLimits::ponderStop() {
-  ponder=false;
+  ponder = false;
   setupLimits();
 }
 
-std::ostream &operator<<(std::ostream &os, const SearchLimits &limits) {
+std::ostream& operator<<(std::ostream& os, const SearchLimits& limits) {
   os << limits.str();
   return os;
 }
@@ -138,6 +139,3 @@ std::string SearchLimits::str() const {
      << " maxDepth: " << maxDepth;
   return os.str();
 }
-
-
-

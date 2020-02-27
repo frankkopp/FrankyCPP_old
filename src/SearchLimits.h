@@ -26,9 +26,9 @@
 #ifndef FRANKYCPP_SEARCHLIMITS_H
 #define FRANKYCPP_SEARCHLIMITS_H
 
+#include "types.h"
 #include <chrono>
 #include <ostream>
-#include "types.h"
 
 /**
  * Data class for search limits for a search run. Manages dependencies
@@ -36,36 +36,35 @@
  */
 class SearchLimits {
 
-//  std::shared_ptr<spdlog::logger> LOG = spdlog::get("Search_Logger");
+  //  std::shared_ptr<spdlog::logger> LOG = spdlog::get("Search_Logger");
 
   // defaults time control
   MilliSec whiteTime = 0;
   MilliSec blackTime = 0;
-  MilliSec whiteInc = 0;
-  MilliSec blackInc = 0;
-  MilliSec moveTime = 0;
-  int movesToGo = 0;
+  MilliSec whiteInc  = 0;
+  MilliSec blackInc  = 0;
+  MilliSec moveTime  = 0;
+  int      movesToGo = 0;
 
   // extra limits
-  Depth depth = DEPTH_NONE;
+  Depth    depth = DEPTH_NONE;
   uint64_t nodes = 0;
   MoveList moves{};
 
   // no time control
-  int mate = 0;
-  bool ponder = false;
+  int  mate     = 0;
+  bool ponder   = false;
   bool infinite = false;
-  bool perft = false;
+  bool perft    = false;
 
   // state
-  bool timeControl = false;
-  Depth startDepth = DEPTH_ONE;
-  Depth maxDepth = DEPTH_MAX;
-  
+  bool  timeControl = false;
+  Depth startDepth  = DEPTH_ONE;
+  Depth maxDepth    = DEPTH_MAX;
+
   void setupLimits();
-  
+
 public:
- 
   // Constructor
   SearchLimits();
   SearchLimits(MilliSec whiteTime,
@@ -73,18 +72,18 @@ public:
                MilliSec whiteInc,
                MilliSec blackInc,
                MilliSec moveTime,
-               int movesToGo,
-               int depth,
-               long nodes,
+               int      movesToGo,
+               int      depth,
+               uint64_t nodes,
                MoveList moves,
-               int mate,
-               bool ponder,
-               bool infinite,
-               bool perft);
+               int      mate,
+               bool     ponder,
+               bool     infinite,
+               bool     perft);
 
   // output
-  std::string str() const;
-  friend std::ostream &operator<<(std::ostream &os, const SearchLimits &limits);
+  std::string          str() const;
+  friend std::ostream& operator<<(std::ostream& os, const SearchLimits& limits);
 
   void ponderHit();
   void ponderStop();
@@ -165,11 +164,11 @@ public:
     setupLimits();
   }
 
-  const MoveList &getMoves() const {
+  const MoveList& getMoves() const {
     return moves;
   }
 
-  void setMoves(const MoveList &moveList) {
+  void setMoves(const MoveList& moveList) {
     moves = moveList;
     setupLimits();
   }
@@ -230,7 +229,6 @@ public:
   Depth getMaxDepth() const {
     return maxDepth;
   }
-  
 };
 
 

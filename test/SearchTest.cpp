@@ -287,6 +287,12 @@ TEST_F (SearchTest, goodCapture) {
   ASSERT_TRUE (search.goodCapture (position, createMove ("a4d1")));  // bxR
   ASSERT_TRUE (search.goodCapture (position, createMove ("f5h4")));  // nor defended
   ASSERT_FALSE (search.goodCapture (position, createMove ("h5g4"))); // pawn
+
+  // k6q/3n1n2/3b4/4p3/3P1P2/3N1N2/8/K7 w - -
+  // only works with SEE
+  position = Position ("k6q/3n1n2/3b4/4p3/3P1P2/3N1N2/8/K7 w - -");
+  ASSERT_TRUE (search.goodCapture (position, createMove ("d3e5")));
+  ASSERT_TRUE (search.goodCapture (position, createMove ("f3e5")));
 }
 
 TEST_F (SearchTest, quiescenceTest) {

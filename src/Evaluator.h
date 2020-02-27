@@ -117,11 +117,11 @@ public:
   }
 
   /** if available on the platform tell the CPU to pre-cache data */
-  inline void prefetch(const Bitboard &pawnBitboard) const {
 #ifdef EVAL_ENABLE_PREFETCH
+  inline void prefetch(const Bitboard &pawnBitboard) const {
     _mm_prefetch(&pawnTable[getTableIndex(pawnBitboard)], _MM_HINT_T0);
-#endif
   }
+#endif
 
 private:
 

@@ -163,7 +163,7 @@ constexpr Square getSquare (File f, Rank r) { return Square ((r << 3) + f); }
 
 /** returns a string representing the square (e.g. a1 or h8) */
 inline std::string squareLabel (Square sq) {
-  return std::string{ char ('a' + fileOf (sq)), char ('1' + rankOf (sq)) };
+  return isSquare(sq) ? std::string{ char ('a' + fileOf (sq)), char ('1' + rankOf (sq)) } : "--";
 }
 
 ///////////////////////////////////
@@ -340,27 +340,27 @@ BITMAP 32-bit
 // @formatter:on
 
 namespace MoveShifts {
-  constexpr unsigned int FROM_SHIFT      = 6;
-  constexpr unsigned int PROM_TYPE_SHIFT = 12;
-  constexpr unsigned int TYPE_SHIFT      = 14;
-  constexpr unsigned int VALUE_SHIFT     = 16;
+  constexpr unsigned int FROM_SHIFT      = 6u;
+  constexpr unsigned int PROM_TYPE_SHIFT = 12u;
+  constexpr unsigned int TYPE_SHIFT      = 14u;
+  constexpr unsigned int VALUE_SHIFT     = 16u;
 
-  constexpr unsigned int SQUARE_MASK    = 0x3F;
-  constexpr unsigned int FROMTO_MASK    = 0xFFF;
-  constexpr unsigned int PROM_TYPE_MASK = 3 << PROM_TYPE_SHIFT;
-  constexpr unsigned int MOVE_TYPE_MASK = 3 << TYPE_SHIFT;
+  constexpr unsigned int SQUARE_MASK    = 0x3Fu;
+  constexpr unsigned int FROMTO_MASK    = 0xFFFu;
+  constexpr unsigned int PROM_TYPE_MASK = 3u << PROM_TYPE_SHIFT;
+  constexpr unsigned int MOVE_TYPE_MASK = 3u << TYPE_SHIFT;
 
-  constexpr unsigned int MOVE_MASK  = 0xFFFF;                // first 16-bit
-  constexpr unsigned int VALUE_MASK = 0xFFFF << VALUE_SHIFT; // second 16-bit
+  constexpr unsigned int MOVE_MASK  = 0xFFFFu;                // first 16-bit
+  constexpr unsigned int VALUE_MASK = 0xFFFFu << VALUE_SHIFT; // second 16-bit
 } // namespace MoveShifts
 
 ///////////////////////////////////
 //// MOVE TYPE
 enum MoveType {
   NORMAL,
-  PROMOTION = 1 << MoveShifts::TYPE_SHIFT,
-  ENPASSANT = 2 << MoveShifts::TYPE_SHIFT,
-  CASTLING  = 3 << MoveShifts::TYPE_SHIFT
+  PROMOTION = 1u << MoveShifts::TYPE_SHIFT,
+  ENPASSANT = 2u << MoveShifts::TYPE_SHIFT,
+  CASTLING  = 3u << MoveShifts::TYPE_SHIFT
 };
 
 /** Creates a move of type NORMAL */
