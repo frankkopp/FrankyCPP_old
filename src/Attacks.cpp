@@ -62,12 +62,12 @@ Value Attacks::see(Position& position, Move move) {
   Bitboard remainingAttacks = attacksTo(position, toSquare, WHITE)
                               | attacksTo(position, toSquare, BLACK);
 
-  LOG__DEBUG(Logger::get().SEARCH_LOG, "Determine gain for {} {}", position.printFen(), printMove(move));
+  LOG__TRACE(Logger::get().SEARCH_LOG, "Determine gain for {} {}", position.printFen(), printMove(move));
 
   // initial value of the first capture
   Value capturedValue = valueOf(position.getPiece(toSquare));
   gain[ply]           = capturedValue;
-  LOG__DEBUG(Logger::get().SEARCH_LOG, "gain[{}] = {} | {}", ply, printValue(gain[ply]), printMove(move));
+  LOG__TRACE(Logger::get().SEARCH_LOG, "gain[{}] = {} | {}", ply, printValue(gain[ply]), printMove(move));
 
   // loop through all remaining attacks/captures
   do {
@@ -79,7 +79,7 @@ Value Attacks::see(Position& position, Move move) {
                      ? valueOf(promotionType(move)) - valueOf(PAWN)
                      : valueOf(movedPiece))
                 - gain[ply - 1];
-    LOG__DEBUG(Logger::get().SEARCH_LOG, "gain[{}] = {} | {}", ply, printValue(gain[ply]), printMove(createMove(fromSquare, toSquare)));
+    LOG__TRACE(Logger::get().SEARCH_LOG, "gain[{}] = {} | {}", ply, printValue(gain[ply]), printMove(createMove(fromSquare, toSquare)));
 
     // pruning if defended - will not change final see score
     if (std::max(-gain[ply - 1], gain[ply]) < 0) break;
@@ -98,7 +98,7 @@ Value Attacks::see(Position& position, Move move) {
   } while (fromSquare != SQ_NONE);
 
   while (--ply) {
-    LOG__DEBUG(Logger::get().SEARCH_LOG, "gain[{}] = -max({}, {}) = {}", ply, -gain[ply - 1], gain[ply], -std::max(-gain[ply - 1], gain[ply]));
+    LOG__TRACE(Logger::get().SEARCH_LOG, "gain[{}] = -max({}, {}) = {}", ply, -gain[ply - 1], gain[ply], -std::max(-gain[ply - 1], gain[ply]));
     gain[ply - 1] = -std::max(-gain[ply - 1], gain[ply]);
   }
 

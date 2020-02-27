@@ -1306,8 +1306,8 @@ bool Search::goodCapture (Position& position, Move move) {
       // could otherwise ignore
       || !position.isAttacked (getToSquare (move), ~position.getNextPlayer ())
 
-      // Check see score of higher value pieces to low value pieces
-      || Attacks::see(position, move) > 0
+      // Check SEE score of higher value pieces to low value pieces
+      || (SearchConfig::USE_QS_SEE && (Attacks::see(position, move) > 0))
 
       ;
 }

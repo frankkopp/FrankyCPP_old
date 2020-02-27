@@ -122,6 +122,9 @@ void Engine::setOption(const std::string &name, const std::string &value) {
     else if (name == "Use_Quiescence") {
       SearchConfig::USE_QUIESCENCE = to_bool(optionIterator->second.getCurrentValue());
     }
+    else if (name == "Use_QS_SEE") {
+      SearchConfig::USE_QS_SEE = to_bool(optionIterator->second.getCurrentValue());
+    }
     else if (name == "Max_Extra_Depth") {
       SearchConfig::MAX_EXTRA_QDEPTH = static_cast<Depth>(getInt(optionIterator->second.getCurrentValue()));
     }
@@ -394,6 +397,7 @@ void Engine::initOptions() {
   MAP("Aspiration_Depth", UCI_Option("Aspiration_Depth", SearchConfig::ASPIRATION_START_DEPTH, 1, DEPTH_MAX));
   MAP("Use_Quiescence",   UCI_Option("Use_Quiescence",   SearchConfig::USE_QUIESCENCE));
   MAP("Max_Extra_Depth",  UCI_Option("Max_Extra_Depth",  SearchConfig::MAX_EXTRA_QDEPTH, 1, DEPTH_MAX));
+  MAP("Use_QS_SEE",       UCI_Option("Use_QS_SEE",       SearchConfig::USE_QS_SEE));
   MAP("Use_KillerMoves",  UCI_Option("Use_KillerMoves",  SearchConfig::USE_KILLER_MOVES));
   MAP("No_Of_Killer",     UCI_Option("No_Of_Killer",     SearchConfig::NO_KILLER_MOVES, 1, 9));
   MAP("Use_PV_Sort",      UCI_Option("Use_PV_Sort",      SearchConfig::USE_PV_MOVE_SORT));

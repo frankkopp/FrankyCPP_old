@@ -44,6 +44,8 @@ namespace SearchConfig {
   inline bool USE_ALPHABETA           = true; // use ALPHA_BETA instead of MinMax
   inline bool USE_PVS                 = true; // use PVS null window search
   inline bool USE_QUIESCENCE          = true; // use quiescence search
+  inline bool USE_QS_SEE              = true; // use SEE for goodCaptures
+
   inline Depth MAX_EXTRA_QDEPTH       = Depth{20};
   // Transposition Table
   inline bool USE_TT                  = true; // use transposition table
