@@ -11,8 +11,8 @@ v 0.x (plan)
 v 0.6 (in progress)
 ================================================================================
 - TODO:
-    - make prunings work
     - ATACKS / SEE
+    - make prunings work
     - Configure for play strength
 - DONE:
     - Opening Book Cache

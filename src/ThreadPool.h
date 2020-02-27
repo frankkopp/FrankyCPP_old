@@ -28,55 +28,52 @@
 
 #include <condition_variable>
 #include <functional>
-#include <iostream>
 #include <future>
-#include <vector>
-#include <thread>
+#include <iostream>
 #include <queue>
+#include <thread>
+#include <vector>
 
 /**
  * ThreadPool implementation for executing functions in asynchronously  with a
  * predetermined number of threads.
  */
 class ThreadPool {
-  using Task = std::function<void()>;
-  
+  using Task = std::function<void ()>;
+
   std::vector<std::thread> mThreads{};
-  std::condition_variable mEventVar{};
-  std::mutex mEventMutex{};
-  bool mStopping = false;
-  std::queue<Task> mTasks{};
+  std::condition_variable  mEventVar{};
+  std::mutex               mEventMutex{};
+  bool                     mStopping = false;
+  std::queue<Task>         mTasks{};
 
 public:
-
   /* Create a thread pool with the given number of threads. Threads are started
    * directly and are waiting for tasks to be enqueued */
-  explicit ThreadPool(std::size_t numThreads);
+  explicit ThreadPool (std::size_t numThreads);
 
   /* stops the threads and removes the object */
-  ~ThreadPool() { stop(); }
+  ~ThreadPool () { stop (); }
 
   /* Enqueue a task to be executed in a thread. Task is usually provided as
    * a lambda function */
-  template<class T>
-  auto enqueue(T task) -> std::future<decltype(task())> {
-    auto wrapper = std::make_shared<std::packaged_task<decltype(task())()>>(std::move(task));
+  template <class T>
+  auto enqueue (T task) -> std::future<decltype (task ())> {
+    auto wrapper = std::make_shared<std::packaged_task<decltype (task ()) ()>> (std::move (task));
     { // lock block
-      std::unique_lock<std::mutex> lock{mEventMutex};
-      mTasks.emplace([=] {
-        (*wrapper)();
-      });
+      std::unique_lock<std::mutex> lock{ mEventMutex };
+      mTasks.emplace ([=] { (*wrapper) (); });
     }
-    mEventVar.notify_one();
-    return wrapper->get_future();
+    mEventVar.notify_one ();
+    return wrapper->get_future ();
   }
 
   /* Return the number of open (not started) tasks */
-  auto openTasks() { return mTasks.size(); }
+  auto openTasks () { return mTasks.size (); }
 
 private:
-  void start(std::size_t numThreads);
-  void stop();
+  void start (std::size_t numThreads);
+  void stop ();
 };
 
-#endif //FRANKYCPP_THREADPOOL_H
+#endif // FRANKYCPP_THREADPOOL_H
