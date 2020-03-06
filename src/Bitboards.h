@@ -186,10 +186,6 @@ namespace Bitboards {
     1, 2, 3, 4, 5, 6, 7, 8
   };
 
-  constexpr Bitboard lengthDiagUpMask(Square sq) {
-    return (ONE_BB << lengthDiagUp[sq]) - 1;
-  }
-
   constexpr int lengthDiagDown[SQ_LENGTH] = {
     1, 2, 3, 4, 5, 6, 7, 8,
     2, 3, 4, 5, 6, 7, 8, 7,
@@ -200,10 +196,6 @@ namespace Bitboards {
     7, 8, 7, 6, 5, 4, 3, 2,
     8, 7, 6, 5, 4, 3, 2, 1
   };
-
-  constexpr Bitboard lengthDiagDownMask(Square sq) {
-    return (ONE_BB << lengthDiagDown[sq]) - 1;
-  }
 
   constexpr int shiftsDiagUp[SQ_LENGTH] = {
     28, 21, 15, 10,  6,  3,  1,  0,
@@ -379,7 +371,7 @@ inline Bitboard operator|(const Square lhs, const Square rhs) {
   return Bitboards::squareBB[lhs] | Bitboards::squareBB[rhs];
 }
 
-//// Operators for testing of Bitboards and Squares
+// Operators for Squares on Bitboards
 inline Bitboard operator&(const Bitboard b, const Square s) {
   return b & Bitboards::squareBB[s];
 }
@@ -526,7 +518,7 @@ namespace Bitboards {
     const Bitboard shifted = rotated >> shiftsDiagUp[sq];
     // mask the content with the length of the diagonal to erase any other
     // pieces which have not been erased by the shift
-    const Bitboard contentMasked = shifted & lengthDiagUpMask(sq);
+    const Bitboard contentMasked = shifted & ((ONE_BB << lengthDiagUp[sq]) - 1);
     // retrieve all possible moves for this square with the current content
     return movesDiagUp[sq][contentMasked];
   }
@@ -552,7 +544,7 @@ namespace Bitboards {
     const Bitboard shifted = rotated >> shiftsDiagDown[sq];
     // mask the content with the length of the diagonal to erase any other
     // pieces which have not been erased by the shift
-    const Bitboard contentMasked = shifted & lengthDiagDownMask(sq);
+    const Bitboard contentMasked = shifted & ((ONE_BB << lengthDiagDown[sq]) - 1);
     // retrieve all possible moves for this square with the current content
     return movesDiagDown[sq][contentMasked];
   }

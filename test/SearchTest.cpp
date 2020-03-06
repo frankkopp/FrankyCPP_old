@@ -625,6 +625,7 @@ TEST_F (SearchTest, debugging) {
 
   // @formatter:off
   SearchConfig::USE_QUIESCENCE        = true;
+  SearchConfig::USE_QS_SEE            = true;
   SearchConfig::USE_TT                = true;
   SearchConfig::USE_TT_QSEARCH        = true;
   SearchConfig::TT_SIZE_MB            = 64;
@@ -634,24 +635,23 @@ TEST_F (SearchTest, debugging) {
   SearchConfig::USE_KILLER_MOVES      = true;
   SearchConfig::NO_KILLER_MOVES       = 2;
   SearchConfig::USE_PV_MOVE_SORT      = true;
+  SearchConfig::USE_ASPIRATION_WINDOW = false;
   SearchConfig::USE_MDP               = true;
   SearchConfig::USE_MPP               = true;
+  SearchConfig::USE_RFP               = true;
+  SearchConfig::USE_NMP               = true;
+  SearchConfig::NMP_VERIFICATION      = false;
 
-  SearchConfig::USE_ASPIRATION_WINDOW = false;
-  SearchConfig::USE_RFP               = false;
-  SearchConfig::USE_NMP               = false;
   SearchConfig::USE_EXTENSIONS        = false;
   SearchConfig::USE_FP                = false;
   SearchConfig::USE_EFP               = false;
   SearchConfig::USE_LMR               = false;
   // @formatter:on
 
-  // does not have a quiescence move after e3e6
-  position = Position ("r1bqkbnr/ppp1pppp/8/n7/2BPp3/8/PPP1NPPP/RNBQK2R w KQkq -");
+  position = Position ("rn1q1rk1/pbpnbppp/1p1pp3/8/2P1P3/3P2P1/PP3PBP/RNBQNRK1 w - -");
 
-  // const int depth = 6;
-  // searchLimits.setDepth(depth);
-  searchLimits.setMoveTime (12'000);
+//  searchLimits.setDepth(2);
+  searchLimits.setMoveTime (3'000);
   search.startSearch (position, searchLimits);
   search.waitWhileSearching ();
 }
