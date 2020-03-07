@@ -155,7 +155,7 @@ TEST_F(FifoTest, popWait) {
   const auto stop = std::chrono::high_resolution_clock::now();
   const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
   LOG__DEBUG(Logger::get().TEST_LOG, "Got item '{}' after {:n} ms", *item, elapsed.count());
-  EXPECT_GT(elapsed.count(), 2'000);
+  EXPECT_GE(elapsed.count(), 2'000);
   t.join();
 }
 
@@ -198,7 +198,7 @@ TEST_F(FifoTest, popWaitCancel) {
   stop = std::chrono::high_resolution_clock::now();
   elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
   LOG__DEBUG(Logger::get().TEST_LOG, "Got item '{}' after {:n} ms", ptrItem ? *ptrItem : "NULL", elapsed.count());
-  EXPECT_GT(elapsed.count(), 2'000);
+  EXPECT_GE(elapsed.count(), 2'000);
   EXPECT_EQ(std::nullopt, ptrItem);
   t.join();
 
