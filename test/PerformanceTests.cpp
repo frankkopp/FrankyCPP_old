@@ -75,33 +75,37 @@ Move/Undo per sec: 49.079.754 pps
 Move/undo time:    20 ns
  */
 TEST_F(PerformanceTests, Position_PPS) {
-
-  std::string fen;
-  const uint64_t iterations = 50'000'000;
+  const uint64_t iterations = 5'000'000;
   const uint64_t rounds = 5;
 
+  // prepare moves
+  const Move e2e4 = createMove<NORMAL>(SQ_E2, SQ_E4);
+  const Move d7d5 = createMove<NORMAL>(SQ_D7, SQ_D5);
+  const Move e4d5 = createMove<NORMAL>(SQ_E4, SQ_D5);
+  const Move d8d5 = createMove<NORMAL>(SQ_D8, SQ_D5);
+  const Move b1c3 = createMove<NORMAL>(SQ_B1, SQ_C3);
+
   for (uint64_t round = 0; round < rounds; ++round) {
-    fprintln("ROUND: {}", round + 1);
+    fprintln("ROUND: {} ({:n} iterations) 5 do/undo pairs", round + 1, iterations);
     Position position;
-    auto timer = cpu_timer();
+    auto start = std::chrono::high_resolution_clock::now();
     for (uint64_t i = 0; i < iterations; ++i) {
-      position.doMove(createMove<NORMAL>(SQ_E2, SQ_E4));
-      position.doMove(createMove<NORMAL>(SQ_D7, SQ_D5));
-      position.doMove(createMove<NORMAL>(SQ_E4, SQ_D5));
-      position.doMove(createMove<NORMAL>(SQ_D8, SQ_D5));
-      position.doMove(createMove<NORMAL>(SQ_B1, SQ_C3));
+      position.doMove(e2e4);
+      position.doMove(d7d5);
+      position.doMove(e4d5);
+      position.doMove(d8d5);
+      position.doMove(b1c3);
       position.undoMove();
       position.undoMove();
       position.undoMove();
       position.undoMove();
       position.undoMove();
     }
-    timer.stop();
-    const nanosecond_type cpuTime = timer.elapsed().user + timer.elapsed().system;
-    fprintln("WALL Time: {:n} ns ({:3f} sec)", timer.elapsed().wall, static_cast<double>(timer.elapsed().wall) / nanoPerSec);
-    fprintln("CPU  Time: {:n} ns ({:3f} sec)", cpuTime, static_cast<double>(cpuTime) / nanoPerSec);
-    fprintln("Move/Undo per sec: {:n} pps", (10 * iterations * nanoPerSec) / cpuTime);
-    fprintln("Move/undo time:    {:n} ns", cpuTime / (iterations * 10));
+    auto end = std::chrono::high_resolution_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+    fprintln("WALL Time: {:n} ns ({:3f} sec)", elapsed, static_cast<double>(elapsed) / nanoPerSec);
+    fprintln("do/undo per sec: {:n} pps", (5 * iterations * nanoPerSec) / elapsed);
+    fprintln("do/undo time:    {:n} ns", elapsed / (iterations * 5));
     NEWLINE;
   }
 }
