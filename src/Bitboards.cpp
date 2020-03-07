@@ -171,7 +171,7 @@ namespace Bitboards {
       indexMapL45[rotateMapL45[square1]] = square1;
     }
 
-    /// Pre-compute attacks and moves on a an empty board (pseudo attacks)
+    // Pre-compute attacks and moves on a an empty board (pseudo attacks)
 
     // All sliding attacks with blockers - horizontal
     // Shamefully copied from Beowulf :)
@@ -398,6 +398,7 @@ namespace Bitboards {
       }
     }
 
+    // castle masks
     kingSideCastleMask[WHITE] = squareBB[SQ_F1] | squareBB[SQ_G1] | squareBB[SQ_H1];
     kingSideCastleMask[BLACK] = squareBB[SQ_F8] | squareBB[SQ_G8] | squareBB[SQ_H8];
     queenSideCastleMask[WHITE] = squareBB[SQ_D1] | squareBB[SQ_C1] | squareBB[SQ_B1] | squareBB[SQ_A1];

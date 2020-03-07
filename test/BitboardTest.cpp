@@ -143,6 +143,10 @@ TEST_F(BitboardsTest, shiftTest) {
 
 
 TEST_F(BitboardsTest, Diagonals) {
+
+  fprintln("{}", Bitboards::print(DiagUpA1));
+  fprintln("{}", Bitboards::print(DiagUpB1));
+
   ASSERT_EQ(DiagUpA1, squareDiagUpBB[SQ_A1]);
   ASSERT_EQ(DiagUpA1, squareDiagUpBB[SQ_C3]);
   ASSERT_EQ(DiagUpA1, squareDiagUpBB[SQ_G7]);
@@ -257,9 +261,9 @@ TEST_F(BitboardsTest, L90) {
 TEST_F(BitboardsTest, R45) {
   const Bitboard bb = DiagUpA1;
   const string &actual = Bitboards::print(Bitboards::rotateR45(bb));
-  //  cout << Bitboards::print(bb) << endl;
-  //  cout << "R45" << endl;
-  //  cout << actual << endl;
+    cout << Bitboards::print(bb) << endl;
+    cout << "R45" << endl;
+    cout << actual << endl;
   string expected = "+---+---+---+---+---+---+---+---+\n"
                     "|   |   |   |   |   |   |   |   |\n"
                     "+---+---+---+---+---+---+---+---+\n"

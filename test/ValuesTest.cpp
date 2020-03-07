@@ -81,11 +81,13 @@ TEST_F(ValuesTest, basic) {
   ASSERT_EQ(5, Values::posEndValue[BLACK_QUEEN][SQ_D4]);
   ASSERT_EQ(-30, Values::posEndValue[BLACK_KING][SQ_G8]);
 
-  const Value value = Values::posMidValue[WHITE_PAWN][SQ_A4];
-  const Value value1 = Values::posValue[WHITE_PAWN][SQ_A4][GAME_PHASE_MAX];
-  ASSERT_EQ(value, value1);
-  const Value value2 = Values::posEndValue[WHITE_PAWN][SQ_A4];
-  const Value value3 = Values::posValue[WHITE_PAWN][SQ_A4][0];
-  ASSERT_EQ(value2, value3);
+  const Value value = Values::posMidValue[WHITE_PAWN][SQ_E2];
+  const Value value1 = Values::posValue[WHITE_PAWN][SQ_E2][GAME_PHASE_MAX];
+  EXPECT_EQ(value, value1);
+  const Value value2 = Values::posEndValue[WHITE_PAWN][SQ_E2];
+  const Value value3 = Values::posValue[WHITE_PAWN][SQ_E2][0];
+  EXPECT_EQ(value2, value3);
+  const Value value5 = Values::posValue[WHITE_PAWN][SQ_E2][12];
+  EXPECT_EQ(-10, value5);
 
 }

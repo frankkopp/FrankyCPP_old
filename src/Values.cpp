@@ -33,12 +33,11 @@ namespace Values {
   inline int calcPosValueWhite(const Square &sq, int gamePhase,
                                   const int posMidTable[],
                                   const int posEndTable[]) {
-    return (gamePhase / GAME_PHASE_MAX) * posMidTable[63 - sq] +
-           (1 - (gamePhase / GAME_PHASE_MAX)) * posEndTable[63 - sq];
+    return (gamePhase * posMidTable[63 - sq] + (GAME_PHASE_MAX - gamePhase) * posEndTable[63 - sq]) / GAME_PHASE_MAX;
   }
 
   inline int calcPosValueBlack(const Square &sq, int gamePhase, const int posMidTable[], const int posEndTable[]) {
-    return (gamePhase / GAME_PHASE_MAX) * posMidTable[sq] + (1 - (gamePhase / GAME_PHASE_MAX)) * posEndTable[sq];
+    return (gamePhase * posMidTable[sq] + (GAME_PHASE_MAX - gamePhase) * posEndTable[sq]) / GAME_PHASE_MAX;
   }
 
   void init() {
