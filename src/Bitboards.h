@@ -30,6 +30,7 @@
 
 #if defined(_MSC_VER)
 #include <intrin.h>
+#include <iostream>
 #endif
 
 /** Functions and pre-defined or pre-calculated Bitboards */
@@ -38,8 +39,8 @@ namespace Bitboards {
   void init();
 
   constexpr Bitboard EMPTY_BB = Bitboard(0);
-  constexpr Bitboard ALL_BB = ~EMPTY_BB;
-  constexpr Bitboard ONE_BB = Bitboard(1);
+  constexpr Bitboard ALL_BB   = ~EMPTY_BB;
+  constexpr Bitboard ONE_BB   = Bitboard(1);
 
   constexpr Bitboard FileABB = 0x0101010101010101ULL;
   constexpr Bitboard FileBBB = FileABB << 1;
@@ -59,11 +60,9 @@ namespace Bitboards {
   constexpr Bitboard Rank7BB = Rank1BB << (8 * 6);
   constexpr Bitboard Rank8BB = Rank1BB << (8 * 7);
 
-  constexpr Bitboard CastlingMask = (ONE_BB << SQ_E1) | (ONE_BB << SQ_A1) |
-                                    (ONE_BB << SQ_H1) | (ONE_BB << SQ_E8) |
-                                    (ONE_BB << SQ_A8) | (ONE_BB << SQ_H8);
+  constexpr Bitboard CastlingMask = (ONE_BB << SQ_E1) | (ONE_BB << SQ_A1) | (ONE_BB << SQ_H1) | (ONE_BB << SQ_E8) | (ONE_BB << SQ_A8) | (ONE_BB << SQ_H8);
 
-  constexpr Bitboard promotionRank[COLOR_LENGTH] = {Rank8BB, Rank1BB};
+  constexpr Bitboard promotionRank[COLOR_LENGTH] = { Rank8BB, Rank1BB };
 
   // pre-computed in Bitboards::init()
   extern Bitboard squareBB[SQ_LENGTH];
@@ -73,10 +72,10 @@ namespace Bitboards {
   extern Bitboard movesFile[SQ_LENGTH][256];
   extern Bitboard movesDiagUp[SQ_LENGTH][256];
   extern Bitboard movesDiagDown[SQ_LENGTH][256];
-  extern Square indexMapR90[SQ_LENGTH];
-  extern Square indexMapL90[SQ_LENGTH];
-  extern Square indexMapR45[SQ_LENGTH];
-  extern Square indexMapL45[SQ_LENGTH];
+  extern Square   indexMapR90[SQ_LENGTH];
+  extern Square   indexMapL90[SQ_LENGTH];
+  extern Square   indexMapR45[SQ_LENGTH];
+  extern Square   indexMapL45[SQ_LENGTH];
 
   extern Bitboard pawnAttacks[COLOR_LENGTH][SQ_LENGTH];
   extern Bitboard pawnMoves[COLOR_LENGTH][SQ_LENGTH];

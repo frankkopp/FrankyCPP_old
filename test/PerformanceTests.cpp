@@ -23,18 +23,18 @@
  *
  */
 
-#include <random>
-#include <chrono>
-#include "types.h"
+#include "Evaluator.h"
 #include "Logging.h"
 #include "Position.h"
-#include "TT.h"
-#include "Evaluator.h"
 #include "Search.h"
+#include "TT.h"
+#include "types.h"
+#include <chrono>
+#include <random>
 
-#include <gtest/gtest.h>
-#include <boost/timer/timer.hpp>
 #include <SearchConfig.h>
+#include <boost/timer/timer.hpp>
+#include <gtest/gtest.h>
 
 using namespace boost::timer;
 using testing::Eq;
@@ -56,27 +56,16 @@ protected:
 };
 
 /*
-23:41 24.1.2020 CYGWIN
-WALL Time: 11.494.326.800 ns (11.494327 sec)
-CPU  Time: 11.468.750.000 ns (11.468750 sec)
-Move/Undo per sec: 43.596.730 pps
-Move/undo time:    22 ns
-
-15.2. UBUNTU WSL
-WALL Time: 9.111.689.100 ns (9.111689 sec)
-CPU  Time: 9.110.000.000 ns (9.110000 sec)
-Move/Undo per sec: 54.884.742 pps
-Move/undo time:    18 ns
-
-23.2. MSVC Compiler
-WALL Time: 10.216.573.000 ns (10.216573 sec)
-CPU  Time: 10.187.500.000 ns (10.187500 sec)
-Move/Undo per sec: 49.079.754 pps
-Move/undo time:    20 ns
+  MSVC on PC - 11.3.20
+  (10.000.000 iterations) 5 do/undo pairs
+  Wall Time       : 2.163.378.600 ns (2.163379 sec)
+  do/undo per sec : 23.111.997 pps
+  do/undo time    : 43 ns
+  
  */
 TEST_F(PerformanceTests, Position_PPS) {
-  const uint64_t iterations = 5'000'000;
-  const uint64_t rounds = 5;
+  const uint64_t iterations = 10'000'000;
+  const uint64_t rounds     = 5;
 
   // prepare moves
   const Move e2e4 = createMove<NORMAL>(SQ_E2, SQ_E4);
@@ -88,7 +77,7 @@ TEST_F(PerformanceTests, Position_PPS) {
   for (uint64_t round = 0; round < rounds; ++round) {
     fprintln("ROUND: {} ({:n} iterations) 5 do/undo pairs", round + 1, iterations);
     Position position;
-    auto start = std::chrono::high_resolution_clock::now();
+    auto     start = std::chrono::high_resolution_clock::now();
     for (uint64_t i = 0; i < iterations; ++i) {
       position.doMove(e2e4);
       position.doMove(d7d5);
@@ -101,11 +90,11 @@ TEST_F(PerformanceTests, Position_PPS) {
       position.undoMove();
       position.undoMove();
     }
-    auto end = std::chrono::high_resolution_clock::now();
+    auto end     = std::chrono::high_resolution_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-    fprintln("WALL Time: {:n} ns ({:3f} sec)", elapsed, static_cast<double>(elapsed) / nanoPerSec);
-    fprintln("do/undo per sec: {:n} pps", (5 * iterations * nanoPerSec) / elapsed);
-    fprintln("do/undo time:    {:n} ns", elapsed / (iterations * 5));
+    fprintln("Wall Time       : {:n} ns ({:3f} sec)", elapsed, static_cast<double>(elapsed) / nanoPerSec);
+    fprintln("do/undo per sec : {:n} pps", (5 * iterations * nanoPerSec) / elapsed);
+    fprintln("do/undo time    : {:n} ns", elapsed / (iterations * 5));
     NEWLINE;
   }
 }
@@ -127,43 +116,44 @@ Move generated: 86.000.000 in 4.054877 seconds
 Move generated per second: 21.209.029
  */
 TEST_F(PerformanceTests, MoveGeneration_MPS) {
-  std::string fen;
+  std::string   fen;
   MoveGenerator mg;
-  Position position;
-  uint64_t generatedMoves = 0, sum = 0;
+  Position      position;
+  uint64_t      generatedMoves = 0, sum = 0;
 
   // 86 pseudo legal moves (incl. castling over attacked square)
-  fen = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3";
+  fen      = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3";
   position = Position(fen);
 
-  const MoveList* moves = mg.generatePseudoLegalMoves<MoveGenerator::GENALL>(position);
-  Move killer1 = moves->at(35);
-  Move killer2 = moves->at(85);
+  const MoveList* moves   = mg.generatePseudoLegalMoves<MoveGenerator::GENALL>(position);
+  Move            killer1 = moves->at(35);
+  Move            killer2 = moves->at(85);
 
   fprintln("Move Gen Performance Test started.");
 
-  auto start = std::chrono::high_resolution_clock::now();
+  auto start  = std::chrono::high_resolution_clock::now();
   auto finish = std::chrono::high_resolution_clock::now();
 
-  const uint64_t rounds = 15;
-  const int iterations = 1'000'000;
+  const uint64_t rounds     = 5;
+  const int      iterations = 1'000'000;
   for (uint64_t round = 0; round < rounds; ++round) {
-    fprintln("ROUND: {}", round + 1);
     sum = generatedMoves = 0;
+    fprintln("ROUND: {}", round + 1);
+    start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < iterations; i++) {
       int j = 0;
       mg.reset();
       mg.storeKiller(killer1, 2);
       mg.storeKiller(killer2, 2);
-      start = std::chrono::high_resolution_clock::now();
-      while (mg.getNextPseudoLegalMove<MoveGenerator::GENALL>(position) != MOVE_NONE) j++;
-      finish = std::chrono::high_resolution_clock::now();
+       while (mg.getNextPseudoLegalMove<MoveGenerator::GENALL>(position) != MOVE_NONE) j++;
+//      j = mg.generatePseudoLegalMoves<MoveGenerator::GENALL>(position)->size();
       generatedMoves += j;
-      sum += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
-      ASSERT_EQ(86, j);
+      // ASSERT_EQ(86, j);
     }
+    finish = std::chrono::high_resolution_clock::now();
+    sum += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
     const double sec = double(sum) / nanoPerSec;
-    uint64_t mps = static_cast<uint64_t>(generatedMoves / sec);
+    uint64_t     mps = static_cast<uint64_t>(generatedMoves / sec);
     fprintln("Move generated: {:n} in {:f} seconds", generatedMoves, sec);
     fprintln("Move generated per second: {:n}", mps);
     NEWLINE;
@@ -186,25 +176,24 @@ TEST_F(PerformanceTests, Perft_NPS) {
 
   int DEPTH = 6;
 
-  uint64_t perftResults[] = {0,
-                             20,             // 1
-                             400,            // 2
-                             8'902,          // 3
-                             197'281,        // 4
-                             4'865'609,      // 5
-                             119'060'324,    // 6
-                             3'195'901'860}; // 7
+  uint64_t perftResults[] = { 0,
+                              20,              // 1
+                              400,             // 2
+                              8'902,           // 3
+                              197'281,         // 4
+                              4'865'609,       // 5
+                              119'060'324,     // 6
+                              3'195'901'860 }; // 7
 
-  Search search;
+  Search       search;
   SearchLimits searchLimits;
-  Position position;
+  Position     position;
   searchLimits.setPerft(true);
   searchLimits.setDepth(DEPTH);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
   LOG__INFO(Logger::get().TEST_LOG, "Leaf nodes per sec: {:n}",
-            (search.getSearchStats().leafPositionsEvaluated * 1'000) /
-            search.getSearchStats().lastSearchTime);
+            (search.getSearchStats().leafPositionsEvaluated * 1'000) / search.getSearchStats().lastSearchTime);
   LOG__INFO(Logger::get().TEST_LOG, "Leaf nodes:         {:n}",
             search.getSearchStats().leafPositionsEvaluated);
   ASSERT_EQ(perftResults[DEPTH],
@@ -223,14 +212,14 @@ TEST_F(PerformanceTests, Perft_NPS) {
  *
  */
 TEST_F(PerformanceTests, TT_PPS) {
-  std::random_device rd;
-  std::default_random_engine rg1(rd());
+  std::random_device                                rd;
+  std::default_random_engine                        rg1(rd());
   std::uniform_int_distribution<unsigned long long> randomKey(1, 10'000'000);
-  std::uniform_int_distribution<unsigned short> randomDepth(0, DEPTH_MAX);
-  std::uniform_int_distribution<int> randomValue(VALUE_MIN, VALUE_MAX);
-  std::uniform_int_distribution<int> randomAlpha(VALUE_MIN, 0);
-  std::uniform_int_distribution<unsigned int> randomBeta(0, VALUE_MAX);
-  std::uniform_int_distribution<unsigned short> randomType(1, 3);
+  std::uniform_int_distribution<unsigned short>     randomDepth(0, DEPTH_MAX);
+  std::uniform_int_distribution<int>                randomValue(VALUE_MIN, VALUE_MAX);
+  std::uniform_int_distribution<int>                randomAlpha(VALUE_MIN, 0);
+  std::uniform_int_distribution<unsigned int>       randomBeta(0, VALUE_MAX);
+  std::uniform_int_distribution<unsigned short>     randomType(1, 3);
 
   TT tt(1'024);
 
@@ -239,16 +228,16 @@ TEST_F(PerformanceTests, TT_PPS) {
 
   const Move move = createMove("e2e4");
 
-  const int rounds = 5;
+  const int rounds     = 5;
   const int iterations = 10'000'000;
   for (int j = 0; j < rounds; ++j) {
     // puts
     cpu_timer timer;
     for (int i = 0; i < iterations; ++i) {
-      const unsigned long long int key = randomKey(rg1);
-      auto depth = static_cast<Depth>(randomDepth(rg1));
-      auto value = static_cast<Value>(randomValue(rg1));
-      auto type = static_cast<Value_Type>(randomType(rg1));
+      const unsigned long long int key   = randomKey(rg1);
+      auto                         depth = static_cast<Depth>(randomDepth(rg1));
+      auto                         value = static_cast<Value>(randomValue(rg1));
+      auto                         type  = static_cast<Value_Type>(randomType(rg1));
       tt.put(key, depth, move, value, type, false, true);
     }
     // probes
@@ -280,23 +269,23 @@ TEST_F(PerformanceTests, TT_PPS) {
  */
 TEST_F(PerformanceTests, Evaluator_EPS) {
   std::string fen;
-  Position position;
-  const int nano_sec = 1'000'000'000;
+  Position    position;
+  const int   nano_sec = 1'000'000'000;
 
-  fen = "r3k2r/1ppn3p/2q1q1nb/4P2N/2q1Pp2/B5RP/pbp2PP1/1R4K1 w kq - 0 1";
-  position = Position(fen);
+  fen                       = "r3k2r/1ppn3p/2q1q1nb/4P2N/2q1Pp2/B5RP/pbp2PP1/1R4K1 w kq - 0 1";
+  position                  = Position(fen);
   const uint64_t iterations = 50'000'000;
-  const uint64_t rounds = 5;
+  const uint64_t rounds     = 5;
 
   Evaluator evaluator;
-  evaluator.config.USE_MATERIAL = true;
-  evaluator.config.USE_POSITION = true;
-  evaluator.config.USE_PAWNEVAL = true;
-  evaluator.config.USE_PAWN_TABLE = true;
-  evaluator.config.PAWN_TABLE_SIZE = 2'097'152;
-  evaluator.config.USE_CHECK_BONUS = true;
-  evaluator.config.USE_MOBILITY = true;
-  evaluator.config.USE_PIECE_BONI = true;
+  evaluator.config.USE_MATERIAL           = true;
+  evaluator.config.USE_POSITION           = true;
+  evaluator.config.USE_PAWNEVAL           = true;
+  evaluator.config.USE_PAWN_TABLE         = true;
+  evaluator.config.PAWN_TABLE_SIZE        = 2'097'152;
+  evaluator.config.USE_CHECK_BONUS        = true;
+  evaluator.config.USE_MOBILITY           = true;
+  evaluator.config.USE_PIECE_BONI         = true;
   evaluator.config.USE_KING_CASTLE_SAFETY = true;
   evaluator.resizePawnTable(evaluator.config.PAWN_TABLE_SIZE);
 
@@ -329,9 +318,9 @@ TEST_F(PerformanceTests, Evaluator_EPS) {
 TEST_F(PerformanceTests, Search_NPS) {
   Logger::get().TT_LOG->set_level(spdlog::level::debug);
   Logger::get().SEARCH_LOG->set_level(spdlog::level::warn);
-  Search search;
+  Search       search;
   SearchLimits searchLimits;
-  Position position;
+  Position     position;
 
   search.setHashSize(1'024);
   searchLimits.setMoveTime(30'000);
@@ -339,8 +328,7 @@ TEST_F(PerformanceTests, Search_NPS) {
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 
-  const uint64_t nps = (search.getSearchStats().nodesVisited * 1'000) /
-                       search.getSearchStats().lastSearchTime;
+  const uint64_t nps = (search.getSearchStats().nodesVisited * 1'000) / search.getSearchStats().lastSearchTime;
 
   LOG__INFO(Logger::get().TEST_LOG, "Nodes: {:n} Time: {:n} ms NPS: {:n}",
             search.getSearchStats().nodesVisited,

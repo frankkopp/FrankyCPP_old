@@ -940,7 +940,7 @@ std::ostream& operator<<(std::ostream& os, Position& position) {
 ////////////////////////////////////////////////
 ///// PRIVATE
 
-void Position::movePiece(const Square fromSq, const Square toSq) {
+inline void Position::movePiece(const Square fromSq, const Square toSq) {
   putPiece(removePiece(fromSq), toSq);
 }
 
@@ -1058,7 +1058,7 @@ void Position::invalidateCastlingRights(const Square from, const Square to) {
   }
 }
 
-void Position::clearEnPassant() {
+inline void Position::clearEnPassant() {
   if (enPassantSquare != SQ_NONE) {
     zobristKey      = zobristKey ^ Zobrist::enPassantFile[fileOf(enPassantSquare)]; // out
     enPassantSquare = SQ_NONE;

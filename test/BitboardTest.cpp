@@ -38,11 +38,9 @@ public:
     NEWLINE;
     INIT::init();
     NEWLINE;
+    Logger::get().TEST_LOG->set_level(spdlog::level::debug);
   }
-  static void TearDownTestSuite() {
-
-  }
-
+  static void TearDownTestSuite() {}
 protected:
   void SetUp() override {}
   void TearDown() override {}
@@ -80,30 +78,21 @@ TEST_F(BitboardsTest, print) {
 
 TEST_F(BitboardsTest, popcount) {
   const uint64_t &b = 0b0010000000010000000000000010000000000000000000000000000000000000ULL;
-
-  //fprintln("Bitstring: {}", printBitString(b));
-  //fprintln("Bitstring: {}", printBitString(1));
-  //fprintln("Bitstring: {}", printBitString(std::numeric_limits<uint64_t>().max()));
-
-  //fprintln("Bitboard : {}", Bitboards::printFlat(b));
-  //fprintln("Bitboard : {}", Bitboards::printFlat(1));
-  //fprintln("Bitboard : {}", Bitboards::printFlat(std::numeric_limits<uint64_t>().max()));
-
   ASSERT_EQ(3, Bitboards::popcount(b));
 }
 
 TEST_F(BitboardsTest, BitboardSquareTest) {
-  ASSERT_EQ(squareBB[SQ_E4], ALL_BB & SQ_E4);
-  ASSERT_EQ(squareBB[SQ_A1], ALL_BB & SQ_A1);
-  ASSERT_EQ(squareBB[SQ_H8], ALL_BB & SQ_H8);
-  ASSERT_EQ(squareBB[SQ_A8], ALL_BB & SQ_A8);
-  ASSERT_NE(squareBB[SQ_A8], ALL_BB & SQ_A1);
+  // Tests if the & operator is overloaded for Bitboards & Square
+  EXPECT_EQ(squareBB[SQ_E4], ALL_BB & SQ_E4);
+  EXPECT_EQ(squareBB[SQ_A1], ALL_BB & SQ_A1);
+  EXPECT_EQ(squareBB[SQ_H8], ALL_BB & SQ_H8);
+  EXPECT_EQ(squareBB[SQ_A8], ALL_BB & SQ_A8);
+  EXPECT_NE(squareBB[SQ_A8], ALL_BB & SQ_A1);
 }
 
 TEST_F(BitboardsTest, SquareDistanceTest) {
   ASSERT_EQ(6, distance(FILE_A, FILE_G));
   ASSERT_EQ(7, distance(RANK_1, RANK_8));
-
   ASSERT_EQ(7, distance(SQ_A1, SQ_H1));
   ASSERT_EQ(7, distance(SQ_A1, SQ_H8));
   ASSERT_EQ(2, distance(SQ_A1, SQ_A3));
@@ -143,15 +132,10 @@ TEST_F(BitboardsTest, shiftTest) {
 
 
 TEST_F(BitboardsTest, Diagonals) {
-
-  fprintln("{}", Bitboards::print(DiagUpA1));
-  fprintln("{}", Bitboards::print(DiagUpB1));
-
   ASSERT_EQ(DiagUpA1, squareDiagUpBB[SQ_A1]);
   ASSERT_EQ(DiagUpA1, squareDiagUpBB[SQ_C3]);
   ASSERT_EQ(DiagUpA1, squareDiagUpBB[SQ_G7]);
   ASSERT_EQ(DiagUpA1, squareDiagUpBB[SQ_H8]);
-
   ASSERT_EQ(DiagDownH1, squareDiagDownBB[SQ_A8]);
   ASSERT_EQ(DiagDownH1, squareDiagDownBB[SQ_C6]);
   ASSERT_EQ(DiagDownH1, squareDiagDownBB[SQ_G2]);
@@ -160,32 +144,30 @@ TEST_F(BitboardsTest, Diagonals) {
 
 TEST_F(BitboardsTest, lsb_msb) {
   // set least significant bit
-  Bitboard b = 1;
-  //fprintln("{}", Bitboards::print(b));
-  //fprintln("{}", Bitboards::printFlat(b));
-  //fprintln("{}", printBitString(b));
+  Bitboard b = ONE_BB;
   Square sql = lsb(b);
-  //fprintln("lsb {}", squareLabel(sql));
   Square sqm = msb(b);
-  //fprintln("msb {}", squareLabel(sqm));
   ASSERT_EQ(SQ_A1, sql);
   ASSERT_EQ(SQ_A1, sqm);
   
-  b += (ONE_BB << 63);
-  //fprintln("{}", Bitboards::print(b));
-  //fprintln("{}", Bitboards::printFlat(b));
-  //fprintln("{}", printBitString(b));
+  b = (ONE_BB << 63);
   sql = lsb(b);
-  //fprintln("lsb {}", squareLabel(sql));
   sqm = msb(b);
-  //fprintln("msb {}", squareLabel(sqm));
-  ASSERT_EQ(SQ_A1, sql);
+  ASSERT_EQ(SQ_H8, sql);
   ASSERT_EQ(SQ_H8, sqm);
 
+  b = b | ONE_BB;
   Square sq = popLSB(b);
   ASSERT_EQ(SQ_A1, sq);
   sq = popLSB(b);
   ASSERT_EQ(SQ_H8, sq);
+
+  b = EMPTY_BB | SQ_H1;
+  b = b | SQ_G8;
+  sql = lsb(b);
+  sqm = msb(b);
+  ASSERT_EQ(SQ_H1, sql);
+  ASSERT_EQ(SQ_G8, sqm);
 }
 
 TEST_F(BitboardsTest, bitScans) {
@@ -261,9 +243,9 @@ TEST_F(BitboardsTest, L90) {
 TEST_F(BitboardsTest, R45) {
   const Bitboard bb = DiagUpA1;
   const string &actual = Bitboards::print(Bitboards::rotateR45(bb));
-    cout << Bitboards::print(bb) << endl;
-    cout << "R45" << endl;
-    cout << actual << endl;
+  //    cout << Bitboards::print(bb) << endl;
+  //    cout << "R45" << endl;
+  //    cout << actual << endl;
   string expected = "+---+---+---+---+---+---+---+---+\n"
                     "|   |   |   |   |   |   |   |   |\n"
                     "+---+---+---+---+---+---+---+---+\n"
