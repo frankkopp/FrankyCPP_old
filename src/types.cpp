@@ -23,18 +23,21 @@
  *
  */
 
-#include <iostream>
-#include <string>
-#include <bitset>
-#include <sstream>
-#include <algorithm>
 #include "types.h"
+#include <algorithm>
+#include <bitset>
+#include <iostream>
+#include <sstream>
+#include <string>
 
 const std::locale deLocale(std::cout.getloc(), new deLocaleDecimals);
 
 std::string printBitString(uint64_t b) {
   std::ostringstream os;
-  os << std::bitset<64>(b);
+  for (int i = 63; i >= 0; i--) {
+    os << ((b & (uint64_t(1) << i)) ? "1" : "0");
+    if (i % 8 == 0 && i) os << ".";
+  }
   return os.str();
 }
 
@@ -55,12 +58,12 @@ std::string printValue(const Value value) {
 }
 
 
-template<MoveType T>
+template <MoveType T>
 Move createMove(const char* move) {
   std::istringstream iss(move);
   iss >> std::noskipws;
   unsigned char token = 0;
-  Square from, to;
+  Square        from, to;
 
   // from
   if (iss >> token) {
@@ -69,13 +72,19 @@ Move createMove(const char* move) {
       if (!(iss >> token)) return MOVE_NONE; // malformed - ignore the rest
       if ((token >= '1' && token <= '8')) {
         Rank r = Rank(token - '1');
-        from = getSquare(f, r);
+        from   = getSquare(f, r);
       }
-      else { return MOVE_NONE; } // malformed - ignore the rest
+      else {
+        return MOVE_NONE;
+      } // malformed - ignore the rest
     }
-    else { return MOVE_NONE; } // malformed - ignore the rest
+    else {
+      return MOVE_NONE;
+    } // malformed - ignore the rest
   }
-  else { return MOVE_NONE; } // malformed - ignore the rest
+  else {
+    return MOVE_NONE;
+  } // malformed - ignore the rest
 
   // to
   if (iss >> token) {
@@ -84,39 +93,47 @@ Move createMove(const char* move) {
       if (!(iss >> token)) return MOVE_NONE; // malformed - ignore the rest
       if ((token >= '1' && token <= '8')) {
         Rank r = Rank(token - '1');
-        to = getSquare(f, r);
+        to     = getSquare(f, r);
       }
-      else { return MOVE_NONE; } // malformed - ignore the rest
+      else {
+        return MOVE_NONE;
+      } // malformed - ignore the rest
     }
-    else { return MOVE_NONE; } // malformed - ignore the rest
+    else {
+      return MOVE_NONE;
+    } // malformed - ignore the rest
   }
-  else { return MOVE_NONE; } // malformed - ignore the rest
+  else {
+    return MOVE_NONE;
+  } // malformed - ignore the rest
 
   // promotion
   if (T == PROMOTION) {
     if (iss >> token) {
       switch (token) {
-        case 'n':
-          return createMove<T>(from, to, KNIGHT);
-        case 'b':
-          return createMove<T>(from, to, BISHOP);
-        case 'r':
-          return createMove<T>(from, to, ROOK);
-        case 'q':
-          return createMove<T>(from, to, QUEEN);
-        case 'N':
-          return createMove<T>(from, to, KNIGHT);
-        case 'B':
-          return createMove<T>(from, to, BISHOP);
-        case 'R':
-          return createMove<T>(from, to, ROOK);
-        case 'Q':
-          return createMove<T>(from, to, QUEEN);
-        default:
-          break;
+      case 'n':
+        return createMove<T>(from, to, KNIGHT);
+      case 'b':
+        return createMove<T>(from, to, BISHOP);
+      case 'r':
+        return createMove<T>(from, to, ROOK);
+      case 'q':
+        return createMove<T>(from, to, QUEEN);
+      case 'N':
+        return createMove<T>(from, to, KNIGHT);
+      case 'B':
+        return createMove<T>(from, to, BISHOP);
+      case 'R':
+        return createMove<T>(from, to, ROOK);
+      case 'Q':
+        return createMove<T>(from, to, QUEEN);
+      default:
+        break;
       }
     }
-    else { return MOVE_NONE; } // malformed - ignore the rest
+    else {
+      return MOVE_NONE;
+    } // malformed - ignore the rest
   }
   return createMove<T>(from, to);
 }
@@ -138,25 +155,25 @@ std::string printMoveVerbose(const Move move) {
   std::string tp;
   std::string promPt;
   switch (typeOf(move)) {
-    case NORMAL:
-      tp = "NORMAL";
-      break;
-    case PROMOTION:
-      promPt = pieceTypeToChar[promotionType(move)];
-      tp = "PROMOTION";
-      break;
-    case ENPASSANT:
-      tp = "ENPASSANT";
-      break;
-    case CASTLING:
-      tp = "CASTLING";
-      break;
+  case NORMAL:
+    tp = "NORMAL";
+    break;
+  case PROMOTION:
+    promPt = pieceTypeToChar[promotionType(move)];
+    tp     = "PROMOTION";
+    break;
+  case ENPASSANT:
+    tp = "ENPASSANT";
+    break;
+  case CASTLING:
+    tp = "CASTLING";
+    break;
   }
   return squareLabel(getFromSquare(move)) + squareLabel(getToSquare(move)) + promPt
          + " (" + tp + " " + std::to_string(valueOf(move)) + " " + std::to_string(move) + ")";
 }
 
-std::string printMoveList(const MoveList &moveList) {
+std::string printMoveList(const MoveList& moveList) {
   std::ostringstream os;
   os << "MoveList: size=" << moveList.size() << " [";
   for (auto itr = moveList.begin(); itr != moveList.end(); ++itr) {
@@ -168,7 +185,7 @@ std::string printMoveList(const MoveList &moveList) {
 }
 
 
-std::string printMoveListUCI(const MoveList &moveList) {
+std::string printMoveListUCI(const MoveList& moveList) {
   std::ostringstream os;
   for (Move m : moveList) {
     os << m;
@@ -180,8 +197,7 @@ std::string printMoveListUCI(const MoveList &moveList) {
 bool to_bool(std::string str) {
   std::transform(str.begin(), str.end(), str.begin(), ::tolower);
   std::istringstream is(str);
-  bool b;
+  bool               b;
   is >> std::boolalpha >> b;
   return b;
 }
-

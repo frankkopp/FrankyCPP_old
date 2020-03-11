@@ -120,7 +120,7 @@ enum Square : int {
 // @formatter:on
 
 /** checks if this is a valid square (int >= 0 and <64 */
-constexpr bool isSquare (Square s) { return s >= SQ_A1 && s <= SQ_H8; }
+constexpr bool isSquare (Square s) { return !(s & ~0b11'1111); }
 
 ///////////////////////////////////
 //// FILES
@@ -411,8 +411,7 @@ inline bool isMove (Move m) {
   if (m == MOVE_NONE) return false;
   const Square fromSquare = getFromSquare (m);
   const Square toSquare   = getToSquare (m);
-  return fromSquare >= SQ_A1 && fromSquare <= SQ_H8 && toSquare >= SQ_A1 && toSquare <= SQ_H8
-         && fromSquare != toSquare;
+  return isSquare(fromSquare) && isSquare(toSquare) && fromSquare != toSquare;
 }
 
 /** returns the type of the move */
@@ -571,7 +570,7 @@ bool to_bool (std::string str);
 
 /**
  * Prints a 64-bit uint as a series of 0 and 1 grouped in 8 bits
- * beginning with the MSB (0) on the left and the LSB (63) on the right
+ * beginning with the MSB (63) on the left and the LSB (0) on the right
  * @param b
  */
 std::string printBitString (uint64_t b);
