@@ -450,8 +450,8 @@ TEST_F(MoveGenTest, pushKiller) {
     move = mg.getNextPseudoLegalMove<MoveGenerator::GENALL>(position);
     if (move == MOVE_NONE) break;
     cout << counter << " " << printMoveVerbose(move) << " (" << int(move) << ")" << endl;
-    if (counter == 18) { ASSERT_EQ(moveOf(allMoves->at(21)), moveOf(move)); }
-    else if (counter == 33) {ASSERT_EQ(moveOf(allMoves->at(81)), moveOf(move)); }
+    if (counter == 18) { EXPECT_EQ(moveOf(allMoves->at(21)), moveOf(move)); }
+    else if (counter == 33) {EXPECT_EQ(moveOf(allMoves->at(81)), moveOf(move)); }
     counter++;
   }
   println("Moves: " + to_string(counter));
@@ -496,7 +496,7 @@ TEST_F(MoveGenTest, swap) {
   ASSERT_EQ(86, moves->size());
 
   MoveList test;
-  test.swap(const_cast<deque<Move, allocator<Move>> &>(*moves));
+  test.swap(const_cast<vector<Move, allocator<Move>> &>(*moves));
   ASSERT_EQ(86, test.size());
   ASSERT_EQ(0, moves->size());
 

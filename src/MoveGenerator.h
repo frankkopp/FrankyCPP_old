@@ -57,6 +57,7 @@ class MoveGenerator {
   };
   onDemandStage currentODStage = OD_NEW;
   Key           currentIteratorKey{};
+  int           takeIndex = 0;
 
   MoveList::size_type maxNumberOfKiller = 2; // default
   MoveList            killerMoves       = MoveList();

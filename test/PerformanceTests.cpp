@@ -172,7 +172,7 @@ TEST_F(PerformanceTests, MoveGeneration_MPS) {
  * Leaf nodes per sec: 6.607.487
  */
 TEST_F(PerformanceTests, Perft_NPS) {
-  Logger::get().SEARCH_LOG->set_level(spdlog::level::warn);
+  Logger::get().SEARCH_LOG->set_level(spdlog::level::info);
 
   int DEPTH = 6;
 
