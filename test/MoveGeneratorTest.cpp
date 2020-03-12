@@ -97,11 +97,10 @@ TEST_F(MoveGenTest, pawnMoves) {
   for (Move m : moves) actual.append(printMove(m));
   ASSERT_EQ(expected, actual);
 
-  cout << "Moves NONCAP: " << moves.size() << endl;
-  for (Move m : moves) {
-    cout << printMoveVerbose(m) << " (" << int(m) << ")" << endl;
-  }
-
+  //  cout << "Moves NONCAP: " << moves.size() << endl;
+  //  for (Move m : moves) {
+  //    cout << printMoveVerbose(m) << " (" << int(m) << ")" << endl;
+  //  }
 }
 
 /**

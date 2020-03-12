@@ -74,9 +74,9 @@ Move MoveGenerator::getNextPseudoLegalMove(const Position& position) {
   // generation will be restart with the new position.
   if (position.getZobristKey() != currentIteratorKey) {
     onDemandMoves.clear();
+    takeIndex          = 0;
     currentODStage     = OD_NEW;
     currentIteratorKey = position.getZobristKey();
-    takeIndex          = 0;
   }
 
   bool pvIsCapture = false;
@@ -121,9 +121,7 @@ Move MoveGenerator::getNextPseudoLegalMove(const Position& position) {
       if (pvMove && pvIsCapture) filterPV(onDemandMoves);
       stable_sort(onDemandMoves.begin(), onDemandMoves.end());
       if (GM & GENNONCAP) { currentODStage = OD5; }
-      else {
-        currentODStage = OD_END;
-      }
+      else { currentODStage = OD_END; }
       break;
     case OD4:
     case OD5: // non capture
@@ -172,7 +170,7 @@ Move MoveGenerator::getNextPseudoLegalMove(const Position& position) {
       takeIndex = 0;
       onDemandMoves.clear();
     }
-    return move; // remove internal sort value
+    return moveOf(move); // remove internal sort value
   }
 }
 
@@ -198,11 +196,12 @@ void MoveGenerator::storeKiller(const Move killerMove, const int maxKillers) {
 
   if (std::find(killerMoves.begin(), killerMoves.end(), moveOf(killerMove)) == killerMoves.end()) {
     const size_t size = killerMoves.size();
-    // create new entry from former last entry
     if (killerMoves.empty()) {
+      // create first entry
       killerMoves.push_back(killerMove);
     }
     else {
+      // create new entry from former last entry
       killerMoves.push_back(killerMoves[size - 1]);
       // shift each back
       int i = size - 1;
@@ -232,7 +231,7 @@ inline void MoveGenerator::pushKiller(MoveList& list) {
                                 [&](Move m) {
                                   return (moveOf(m) == killerMove);
                                 });
-    // set low sort value to make sure this gets sorted first
+    // if found set low sort value to make sure this gets sorted first
     if (element != list.end()) {
       setValue((Move&)*element, VALUE_MIN + i++);
     }

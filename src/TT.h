@@ -75,7 +75,7 @@ public:
 
   // struct Entry has 16 Byte
   static constexpr uint64_t ENTRY_SIZE = sizeof(Entry);
-//  static_assert(CacheLineSize % ENTRY_SIZE == 0, "Cluster size incorrect");
+  static_assert(CacheLineSize % ENTRY_SIZE == 0, "Cluster size incorrect");
 
 private:
 
@@ -136,13 +136,13 @@ public:
     * Also stores the best move for the node.
     * OBS: move will be stripped of any value before storing as we store value
     * separately and it may be surprising that a MOVE_NONE has a value.
-    * @param forced when true skips age check (mostly for unit testing)
     * @param key Position key (usually Zobrist key)
     * @param depth 0-DEPTH_MAX (usually 127)
     * @param move best move of the node (when BETA best move until cut off)
     * @param value Value of the position between VALUE_MIN and VALUE_MAX
     * @param type EXACT, ALPHA or BETA
     * @param mateThreat node had a mate threat in the ply
+    * @param forced when true skips age check (mostly for unit testing)
     */
   void
   put(Key key, Depth depth, Move move, Value value, Value_Type type, bool mateThreat, bool forced);
@@ -173,10 +173,10 @@ public:
   }
 
   /**
-   * This retrieves a copy of the entry of this node from cache.
+   * This retrieves a ptr to the entry of this node from cache.
    *
    * @param key Position key (usually Zobrist key)
-   * @return Entry for key or 0 if not found
+   * @return Pointer to entry for key or nullptr if not found
    */
   inline const TT::Entry* getMatch(const Key key) const {
     const Entry* const entryPtr = getEntryPtr(key);
