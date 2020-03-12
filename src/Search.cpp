@@ -1449,8 +1449,9 @@ inline uint64_t Search::getNps() const {
 }
 
 inline void Search::savePV(Move move, MoveList& src, MoveList& dest) {
-  dest = src;
-  dest.push_front(move);
+  dest.clear();
+  dest.push_back(move);
+  dest.insert(dest.end(), src.begin(), src.end());
 }
 
 void Search::getPVLine(Position& position, MoveList& pvRoot, const Depth depth) {

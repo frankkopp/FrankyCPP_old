@@ -56,23 +56,22 @@ protected:
 };
 
 /*
-  MSVC on PC - 11.3.20
-  (10.000.000 iterations) 5 do/undo pairs
-  Wall Time       : 2.163.378.600 ns (2.163379 sec)
-  do/undo per sec : 23.111.997 pps
-  do/undo time    : 43 ns
-  
+MSVC on PC - 11.3.20
+(10.000.000 iterations) 5 do/undo pairs
+Wall Time       : 2.163.378.600 ns (2.163379 sec)
+do/undo per sec : 23.111.997 pps
+do/undo time    : 43 ns
  */
 TEST_F(PerformanceTests, Position_PPS) {
   const uint64_t iterations = 10'000'000;
   const uint64_t rounds     = 5;
 
   // prepare moves
-  const Move e2e4 = createMove<NORMAL>(SQ_E2, SQ_E4);
-  const Move d7d5 = createMove<NORMAL>(SQ_D7, SQ_D5);
-  const Move e4d5 = createMove<NORMAL>(SQ_E4, SQ_D5);
-  const Move d8d5 = createMove<NORMAL>(SQ_D8, SQ_D5);
-  const Move b1c3 = createMove<NORMAL>(SQ_B1, SQ_C3);
+  const Move e2e4 = createMove(SQ_E2, SQ_E4);
+  const Move d7d5 = createMove(SQ_D7, SQ_D5);
+  const Move e4d5 = createMove(SQ_E4, SQ_D5);
+  const Move d8d5 = createMove(SQ_D8, SQ_D5);
+  const Move b1c3 = createMove(SQ_B1, SQ_C3);
 
   for (uint64_t round = 0; round < rounds; ++round) {
     fprintln("ROUND: {} ({:n} iterations) 5 do/undo pairs", round + 1, iterations);
@@ -114,6 +113,9 @@ Move generated per second: 41.169.532
 23.2. MSVC
 Move generated: 86.000.000 in 4.054877 seconds
 Move generated per second: 21.209.029
+12.3. MSVC (MoveList as Vector)
+Move generated: 86.000.000 in 0.799353 seconds
+Move generated per second: 107.587.051
  */
 TEST_F(PerformanceTests, MoveGeneration_MPS) {
   std::string   fen;
@@ -145,8 +147,8 @@ TEST_F(PerformanceTests, MoveGeneration_MPS) {
       mg.reset();
       mg.storeKiller(killer1, 2);
       mg.storeKiller(killer2, 2);
-       while (mg.getNextPseudoLegalMove<MoveGenerator::GENALL>(position) != MOVE_NONE) j++;
-//      j = mg.generatePseudoLegalMoves<MoveGenerator::GENALL>(position)->size();
+      // while (mg.getNextPseudoLegalMove<MoveGenerator::GENALL>(position) != MOVE_NONE) j++;
+      j = mg.generatePseudoLegalMoves<MoveGenerator::GENALL>(position)->size();
       generatedMoves += j;
       // ASSERT_EQ(86, j);
     }
@@ -162,6 +164,58 @@ TEST_F(PerformanceTests, MoveGeneration_MPS) {
 }
 
 /*
+12.3. MSVC (MoveList as Vector)
+Move generated: 86.000.000 in 1.152202 seconds
+Move generated per second: 74.639.696
+*/
+TEST_F(PerformanceTests, MoveGenerationOD_MPS) {
+  std::string   fen;
+  MoveGenerator mg;
+  Position      position;
+  uint64_t      generatedMoves = 0, sum = 0;
+
+  // 86 pseudo legal moves (incl. castling over attacked square)
+  fen      = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3";
+  position = Position(fen);
+
+  const MoveList* moves   = mg.generatePseudoLegalMoves<MoveGenerator::GENALL>(position);
+  Move            killer1 = moves->at(35);
+  Move            killer2 = moves->at(85);
+
+  fprintln("Move Gen Performance Test started.");
+
+  auto start  = std::chrono::high_resolution_clock::now();
+  auto finish = std::chrono::high_resolution_clock::now();
+
+  const uint64_t rounds     = 5;
+  const int      iterations = 1'000'000;
+  for (uint64_t round = 0; round < rounds; ++round) {
+    sum = generatedMoves = 0;
+    fprintln("ROUND: {}", round + 1);
+    start = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < iterations; i++) {
+      int j = 0;
+      mg.reset();
+      mg.storeKiller(killer1, 2);
+      mg.storeKiller(killer2, 2);
+      while (mg.getNextPseudoLegalMove<MoveGenerator::GENALL>(position) != MOVE_NONE) j++;
+      // j = mg.generatePseudoLegalMoves<MoveGenerator::GENALL>(position)->size();
+      generatedMoves += j;
+      // ASSERT_EQ(86, j);
+    }
+    finish = std::chrono::high_resolution_clock::now();
+    sum += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
+    const double sec = double(sum) / nanoPerSec;
+    uint64_t     mps = static_cast<uint64_t>(generatedMoves / sec);
+    fprintln("Move generated: {:n} in {:f} seconds", generatedMoves, sec);
+    fprintln("Move generated per second: {:n}", mps);
+    NEWLINE;
+  }
+  SUCCEED();
+}
+
+
+/*
  * 23:54 24.1.2020 CYGWIN
  * Leaf nodes per sec: 3.989.689
  * 
@@ -170,9 +224,13 @@ TEST_F(PerformanceTests, MoveGeneration_MPS) {
  *
  * 23.2. MSVC
  * Leaf nodes per sec: 6.607.487
+ * 12.3. MSVC (MoveList as Vector)
+ * Leaf nodes per sec: 8.088.337
+ * 12.3. MSVC (on demand tweaks)
+ * Leaf nodes per sec: 8.406.433
  */
 TEST_F(PerformanceTests, Perft_NPS) {
-  Logger::get().SEARCH_LOG->set_level(spdlog::level::warn);
+  Logger::get().SEARCH_LOG->set_level(spdlog::level::info);
 
   int DEPTH = 6;
 
@@ -266,6 +324,9 @@ TEST_F(PerformanceTests, TT_PPS) {
  * 23.2. MSVC
  * EPS:       4.953.560 eps
  * TPE:       201 ns
+ * 12.3. MVSC
+ * EPS:       4.826.546 eps
+ * TPE:       207 ns
  */
 TEST_F(PerformanceTests, Evaluator_EPS) {
   std::string fen;
@@ -314,10 +375,13 @@ TEST_F(PerformanceTests, Evaluator_EPS) {
  *
  * 23.2. MSVC
  * Nodes: 44.023.164 Time: 30.007 ms NPS: 1.467.096
+ * 12.3. MSVC (MoveList as Vactor)
+ * Nodes: 53.122.613 Time: 30.015 ms NPS: 1.769.868
+ * Nodes: 55.676.959 Time: 30.012 ms NPS: 1.855.156
  */
 TEST_F(PerformanceTests, Search_NPS) {
   Logger::get().TT_LOG->set_level(spdlog::level::debug);
-  Logger::get().SEARCH_LOG->set_level(spdlog::level::warn);
+  Logger::get().SEARCH_LOG->set_level(spdlog::level::info);
   Search       search;
   SearchLimits searchLimits;
   Position     position;

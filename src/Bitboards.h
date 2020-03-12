@@ -268,13 +268,10 @@ namespace Bitboards {
 
   /** popcount() counts the number of non-zero bits in a bitboard */
   inline int popcount(Bitboard b) {
-
 #if defined(__GNUC__) // GCC, Clang, ICC
     return __builtin_popcountll(b);
-
 #elif defined(_MSC_VER)
     return static_cast<int>(__popcnt64(b));
-    
 #else // Compiler is not GCC
     // pre-computed table of population counter for 16-bit
     extern uint8_t PopCnt16[1 << 16];
@@ -302,10 +299,8 @@ namespace Bitboards {
    * bitboard */
   inline Square lsb(Bitboard b) {
     if (!b) return SQ_NONE;
-
 #ifdef __GNUC__ // GCC, Clang, ICC
     return static_cast<Square>(__builtin_ctzll(b));
-
 #elif defined(_MSC_VER)
     unsigned long index;
     if (_BitScanForward64(&index, b)) {
@@ -314,7 +309,6 @@ namespace Bitboards {
     else {
       return SQ_NONE;
     }
-        
 #else // Compiler is not GCC
 #error "Compiler not yet supported."
 #endif
@@ -327,7 +321,6 @@ namespace Bitboards {
     if (!b) return SQ_NONE;
 #if defined(__GNUC__) // GCC, Clang, ICC
     return static_cast<Square>(63 ^ __builtin_clzll(b));
-
 #elif defined(_MSC_VER)
     unsigned long index;
     if (_BitScanReverse64(&index, b)) {
@@ -336,7 +329,6 @@ namespace Bitboards {
     else {
       return SQ_NONE;
     }
-
 #else // Compiler is not GCC
 #error "Compiler not yet supported."
 #endif

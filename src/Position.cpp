@@ -76,18 +76,13 @@ void Position::doMove(const Move move) {
   assert(isSquare(getToSquare(move)));
   assert(getPiece(getFromSquare(move)) != PIECE_NONE);
 
-  const MoveType moveType = typeOf(move);
-
-  const Square    fromSq  = getFromSquare(move);
-  const Piece     fromPC  = getPiece(fromSq);
-  const PieceType fromPT  = typeOf(fromPC);
-  const Color     myColor = colorOf(fromPC);
+  const Square fromSq  = getFromSquare(move);
+  const Piece  fromPC  = getPiece(fromSq);
+  const Color  myColor = colorOf(fromPC);
   assert(myColor == nextPlayer);
 
   const Square toSq     = getToSquare(move);
   const Piece  targetPC = getPiece(toSq);
-
-  const PieceType promotionPT = promotionType(move);
 
   // save state of board for undo
   assert((historyCounter < MAX_MOVES - 1) && "Can't have more move than MAX_MOVES");
@@ -106,7 +101,7 @@ void Position::doMove(const Move move) {
   hasCheckFlag = FLAG_TBD;
 
   // do move
-  switch (moveType) {
+  switch (typeOf(move)) {
 
   case NORMAL:
     if (castlingRights && (Bitboards::CastlingMask & fromSq || Bitboards::CastlingMask & toSq)) {
@@ -117,7 +112,7 @@ void Position::doMove(const Move move) {
       removePiece(toSq);
       halfMoveClock = 0; // reset half move clock because of capture
     }
-    else if (fromPT == PAWN) {
+    else if (typeOf(fromPC) == PAWN) {
       halfMoveClock = 0;                            // reset half move clock because of pawn move
       if (Bitboards::distance(fromSq, toSq) == 2) { // pawn double - set en passant
         // set new en passant target field - always one "behind" the toSquare
@@ -138,9 +133,9 @@ void Position::doMove(const Move move) {
     if (castlingRights && (Bitboards::CastlingMask & fromSq || Bitboards::CastlingMask & toSq)) {
       invalidateCastlingRights(fromSq, toSq);
     }
-    removePiece(fromSq);
-    putPiece(makePiece(myColor, promotionPT), toSq);
     clearEnPassant();
+    removePiece(fromSq);
+    putPiece(makePiece(myColor, promotionType(move)), toSq);
     halfMoveClock = 0; // reset half move clock because of pawn move
     break;
 
@@ -149,9 +144,9 @@ void Position::doMove(const Move move) {
     assert(enPassantSquare != SQ_NONE);
     const Square capSq(toSq + pawnDir[~myColor]);
     assert(getPiece(capSq) == makePiece(~myColor, PAWN));
+    clearEnPassant();
     removePiece(capSq);
     movePiece(fromSq, toSq);
-    clearEnPassant();
     halfMoveClock = 0; // reset half move clock because of pawn move
     break;
   }
@@ -168,8 +163,6 @@ void Position::doMove(const Move move) {
       movePiece(fromSq, toSq);                               // King
       movePiece(SQ_H1, SQ_F1);                               // Rook
       zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
-      // clear both by first OR then XOR
-      castlingRights += WHITE_CASTLING;
       castlingRights -= WHITE_CASTLING;
       zobristKey ^= Zobrist::castlingRights[castlingRights]; // in;
       break;
@@ -182,7 +175,6 @@ void Position::doMove(const Move move) {
       movePiece(fromSq, toSq);                               // King
       movePiece(SQ_A1, SQ_D1);                               // Rook
       zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
-      castlingRights += WHITE_CASTLING;
       castlingRights -= WHITE_CASTLING;
       zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
       break;
@@ -195,7 +187,6 @@ void Position::doMove(const Move move) {
       movePiece(fromSq, toSq);                               // King
       movePiece(SQ_H8, SQ_F8);                               // Rook
       zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
-      castlingRights += BLACK_CASTLING;
       castlingRights -= BLACK_CASTLING;
       zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
       break;
@@ -208,7 +199,6 @@ void Position::doMove(const Move move) {
       movePiece(fromSq, toSq);                               // King
       movePiece(SQ_A8, SQ_D8);                               // Rook
       zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
-      castlingRights += BLACK_CASTLING;
       castlingRights -= BLACK_CASTLING;
       zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
       break;
@@ -264,22 +254,19 @@ void Position::undoMove() {
   case CASTLING:
     // ignore Zobrist Key as it will be restored via history
     // castling rights are restored via history
+    movePiece(getToSquare(move), getFromSquare(move)); // King
     switch (getToSquare(move)) {
     case SQ_G1:
-      movePiece(getToSquare(move), getFromSquare(move)); // King
-      movePiece(SQ_F1, SQ_H1);                           // Rook
+      movePiece(SQ_F1, SQ_H1); // Rook
       break;
     case SQ_C1:
-      movePiece(getToSquare(move), getFromSquare(move)); // King
-      movePiece(SQ_D1, SQ_A1);                           // Rook
+      movePiece(SQ_D1, SQ_A1); // Rook
       break;
     case SQ_G8:
-      movePiece(getToSquare(move), getFromSquare(move)); // King
-      movePiece(SQ_F8, SQ_H8);                           // Rook
+      movePiece(SQ_F8, SQ_H8); // Rook
       break;
     case SQ_C8:
-      movePiece(getToSquare(move), getFromSquare(move)); // King
-      movePiece(SQ_D8, SQ_A8);                           // Rook
+      movePiece(SQ_D8, SQ_A8); // Rook
       break;
     default:
       throw std::invalid_argument("Invalid castle move!");
@@ -350,14 +337,12 @@ bool Position::isAttacked(const Square sq, const Color byColor) const {
   // Sliding
   // rooks and queens
   if (((Bitboards::pseudoAttacks[ROOK][sq] & piecesBB[byColor][ROOK]) || ((Bitboards::pseudoAttacks[QUEEN][sq] & piecesBB[byColor][QUEEN])))
-
       && ((Bitboards::getMovesRank(sq, getOccupiedBB()) | Bitboards::getMovesFileR(sq, getOccupiedBBL90())) & (piecesBB[byColor][ROOK] | piecesBB[byColor][QUEEN]))) {
     return true;
   }
 
   // bishop and queens
   if (((Bitboards::pseudoAttacks[BISHOP][sq] & piecesBB[byColor][BISHOP]) || ((Bitboards::pseudoAttacks[QUEEN][sq] & piecesBB[byColor][QUEEN])))
-
       && ((Bitboards::getMovesDiagUpR(sq, getOccupiedBBR45()) | Bitboards::getMovesDiagDownR(sq, getOccupiedBBL45())) & (piecesBB[byColor][BISHOP] | piecesBB[byColor][QUEEN]))) {
     return true;
   }
@@ -401,35 +386,27 @@ bool Position::isAttacked(const Square sq, const Color byColor) const {
 bool Position::isLegalMove(const Move move) const {
   // king is not allowed to pass a square which is attacked by opponent
   if (typeOf(move) == CASTLING) {
+    // no castling when in check
+    if (isAttacked(getFromSquare(move), ~nextPlayer)) {
+      return false;
+    }
     switch (getToSquare(move)) {
     case SQ_G1:
-      if (isAttacked(SQ_E1, ~nextPlayer)) {
-        return false;
-      }
       if (isAttacked(SQ_F1, ~nextPlayer)) {
         return false;
       }
       break;
     case SQ_C1:
-      if (isAttacked(SQ_E1, ~nextPlayer)) {
-        return false;
-      }
       if (isAttacked(SQ_D1, ~nextPlayer)) {
         return false;
       }
       break;
     case SQ_G8:
-      if (isAttacked(SQ_E8, ~nextPlayer)) {
-        return false;
-      }
       if (isAttacked(SQ_F8, ~nextPlayer)) {
         return false;
       }
       break;
     case SQ_C8:
-      if (isAttacked(SQ_E8, ~nextPlayer)) {
-        return false;
-      }
       if (isAttacked(SQ_D8, ~nextPlayer)) {
         return false;
       }
@@ -452,36 +429,28 @@ bool Position::isLegalPosition() const {
   if (historyCounter > 0) {
     const Move lastMove = historyState[historyCounter - 1].moveHistory;
     if (typeOf(lastMove) == CASTLING) {
+      // no castling when in check
+      if (isAttacked(getFromSquare(lastMove), nextPlayer)) {
+        return false;
+      }
       // king is not allowed to pass a square which is attacked by opponent
       switch (getToSquare(lastMove)) {
       case SQ_G1:
-        if (isAttacked(SQ_E1, nextPlayer)) {
-          return false;
-        }
         if (isAttacked(SQ_F1, nextPlayer)) {
           return false;
         }
         break;
       case SQ_C1:
-        if (isAttacked(SQ_E1, nextPlayer)) {
-          return false;
-        }
         if (isAttacked(SQ_D1, nextPlayer)) {
           return false;
         }
         break;
       case SQ_G8:
-        if (isAttacked(SQ_E8, nextPlayer)) {
-          return false;
-        }
         if (isAttacked(SQ_F8, nextPlayer)) {
           return false;
         }
         break;
       case SQ_C8:
-        if (isAttacked(SQ_E8, nextPlayer)) {
-          return false;
-        }
         if (isAttacked(SQ_D8, nextPlayer)) {
           return false;
         }
@@ -827,7 +796,8 @@ std::string Position::str() const {
   output << printBoard();
   output << printFen() << std::endl;
   output << "Check: "
-         << (hasCheckFlag == FLAG_TBD ? "N/A" : hasCheckFlag == FLAG_TRUE ? "Check" : "No check");
+         << (hasCheckFlag == FLAG_TBD ? "N/A" : hasCheckFlag == FLAG_TRUE ? "Check" : "No check")
+         << std::endl;;
   output << "Gamephase: " << gamePhase << std::endl;
   output << "Material: white=" << material[WHITE]
          << " black=" << material[BLACK] << std::endl;
@@ -1023,7 +993,6 @@ void Position::invalidateCastlingRights(const Square from, const Square to) {
   if (castlingRights & WHITE_CASTLING) {
     if (from == SQ_E1 || to == SQ_E1) {
       zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
-      castlingRights += WHITE_CASTLING;                      // set both to delete both
       castlingRights -= WHITE_CASTLING;
       zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
     }
@@ -1041,7 +1010,6 @@ void Position::invalidateCastlingRights(const Square from, const Square to) {
   if (castlingRights & BLACK_CASTLING) {
     if (from == SQ_E8 || to == SQ_E8) {
       zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
-      castlingRights += BLACK_CASTLING;                      // set both to delete both
       castlingRights -= BLACK_CASTLING;
       zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
     }

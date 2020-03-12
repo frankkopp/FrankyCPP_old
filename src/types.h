@@ -36,6 +36,7 @@
 #include <sstream>
 #include <string>
 #include <thread>
+#include <vector>
 
 // Global constants
 constexpr const char* START_POSITION_FEN
@@ -67,7 +68,7 @@ constexpr const uint64_t GB = KB * MB;
 
 namespace INIT {
   /** initializes Values, Bitboards, Position */
-  void init ();
+  void init();
 } // namespace INIT
 
 ///////////////////////////////////
@@ -100,7 +101,7 @@ enum Color : int { WHITE        = 0,
                    NOCOLOR      = 2,
                    COLOR_LENGTH = 2 };
 
-constexpr Color operator~ (Color c) { return Color (c ^ BLACK); }
+constexpr Color operator~(Color c) { return Color(c ^ BLACK); }
 
 ///////////////////////////////////
 //// SQUARES
@@ -457,7 +458,7 @@ inline std::ostream& operator<< (std::ostream& os, const Move move) {
 //// MOVELIST
 
 /** A collection of moves using a std::deque */
-typedef std::deque<Move> MoveList;
+typedef std::vector<Move> MoveList;
 
 std::string          printMoveList (const MoveList& moveList);
 std::string          printMoveListUCI (const MoveList& moveList);
@@ -501,7 +502,7 @@ constexpr CastlingRights operator- (CastlingRights cr1, CastlingRights cr2) {
 
 constexpr CastlingRights& operator-= (CastlingRights& cr1, CastlingRights cr2) {
   assert (cr1 & cr2);
-  return cr1 = CastlingRights (cr1 ^ cr2);
+  return cr1 = CastlingRights (cr1 & ~cr2);
 }
 
 constexpr CastlingRights operator+ (CastlingRights cr1, CastlingRights cr2) {

@@ -11,6 +11,10 @@
       <w>frankycpp</w>
       <w>fsize</w>
       <w>gamephase</w>
+      <w>genall</w>
+      <w>gencap</w>
+      <w>gennoncap</w>
+      <w>genzero</w>
       <w>hashfull</w>
       <w>ifstream</w>
       <w>implmentation</w>
@@ -28,6 +32,7 @@
       <w>pawneval</w>
       <w>pawnshield</w>
       <w>perft</w>
+      <w>permill</w>
       <w>ponderhit</w>
       <w>popcount</w>
       <w>prefrontier</w>
