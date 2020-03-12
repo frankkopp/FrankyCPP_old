@@ -222,12 +222,6 @@ private:
    * killer move(s) to the first position
    */
   void pushKiller(MoveList& list);
-
-  /**
-   * Removes a previously stored PV move from the given list
-   */
-  void filterPV(MoveList& list);
-
 };
 
 #endif //FRANKYCPP_MOVEGENERATOR_H

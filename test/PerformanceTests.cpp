@@ -226,6 +226,8 @@ TEST_F(PerformanceTests, MoveGenerationOD_MPS) {
  * Leaf nodes per sec: 6.607.487
  * 12.3. MSVC (MoveList as Vector)
  * Leaf nodes per sec: 8.088.337
+ * 12.3. MSVC (on demand tweaks)
+ * Leaf nodes per sec: 8.406.433
  */
 TEST_F(PerformanceTests, Perft_NPS) {
   Logger::get().SEARCH_LOG->set_level(spdlog::level::info);
@@ -375,6 +377,7 @@ TEST_F(PerformanceTests, Evaluator_EPS) {
  * Nodes: 44.023.164 Time: 30.007 ms NPS: 1.467.096
  * 12.3. MSVC (MoveList as Vactor)
  * Nodes: 53.122.613 Time: 30.015 ms NPS: 1.769.868
+ * Nodes: 55.676.959 Time: 30.012 ms NPS: 1.855.156
  */
 TEST_F(PerformanceTests, Search_NPS) {
   Logger::get().TT_LOG->set_level(spdlog::level::debug);

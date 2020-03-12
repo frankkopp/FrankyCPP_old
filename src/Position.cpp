@@ -796,7 +796,8 @@ std::string Position::str() const {
   output << printBoard();
   output << printFen() << std::endl;
   output << "Check: "
-         << (hasCheckFlag == FLAG_TBD ? "N/A" : hasCheckFlag == FLAG_TRUE ? "Check" : "No check");
+         << (hasCheckFlag == FLAG_TBD ? "N/A" : hasCheckFlag == FLAG_TRUE ? "Check" : "No check")
+         << std::endl;;
   output << "Gamephase: " << gamePhase << std::endl;
   output << "Material: white=" << material[WHITE]
          << " black=" << material[BLACK] << std::endl;

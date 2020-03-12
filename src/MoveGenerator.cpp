@@ -87,11 +87,9 @@ Move MoveGenerator::getNextPseudoLegalMove(const Position& position) {
   // without removing the element from the vector which would
   // be expensive as all elements would have to be shifted.
 
-  /*
-   * If the list is currently empty and we have not generated all moves yet
-   * generate the next batch until we have new moves or all moves are generated
-   * and there are no more moves to generate
-   */
+  // If the list is currently empty and we have not generated all moves yet
+  // generate the next batch until we have new moves or all moves are generated
+  // and there are no more moves to generate
   if (onDemandMoves.empty()) {
     fillOnDemandMoveList<GM>(position);
   }
@@ -309,13 +307,6 @@ inline void MoveGenerator::pushKiller(MoveList& list) {
   }
 }
 
-inline void MoveGenerator::filterPV(MoveList& moveList) {
-  moveList.erase(std::remove_if(moveList.begin(), moveList.end(), [&](Move m) {
-                   return (moveOf(m) == pvMove);
-                 }),
-                 moveList.end());
-}
-
 void MoveGenerator::setPV(Move move) {
   pvMove = moveOf(move);
 }
@@ -330,14 +321,13 @@ bool MoveGenerator::hasLegalMove(const Position& position) {
   */
 
   const Color    nextPlayer   = position.getNextPlayer();
-  const Bitboard occupiedBB   = position.getOccupiedBB();
-  const Bitboard nextPlayerBB = position.getOccupiedBB(nextPlayer);
-  const Bitboard opponentBB   = position.getOccupiedBB(~nextPlayer);
+  const Bitboard nextPlayerBb = position.getOccupiedBB(nextPlayer);
+  const Bitboard opponentBb   = position.getOccupiedBB(~nextPlayer);
   const Bitboard myPawns      = position.getPieceBB(nextPlayer, PAWN);
 
   // KING
   const Square kingSquare = position.getKingSquare(nextPlayer);
-  Bitboard     tmpMoves   = Bitboards::pseudoAttacks[KING][kingSquare] & ~nextPlayerBB;
+  Bitboard     tmpMoves   = Bitboards::pseudoAttacks[KING][kingSquare] & ~nextPlayerBb;
   while (tmpMoves) {
     const Square toSquare = Bitboards::popLSB(tmpMoves);
     if (position.isLegalMove(createMove(kingSquare, toSquare))) return true;
@@ -345,7 +335,7 @@ bool MoveGenerator::hasLegalMove(const Position& position) {
 
   // PAWN
   // normal pawn captures to the west - promotions first
-  tmpMoves = Bitboards::shift(pawnDir[nextPlayer] + WEST, myPawns) & opponentBB;
+  tmpMoves = Bitboards::shift(pawnDir[nextPlayer] + WEST, myPawns) & opponentBb;
   while (tmpMoves) {
     const Square toSquare   = Bitboards::popLSB(tmpMoves);
     const Square fromSquare = toSquare + pawnDir[~nextPlayer] + EAST;
@@ -353,7 +343,7 @@ bool MoveGenerator::hasLegalMove(const Position& position) {
   }
 
   // normal pawn captures to the east - promotions first
-  tmpMoves = Bitboards::shift(pawnDir[nextPlayer] + EAST, myPawns) & opponentBB;
+  tmpMoves = Bitboards::shift(pawnDir[nextPlayer] + EAST, myPawns) & opponentBb;
   while (tmpMoves) {
     const Square toSquare   = Bitboards::popLSB(tmpMoves);
     const Square fromSquare = toSquare + pawnDir[~nextPlayer] + WEST;
@@ -404,13 +394,11 @@ bool MoveGenerator::hasLegalMove(const Position& position) {
     while (pieces) {
       const Square   fromSquare  = Bitboards::popLSB(pieces);
       const Bitboard pseudoMoves = Bitboards::pseudoAttacks[pt][fromSquare];
-
-      Bitboard moves = pseudoMoves & ~nextPlayerBB;
+      Bitboard       moves       = pseudoMoves & ~nextPlayerBb;
       while (moves) {
         const Square toSquare = Bitboards::popLSB(moves);
-
         if (pt > KNIGHT) { // sliding pieces
-          if (!(Bitboards::intermediateBB[fromSquare][toSquare] & occupiedBB)) {
+          if (!(Bitboards::intermediateBB[fromSquare][toSquare] & position.getOccupiedBB())) {
             if (position.isLegalMove(createMove(fromSquare, toSquare))) return true;
           }
         }
@@ -420,7 +408,6 @@ bool MoveGenerator::hasLegalMove(const Position& position) {
       }
     }
   }
-
   // no move found
   return false;
 }
@@ -440,7 +427,6 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
 
   const Color    nextPlayer = position.getNextPlayer();
   const Bitboard myPawns    = position.getPieceBB(nextPlayer, PAWN);
-  const Bitboard oppPieces  = position.getOccupiedBB(~nextPlayer);
 
   const Piece piece     = makePiece(nextPlayer, PAWN);
   const int   gamePhase = position.getGamePhase();
@@ -463,7 +449,7 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
 
     for (Direction dir : { WEST, EAST }) {
       // normal pawn captures - promotions first
-      tmpCaptures  = Bitboards::shift(pawnDir[nextPlayer] + dir, myPawns) & oppPieces;
+      tmpCaptures  = Bitboards::shift(pawnDir[nextPlayer] + dir, myPawns) & position.getOccupiedBB(~nextPlayer);
       promCaptures = tmpCaptures & Bitboards::promotionRank[nextPlayer];
       while (promCaptures) {
         const Square toSquare   = Bitboards::popLSB(promCaptures);
@@ -548,12 +534,9 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
 
 template <MoveGenerator::GenMode GM>
 void MoveGenerator::generateKingMoves(const Position& position, MoveList* const pMoves) {
-  const Color    nextPlayer = position.getNextPlayer();
-  const Bitboard occupiedBB = position.getOccupiedBB();
-  const Bitboard opponentBB = position.getOccupiedBB(~nextPlayer);
-
-  const Piece piece     = makePiece(nextPlayer, KING);
-  const int   gamePhase = position.getGamePhase();
+  const Color nextPlayer = position.getNextPlayer();
+  const Piece piece      = makePiece(nextPlayer, KING);
+  const int   gamePhase  = position.getGamePhase();
 
 
   Bitboard pieces = position.getPieceBB(nextPlayer, KING);
@@ -564,7 +547,7 @@ void MoveGenerator::generateKingMoves(const Position& position, MoveList* const 
 
   // captures
   if (GM == GENCAP || GM == GENALL) {
-    Bitboard captures = pseudoMoves & opponentBB;
+    Bitboard captures = pseudoMoves & position.getOccupiedBB(~nextPlayer);
     while (captures) {
       const Square toSquare = Bitboards::popLSB(captures);
       // value is the positional value of the piece at this gamephase minus the
@@ -576,7 +559,7 @@ void MoveGenerator::generateKingMoves(const Position& position, MoveList* const 
 
   // non captures
   if (GM == GENNONCAP || GM == GENALL) {
-    Bitboard nonCaptures = pseudoMoves & ~occupiedBB;
+    Bitboard nonCaptures = pseudoMoves & ~position.getOccupiedBB();
     while (nonCaptures) {
       const Square toSquare = Bitboards::popLSB(nonCaptures);
       // value is the positional value of the piece at this gamephase
@@ -589,8 +572,7 @@ void MoveGenerator::generateKingMoves(const Position& position, MoveList* const 
 template <MoveGenerator::GenMode GM>
 void MoveGenerator::generateMoves(const Position& position, MoveList* const pMoves) {
   const Color    nextPlayer = position.getNextPlayer();
-  const Bitboard occupiedBB = position.getOccupiedBB();
-  const Bitboard opponentBB = position.getOccupiedBB(~nextPlayer);
+  const Bitboard occupiedBb = position.getOccupiedBB();
   const int      gamePhase  = position.getGamePhase();
 
   for (PieceType pt = KNIGHT; pt <= QUEEN; ++pt) {
@@ -603,11 +585,11 @@ void MoveGenerator::generateMoves(const Position& position, MoveList* const pMov
 
       // captures
       if (GM == GENCAP || GM == GENALL) {
-        Bitboard captures = pseudoMoves & opponentBB;
+        Bitboard captures = pseudoMoves & position.getOccupiedBB(~nextPlayer);
         while (captures) {
           const Square toSquare = Bitboards::popLSB(captures);
           if (pt > KNIGHT) { // sliding pieces
-            if (!(Bitboards::intermediateBB[fromSquare][toSquare] & occupiedBB)) {
+            if (!(Bitboards::intermediateBB[fromSquare][toSquare] & occupiedBb)) {
               // value is the delta of values from the two pieces involved
               const Value value = valueOf(position.getPiece(fromSquare)) - valueOf(position.getPiece(toSquare)) - Values::posValue[piece][toSquare][gamePhase];
               pMoves->push_back(createMove(fromSquare, toSquare, value));
@@ -623,11 +605,11 @@ void MoveGenerator::generateMoves(const Position& position, MoveList* const pMov
 
       // non captures
       if (GM == GENNONCAP || GM == GENALL) {
-        Bitboard nonCaptures = pseudoMoves & ~occupiedBB;
+        Bitboard nonCaptures = pseudoMoves & ~occupiedBb;
         while (nonCaptures) {
           const Square toSquare = Bitboards::popLSB(nonCaptures);
           if (pt > KNIGHT) { // sliding pieces
-            if (!(Bitboards::intermediateBB[fromSquare][toSquare] & occupiedBB)) {
+            if (!(Bitboards::intermediateBB[fromSquare][toSquare] & occupiedBb)) {
               // value is the positional value of the piece at this gamephase
               const Value value = static_cast<Value>(10000) - Values::posValue[piece][toSquare][gamePhase];
               pMoves->push_back(createMove(fromSquare, toSquare, value));
