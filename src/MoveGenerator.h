@@ -62,6 +62,7 @@ class MoveGenerator {
   MoveList::size_type maxNumberOfKiller = 2; // default
   MoveList            killerMoves       = MoveList();
   Move                pvMove            = MOVE_NONE;
+  bool                pvMovePushed      = false;
 
 public:
   MoveGenerator();
@@ -169,6 +170,13 @@ private:
   FRIEND_TEST(MoveGenTest, castlingMoves);
   FRIEND_TEST(MoveGenTest, storeKiller);
 
+  /**
+   * Fills on demand move list by generating moves according to phase
+   * @tparam GM
+   * @param position
+   */
+  template <MoveGenerator::GenMode GM>
+  void fillOnDemandMoveList(const Position& position);
 
   /**
    * Generates pseudo pawn moves for the next player. Does not check if king is left in check
@@ -219,6 +227,7 @@ private:
    * Removes a previously stored PV move from the given list
    */
   void filterPV(MoveList& list);
+
 };
 
 #endif //FRANKYCPP_MOVEGENERATOR_H

@@ -27,10 +27,10 @@
 #include <ostream>
 #include <string>
 
-#include "Logging.h"
 #include "Bitboards.h"
-#include "Position.h"
+#include "Logging.h"
 #include "MoveGenerator.h"
+#include "Position.h"
 
 using namespace std;
 using testing::Eq;
@@ -42,6 +42,7 @@ public:
     INIT::init();
     NEWLINE;
   }
+
 protected:
   void SetUp() override {}
   void TearDown() override {}
@@ -51,7 +52,7 @@ protected:
  * Test pawn move generation
  */
 TEST_F(MoveGenTest, pawnMoves) {
-  string fen;
+  string        fen;
   MoveGenerator mg;
 
   fen = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3";
@@ -65,13 +66,13 @@ TEST_F(MoveGenTest, pawnMoves) {
 
   ASSERT_EQ(10, moves.size());
   string expected = "c2b1Qc2b1Rc2b1Bc2b1Na2b1Qa2b1Ra2b1Ba2b1Nf4g3f4e3";
-  string actual = "";
+  string actual   = "";
   for (Move m : moves) actual.append(printMove(m));
   ASSERT_EQ(expected, actual);
 
   sort(moves.begin(), moves.end());
   expected = "a2b1Qc2b1Qa2b1Nc2b1Nf4g3f4e3a2b1Rc2b1Ra2b1Bc2b1B";
-  actual = "";
+  actual   = "";
   for (Move m : moves) actual.append(printMove(m));
   ASSERT_EQ(expected, actual);
 
@@ -87,13 +88,13 @@ TEST_F(MoveGenTest, pawnMoves) {
 
   ASSERT_EQ(13, moves.size());
   expected = "a2a1Qa2a1Ra2a1Ba2a1Nc2c1Qc2c1Rc2c1Bc2c1Nb7b5h7h5f4f3b7b6h7h6";
-  actual = "";
+  actual   = "";
   for (Move m : moves) actual.append(printMove(m));
   ASSERT_EQ(expected, actual);
 
   stable_sort(moves.begin(), moves.end());
   expected = "a2a1Qc2c1Qa2a1Nc2c1Nf4f3h7h6b7b5h7h5b7b6a2a1Bc2c1Ba2a1Rc2c1R";
-  actual = "";
+  actual   = "";
   for (Move m : moves) actual.append(printMove(m));
   ASSERT_EQ(expected, actual);
 
@@ -107,9 +108,9 @@ TEST_F(MoveGenTest, pawnMoves) {
  * TODO create real tests
  */
 TEST_F(MoveGenTest, kingMoves) {
-  string fen;
+  string        fen;
   MoveGenerator mg;
-  MoveList moves;
+  MoveList      moves;
 
   fen = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3";
   Position position(fen);
@@ -139,9 +140,9 @@ TEST_F(MoveGenTest, kingMoves) {
  // TODO create real tests
  */
 TEST_F(MoveGenTest, normalMoves) {
-  string fen;
+  string        fen;
   MoveGenerator mg;
-  MoveList moves;
+  MoveList      moves;
 
   fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3";
   Position position(fen);
@@ -167,9 +168,9 @@ TEST_F(MoveGenTest, normalMoves) {
 }
 
 TEST_F(MoveGenTest, castlingMoves) {
-  string fen;
+  string        fen;
   MoveGenerator mg;
-  MoveList moves;
+  MoveList      moves;
 
   fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3";
   Position position(fen);
@@ -193,30 +194,29 @@ TEST_F(MoveGenTest, castlingMoves) {
 
 
 TEST_F(MoveGenTest, hasLegalMoves) {
-  string fen;
+  string        fen;
   MoveGenerator mg;
-  MoveList moves;
+  MoveList      moves;
 
   fen = "rn2kbnr/pbpp1ppp/8/1p2p1q1/4K3/3P4/PPP1PPPP/RNBQ1BNR w kq -";
   Position position(fen);
   println(position.str());
 
-  moves = *mg.generateLegalMoves<MoveGenerator::GENALL>(position);
+  moves               = *mg.generateLegalMoves<MoveGenerator::GENALL>(position);
   const bool expected = mg.hasLegalMove(position);
 
   ASSERT_EQ(0, moves.size());
   ASSERT_FALSE(expected);
-
 }
 
 TEST_F(MoveGenTest, pseudoLegalMoves) {
-  string fen;
+  string        fen;
   MoveGenerator mg;
-  MoveList moves;
-  Position position;
+  MoveList      moves;
+  Position      position;
 
   // Start pos
-  fen = START_POSITION_FEN;
+  fen      = START_POSITION_FEN;
   position = Position(fen);
   cout << position.str() << endl;
 
@@ -230,7 +230,7 @@ TEST_F(MoveGenTest, pseudoLegalMoves) {
   NEWLINE;
 
   // 86 pseudo legal moves (incl. castling over attacked square)
-  fen = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3";
+  fen      = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3";
   position = Position(fen);
   cout << position.str() << endl;
 
@@ -244,7 +244,7 @@ TEST_F(MoveGenTest, pseudoLegalMoves) {
   NEWLINE;
 
   // bug fixed positions
-  fen = "rnbqkbnr/1ppppppp/8/p7/7P/8/PPPPPPP1/RNBQKBNR w KQkq a6";
+  fen      = "rnbqkbnr/1ppppppp/8/p7/7P/8/PPPPPPP1/RNBQKBNR w KQkq a6";
   position = Position(fen);
   moves.clear();
   cout << position.str() << endl;
@@ -257,7 +257,7 @@ TEST_F(MoveGenTest, pseudoLegalMoves) {
   ASSERT_EQ(21, moves.size());
   NEWLINE;
 
-  fen = "rnbqkbnr/p2ppppp/8/1Pp5/8/8/1PPPPPPP/RNBQKBNR w KQkq c6";
+  fen      = "rnbqkbnr/p2ppppp/8/1Pp5/8/8/1PPPPPPP/RNBQKBNR w KQkq c6";
   position = Position(fen);
   moves.clear();
   cout << position.str() << endl;
@@ -272,10 +272,10 @@ TEST_F(MoveGenTest, pseudoLegalMoves) {
 }
 
 TEST_F(MoveGenTest, legalMoves) {
-  string fen;
+  string        fen;
   MoveGenerator mg;
-  MoveList moves;
-  Position position;
+  MoveList      moves;
+  Position      position;
 
   // 86 pseudo legal moves (incl. castling over attacked square)
   position = Position(START_POSITION_FEN);
@@ -290,7 +290,7 @@ TEST_F(MoveGenTest, legalMoves) {
   NEWLINE;
 
   // 86 pseudo legal moves (incl. castling over attacked square)
-  fen = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3";
+  fen      = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3";
   position = Position(fen);
   cout << position.printBoard() << endl;
 
@@ -316,34 +316,33 @@ TEST_F(MoveGenTest, legalMoves) {
 
 
 TEST_F(MoveGenTest, validateMove) {
-  string fen;
+  string        fen;
   MoveGenerator mg;
-  MoveList moves;
+  MoveList      moves;
 
   // 86 pseudo legal moves (incl. castling over attacked square)
   fen = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3";
   Position position(fen);
 
-  ASSERT_TRUE (mg.validateMove(position, createMove("b2e5")));
-  ASSERT_TRUE (mg.validateMove(position, createMove("e6e5")));
-  ASSERT_TRUE (mg.validateMove(position, createMove("c4e4")));
-  ASSERT_TRUE (mg.validateMove(position, createMove("c6e4")));
-  ASSERT_TRUE (mg.validateMove(position, createMove<PROMOTION>("a2a1q")));
-  ASSERT_TRUE (mg.validateMove(position, createMove<PROMOTION>("c2c1q")));
-  ASSERT_TRUE (mg.validateMove(position, createMove<PROMOTION>("a2a1n")));
-  ASSERT_TRUE (mg.validateMove(position, createMove<PROMOTION>("c2c1n")));
-  ASSERT_FALSE (mg.validateMove(position, createMove("e2e4")));
-  ASSERT_FALSE (mg.validateMove(position, createMove("b8c8")));
-  ASSERT_FALSE (mg.validateMove(position, createMove("a2b3")));
-  ASSERT_FALSE (mg.validateMove(position, createMove("b1c3")));
-  ASSERT_FALSE (mg.validateMove(position, MOVE_NONE));
-
+  ASSERT_TRUE(mg.validateMove(position, createMove("b2e5")));
+  ASSERT_TRUE(mg.validateMove(position, createMove("e6e5")));
+  ASSERT_TRUE(mg.validateMove(position, createMove("c4e4")));
+  ASSERT_TRUE(mg.validateMove(position, createMove("c6e4")));
+  ASSERT_TRUE(mg.validateMove(position, createMove<PROMOTION>("a2a1q")));
+  ASSERT_TRUE(mg.validateMove(position, createMove<PROMOTION>("c2c1q")));
+  ASSERT_TRUE(mg.validateMove(position, createMove<PROMOTION>("a2a1n")));
+  ASSERT_TRUE(mg.validateMove(position, createMove<PROMOTION>("c2c1n")));
+  ASSERT_FALSE(mg.validateMove(position, createMove("e2e4")));
+  ASSERT_FALSE(mg.validateMove(position, createMove("b8c8")));
+  ASSERT_FALSE(mg.validateMove(position, createMove("a2b3")));
+  ASSERT_FALSE(mg.validateMove(position, createMove("b1c3")));
+  ASSERT_FALSE(mg.validateMove(position, MOVE_NONE));
 }
 
 TEST_F(MoveGenTest, onDemandGen) {
-  string fen;
+  string        fen;
   MoveGenerator mg;
-  MoveList moves;
+  MoveList      moves;
 
   // 86 pseudo legal moves (incl. castling over attacked square)
   fen = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3";
@@ -351,7 +350,7 @@ TEST_F(MoveGenTest, onDemandGen) {
   cout << position.str() << endl;
 
   Move move;
-  int counter = 0;
+  int  counter = 0;
   while (true) {
     move = mg.getNextPseudoLegalMove<MoveGenerator::GENALL>(position);
     if (move == MOVE_NONE) break;
@@ -363,7 +362,7 @@ TEST_F(MoveGenTest, onDemandGen) {
   NEWLINE;
 
   // 218 moves
-  fen = "R6R/3Q4/1Q4Q1/4Q3/2Q4Q/Q4Q2/pp1Q4/kBNN1KB1 w - - 0 1";
+  fen      = "R6R/3Q4/1Q4Q1/4Q3/2Q4Q/Q4Q2/pp1Q4/kBNN1KB1 w - - 0 1";
   position = Position(fen);
   cout << position.str() << endl;
 
@@ -377,13 +376,12 @@ TEST_F(MoveGenTest, onDemandGen) {
   println("Moves: " + to_string(counter));
   ASSERT_EQ(218, counter);
   NEWLINE;
-
 }
 
 TEST_F(MoveGenTest, storeKiller) {
-  string fen;
+  string        fen;
   MoveGenerator mg;
-  MoveList moves;
+  MoveList      moves;
 
   // 86 pseudo legal moves (incl. castling over attacked square)
   fen = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3";
@@ -421,20 +419,19 @@ TEST_F(MoveGenTest, storeKiller) {
   mg.storeKiller(allMoves->at(31), 2);
   ASSERT_EQ(1, mg.killerMoves.size());
   ASSERT_EQ(allMoves->at(31), mg.killerMoves.at(0));
-
 }
 
 TEST_F(MoveGenTest, pushKiller) {
-  string fen;
+  string        fen;
   MoveGenerator mg;
-  MoveList moves;
+  MoveList      moves;
 
   // 86 pseudo legal moves (incl. castling over attacked square)
   fen = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3";
   Position position(fen);
 
   const MoveList* allMoves = mg.generatePseudoLegalMoves<MoveGenerator::GENALL>(position);
-  int i = 0;
+  int             i        = 0;
   for (auto m : *allMoves) {
     println("ORIG: " + std::to_string(i++) + " " + printMoveVerbose(m));
   }
@@ -444,13 +441,15 @@ TEST_F(MoveGenTest, pushKiller) {
   NEWLINE;
 
   Move move;
-  int counter = 0;
+  int  counter = 0;
   while (true) {
     move = mg.getNextPseudoLegalMove<MoveGenerator::GENALL>(position);
     if (move == MOVE_NONE) break;
     cout << counter << " " << printMoveVerbose(move) << " (" << int(move) << ")" << endl;
     if (counter == 18) { EXPECT_EQ(moveOf(allMoves->at(21)), moveOf(move)); }
-    else if (counter == 33) {EXPECT_EQ(moveOf(allMoves->at(81)), moveOf(move)); }
+    else if (counter == 33) {
+      EXPECT_EQ(moveOf(allMoves->at(81)), moveOf(move));
+    }
     counter++;
   }
   println("Moves: " + to_string(counter));
@@ -458,51 +457,132 @@ TEST_F(MoveGenTest, pushKiller) {
 }
 
 TEST_F(MoveGenTest, pvMove) {
-  string fen;
+  string        fen;
   MoveGenerator mg;
-  MoveList moves;
+  MoveList      moves;
 
   // 86 pseudo legal moves (incl. castling over attacked square)
   fen = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 w kq e3";
   Position position(fen);
-  // best move
-  Move pvMove = createMove("b1e1");
 
+  // Test #1: best move is capturing and generating all moves
+  Move pvMove = createMove("b1b2");
   mg.setPV(pvMove);
-
   Move move;
-  int counter = 0;
-  while (true) {
-    move = mg.getNextPseudoLegalMove<MoveGenerator::GENALL>(position);
-    if (move == MOVE_NONE) break;
-    fprintln("{} {} ({})", counter, printMoveVerbose(move), move);
+  int  counter = 0;
+  // generate all moves
+  while ((move = mg.getNextPseudoLegalMove<MoveGenerator::GENALL>(position)) != MOVE_NONE) {
+    if (counter == 0) { // first move must be pv move
+      EXPECT_EQ(pvMove, move);
+    }
+    else { // no more pv move after first move
+      EXPECT_NE(pvMove, move);
+    }
+    // fprintln("{} {}", counter, printMoveVerbose(move));
+    counter++;
+  }
+  // println("Moves: " + to_string(counter));
+  ASSERT_EQ(27, counter);
+  mg.resetOnDemand();
+
+  // Test #2: best move is capturing and generating capturing moves
+  pvMove = createMove("b1b2");
+  mg.setPV(pvMove);
+  counter = 0;
+  // generate all moves
+  while ((move = mg.getNextPseudoLegalMove<MoveGenerator::GENCAP>(position)) != MOVE_NONE) {
+    if (counter == 0) { // first move must be pv move
+      EXPECT_EQ(pvMove, move);
+    }
+    else { // no more pv move after first move
+      EXPECT_NE(pvMove, move);
+    }
+    //    fprintln("{} {}", counter, printMoveVerbose(move));
+    counter++;
+  }
+  //  println("Moves: " + to_string(counter));
+  ASSERT_EQ(4, counter);
+  mg.resetOnDemand();
+
+  // Test #3: best move is non-capturing and generating all moves
+  pvMove = createMove("h2h3");
+  mg.setPV(pvMove);
+  counter = 0;
+  // generate all moves
+  while ((move = mg.getNextPseudoLegalMove<MoveGenerator::GENALL>(position)) != MOVE_NONE) {
+    if (counter == 0) { // first move must be pv move
+      EXPECT_EQ(pvMove, move);
+    }
+    else { // no more pv move after first move
+      EXPECT_NE(pvMove, move);
+    }
+    //    fprintln("{} {}", counter, printMoveVerbose(move));
+    counter++;
+  }
+  //  println("Moves: " + to_string(counter));
+  ASSERT_EQ(27, counter);
+  mg.resetOnDemand();
+
+  // Test #4: best move is non-capturing and generating capturing moves
+  pvMove = createMove("h2h3");
+  mg.setPV(pvMove);
+  counter = 0;
+  // generate all moves
+  while ((move = mg.getNextPseudoLegalMove<MoveGenerator::GENCAP>(position)) != MOVE_NONE) {
+    if (counter == 0) { // first move can't be non capturing pv move
+      EXPECT_NE(pvMove, move);
+    }
+    else { // no more pv move after first move
+      EXPECT_NE(pvMove, move);
+    }
+    //    fprintln("{} {}", counter, printMoveVerbose(move));
+    counter++;
+  }
+  //  println("Moves: " + to_string(counter));
+  ASSERT_EQ(4, counter);
+  mg.resetOnDemand();
+
+  // Test #4: best move is non-capturing and generating non-capturing moves
+  // not very relevant for searching
+  pvMove = createMove("h2h3");
+  mg.setPV(pvMove);
+  counter = 0;
+  // generate all moves
+  while ((move = mg.getNextPseudoLegalMove<MoveGenerator::GENNONCAP>(position)) != MOVE_NONE) {
+    if (counter == 0) { // first move must be pv move
+      EXPECT_EQ(pvMove, move);
+    }
+    else { // no more pv move after first move
+      EXPECT_NE(pvMove, move);
+    }
+    fprintln("{} {}", counter, printMoveVerbose(move));
     counter++;
   }
   println("Moves: " + to_string(counter));
-  ASSERT_EQ(27, counter);
+  ASSERT_EQ(23, counter);
+  mg.resetOnDemand();
 }
 
 TEST_F(MoveGenTest, swap) {
-  string fen;
-  MoveGenerator mg;
+  string          fen;
+  MoveGenerator   mg;
   const MoveList* moves;
-  Position position;
+  Position        position;
 
   // 86 pseudo legal moves (incl. castling over attacked square)
-  fen = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3";
+  fen      = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3";
   position = Position(fen);
-  moves = mg.generatePseudoLegalMoves<MoveGenerator::GENALL>(position);
+  moves    = mg.generatePseudoLegalMoves<MoveGenerator::GENALL>(position);
   ASSERT_EQ(86, moves->size());
 
   MoveList test;
-  test.swap(const_cast<vector<Move, allocator<Move>> &>(*moves));
+  test.swap(const_cast<vector<Move, allocator<Move>>&>(*moves));
   ASSERT_EQ(86, test.size());
   ASSERT_EQ(0, moves->size());
 
   // 86 pseudo legal moves (incl. castling over attacked square)
-  fen = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3";
+  fen      = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3";
   position = Position(fen);
-  moves = mg.generatePseudoLegalMoves<MoveGenerator::GENALL>(position);
+  moves    = mg.generatePseudoLegalMoves<MoveGenerator::GENALL>(position);
   ASSERT_EQ(86, moves->size());
-
 }

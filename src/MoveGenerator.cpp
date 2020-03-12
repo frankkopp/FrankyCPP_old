@@ -70,84 +70,171 @@ const MoveList* MoveGenerator::generateLegalMoves(const Position& position) {
 
 template <MoveGenerator::GenMode GM>
 Move MoveGenerator::getNextPseudoLegalMove(const Position& position) {
-  // if the position changes during iteration the iteration will be reset and
-  // generation will be restart with the new position.
+  // if the position changes during iteration the iteration
+  // will be reset and generation will be restart with the
+  // new position.
   if (position.getZobristKey() != currentIteratorKey) {
     onDemandMoves.clear();
-    takeIndex          = 0;
     currentODStage     = OD_NEW;
+    currentIteratorKey = 0;
+    pvMovePushed       = false;
+    takeIndex          = 0;
     currentIteratorKey = position.getZobristKey();
   }
 
-  bool pvIsCapture = false;
+  // ad takeIndex
+  // With the takeIndex we can take from the front of the vector
+  // without removing the element from the vector which would
+  // be expensive as all elements would have to be shifted.
 
   /*
    * If the list is currently empty and we have not generated all moves yet
    * generate the next batch until we have new moves or all moves are generated
    * and there are no more moves to generate
    */
+  if (onDemandMoves.empty()) {
+    fillOnDemandMoveList<GM>(position);
+  }
+
+  // If we have generated moves we will return the first move and
+  // increase the takeIndex to the next move. If the list is emtpy
+  // even after all stages of generating we have no more moves
+  // and return MOVE_NONE
+  // If we have pushed a pvMove into the list we will need to
+  // skip this pvMove for each subsequent phases.
+  if (!onDemandMoves.empty()) {
+
+    // Handle PvMove
+    // if we pushed a pv move and the list is not empty we check if the pv is the
+    // next move in list and skip it.
+    if (currentODStage != OD1
+        && pvMovePushed
+        && moveOf(onDemandMoves[takeIndex]) == moveOf(pvMove)) {
+      takeIndex++; // skip pv move
+      // we found the pv move and skipped it
+      // no need to check this for this generation cycle
+      pvMovePushed = false;
+
+      if (takeIndex >= onDemandMoves.size()) {
+        // The pv move was the last move in this iterations list.
+        // We will try to generate more moves. If no more moves
+        // can be generated we will return MOVE_NONE.
+        // Otherwise we return the move below.
+        takeIndex = 0;
+        onDemandMoves.clear();
+        fillOnDemandMoveList<GM>(position);
+        // no more moves - return MOVE_NONE
+        if (onDemandMoves.empty()) {
+          return MOVE_NONE;
+        }
+      }
+    }
+    assert(!onDemandMoves.empty() && "OnDemandList should not be empty here");
+
+    // we have at least one move in the list and
+    // it is not the pvMove.
+    Move move = moveOf(onDemandMoves[takeIndex++]);
+    if (takeIndex >= onDemandMoves.size()) {
+      takeIndex = 0;
+      onDemandMoves.clear();
+    }
+    return move; // remove internal sort value
+  }
+
+  // no more moves to be generated
+  takeIndex    = 0;
+  pvMovePushed = false;
+  return MOVE_NONE;
+}
+
+/**
+ * Fills the list according to different phases. If list is still
+ * empty after calling this there are no more moves to generate.
+ * @param position
+ */
+template <MoveGenerator::GenMode GM>
+void MoveGenerator::fillOnDemandMoveList(const Position& position) {
   while (onDemandMoves.empty() && currentODStage < OD_END) {
     switch (currentODStage) {
     case OD_NEW:
       currentODStage = PV;
       // fall through
     case PV:
-      /*
-         * If a pvMove is set we return it first and filter it out with each
-         * successive move gen stage.
-         */
+      // If a pvMove is set we return it first and filter it out before
+      // returning a move
+      assert(!pvMovePushed && "Stage PV should not have pvMovePushed set");
       if (pvMove) {
-        pvIsCapture = position.isCapturingMove(pvMove);
-        if (GM == GENALL || (GM == GENCAP && pvIsCapture) || (GM == GENNONCAP && !pvIsCapture)) {
+        switch (GM) {
+        case GENALL:
+          pvMovePushed = true;
           onDemandMoves.push_back(pvMove);
+          break;
+        case GENCAP:
+          if (position.isCapturingMove(pvMove)) {
+            pvMovePushed = true;
+            onDemandMoves.push_back(pvMove);
+          }
+          break;
+        case GENNONCAP:
+          if (!position.isCapturingMove(pvMove)) {
+            pvMovePushed = true;
+            onDemandMoves.push_back(pvMove);
+          }
+          break;
         }
       }
-      currentODStage = OD1;
+      // decide which state we should continue with
+      // captures or non captures or both
+      if (GM == GENALL || GM == GENCAP) {
+        currentODStage = OD1;
+      }
+      else {
+        currentODStage = OD4;
+      }
       break;
     case OD1: // capture
       generatePawnMoves<GENCAP>(position, &onDemandMoves);
-      if (pvMove && pvIsCapture) filterPV(onDemandMoves);
       stable_sort(onDemandMoves.begin(), onDemandMoves.end());
       currentODStage = OD2;
       break;
     case OD2:
       generateMoves<GENCAP>(position, &onDemandMoves);
-      if (pvMove && pvIsCapture) filterPV(onDemandMoves);
       stable_sort(onDemandMoves.begin(), onDemandMoves.end());
       currentODStage = OD3;
       break;
     case OD3:
       generateKingMoves<GENCAP>(position, &onDemandMoves);
-      if (pvMove && pvIsCapture) filterPV(onDemandMoves);
       stable_sort(onDemandMoves.begin(), onDemandMoves.end());
-      if (GM & GENNONCAP) { currentODStage = OD5; }
-      else { currentODStage = OD_END; }
+      currentODStage = OD4;
       break;
     case OD4:
+      if (GM == GENALL || GM == GENNONCAP) {
+        currentODStage = OD5;
+      }
+      else {
+        currentODStage = OD_END;
+      }
+      break;
     case OD5: // non capture
       generatePawnMoves<GENNONCAP>(position, &onDemandMoves);
-      if (pvMove && !pvIsCapture) filterPV(onDemandMoves);
       pushKiller(onDemandMoves);
       stable_sort(onDemandMoves.begin(), onDemandMoves.end());
       currentODStage = OD6;
       break;
     case OD6:
       generateCastling<GENNONCAP>(position, &onDemandMoves);
-      if (pvMove && !pvIsCapture) filterPV(onDemandMoves);
       pushKiller(onDemandMoves);
       stable_sort(onDemandMoves.begin(), onDemandMoves.end());
       currentODStage = OD7;
       break;
     case OD7:
       generateMoves<GENNONCAP>(position, &onDemandMoves);
-      if (pvMove && !pvIsCapture) filterPV(onDemandMoves);
       pushKiller(onDemandMoves);
       stable_sort(onDemandMoves.begin(), onDemandMoves.end());
       currentODStage = OD8;
       break;
     case OD8:
       generateKingMoves<GENNONCAP>(position, &onDemandMoves);
-      if (pvMove && !pvIsCapture) filterPV(onDemandMoves);
       pushKiller(onDemandMoves);
       stable_sort(onDemandMoves.begin(), onDemandMoves.end());
       currentODStage = OD_END;
@@ -155,33 +242,15 @@ Move MoveGenerator::getNextPseudoLegalMove(const Position& position) {
     case OD_END:
       break;
     }
-  }
-  // return a move and delete it form the list
-  if (onDemandMoves.empty()) {
-    takeIndex = 0;
-    return MOVE_NONE;
-  }
-  else {
-    // With the takeIndex we can take from the front of the vector
-    // without removing the element from the vector which would
-    // be expensive as all elements would have to be shifted.
-    const Move move = onDemandMoves[takeIndex++];
-    if (takeIndex >= onDemandMoves.size()) {
-      takeIndex = 0;
-      onDemandMoves.clear();
-    }
-    return moveOf(move); // remove internal sort value
-  }
+
+  } // while onDemandMoves.empty()
 }
 
 void MoveGenerator::reset() {
   pseudoLegalMoves.clear();
   legalMoves.clear();
-  onDemandMoves.clear();
-  currentODStage     = OD_NEW;
-  currentIteratorKey = 0;
-  pvMove             = MOVE_NONE;
   killerMoves.clear();
+  resetOnDemand();
 }
 
 void MoveGenerator::resetOnDemand() {
@@ -189,6 +258,8 @@ void MoveGenerator::resetOnDemand() {
   currentODStage     = OD_NEW;
   currentIteratorKey = 0;
   pvMove             = MOVE_NONE;
+  pvMovePushed       = false;
+  takeIndex          = 0;
 }
 
 void MoveGenerator::storeKiller(const Move killerMove, const int maxKillers) {
@@ -239,8 +310,9 @@ inline void MoveGenerator::pushKiller(MoveList& list) {
 }
 
 inline void MoveGenerator::filterPV(MoveList& moveList) {
-  moveList.erase(std::remove_if(moveList.begin(), moveList.end(),
-                                [&](Move m) { return (moveOf(m) == pvMove); }),
+  moveList.erase(std::remove_if(moveList.begin(), moveList.end(), [&](Move m) {
+                   return (moveOf(m) == pvMove);
+                 }),
                  moveList.end());
 }
 
@@ -398,16 +470,10 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
         const Square fromSquare = toSquare + pawnDir[~nextPlayer] - dir;
         // value is the delta of values from the two pieces involved minus the promotion value
         const Value value = valueOf(position.getPiece(fromSquare)) - valueOf(position.getPiece(toSquare)) - Values::posValue[piece][toSquare][gamePhase];
-        pMoves->push_back(
-            createMove<PROMOTION>(fromSquare, toSquare, value - valueOf(QUEEN), QUEEN));
-        pMoves->push_back(createMove<PROMOTION>(fromSquare, toSquare,
-                                                value - valueOf(ROOK) + static_cast<Value>(2000),
-                                                ROOK));
-        pMoves->push_back(createMove<PROMOTION>(fromSquare, toSquare,
-                                                value - valueOf(BISHOP) + static_cast<Value>(2000),
-                                                BISHOP));
-        pMoves->push_back(
-            createMove<PROMOTION>(fromSquare, toSquare, value - valueOf(KNIGHT), KNIGHT));
+        pMoves->push_back(createMove<PROMOTION>(fromSquare, toSquare, value - valueOf(QUEEN), QUEEN));
+        pMoves->push_back(createMove<PROMOTION>(fromSquare, toSquare, value - valueOf(ROOK) + static_cast<Value>(2000), ROOK));
+        pMoves->push_back(createMove<PROMOTION>(fromSquare, toSquare, value - valueOf(BISHOP) + static_cast<Value>(2000), BISHOP));
+        pMoves->push_back(createMove<PROMOTION>(fromSquare, toSquare, value - valueOf(KNIGHT), KNIGHT));
       }
       tmpCaptures &= ~Bitboards::promotionRank[nextPlayer];
       while (tmpCaptures) {
@@ -455,14 +521,10 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
       const Square toSquare   = Bitboards::popLSB(promMoves);
       const Square fromSquare = toSquare + pawnDir[~nextPlayer];
       // value is done manually for stable_sorting of queen prom first, then knight and others
-      pMoves->push_back(
-          createMove<PROMOTION>(fromSquare, toSquare, static_cast<Value>(9000), QUEEN));
-      pMoves->push_back(
-          createMove<PROMOTION>(fromSquare, toSquare, static_cast<Value>(10900), ROOK));
-      pMoves->push_back(
-          createMove<PROMOTION>(fromSquare, toSquare, static_cast<Value>(10900), BISHOP));
-      pMoves->push_back(
-          createMove<PROMOTION>(fromSquare, toSquare, static_cast<Value>(9100), KNIGHT));
+      pMoves->push_back(createMove<PROMOTION>(fromSquare, toSquare, static_cast<Value>(9000), QUEEN));
+      pMoves->push_back(createMove<PROMOTION>(fromSquare, toSquare, static_cast<Value>(9100), KNIGHT));
+      pMoves->push_back(createMove<PROMOTION>(fromSquare, toSquare, static_cast<Value>(10900), BISHOP));
+      pMoves->push_back(createMove<PROMOTION>(fromSquare, toSquare, static_cast<Value>(10900), ROOK));
     }
     // double pawn steps
     while (tmpMovesDouble) {
@@ -495,7 +557,7 @@ void MoveGenerator::generateKingMoves(const Position& position, MoveList* const 
 
 
   Bitboard pieces = position.getPieceBB(nextPlayer, KING);
-  assert(Bitboards::popcount(pieces) == 1 && "More than one king not allowed!");
+  assert(Bitboards::popcount(pieces) == 1 && "Only exactly one king allowed!");
 
   const Square   fromSquare  = Bitboards::popLSB(pieces);
   const Bitboard pseudoMoves = Bitboards::pseudoAttacks[KING][fromSquare];
