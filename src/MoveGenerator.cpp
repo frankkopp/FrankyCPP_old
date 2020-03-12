@@ -33,7 +33,11 @@
 ////////////////////////////////////////////////
 ///// CONSTRUCTORS
 
-MoveGenerator::MoveGenerator()  = default;
+MoveGenerator::MoveGenerator() {
+  pseudoLegalMoves.reserve(MAX_MOVES);
+  legalMoves.reserve(MAX_MOVES);
+  onDemandMoves.reserve(MAX_MOVES);
+}
 MoveGenerator::~MoveGenerator() = default;
 
 ////////////////////////////////////////////////

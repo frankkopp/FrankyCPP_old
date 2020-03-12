@@ -502,7 +502,7 @@ constexpr CastlingRights operator- (CastlingRights cr1, CastlingRights cr2) {
 
 constexpr CastlingRights& operator-= (CastlingRights& cr1, CastlingRights cr2) {
   assert (cr1 & cr2);
-  return cr1 = CastlingRights (cr1 ^ cr2);
+  return cr1 = CastlingRights (cr1 & ~cr2);
 }
 
 constexpr CastlingRights operator+ (CastlingRights cr1, CastlingRights cr2) {
