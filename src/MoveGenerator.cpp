@@ -51,7 +51,7 @@ const MoveList* MoveGenerator::generatePseudoLegalMoves(const Position& position
   generateCastling<GM>(position, &pseudoLegalMoves);
   generateMoves<GM>(position, &pseudoLegalMoves);
   generateKingMoves<GM>(position, &pseudoLegalMoves);
-  stable_sort(pseudoLegalMoves.begin(), pseudoLegalMoves.end());
+  sort(pseudoLegalMoves.begin(), pseudoLegalMoves.end());
   // remove internal sort value
   std::transform(pseudoLegalMoves.begin(), pseudoLegalMoves.end(),
                  pseudoLegalMoves.begin(), [](Move m) { return moveOf(m); });
@@ -192,17 +192,17 @@ void MoveGenerator::fillOnDemandMoveList(const Position& position) {
       break;
     case OD1: // capture
       generatePawnMoves<GENCAP>(position, &onDemandMoves);
-      stable_sort(onDemandMoves.begin(), onDemandMoves.end());
+      sort(onDemandMoves.begin(), onDemandMoves.end());
       currentODStage = OD2;
       break;
     case OD2:
       generateMoves<GENCAP>(position, &onDemandMoves);
-      stable_sort(onDemandMoves.begin(), onDemandMoves.end());
+      sort(onDemandMoves.begin(), onDemandMoves.end());
       currentODStage = OD3;
       break;
     case OD3:
       generateKingMoves<GENCAP>(position, &onDemandMoves);
-      stable_sort(onDemandMoves.begin(), onDemandMoves.end());
+      sort(onDemandMoves.begin(), onDemandMoves.end());
       currentODStage = OD4;
       break;
     case OD4:
@@ -216,25 +216,25 @@ void MoveGenerator::fillOnDemandMoveList(const Position& position) {
     case OD5: // non capture
       generatePawnMoves<GENNONCAP>(position, &onDemandMoves);
       pushKiller(onDemandMoves);
-      stable_sort(onDemandMoves.begin(), onDemandMoves.end());
+      sort(onDemandMoves.begin(), onDemandMoves.end());
       currentODStage = OD6;
       break;
     case OD6:
       generateCastling<GENNONCAP>(position, &onDemandMoves);
       pushKiller(onDemandMoves);
-      stable_sort(onDemandMoves.begin(), onDemandMoves.end());
+      sort(onDemandMoves.begin(), onDemandMoves.end());
       currentODStage = OD7;
       break;
     case OD7:
       generateMoves<GENNONCAP>(position, &onDemandMoves);
       pushKiller(onDemandMoves);
-      stable_sort(onDemandMoves.begin(), onDemandMoves.end());
+      sort(onDemandMoves.begin(), onDemandMoves.end());
       currentODStage = OD8;
       break;
     case OD8:
       generateKingMoves<GENNONCAP>(position, &onDemandMoves);
       pushKiller(onDemandMoves);
-      stable_sort(onDemandMoves.begin(), onDemandMoves.end());
+      sort(onDemandMoves.begin(), onDemandMoves.end());
       currentODStage = OD_END;
       break;
     case OD_END:
@@ -264,20 +264,22 @@ void MoveGenerator::storeKiller(const Move killerMove, const int maxKillers) {
   maxNumberOfKiller = maxKillers;
 
   if (std::find(killerMoves.begin(), killerMoves.end(), moveOf(killerMove)) == killerMoves.end()) {
-    const size_t size = killerMoves.size();
+    // killer not found so add it to the list
     if (killerMoves.empty()) {
       // create first entry
       killerMoves.push_back(killerMove);
     }
     else {
+      const size_t size = killerMoves.size();
       // create new entry from former last entry
       killerMoves.push_back(killerMoves[size - 1]);
-      // shift each back
-      int i = size - 1;
+      // shift existing element back one position
+      auto i = size - 1;
       while (i >= 1) {
         killerMoves[i] = killerMoves[i - 1];
         i--;
       }
+      // now set the new killer at the front of the list
       killerMoves[0] = killerMove;
     }
     if (killerMoves.size() > maxNumberOfKiller) killerMoves.resize(maxNumberOfKiller);
@@ -439,7 +441,7 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
     and ANDs it with the opponents pieces. With this we get all possible captures
     and can easily create the moves by using a loop over all captures and using
     the backward shift for the from-Square.
-    All moves get stable_sort values so that stable_sort order should be:
+    All moves get sort values so that sort order should be:
      captures: most value victim least value attacker - promotion piece value
      non captures: killer (TBD), promotions, castling, normal moves (position value)
     */
@@ -506,7 +508,7 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
     while (promMoves) {
       const Square toSquare   = Bitboards::popLSB(promMoves);
       const Square fromSquare = toSquare + pawnDir[~nextPlayer];
-      // value is done manually for stable_sorting of queen prom first, then knight and others
+      // value is done manually for sorting of queen prom first, then knight and others
       pMoves->push_back(createMove<PROMOTION>(fromSquare, toSquare, static_cast<Value>(9000), QUEEN));
       pMoves->push_back(createMove<PROMOTION>(fromSquare, toSquare, static_cast<Value>(9100), KNIGHT));
       pMoves->push_back(createMove<PROMOTION>(fromSquare, toSquare, static_cast<Value>(10900), BISHOP));

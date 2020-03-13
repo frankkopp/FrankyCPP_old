@@ -453,6 +453,60 @@ TEST_F(TimingTests, DequeSortVsArray) {
   cout << os.str();
 }
 
+TEST_F(TimingTests, StableSortVsSort) {
+  ostringstream os;
+
+  std::mt19937_64                                   rg(12345);
+  std::uniform_int_distribution<unsigned long long> randomU64;
+
+  const int items = 75;
+  std::vector<Move> movesVector;
+  std::deque<Move>  movesDeque;
+
+  // fill array and deque
+  for (int i = 0; i < items; ++i) {
+    Move m        = Move(randomU64(rg));
+    movesVector.push_back(m);
+    movesDeque.push_back(m);
+  }
+
+  bool reverse = false;
+
+  //// TESTS START
+  std::function<void()>         f1 = [&]() {
+    reverse ? std::sort(movesVector.begin(), movesVector.end(), less<Move>())
+            : std::sort(movesVector.begin(), movesVector.end(), greater<Move>());
+    reverse = !reverse;
+  };
+  std::function<void()>         f2 = [&]() {
+    reverse ? std::stable_sort(movesVector.begin(), movesVector.end(), less<Move>())
+            : std::stable_sort(movesVector.begin(), movesVector.end(), greater<Move>());
+    reverse = !reverse;
+  };
+  vector<std::function<void()>> tests;
+  tests.push_back(f1);
+  tests.push_back(f2);
+  //// TESTS END
+
+  testTiming(os, 5, 100, 10'000, tests);
+
+//  Move tmp = movesArray[0];
+//  for (int i = 0; i < items; ++i) {
+////    fprintln("{}", movesArray[i]);
+//    EXPECT_LE(tmp, movesArray[i]);
+//    tmp = movesArray[i];
+//  }
+//  NEWLINE;
+//  tmp = movesList[0];
+//  for (int i = 0; i < items; ++i) {
+////    fprintln("{}", movesList[i]);
+//    EXPECT_LE(tmp, movesList[i]);
+//    tmp = movesList[i];
+//  }
+
+  cout << os.str();
+}
+
 TEST_F(TimingTests, DISABLED_Skeleton) {
   ostringstream os;
 

@@ -101,6 +101,7 @@ TEST_F (SearchTest, timerTest) {
   Position     position;
 
   SearchConfig::USE_BOOK = false;
+  SearchConfig::USE_ASPIRATION_WINDOW = false;
 
   searchLimits.setWhiteTime (60'000); //  1.475 ms
   searchLimits.setBlackTime (60'000);
