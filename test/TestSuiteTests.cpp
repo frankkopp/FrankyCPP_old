@@ -35,6 +35,9 @@
 
 using testing::Eq;
 
+/**
+ * These tests test the engine against various positional tests. 
+ */
 class TestSuiteTest : public ::testing::Test {
 public:
   static void SetUpTestSuite() {

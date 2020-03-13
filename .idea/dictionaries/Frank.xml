@@ -19,6 +19,7 @@
       <w>ifstream</w>
       <w>implmentation</w>
       <w>kopp</w>
+      <w>kpnbrq</w>
       <w>malus</w>
       <w>midvalue</w>
       <w>movegen</w>
@@ -28,11 +29,13 @@
       <w>nomove</w>
       <w>noninfringement</w>
       <w>nonroot</w>
+      <w>nopiece</w>
       <w>passant</w>
       <w>pawneval</w>
       <w>pawnshield</w>
       <w>perft</w>
       <w>permill</w>
+      <w>piecetype</w>
       <w>ponderhit</w>
       <w>popcount</w>
       <w>prefrontier</w>

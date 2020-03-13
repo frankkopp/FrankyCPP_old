@@ -48,8 +48,7 @@ Search::Search(Engine* pEng) : Search(pEng, SearchConfig::TT_SIZE_MB) {}
 Search::Search(Engine* pEng, int ttSizeInByte) {
   pEngine      = pEng;
   pEvaluator   = std::make_unique<Evaluator>();
-  pOpeningBook = std::make_unique<OpeningBook>(SearchConfig::BOOK_PATH,
-                                               SearchConfig::BOOK_TYPE);
+  pOpeningBook = std::make_unique<OpeningBook>(SearchConfig::BOOK_PATH, SearchConfig::BOOK_TYPE);
   if (SearchConfig::USE_BOOK) pOpeningBook->initialize();
   tt = [&] { return SearchConfig::USE_TT ? new TT(ttSizeInByte) : new TT(0); }();
 }
@@ -232,6 +231,8 @@ void Search::run(Position position) {
       // when we got a list of possible moves from UCI we skip the opening book
       && searchLimitsPtr->getMoves().empty()) {
 
+    // For now we only use random moves from the opening book.
+    // Lots of opportunity to improve when playing strength has priority
     lastSearchResult.bestMove = pOpeningBook->getRandomMove(position.getZobristKey());
     if (lastSearchResult.bestMove != MOVE_NONE) hadBookMove = true;
   }
@@ -249,8 +250,9 @@ void Search::run(Position position) {
 
   _hasResult = true;
 
-  // if we arrive here and the search is not stopped it means that the search
+  // If we arrive here and the search is not stopped it means that the search
   // was finished before it has been stopped (by stopSearchFlag or ponderhit)
+  // We wait here until search has completed.
   if (!_stopSearchFlag && (searchLimitsPtr->isPonder() || searchLimitsPtr->isInfinite())) {
     LOG__INFO(Logger::get().SEARCH_LOG, "Search finished before stopped or ponderhit! Waiting for stop/ponderhit to send result");
     while (!_stopSearchFlag && (searchLimitsPtr->isPonder() || searchLimitsPtr->isInfinite())) {
@@ -276,9 +278,7 @@ void Search::run(Position position) {
 
   // to stop timer if still running
   _stopSearchFlag = true;
-  if (timerThread.joinable()) {
-    timerThread.join();
-  }
+  if (timerThread.joinable()) timerThread.join();
   _isRunning = false;
   searchSemaphore.reset();
   LOG__TRACE(Logger::get().SEARCH_LOG, "Search thread ended.");
@@ -289,6 +289,7 @@ void Search::run(Position position) {
  * with each iteration.
  *
  * Detects mate if started on a mate position.
+ *
  * @param position
  * @return a SearchResult
  */
@@ -299,7 +300,7 @@ SearchResult Search::iterativeDeepening(Position& position) {
 
   // check repetition and 50 moves
   if (checkDrawRepAnd50<ROOT>(position)) {
-    LOG__WARN(Logger::get().SEARCH_LOG, "Search called when DRAW by Repetition or 50-moves-rule");
+    LOG__WARN(Logger::get().SEARCH_LOG, "Search called on DRAW by Repetition or 50-moves-rule");
     searchResult.bestMove      = MOVE_NONE;
     searchResult.bestMoveValue = VALUE_DRAW;
     return searchResult;
@@ -308,19 +309,17 @@ SearchResult Search::iterativeDeepening(Position& position) {
   // no legal root moves - game already ended!
   if (!MoveGenerator::hasLegalMove(position)) {
     if (position.hasCheck()) {
+      LOG__WARN(Logger::get().SEARCH_LOG, "Search called on a CHECKMATE position");
       searchResult.bestMove      = MOVE_NONE;
       searchResult.bestMoveValue = -VALUE_CHECKMATE;
-      LOG__WARN(Logger::get().SEARCH_LOG, "Search called on a CHECKMATE position");
     }
     else {
+      LOG__WARN(Logger::get().SEARCH_LOG, "Search called on a STALEMATE position");
       searchResult.bestMove      = MOVE_NONE;
       searchResult.bestMoveValue = VALUE_DRAW;
-      LOG__WARN(Logger::get().SEARCH_LOG, "Search called on a STALEMATE position");
     }
     return searchResult;
   }
-
-  Depth iterationDepth = searchLimitsPtr->getStartDepth();
 
   // generate all legal root moves
   rootMoves = generateRootMoves(position);
@@ -333,6 +332,8 @@ SearchResult Search::iterativeDeepening(Position& position) {
     hadBookMove = false;
     addExtraTime(extraTimeFactor);
   }
+
+  Depth iterationDepth = searchLimitsPtr->getStartDepth();
 
   // print search setup for debugging
   LOG__INFO(Logger::get().SEARCH_LOG, "Searching in position: {}", position.printFen());
@@ -392,7 +393,7 @@ SearchResult Search::iterativeDeepening(Position& position) {
 
     // sort root moves based on value for the next iteration
     if (!stopConditions()) {
-      std::stable_sort(rootMoves.begin(), rootMoves.end(), rootMovesSort);
+      std::sort(rootMoves.begin(), rootMoves.end(), rootMovesSort);
       bestRootMove      = rootMoves[0];
       bestRootMoveValue = valueOf(rootMoves[0]);
       if (bestValue != bestRootMoveValue) {
@@ -427,8 +428,9 @@ SearchResult Search::iterativeDeepening(Position& position) {
   }
   else { // try to get ponder move from the TT
     position.doMove(bestRootMove);
-    auto ttEntryPtr         = tt->probe(position.getZobristKey());
+    const auto* ttEntryPtr  = tt->probe(position.getZobristKey());
     searchResult.ponderMove = ttEntryPtr ? ttEntryPtr->move : MOVE_NONE;
+    position.undoMove();
     LOG__DEBUG(Logger::get().SEARCH_LOG, "Ponder Move from TT {}", printMove(searchResult.ponderMove));
   }
   searchResult.depth      = searchStats.currentSearchDepth;
@@ -1438,7 +1440,7 @@ inline MilliSec Search::now() {
   return clock_gettime_nsec_np(CLOCK_UPTIME_RAW_APPROX) / 1'000'000;
 #else
   const std::chrono::time_point timePoint = std::chrono::high_resolution_clock::now();
-  const std::chrono::duration   timeSinceEpoch
+  const auto                    timeSinceEpoch
       = std::chrono::duration_cast<std::chrono::milliseconds>(timePoint.time_since_epoch());
   return timeSinceEpoch.count();
 #endif

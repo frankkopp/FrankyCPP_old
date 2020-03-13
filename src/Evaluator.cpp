@@ -117,8 +117,7 @@ Value Evaluator::evaluate(const Position &position) {
 int Evaluator::pawnEval(const Position &position) {
   const double gamePhaseFactor = position.getGamePhaseFactor();
   const double revGamePhaseFactor = 1.0 - gamePhaseFactor;
-  const Bitboard pawnsBitboard =
-    position.getPieceBB(WHITE, PAWN) | position.getPieceBB(BLACK, PAWN);
+  const Bitboard pawnsBitboard = position.getPieceBB(WHITE, PAWN) | position.getPieceBB(BLACK, PAWN);
 
   Entry* const entryPtr = [&] { // lambda initialization
     // Get a pointer to a value entry for pawns

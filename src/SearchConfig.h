@@ -86,7 +86,7 @@ namespace SearchConfig {
   // not implemented
   // vvvvvvvvvvvvvvv
 
-  inline bool USE_IID               = true; // Internal Iterative Deepening to find good frist move
+  inline bool USE_IID               = true; // Internal Iterative Deepening to find good first move
   inline Depth IID_REDUCTION        = Depth{2};
 
   inline bool USE_RAZOR_PRUNING     = true; // Razoring - bad move direct into qs

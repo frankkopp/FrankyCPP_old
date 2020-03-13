@@ -62,7 +62,7 @@ namespace Values {
     0,  0,  0,  0,  0,  0,  0,  0
   };
 
-// KNIGHT Tables
+  // KNIGHT Tables
   constexpr int knightMidGame[SQ_LENGTH] = {
     -50,-40,-30,-30,-30,-30,-40,-50,
     -40,-20,  0,  0,  0,  0,-20,-40,
@@ -84,7 +84,7 @@ namespace Values {
     -50,-40,-20,-30,-30,-20,-40,-50,
   };
 
-// BISHOP Tables
+  // BISHOP Tables
   constexpr int bishopMidGame[SQ_LENGTH] = {
     -20,-10,-10,-10,-10,-10,-10,-20,
     -10,  0,  0,  0,  0,  0,  0,-10,
@@ -106,7 +106,7 @@ namespace Values {
     -20,-10,-10,-10,-10,-10,-10,-20,
   };
 
-// ROOK Tables
+  // ROOK Tables
   constexpr int rookMidGame [SQ_LENGTH] = {
     5,  5,  5,  5,  5,  5,  5,  5,
     10, 10, 10, 10, 10, 10, 10, 10,
@@ -128,7 +128,7 @@ namespace Values {
     0,  0,  0,  0,  0,  0,  0,  0,
   };
 
-// Queen Tables
+  // Queen Tables
   constexpr int queenMidGame[SQ_LENGTH] = {
     -20,-10,-10, -5, -5,-10,-10,-20,
     -10,  0,  0,  0,  0,  0,  0,-10,
@@ -150,7 +150,7 @@ namespace Values {
     -20,-10,-10, -5, -5,-10,-10,-20
   };
 
-// King Tables
+  // King Tables
   constexpr int kingMidGame [SQ_LENGTH] = {
     -30,-40,-40,-50,-50,-40,-40,-30,
     -30,-40,-40,-50,-50,-40,-40,-30,
@@ -172,8 +172,6 @@ namespace Values {
     -50,-30,-30,-30,-30,-30,-30,-50
   };
   // @formatter:on
-
 }
-
 
 #endif //FRANKYCPP_EVALUATION_H

@@ -36,6 +36,9 @@
 
 using testing::Eq;
 
+/**
+ * This test class tests the test suite functionality itself
+ */
 class TestSuiteTest : public ::testing::Test {
 public:
   static void SetUpTestSuite() {

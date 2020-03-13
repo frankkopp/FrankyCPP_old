@@ -375,7 +375,7 @@ TEST_F(PerformanceTests, Evaluator_EPS) {
  *
  * 23.2. MSVC
  * Nodes: 44.023.164 Time: 30.007 ms NPS: 1.467.096
- * 12.3. MSVC (MoveList as Vactor)
+ * 12.3. MSVC (MoveList as Vector)
  * Nodes: 53.122.613 Time: 30.015 ms NPS: 1.769.868
  * Nodes: 55.676.959 Time: 30.012 ms NPS: 1.855.156
  */
@@ -387,7 +387,7 @@ TEST_F(PerformanceTests, Search_NPS) {
   Position     position;
 
   search.setHashSize(1'024);
-  searchLimits.setMoveTime(30'000);
+  searchLimits.setMoveTime(120'000);
 
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();

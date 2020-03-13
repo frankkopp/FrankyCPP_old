@@ -23,20 +23,23 @@
  *
  */
 
-#include <iosfwd>
 #include "types.h"
 #include "gtest/gtest_prod.h"
+#include <iosfwd>
 
 #ifndef FRANKYCPP_TT_H
 #define FRANKYCPP_TT_H
 
 // pre-fetching of TT entries into CPU caches
 #ifdef __GNUC__
+#include <emmintrin.h>
+#define TT_ENABLE_PREFETCH
+#elif _MSC_VER
+#include <xmmintrin.h>
 #define TT_ENABLE_PREFETCH
 #endif
 
 #ifdef TT_ENABLE_PREFETCH
-#include <emmintrin.h>
 #define TT_PREFETCH tt->prefetch(position.getZobristKey())
 #else
 #define TT_PREFETCH void(0);
@@ -55,22 +58,21 @@
  */
 class TT {
 public:
-
-  static constexpr int CacheLineSize = 64;
+  static constexpr int      CacheLineSize   = 64;
   static constexpr uint64_t DEFAULT_TT_SIZE = 2; // MByte
-  static constexpr uint64_t MAX_SIZE_MB = 32'768;
+  static constexpr uint64_t MAX_SIZE_MB     = 32'768;
 
   struct Entry {
     // sorted by size to achieve smallest struct size
     // using bitfield for smallest size
-    Key key = 0; // 64 bit
-    Move move = MOVE_NONE; // 32 bit
-    Value value = VALUE_NONE; // 16 bit signed
-    Depth depth:7; // 0-127
-    uint8_t age:3; // 0-7
-    Value_Type type:2; // 4 values
-    bool mateThreat:1; // 1-bit bool
-    friend std::ostream &operator<<(std::ostream &os, const Entry &entry);
+    Key                  key   = 0;          // 64 bit
+    Move                 move  = MOVE_NONE;  // 32 bit
+    Value                value = VALUE_NONE; // 16 bit signed
+    Depth                depth : 7;          // 0-127
+    uint8_t              age : 3;            // 0-7
+    Value_Type           type : 2;           // 4 values
+    bool                 mateThreat : 1;     // 1-bit bool
+    friend std::ostream& operator<<(std::ostream& os, const Entry& entry);
   };
 
   // struct Entry has 16 Byte
@@ -78,30 +80,28 @@ public:
   static_assert(CacheLineSize % ENTRY_SIZE == 0, "Cluster size incorrect");
 
 private:
-
   // threads for clearing hash
   unsigned int noOfThreads = 1;
 
   // size and fill info
-  uint64_t sizeInByte = 0;
+  uint64_t    sizeInByte         = 0;
   std::size_t maxNumberOfEntries = 0;
-  std::size_t hashKeyMask = 0;
-  std::size_t numberOfEntries = 0;
+  std::size_t hashKeyMask        = 0;
+  std::size_t numberOfEntries    = 0;
 
   // statistics
-  mutable uint64_t numberOfPuts = 0;
+  mutable uint64_t numberOfPuts       = 0;
   mutable uint64_t numberOfCollisions = 0;
   mutable uint64_t numberOfOverwrites = 0;
-  mutable uint64_t numberOfUpdates = 0;
-  mutable uint64_t numberOfProbes = 0;
-  mutable uint64_t numberOfHits = 0; // entries with identical key found
-  mutable uint64_t numberOfMisses = 0; // no entry with key found
+  mutable uint64_t numberOfUpdates    = 0;
+  mutable uint64_t numberOfProbes     = 0;
+  mutable uint64_t numberOfHits       = 0; // entries with identical key found
+  mutable uint64_t numberOfMisses     = 0; // no entry with key found
 
   // this array hold the actual entries for the transposition table
   Entry* _data{};
 
 public:
-
   // TT default size is 2 MB
   TT() : TT(DEFAULT_TT_SIZE) {}
 
@@ -116,10 +116,10 @@ public:
   }
 
   // disallow copies
-  TT(TT const &tt) = delete; // copy
-  TT &operator=(const TT &) = delete; // copy assignment
-  TT(TT const &&tt) = delete; // move
-  TT &operator=(const TT &&) = delete; // move assignment
+  TT(TT const& tt) = delete;          // copy
+  TT& operator=(const TT&) = delete;  // copy assignment
+  TT(TT const&& tt)        = delete;  // move
+  TT& operator=(const TT&&) = delete; // move assignment
 
   /**
    * Changes the size of the transposition table and clears all entries.
@@ -145,7 +145,7 @@ public:
     * @param forced when true skips age check (mostly for unit testing)
     */
   void
-  put(Key key, Depth depth, Move move, Value value, Value_Type type, bool mateThreat, bool forced);
+      put(Key key, Depth depth, Move move, Value value, Value_Type type, bool mateThreat, bool forced);
 
   /**
     * Stores the node value and the depth it has been calculated at.
@@ -187,7 +187,7 @@ public:
    * Looks up and returns a pointer to an TT Entry. Decreases age of the entry
    * if an entry was found
    */
-  const TT::Entry* probe(const Key &key);
+  const TT::Entry* probe(const Key& key);
 
   /** Age all entries by 1 */
   void ageEntries();
@@ -198,10 +198,14 @@ public:
     return static_cast<int>((1000 * numberOfEntries) / maxNumberOfEntries);
   };
 
-  // using prefetch improves probe lookup speed significantly
+    // using prefetch improves probe lookup speed significantly
 #ifdef TT_ENABLE_PREFETCH
   inline void prefetch(const Key key) {
+#ifdef __GNUC__
     _mm_prefetch(&_data[(key & hashKeyMask)], _MM_HINT_T0);
+#elif _MSC_VER
+    _mm_prefetch(reinterpret_cast<const CHAR*>(&_data[(key & hashKeyMask)]), _MM_HINT_T0);
+#endif
   }
 #endif
 
@@ -209,10 +213,9 @@ public:
   std::string str();
 
 private:
-
   static void
-  writeEntry(Entry* entryPtr, Key key, Depth depth, Move move,
-             Value value, Value_Type type, bool mateThreat, uint8_t age);
+      writeEntry(Entry* entryPtr, Key key, Depth depth, Move move,
+                 Value value, Value_Type type, bool mateThreat, uint8_t age);
 
   /* generates the index hash key from the position key  */
   inline std::size_t getHash(const Key key) const {
@@ -226,7 +229,6 @@ private:
 
   /** GETTER and SETTER */
 public:
-
   uint64_t getSizeInByte() const {
     return sizeInByte;
   }
@@ -277,14 +279,14 @@ public:
 
   static inline std::string str(const Value_Type type) {
     switch (type) {
-      case TYPE_NONE:
-        return "NONE";
-      case TYPE_EXACT:
-        return "EXACT";
-      case TYPE_ALPHA:
-        return "ALPHA";
-      case TYPE_BETA:
-        return "BETA";
+    case TYPE_NONE:
+      return "NONE";
+    case TYPE_EXACT:
+      return "EXACT";
+    case TYPE_ALPHA:
+      return "ALPHA";
+    case TYPE_BETA:
+      return "BETA";
     }
     return "";
   }
@@ -293,7 +295,6 @@ public:
   FRIEND_TEST(TT_Test, put);
   FRIEND_TEST(TT_Test, get);
   FRIEND_TEST(TT_Test, probe);
-
 };
 
 #endif //FRANKYCPP_TT_H

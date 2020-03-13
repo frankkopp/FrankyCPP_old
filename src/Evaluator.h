@@ -33,11 +33,11 @@
 
 // pre-fetching of TT entries into CPU caches
 #ifdef __GNUC__
+#include <emmintrin.h>
 #define EVAL_ENABLE_PREFETCH
 #endif
 
 #ifdef EVAL_ENABLE_PREFETCH
-#include <emmintrin.h>
 #define EVAL_PREFETCH pEvaluator->prefetch(position.getPieceBB(WHITE, PAWN) | position.getPieceBB(BLACK, PAWN))
 #else
 #define EVAL_PREFETCH void(0);
@@ -74,7 +74,7 @@ class Evaluator {
 
   /** eval cache */
   typedef std::vector<Entry> Table;
-  Table pawnTable;
+  Table pawnTable{};
   /** if eval cache is turned off this holds the pawn eval */
   Entry defaultEntry{0, 0, 0};
 
@@ -118,7 +118,7 @@ public:
 
   /** if available on the platform tell the CPU to pre-cache data */
 #ifdef EVAL_ENABLE_PREFETCH
-  inline void prefetch(const Bitboard &pawnBitboard) const {
+  inline void prefetch(const Bitboard pawnBitboard) const {
     _mm_prefetch(&pawnTable[getTableIndex(pawnBitboard)], _MM_HINT_T0);
   }
 #endif

@@ -474,13 +474,13 @@ TEST_F(TimingTests, StableSortVsSort) {
 
   //// TESTS START
   std::function<void()>         f1 = [&]() {
-    reverse ? std::sort(movesVector.begin(), movesVector.end(), less<Move>())
-            : std::sort(movesVector.begin(), movesVector.end(), greater<Move>());
+    reverse ? std::sort(movesVector.begin(), movesVector.end(), less())
+            : std::sort(movesVector.begin(), movesVector.end(), greater());
     reverse = !reverse;
   };
   std::function<void()>         f2 = [&]() {
-    reverse ? std::stable_sort(movesVector.begin(), movesVector.end(), less<Move>())
-            : std::stable_sort(movesVector.begin(), movesVector.end(), greater<Move>());
+    reverse ? std::stable_sort(movesVector.begin(), movesVector.end(), less())
+            : std::stable_sort(movesVector.begin(), movesVector.end(), greater());
     reverse = !reverse;
   };
   vector<std::function<void()>> tests;
