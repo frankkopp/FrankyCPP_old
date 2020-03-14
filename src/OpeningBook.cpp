@@ -62,6 +62,7 @@ namespace bfs = boost::filesystem;
 // not all C++17 compilers have this std library for parallelization
 #ifdef HAS_EXECUTION_LIB
 #include <execution>
+#include <utility>
 #endif
 
 // the extension cache files use after the given opening book filename
@@ -70,8 +71,8 @@ static const char* const cacheExt = ".cache.bin";
 // //////////////////////////////////////////////
 // /// PUBLIC
 
-OpeningBook::OpeningBook(const std::string &bookPath, const BookFormat &bFormat)
-  : bookFilePath(bookPath), bookFormat(bFormat) {
+OpeningBook::OpeningBook(std::string bookPath, const BookFormat &bFormat)
+  : bookFilePath(std::move(bookPath)), bookFormat(bFormat) {
   // std::thread::hardware_concurrency() is not reliable - on some platforms
   // it returns 0 - in this case we chose a default of 4
   numberOfThreads = std::thread::hardware_concurrency() == 0 ?
@@ -86,7 +87,7 @@ OpeningBook::OpeningBook(const std::string &bookPath, const BookFormat &bFormat)
 Move OpeningBook::getRandomMove(Key zobrist) const {
   Move bookMove = MOVE_NONE;
   // Find the entry for this key (zobrist key of position) in the map and
-  // choose a random move from the listof moves in the entry
+  // choose a random move from the list of moves in the entry
   if (bookMap.find(zobrist) != bookMap.end()) {
     BookEntry bookEntry = bookMap.at(zobrist);
     if (!bookEntry.moves.empty()) {
@@ -156,7 +157,7 @@ void OpeningBook::readBookFromFile(const std::string &filePath) {
 
 /* reads all lines from a file stream into a vector and returns them
    skips empty lines */
-std::vector<std::string> OpeningBook::getLinesFromFile(std::ifstream &ifstream) {
+std::vector<std::string> OpeningBook::getLinesFromFile(std::ifstream &ifstream) const {
   LOG__DEBUG(Logger::get().BOOK_LOG, "Reading lines from book.");
   const auto start = std::chrono::high_resolution_clock::now();
   std::vector<std::string> lines;
@@ -391,7 +392,7 @@ void OpeningBook::processPGNFile(std::vector<std::string> &lines) {
     LOG__ERROR(Logger::get().BOOK_LOG, "Could not process lines from PGN file.");
     return;
   }
-  auto ptrGames = &pgnReader.getGames();
+  auto *ptrGames = &pgnReader.getGames();
   gamesTotal = ptrGames->size();
   // process all games
   processGames(ptrGames);
@@ -447,7 +448,7 @@ void OpeningBook::processGame(PGN_Game &game) {
   const std::regex SANRegex(R"(([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O-O-O|O-O)(=?([NBRQ]))?([!?+#]*)?)");
 
   Position currentPosition; // start position
-  for (auto moveStr : game.moves) {
+  for (const auto& moveStr : game.moves) {
     Move move = MOVE_NONE;
 
     // check the notation format
@@ -518,7 +519,7 @@ void OpeningBook::addToBook(Position &currentPosition, const Move &move) {
     lastEntry->ptrNextPosition.emplace_back(std::make_shared<BookEntry>(bookMap.at(currentKey)));
     LOG__TRACE(Logger::get().BOOK_LOG, "Added move and pointer to last entry.");
   }
-}
+} // lock released
 
 /* Saves the bookMap data to a binary cache file for faster reading.
    Uses BOOST serialization to serialize the data to a binary file */
@@ -663,18 +664,16 @@ bool OpeningBook::hasCache() const {
 
 /** Checks of file exists and encapsulates platform differences for
  * filesystem operations */
-bool OpeningBook::fileExists(const std::string &filePath) {
+bool OpeningBook::fileExists(const std::string& filePath) {
   bfs::path p{filePath};
   return bfs::exists(filePath);
 }
 
 /** Returns files size in bytes and encapsulates platform differences for
  * filesystem operations */
-uint64_t OpeningBook::getFileSize(const std::string &filePath) {// get file size
+uint64_t OpeningBook::getFileSize(const std::string &filePath) {
   bfs::path p{filePath};
   uint64_t fsize = bfs::file_size(bfs::canonical(p));
-  // std::ifstream in(filePath, std::ifstream::ate | std::ifstream::binary);
-  // fileSize = in.tellg();
   return fsize;
 }
 

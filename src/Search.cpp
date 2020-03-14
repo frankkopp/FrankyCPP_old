@@ -967,8 +967,8 @@ Value Search::search(Position& position, Depth depth, Ply ply, Value alpha, Valu
       const Search::Search_Type nextST = ST == ROOT ? NONROOT : ST;
 
       // reduce depth by 1 in the next search and add extension and r
-      // substract reductions for this move
-      Depth newDepth = depth - DEPTH_ONE + extension - reductions;
+      // subtract reductions for this move
+      Depth newDepth = depth - DEPTH_ONE - reductions; // + extension
 
       // in quiescence we do not have depth any more
       if (ST == QUIESCENCE || newDepth < DEPTH_NONE) newDepth = DEPTH_NONE;
@@ -1307,9 +1307,7 @@ bool Search::goodCapture(Position& position, Move move) {
       || !position.isAttacked(getToSquare(move), ~position.getNextPlayer())
 
       // Check SEE score of higher value pieces to low value pieces
-      || (SearchConfig::USE_QS_SEE && (Attacks::see(position, move) > 0))
-
-          ;
+      || (SearchConfig::USE_QS_SEE && (Attacks::see(position, move) > 0));
 }
 
 inline void Search::storeTT(Position& position, Value value, Value_Type ttType, Depth depth, Ply ply, Move move, bool _mateThreat) {

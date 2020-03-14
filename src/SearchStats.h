@@ -90,8 +90,36 @@ struct SearchStats {
   uint64_t deltaPrunings = 0;
   std::string str() const;
 
-
   friend std::ostream &operator<<(std::ostream &os, const SearchStats &stats);
+
+  /**
+   * Creates a vector with the normalized (0-1.0) distribution of values of
+   * container provided by the iterator.
+   * @tparam RanIt
+   * @param iter
+   * @param end
+   * @param n number of values in the resulting vector (-1 for all)
+   * @return vector with normalized distribution for values.
+   */
+  template <class RanIt>
+  static std::vector<double> getPercentages(const RanIt iter, const RanIt end, int n = -1) {
+    // sum all elements
+    uint64_t sum = 0;
+    for (auto i = iter; i != end; ++i) {
+      sum += *i;
+    }
+    // create array with percentages for each element
+    std::vector<double> percentage{};
+    percentage.reserve(std::distance(iter, end));
+    // calculate percentages
+    const RanIt itEnd = n == -1 ? end : iter + n;
+    for (auto i = iter; i != itEnd; ++i) {
+      percentage.emplace_back(double(*i) / sum);
+    }
+    return percentage;
+  }
+
+  static std::string printPercentages(std::vector<double> p) ;
 };
 
 

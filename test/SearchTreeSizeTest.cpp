@@ -25,41 +25,41 @@
 
 #include <gtest/gtest.h>
 
-#include <utility>
+#include "Engine.h"
 #include "Logging.h"
 #include "Position.h"
 #include "Search.h"
 #include "SearchConfig.h"
-#include "Engine.h"
 #include "Test_Fens.h"
+#include <utility>
 
 using testing::Eq;
 
 class SearchTreeSizeTest : public ::testing::Test {
 public:
-  static constexpr int DEPTH = 8;
+  static constexpr int DEPTH     = 7;
   static constexpr int START_FEN = 0;
-  static constexpr int END_FEN = 15;
+  static constexpr int END_FEN   = 15;
 
   /* special is used to collect a dedicated stat */
   const uint64_t* ptrToSpecial = nullptr;
 
   struct SingleTest {
-    std::string name = "";
-    uint64_t nodes = 0;
-    uint64_t nps = 0;
-    uint64_t time = 0;
-    uint64_t special = 0;
-    Move move = MOVE_NONE;
-    Value value = VALUE_NONE;
-    std::string pv = "";
+    std::string name    = "";
+    uint64_t    nodes   = 0;
+    uint64_t    nps     = 0;
+    uint64_t    time    = 0;
+    uint64_t    special = 0;
+    Move        move    = MOVE_NONE;
+    Value       value   = VALUE_NONE;
+    std::string pv      = "";
   };
 
   struct Result {
-    std::string fen = "";
+    std::string             fen = "";
     std::vector<SingleTest> tests{};
 
-    explicit Result(std::string _fen) : fen(std::move(_fen)) {};
+    explicit Result(std::string _fen) : fen(std::move(_fen)){};
   };
 
   struct TestSums {
@@ -77,38 +77,33 @@ public:
   }
 
 protected:
-
   void SetUp() override {}
 
   void TearDown() override {}
 
-  Result featureMeasurements(int depth, const std::string &fen);
-  SingleTest measureTreeSize(Search &search, const Position &position, SearchLimits searchLimits,
-                             const std::string &featureName);
-
+  Result     featureMeasurements(int depth, const std::string& fen);
+  SingleTest measureTreeSize(Search& search, const Position& position, SearchLimits searchLimits,
+                             const std::string& featureName);
 };
 
 TEST_F(SearchTreeSizeTest, size_test) {
 
   LOG__INFO(Logger::get().TEST_LOG, "Start SIZE Test for depth {}", DEPTH);
-
-  std::vector<std::string> fens = Test_Fens::getFENs();
-  std::vector<Result> results{};
-
-  // turn off info and below logging in the application
   spdlog::set_level(spdlog::level::debug);
 
+  // Prepare test fens
+  std::vector<std::string> fens = Test_Fens::getFENs();
+  std::vector<Result>      results{};
   results.reserve(fens.size());
   auto iterStart = fens.begin() + START_FEN;
-  auto iterEnd = fens.begin() + START_FEN + END_FEN;
+  auto iterEnd   = fens.begin() + START_FEN + END_FEN;
   if (iterEnd > fens.end()) iterEnd = fens.end();
   if (iterStart > iterEnd) iterStart = iterEnd;
 
+  // Execute tests and store results
   for (auto fen = iterStart; fen != iterEnd; ++fen) {
     results.push_back(featureMeasurements(DEPTH, *fen));
   }
-
-  spdlog::set_level(spdlog::level::trace);
 
   // Print result
   // @formatter:off
@@ -124,8 +119,8 @@ TEST_F(SearchTreeSizeTest, size_test) {
   setlocale(LC_NUMERIC, "de_DE.UTF-8");
   std::map<std::string, TestSums> sums{};
 
-  for (const Result &result : results) {
-    for (const SingleTest &test : result.tests) {
+  for (const Result& result : results) {
+    for (const SingleTest& test : result.tests) {
       sums[test.name].sumCounter++;
       sums[test.name].sumNodes += test.nodes;
       sums[test.name].sumNps += test.nps;
@@ -141,44 +136,49 @@ TEST_F(SearchTreeSizeTest, size_test) {
 
   NEWLINE;
 
-  for (auto &sum : sums) {
-    fmt::print("Test: {:<12s}  Nodes: {:>16n}  Nps: {:>16n}  Time: {:>16n} Special: {:>16n}\n", sum.first.c_str(),
+  for (auto& sum : sums) {
+    fprintln("Test: {:<12s}  Nodes: {:>16n}  Nps: {:>16n}  Time: {:>16n} Special: {:>16n}", sum.first.c_str(),
                sum.second.sumNodes / sum.second.sumCounter, sum.second.sumNps / sum.second.sumCounter,
                sum.second.sumTime / sum.second.sumCounter, sum.second.special / sum.second.sumCounter);
   }
 }
 
 SearchTreeSizeTest::Result
-SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
-  Search search{};
+    SearchTreeSizeTest::featureMeasurements(int depth, const std::string& fen) {
+  Search       search{};
   SearchLimits searchLimits{};
   searchLimits.setDepth(depth);
-  Result result(fen);
+  Result   result(fen);
   Position position(fen);
 
   // turn off all options
+  SearchConfig::USE_BOOK              = false;
   SearchConfig::USE_ASPIRATION_WINDOW = false;
-  SearchConfig::USE_QUIESCENCE = false;
-  SearchConfig::USE_ALPHABETA = false;
-  SearchConfig::USE_KILLER_MOVES = false;
-  SearchConfig::USE_TT = false;
-  SearchConfig::TT_SIZE_MB = 64;
-  SearchConfig::USE_TT_QSEARCH = false;
-  SearchConfig::USE_MDP = false;
-  SearchConfig::USE_MPP = false;
-  SearchConfig::USE_PVS = false;
-  SearchConfig::USE_PV_MOVE_SORT = false;
-  SearchConfig::USE_RFP = false;
-  SearchConfig::USE_NMP = false;
-  SearchConfig::USE_EXTENSIONS = false;
-  SearchConfig::USE_FP = false;
-  SearchConfig::USE_EFP = false;
-  SearchConfig::USE_LMR = false;
+  SearchConfig::USE_ALPHABETA         = false;
+  SearchConfig::USE_PVS               = false;
+  SearchConfig::USE_QUIESCENCE        = false;
+  SearchConfig::MAX_EXTRA_QDEPTH      = Depth{ 20 };
+  SearchConfig::USE_TT                = false;
+  SearchConfig::TT_SIZE_MB            = 64;
+  SearchConfig::USE_TT_QSEARCH        = false;
+  SearchConfig::USE_QS_SEE            = false;
+  SearchConfig::USE_KILLER_MOVES      = false;
+  SearchConfig::USE_PV_MOVE_SORT      = false;
+  SearchConfig::USE_MDP               = false;
+  SearchConfig::USE_MPP               = false;
+  SearchConfig::USE_QS_STANDPAT_CUT   = false;
+  SearchConfig::USE_RFP               = false;
+  SearchConfig::USE_NMP               = false;
+  SearchConfig::NMP_VERIFICATION      = false;
+  SearchConfig::USE_EXTENSIONS        = false;
+  SearchConfig::USE_FP                = false;
+  SearchConfig::USE_EFP               = false;
+  SearchConfig::USE_LMR               = false;
 
   // not yet implemented
   // vvvvvvvvvvvvvvvvvvv
   SearchConfig::USE_RAZOR_PRUNING = false;
-  SearchConfig::USE_LMP = false;
+  SearchConfig::USE_LMP           = false;
 
   // ***********************************
   // TESTS
@@ -191,39 +191,39 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "MINIMAX-QS"));
   // pure MiniMax + quiescence
   SearchConfig::USE_QUIESCENCE = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "MM+QS"));
-  SearchConfig::USE_TT = true;
+  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 MM+QS"));
+  SearchConfig::USE_TT         = true;
   SearchConfig::USE_TT_QSEARCH = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "MM+QS+TT"));
   SearchConfig::USE_ALPHABETA = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 AlphaBeta"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "01 AlphaBeta"));
   SearchConfig::USE_PVS = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "01 PVS"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "01 PVS"));
   SearchConfig::USE_PV_MOVE_SORT = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "02 PVSort"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "02 PVSort"));
   SearchConfig::USE_KILLER_MOVES = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "03 KILL"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "03 KILL"));
   SearchConfig::USE_MPP = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "04 MPP"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "04 MPP"));
   SearchConfig::USE_MDP = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "05 MDP"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "05 MDP"));
 
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "10 BASE"));
 
   SearchConfig::USE_NMP = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "20 NMP"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "20 NMP"));
 
   SearchConfig::USE_EXTENSIONS = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "40 EXT"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "40 EXT"));
 
   SearchConfig::USE_FP = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "50 FP"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "50 FP"));
 
   SearchConfig::USE_EFP = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "60 EFP"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "60 EFP"));
 
   SearchConfig::USE_LMR = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "70 LMR"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "70 LMR"));
 
   SearchConfig::USE_RFP = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "80 RFP"));
@@ -246,8 +246,8 @@ SearchTreeSizeTest::featureMeasurements(int depth, const std::string &fen) {
 }
 
 SearchTreeSizeTest::SingleTest
-SearchTreeSizeTest::measureTreeSize(Search &search, const Position &position,
-                                    SearchLimits searchLimits, const std::string &featureName) {
+    SearchTreeSizeTest::measureTreeSize(Search& search, const Position& position,
+                                        SearchLimits searchLimits, const std::string& featureName) {
 
   LOG__INFO(Logger::get().TEST_LOG, "");
   LOG__INFO(Logger::get().TEST_LOG, "Testing {} ####################################", featureName);
@@ -257,20 +257,14 @@ SearchTreeSizeTest::measureTreeSize(Search &search, const Position &position,
   search.waitWhileSearching();
 
   SingleTest test{};
-  test.name = featureName;
-  test.nodes = search.getSearchStats().nodesVisited;
-  test.move = search.getLastSearchResult().bestMove;
-  test.value = valueOf(search.getLastSearchResult().bestMove);
-  test.nps =
-    (1'000 * search.getSearchStats().nodesVisited) / (search.getSearchStats().lastSearchTime + 1);
-  test.time = search.getSearchStats().lastSearchTime;
+  test.name    = featureName;
+  test.nodes   = search.getSearchStats().nodesVisited;
+  test.move    = search.getLastSearchResult().bestMove;
+  test.value   = valueOf(search.getLastSearchResult().bestMove);
+  test.nps     = (1'000 * search.getSearchStats().nodesVisited) / (search.getSearchStats().lastSearchTime + 1);
+  test.time    = search.getSearchStats().lastSearchTime;
   test.special = ptrToSpecial ? *ptrToSpecial : 0;
-  test.pv = printMoveListUCI(search.getPV());
+  test.pv      = printMoveListUCI(search.getPV());
 
   return test;
 }
-
-
-
-
-

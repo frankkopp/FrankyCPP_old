@@ -131,7 +131,7 @@ public:
    * BookFormat::SAN for files with lines of moves in SAN notation<br/>
    * BookFormat::PGN for PGN formatted games<br/>
    */
-  explicit OpeningBook(const std::string &bookPath, const BookFormat &bFormat);
+  explicit OpeningBook(std::string bookPath, const BookFormat &bFormat);
 
   /**
    * Initializes this OpeningBook instance by reading moves data from the file
@@ -158,7 +158,7 @@ public:
 
 private:
   void readBookFromFile(const std::string &filePath);
-  std::vector<std::string> getLinesFromFile(std::ifstream &ifstream);
+  std::vector<std::string> getLinesFromFile(std::ifstream &ifstream) const;
   void processAllLines(std::vector<std::string> &lines);
   void processLine(std::string &line);
   void processSimpleLine(std::string &line);
@@ -180,7 +180,7 @@ public:
   void setRecreateCache(bool recreateCache) { _recreateCache = recreateCache; }
 
   static uint64_t getFileSize(const std::string &filePath);
-  static bool fileExists(const std::string &filePath);
+  static bool fileExists(const std::string& filePath);
 };
 
 #endif //FRANKYCPP_OPENINGBOOK_H
