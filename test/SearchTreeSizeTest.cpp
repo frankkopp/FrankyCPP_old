@@ -206,12 +206,9 @@ SearchTreeSizeTest::Result
   SearchConfig::USE_MPP = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "04 MPP"));
   SearchConfig::USE_MDP = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "05 MDP"));
+//  result.tests.push_back(measureTreeSize(search, position, searchLimits, "05 MDP"));
 
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "10 BASE"));
-
-  SearchConfig::USE_NMP = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "20 NMP"));
 
   SearchConfig::USE_EXTENSIONS = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "40 EXT"));
@@ -222,14 +219,17 @@ SearchTreeSizeTest::Result
   SearchConfig::USE_EFP = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "60 EFP"));
 
-  SearchConfig::USE_LMR = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "70 LMR"));
-
   SearchConfig::USE_RFP = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "80 RFP"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "70 RFP"));
 
   SearchConfig::USE_ASPIRATION_WINDOW = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "90 ASP"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "80 ASP"));
+
+  SearchConfig::USE_LMR = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "90 LMR"));
+
+  SearchConfig::USE_NMP = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "99 NMP"));
 
   //  SearchConfig::USE_RAZOR_PRUNING = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "90 RAZOR"));

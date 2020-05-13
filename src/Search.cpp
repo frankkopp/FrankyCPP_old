@@ -394,6 +394,7 @@ SearchResult Search::iterativeDeepening(Position& position) {
     // sort root moves based on value for the next iteration
     if (!stopConditions()) {
       std::sort(rootMoves.begin(), rootMoves.end(), rootMovesSort);
+      // FIXME - this make no sense as it ignores partial searches
       bestRootMove      = rootMoves[0];
       bestRootMoveValue = valueOf(rootMoves[0]);
       if (bestValue != bestRootMoveValue) {
@@ -770,7 +771,7 @@ Value Search::search(Position& position, Depth depth, Ply ply, Value alpha, Valu
   // ###############################################
 
   // FORWARD PRUNING BETA
-  // ###############################################
+  // ###############################################                                                               N
 
   // ###############################################
   // PV MOVE SORT

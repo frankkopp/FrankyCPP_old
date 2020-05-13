@@ -57,7 +57,6 @@ void SearchLimits::setupLimits() {
   if (perft) {
     timeControl = false;
     startDepth  = depth ? depth : DEPTH_ONE;
-    ;
     maxDepth = depth ? depth : DEPTH_ONE;
   }
   else if (infinite) {

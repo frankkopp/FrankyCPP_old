@@ -626,7 +626,7 @@ TEST_F(SearchTest, debugging) {
 
   // @formatter:off
   SearchConfig::USE_QUIESCENCE        = true;
-  SearchConfig::USE_QS_SEE            = false;
+  SearchConfig::USE_QS_SEE            = true;
   SearchConfig::USE_TT                = true;
   SearchConfig::USE_TT_QSEARCH        = true;
   SearchConfig::TT_SIZE_MB            = 128;
@@ -636,11 +636,11 @@ TEST_F(SearchTest, debugging) {
   SearchConfig::USE_KILLER_MOVES      = true;
   SearchConfig::NO_KILLER_MOVES       = 2;
   SearchConfig::USE_PV_MOVE_SORT      = true;
-  SearchConfig::USE_ASPIRATION_WINDOW = false;
+  SearchConfig::USE_ASPIRATION_WINDOW = true;
   SearchConfig::USE_MDP               = true;
   SearchConfig::USE_MPP               = true;
   SearchConfig::USE_RFP               = true;
-  SearchConfig::USE_NMP               = true;
+  SearchConfig::USE_NMP               = false;
   SearchConfig::NMP_VERIFICATION      = false;
 
   SearchConfig::USE_EXTENSIONS        = true;

@@ -1,0 +1,4 @@
+Starting engine ..\Release\bin\FrankyCPP_v0.5.exe ...
+>> uci
+<< FrankCPP v0.5
+<< Logger initialized (warn / warn)

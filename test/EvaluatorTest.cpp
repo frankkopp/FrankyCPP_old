@@ -135,7 +135,6 @@ TEST_F(EvaluatorTest, evaluatePieceMobility) {
   ASSERT_EQ(-36 * evaluator.config.MOBILITY_WEIGHT, actual);
 }
 
-
 TEST_F(EvaluatorTest, evaluatePawns) {
   Position position;
   Evaluator evaluator;

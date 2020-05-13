@@ -105,6 +105,7 @@ void Position::doMove(const Move move) {
 
   case NORMAL:
     if (castlingRights && (Bitboards::CastlingMask & fromSq || Bitboards::CastlingMask & toSq)) {
+      // FIXME eliminate this - see GO implementation
       invalidateCastlingRights(fromSq, toSq);
     }
     clearEnPassant();
@@ -131,6 +132,7 @@ void Position::doMove(const Move move) {
     assert(rankOf(toSq) == (myColor == WHITE ? RANK_8 : RANK_1));
     if (targetPC != PIECE_NONE) { removePiece(toSq); } // capture
     if (castlingRights && (Bitboards::CastlingMask & fromSq || Bitboards::CastlingMask & toSq)) {
+      // FIXME eliminate this - see GO implementation
       invalidateCastlingRights(fromSq, toSq);
     }
     clearEnPassant();
@@ -989,6 +991,7 @@ Piece Position::removePiece(const Square square) {
 }
 
 void Position::invalidateCastlingRights(const Square from, const Square to) {
+  // FIXME eliminate this - see GO implementation
   // check for castling rights invalidation
   if (castlingRights & WHITE_CASTLING) {
     if (from == SQ_E1 || to == SQ_E1) {

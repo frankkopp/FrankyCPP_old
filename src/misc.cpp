@@ -36,7 +36,7 @@ namespace Misc {
 
   Move getMoveFromUCI(Position &position, std::string moveStr) {
     // Regex for UCI notation (UCI)
-    std::regex regexPattern("([a-h][1-8][a-h][1-8])([NBRQnbrq])?");
+    const std::regex regexPattern("([a-h][1-8][a-h][1-8])([NBRQnbrq])?");
     std::smatch matcher;
 
     // Match the target string

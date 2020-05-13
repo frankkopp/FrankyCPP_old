@@ -259,15 +259,8 @@ TEST_F(PerformanceTests, Perft_NPS) {
 }
 
 /**
- * 23:50 24.1.2020 CYGWIN
- * Run time      : 1.765.625.000 ns (56.637.168 put/probes per sec)
- *
- * 15.2. UBUNTU WSL
- * Run time      : 1.660.000.000 ns (60.240.963 put/probes per sec)
- *
- * 23.2. MSVC
- * Run time      : 3.031.250.000 ns (32.989.690 put/probes per sec)
- *
+ * 18.3.2020 MSVC
+ * 1.427.649.600 ns (7.004.519 put/probes per sec)
  */
 TEST_F(PerformanceTests, TT_PPS) {
   std::random_device                                rd;
@@ -279,35 +272,37 @@ TEST_F(PerformanceTests, TT_PPS) {
   std::uniform_int_distribution<unsigned int>       randomBeta(0, VALUE_MAX);
   std::uniform_int_distribution<unsigned short>     randomType(1, 3);
 
-  TT tt(1'024);
+  TT tt(1024);
 
   fprintln("Start perft test for TT...");
   fprintln("TT Stats: {:s}", tt.str());
 
   const Move move = createMove("e2e4");
 
+  uint64_t  sum        = 0;
   const int rounds     = 5;
-  const int iterations = 10'000'000;
+  const int iterations = 25'000'000;
   for (int j = 0; j < rounds; ++j) {
+    sum             = 0;
+    const Key key   = randomKey(rg1);
+    auto      depth = static_cast<Depth>(randomDepth(rg1));
+    auto      value = static_cast<Value>(randomValue(rg1));
+    auto      type  = static_cast<Value_Type>(randomType(rg1));
     // puts
-    cpu_timer timer;
+    auto start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < iterations; ++i) {
-      const unsigned long long int key   = randomKey(rg1);
-      auto                         depth = static_cast<Depth>(randomDepth(rg1));
-      auto                         value = static_cast<Value>(randomValue(rg1));
-      auto                         type  = static_cast<Value_Type>(randomType(rg1));
-      tt.put(key, depth, move, value, type, false, true);
+      tt.put(key + i, depth, move, value, type, false, true);
     }
     // probes
     for (int i = 0; i < iterations; ++i) {
-      const unsigned long long int key = randomKey(rg1);
-      tt.probe(key);
+      tt.probe(key + 2 * i);
     }
-    timer.stop();
-    auto time = timer.elapsed().user + timer.elapsed().system;
+    auto finish = std::chrono::high_resolution_clock::now();
+    sum += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
+    const double sec = double(sum) / nanoPerSec;
+    uint64_t     tts = iterations / sec;
     fprintln("TT Statistics : {:s}", tt.str());
-    fprintln("Run time      : {:n} ns ({:n} put/probes per sec)", time, (rounds * 2 * iterations * nanoPerSec) / time);
-    fprintln("Run time      :{} ", timer.format());
+    fprintln("Run time      : {:n} ns ({:n} put/probes per sec)", sum, tts);
     fprintln("");
   }
 }
@@ -387,7 +382,7 @@ TEST_F(PerformanceTests, Search_NPS) {
   Position     position;
 
   search.setHashSize(1'024);
-  searchLimits.setMoveTime(120'000);
+  searchLimits.setMoveTime(15'000);
 
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();

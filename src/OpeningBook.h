@@ -50,7 +50,7 @@ struct BookEntry {
   std::vector<Move> moves{};
   std::vector<std::shared_ptr<BookEntry>> ptrNextPosition{};
 
-  BookEntry() {}
+  BookEntry() = default;
   BookEntry(const Key &zobrist, const std::string &fenString) : key(zobrist), fen(fenString), counter{1} {}
   std::string str();
 

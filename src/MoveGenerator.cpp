@@ -28,7 +28,6 @@
 #include "Position.h"
 #include "Values.h"
 #include <algorithm>
-#include <iostream>
 
 ////////////////////////////////////////////////
 ///// CONSTRUCTORS
@@ -76,7 +75,6 @@ Move MoveGenerator::getNextPseudoLegalMove(const Position& position) {
   if (position.getZobristKey() != currentIteratorKey) {
     onDemandMoves.clear();
     currentODStage     = OD_NEW;
-    currentIteratorKey = 0;
     pvMovePushed       = false;
     takeIndex          = 0;
     currentIteratorKey = position.getZobristKey();
@@ -192,17 +190,14 @@ void MoveGenerator::fillOnDemandMoveList(const Position& position) {
       break;
     case OD1: // capture
       generatePawnMoves<GENCAP>(position, &onDemandMoves);
-      sort(onDemandMoves.begin(), onDemandMoves.end());
       currentODStage = OD2;
       break;
     case OD2:
       generateMoves<GENCAP>(position, &onDemandMoves);
-      sort(onDemandMoves.begin(), onDemandMoves.end());
       currentODStage = OD3;
       break;
     case OD3:
       generateKingMoves<GENCAP>(position, &onDemandMoves);
-      sort(onDemandMoves.begin(), onDemandMoves.end());
       currentODStage = OD4;
       break;
     case OD4:
@@ -216,31 +211,28 @@ void MoveGenerator::fillOnDemandMoveList(const Position& position) {
     case OD5: // non capture
       generatePawnMoves<GENNONCAP>(position, &onDemandMoves);
       pushKiller(onDemandMoves);
-      sort(onDemandMoves.begin(), onDemandMoves.end());
       currentODStage = OD6;
       break;
     case OD6:
       generateCastling<GENNONCAP>(position, &onDemandMoves);
       pushKiller(onDemandMoves);
-      sort(onDemandMoves.begin(), onDemandMoves.end());
       currentODStage = OD7;
       break;
     case OD7:
       generateMoves<GENNONCAP>(position, &onDemandMoves);
       pushKiller(onDemandMoves);
-      sort(onDemandMoves.begin(), onDemandMoves.end());
       currentODStage = OD8;
       break;
     case OD8:
       generateKingMoves<GENNONCAP>(position, &onDemandMoves);
       pushKiller(onDemandMoves);
-      sort(onDemandMoves.begin(), onDemandMoves.end());
       currentODStage = OD_END;
       break;
     case OD_END:
       break;
     }
-
+    // sort the list according to sort values encoded in the move
+    if (!onDemandMoves.empty()) sort(onDemandMoves.begin(), onDemandMoves.end());
   } // while onDemandMoves.empty()
 }
 
