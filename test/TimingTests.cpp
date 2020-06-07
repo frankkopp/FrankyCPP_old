@@ -72,7 +72,7 @@ TEST_F(TimingTests, DISABLED_popcount) {
 /**
  * Test the absolute speed of doMove, undoMove
  */
-TEST_F(TimingTests, DISABLED_doMoveUndoMove) {
+TEST_F(TimingTests, doMoveUndoMove) {
   ostringstream os;
 
   //// TESTS START
@@ -105,7 +105,7 @@ TEST_F(TimingTests, DISABLED_doMoveUndoMove) {
   tests.push_back(f1);
   //// TESTS END
 
-  testTiming(os, 5, 10, 2'000'000, tests);
+  testTiming(os, 5, 1, 10'000'000, tests);
 
   cout << os.str();
 }

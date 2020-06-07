@@ -97,9 +97,6 @@ void Position::doMove(const Move move) {
     hasCheckFlag
   };
 
-  // reset check and mate flag
-  hasCheckFlag = FLAG_TBD;
-
   // do move
   switch (typeOf(move)) {
 
@@ -211,6 +208,9 @@ void Position::doMove(const Move move) {
     halfMoveClock++;
     break;
   }
+
+  // reset check and mate flag
+  hasCheckFlag = FLAG_TBD;
 
   // update halfMoveNumber
   nextHalfMoveNumber++;
