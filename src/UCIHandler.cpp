@@ -103,7 +103,6 @@ void UCI_Handler::isReadyCommand() const { send("readyok"); }
 
 void UCI_Handler::setOptionCommand(std::istringstream &inStream) const {
   std::string token, name, value;
-
   if (inStream >> token && token != "name") {
     LOG__WARN(Logger::get().UCIHAND_LOG, "Command setoption is malformed - expected 'name': {}",
               token);

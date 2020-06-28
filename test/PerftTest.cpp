@@ -70,9 +70,10 @@ TEST_F(PerftTest, stdPerftOD) {
   };
   // @formatter:on
 
-  int maxDepth = 6;
+  const int startDeptht = 7;
+  const int maxDepth = 7;
 
-  for (int i = 1; i <= maxDepth; i++) {
+  for (int i = startDeptht; i <= maxDepth; i++) {
     p.perft(i, true);
     NEWLINE;
     ASSERT_EQ(results[i][1], p.getNodes());
@@ -82,14 +83,13 @@ TEST_F(PerftTest, stdPerftOD) {
     ASSERT_EQ(results[i][5], p.getCheckMateCounter());
   }
   cout << "==============================" << endl;
-
 }
 
 
 TEST_F(PerftTest, stdPerft) {
   MoveGenerator mg;
-  Position position;
-  Perft p;
+  Position      position;
+  Perft         p;
 
   cout << "Standard PERFT Test" << endl;
   cout << "==============================" << endl;
@@ -221,9 +221,10 @@ TEST_F(PerftTest, pos4Perft) {
   };
   // @formatter:on
 
-  int maxDepth = 5;
+  const int startDepth = 3;
+  const int maxDepth = 3;
 
-  for (int i = 1; i <= maxDepth; i++) {
+  for (int i = startDepth; i <= maxDepth; i++) {
     p.perft(i, true);
     NEWLINE;
     ASSERT_EQ(results[i][1], p.getNodes());

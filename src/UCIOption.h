@@ -28,7 +28,7 @@
 
 #include <sstream>
 
-static const char* optionTypeStrings[] = {"check", "spin", "combo", "button", "std::string"};
+static const char* optionTypeStrings[] = {"check", "spin", "combo", "button", "string"};
 
 /**
  * UCI Option data class to store te available UCI options.
